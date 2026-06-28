@@ -959,7 +959,7 @@ ${text.split('\n').filter(Boolean).map(line => `      <text:p>${esc(line)}</text
   zip.file('content.xml', contentXml);
   zip.file('meta.xml', `<?xml version="1.0" encoding="UTF-8"?>
 <office:meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
-  <dc:creator>PDFTools</dc:creator>
+  <dc:creator>OptimaPDF</dc:creator>
   <dc:date>${new Date().toISOString()}</dc:date>
 </office:meta>`);
   zip.file('styles.xml', `<?xml version="1.0" encoding="UTF-8"?>
@@ -1408,9 +1408,9 @@ export async function convertToPdfA(file: File): Promise<Uint8Array> {
 
   // 3. Set metadata
   if (!pdfDoc.getTitle()) pdfDoc.setTitle('PDF Document');
-  if (!pdfDoc.getAuthor()) pdfDoc.setAuthor('PDFTools');
-  if (!pdfDoc.getProducer()) pdfDoc.setProducer('PDFTools');
-  pdfDoc.setCreator('PDFTools PDF/A Converter');
+  if (!pdfDoc.getAuthor()) pdfDoc.setAuthor('OptimaPDF');
+  if (!pdfDoc.getProducer()) pdfDoc.setProducer('OptimaPDF');
+  pdfDoc.setCreator('OptimaPDF PDF/A Converter');
 
   // 4. Build XMP metadata for PDF/A-1b
   const now = new Date().toISOString();
@@ -1421,10 +1421,10 @@ export async function convertToPdfA(file: File): Promise<Uint8Array> {
       xmlns:pdf="http://ns.adobe.com/pdf/1.3/"
       xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"
       xmlns:xmp="http://ns.adobe.com/xap/1.0/">
-      <pdf:Producer>PDFTools</pdf:Producer>
+      <pdf:Producer>OptimaPDF</pdf:Producer>
       <pdfaid:part>1</pdfaid:part>
       <pdfaid:conformance>B</pdfaid:conformance>
-      <xmp:CreatorTool>PDFTools PDF/A Converter</xmp:CreatorTool>
+      <xmp:CreatorTool>OptimaPDF PDF/A Converter</xmp:CreatorTool>
       <xmp:CreateDate>${now}</xmp:CreateDate>
       <xmp:ModifyDate>${now}</xmp:ModifyDate>
     </rdf:Description>

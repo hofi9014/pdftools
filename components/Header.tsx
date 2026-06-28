@@ -87,9 +87,9 @@ export default function Header() {
     <header className="border-b border-[var(--coffee-border)] bg-[var(--coffee-surface)] backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 text-xl font-bold shrink-0" style={{ color: 'var(--coffee-text)' }}>
-          <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-[var(--coffee-accent)] to-[var(--coffee-gold)] flex items-center justify-center text-white text-sm font-bold shadow-[0_0_12px_var(--coffee-accent-glow)]">P</span>
-          <span className="hidden xs:inline">PDFTools</span>
-          <span className="xs:hidden">PT</span>
+          <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-[var(--coffee-accent)] to-[var(--coffee-gold)] flex items-center justify-center text-white text-sm font-bold shadow-[0_0_12px_var(--coffee-accent-glow)]">O</span>
+          <span className="hidden xs:inline">OptimaPDF</span>
+          <span className="xs:hidden">OP</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1 text-sm font-medium" style={{ color: 'var(--coffee-text-secondary)' }}>

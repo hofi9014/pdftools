@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'PDFTools',
-    short_name: 'PDFTools',
+    name: 'OptimaPDF',
+    short_name: 'OptimaPDF',
     description: 'Darmowe internetowe narzędzia PDF. Scalaj, dziel, kompresuj, konwertuj i edytuj pliki PDF.',
     start_url: '/',
     display: 'standalone',

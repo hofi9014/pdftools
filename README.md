@@ -1,4 +1,4 @@
-# PDFTools
+# OptimaPDF
 
 Darmowe internetowe narzędzia do edycji plików PDF. Scalaj, dziel, kompresuj, konwertuj i edytuj PDFy online.
 

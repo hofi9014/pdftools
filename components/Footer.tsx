@@ -56,7 +56,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 text-left">
           <div>
-            <p className="font-bold text-[#F5EDE4] mb-3">PDFTools</p>
+            <p className="font-bold text-[#F5EDE4] mb-3">OptimaPDF</p>
             <p className="text-sm leading-relaxed text-[rgba(245,237,228,0.65)]">{t('footer.desc', locale)}</p>
           </div>
           <div>
@@ -94,7 +94,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-[rgba(255,255,255,0.06)] pt-6 text-center text-xs text-[rgba(245,237,228,0.4)]">
-          <p>&copy; {new Date().getFullYear()} PDFTools. {t('footer.copyright', locale)}</p>
+          <p>&copy; {new Date().getFullYear()} OptimaPDF. {t('footer.copyright', locale)}</p>
         </div>
       </div>
     </footer>

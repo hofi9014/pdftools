@@ -10,11 +10,11 @@ const content = {
     sections: [
       {
         h: '1. Postanowienia ogólne',
-        p: 'Niniejsza Polityka prywatności określa zasady przetwarzania i ochrony danych osobowych użytkowników serwisu PDFTools (optimapdf.com). PDFTools przykłada najwyższą wagę do ochrony prywatności i bezpieczeństwa danych. Wszystkie narzędzia zostały zaprojektowane zgodnie z zasadą privacy by design — domyślnie Twoje pliki przetwarzane są lokalnie w przeglądarce.',
+        p: 'Niniejsza Polityka prywatności określa zasady przetwarzania i ochrony danych osobowych użytkowników serwisu OptimaPDF (optimapdf.com). OptimaPDF przykłada najwyższą wagę do ochrony prywatności i bezpieczeństwa danych. Wszystkie narzędzia zostały zaprojektowane zgodnie z zasadą privacy by design — domyślnie Twoje pliki przetwarzane są lokalnie w przeglądarce.',
       },
       {
         h: '2. Administrator danych',
-        p: 'Administratorem danych osobowych jest PDFTools. Kontakt: kontakt@optimapdf.com. Administrator nie wyznaczył Inspektora Ochrony Danych — we wszystkich sprawach związanych z ochroną danych osobowych kontaktuj się bezpośrednio poprzez powyższy adres e-mail.',
+        p: 'Administratorem danych osobowych jest OptimaPDF. Kontakt: kontakt@optimapdf.com. Administrator nie wyznaczył Inspektora Ochrony Danych — we wszystkich sprawach związanych z ochroną danych osobowych kontaktuj się bezpośrednio poprzez powyższy adres e-mail.',
       },
       {
         h: '3. Zakres i cele zbierania danych',
@@ -116,11 +116,11 @@ const content = {
     sections: [
       {
         h: '1. General provisions',
-        p: 'This Privacy Policy defines the principles of processing and protection of personal data of users of the PDFTools website (optimapdf.com). PDFTools places the highest importance on privacy and data security. All tools have been designed following the privacy by design principle — by default, your files are processed locally in your browser.',
+        p: 'This Privacy Policy defines the principles of processing and protection of personal data of users of the OptimaPDF website (optimapdf.com). OptimaPDF places the highest importance on privacy and data security. All tools have been designed following the privacy by design principle — by default, your files are processed locally in your browser.',
       },
       {
         h: '2. Data controller',
-        p: 'The data controller is PDFTools. Contact: kontakt@optimapdf.com. The controller has not appointed a Data Protection Officer — for all matters related to personal data protection, contact us directly via the email address above.',
+        p: 'The data controller is OptimaPDF. Contact: kontakt@optimapdf.com. The controller has not appointed a Data Protection Officer — for all matters related to personal data protection, contact us directly via the email address above.',
       },
       {
         h: '3. Scope and purposes of data collection',

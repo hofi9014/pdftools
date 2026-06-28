@@ -126,7 +126,7 @@ const helpData: HelpCategory[] = [
     items: [
       { key: 'protect-password', href: '/protect-pdf', icon: '🔒',
         q: { pl: 'Nie mogę otworzyć pliku po zabezpieczeniu?', en: 'Can\'t open the file after protecting?' },
-        a: { pl: 'Zapisz hasło w bezpiecznym miejscu! PDFTools nie przechowuje haseł i nie ma możliwości ich odzyskania. Jeśli zapomniałeś hasła, nie ma sposobu na otwarcie pliku. Zalecamy: (1) Używaj haseł, które pamiętasz. (2) Zapisz hasło w menedżerze haseł. (3) Przed zabezpieczeniem zrób kopię oryginalnego pliku bez hasła.', en: 'Save your password in a safe place! PDFTools does not store passwords and cannot recover them. If you forget your password, there is no way to open the file. We recommend: (1) Use passwords you can remember. (2) Save the password in a password manager. (3) Keep a backup of the original file before protecting.' },
+        a: { pl: 'Zapisz hasło w bezpiecznym miejscu! OptimaPDF nie przechowuje haseł i nie ma możliwości ich odzyskania. Jeśli zapomniałeś hasła, nie ma sposobu na otwarcie pliku. Zalecamy: (1) Używaj haseł, które pamiętasz. (2) Zapisz hasło w menedżerze haseł. (3) Przed zabezpieczeniem zrób kopię oryginalnego pliku bez hasła.', en: 'Save your password in a safe place! OptimaPDF does not store passwords and cannot recover them. If you forget your password, there is no way to open the file. We recommend: (1) Use passwords you can remember. (2) Save the password in a password manager. (3) Keep a backup of the original file before protecting.' },
       },
       { key: 'unlock-fail', href: '/unlock-pdf', icon: '🔓',
         q: { pl: 'Odblokowanie PDF nie działa — złe hasło?', en: 'Unlock doesn\'t work — wrong password?' },

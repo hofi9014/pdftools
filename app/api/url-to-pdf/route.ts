@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     }
 
     const response = await fetch(normalizedUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PDFTools/1.0)' },
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; OptimaPDF/1.0)' },
       signal: AbortSignal.timeout(15000),
       redirect: 'manual',
     });

@@ -357,7 +357,7 @@ export default function SchemaHowTo() {
     image: `https://optimapdf.com/icon-512.svg`,
     estimatedCost: { '@type': 'MonetaryAmount', currency: 'PLN', value: '0' },
     supply: { '@type': 'HowToSupply', name: 'Plik PDF' },
-    tool: { '@type': 'HowToTool', name: 'PDFTools' },
+    tool: { '@type': 'HowToTool', name: 'OptimaPDF' },
     step: t.steps.map((s, i) => ({
       '@type': 'HowToStep',
       position: i + 1,

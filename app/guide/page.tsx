@@ -104,7 +104,7 @@ const guides: GuideEntry[] = [
       { pl: 'Sprawdź siłę hasła — zalecane jest co najmniej 8 znaków.', en: 'Check the password strength — at least 8 characters is recommended.' },
       { pl: 'Kliknij "Zabezpiecz PDF" i pobierz plik chroniony hasłem.', en: 'Click "Protect PDF" and download the password-protected file.' },
     ],
-    tips: { pl: 'PDFTools NIE przechowuje haseł — jeśli je zapomnisz, nie ma możliwości odzyskania dostępu do pliku. Zrób kopię zapasową przed zabezpieczeniem.', en: 'PDFTools does NOT store passwords — if you forget it, there is no way to recover access to the file. Keep a backup copy before protecting.' },
+    tips: { pl: 'OptimaPDF NIE przechowuje haseł — jeśli je zapomnisz, nie ma możliwości odzyskania dostępu do pliku. Zrób kopię zapasową przed zabezpieczeniem.', en: 'OptimaPDF does NOT store passwords — if you forget it, there is no way to recover access to the file. Keep a backup copy before protecting.' },
   },
   {
     key: 'unlock', href: '/unlock-pdf',
