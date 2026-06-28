@@ -1,0 +1,161 @@
+'use client';
+import { useState } from 'react';
+import { cropPages, downloadPdf } from '@/lib/client-pdf';
+import PagePreview from '@/components/PagePreview';
+import { useLocale } from '@/lib/locale-context';
+import { t } from '@/lib/i18n';
+import { getToolIcon } from '@/lib/icons';
+
+export default function CropPDF() {
+  const { locale } = useLocale();
+  const [file, setFile] = useState<File | null>(null);
+  const [selectedPages, setSelectedPages] = useState<number[]>([]);
+  const [top, setTop] = useState('0');
+  const [right, setRight] = useState('0');
+  const [bottom, setBottom] = useState('0');
+  const [left, setLeft] = useState('0');
+  const [unit, setUnit] = useState('pt');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+
+  const handleFile = (f: File | null) => {
+    if (!f) return;
+    if (f.type !== 'application/pdf') { setError(t('error.onlypdf', locale)); return; }
+    setFile(f);
+    setError('');
+    setSuccess(false);
+    setSelectedPages([]);
+  };
+
+  const toPoints = (val: string, u: string): number => {
+    const n = parseFloat(val);
+    if (isNaN(n)) return 0;
+    if (u === 'mm') return n * 2.83465;
+    if (u === 'in') return n * 72;
+    return n;
+  };
+
+  const handleSubmit = async () => {
+    if (!file) { setError(t('error.select', locale)); return; }
+    setLoading(true);
+    setError('');
+    setSuccess(false);
+
+    try {
+      const margins = {
+        top: toPoints(top, unit),
+        right: toPoints(right, unit),
+        bottom: toPoints(bottom, unit),
+        left: toPoints(left, unit),
+      };
+      const pages = selectedPages.length > 0 ? selectedPages : undefined;
+      const result = await cropPages(file, margins, pages);
+      await downloadPdf(result, 'przyciete.pdf');
+      setSuccess(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t('error.generic', locale));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-12">
+      <div className="text-center mb-10">
+        <div className="text-6xl mb-4">{getToolIcon('crop')}</div>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tool-heading mb-3">{t('tool.crop', locale)}</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">{t('page.crop.desc', locale)}</p>
+      </div>
+
+      <div onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onClick={() => document.getElementById('fileInput')?.click()}
+        className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition mb-6
+          ${dragOver ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700'}
+          ${file ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}>
+        {file ? (
+          <div>
+            <div className="text-5xl mb-3">📄</div>
+            <p className="font-medium tool-heading">{file.name}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{t('drag.change', locale)}</p>
+          </div>
+        ) : (
+          <div>
+            <div className="text-5xl mb-3">📂</div>
+            <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.subtitle', locale)}</p>
+          </div>
+        )}
+        <input id="fileInput" type="file" accept=".pdf" className="hidden"
+          onChange={e => handleFile(e.target.files?.[0] || null)} />
+      </div>
+
+      {file && (
+        <PagePreview
+          file={file}
+          mode="select"
+          selectedPages={selectedPages}
+          onSelectionChange={setSelectedPages}
+          onNewOrder={() => {}}
+        />
+      )}
+
+      <div className="tool-card rounded-2xl border p-6 mb-6">
+        <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.crop.margins', locale)}</h3>
+        <div className="flex gap-2 mb-4">
+          {['pt', 'mm', 'in'].map(u => (
+            <button key={u} onClick={() => setUnit(u)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition ${unit === u ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 text-gray-700 dark:text-gray-300'}`}>
+              {u === 'pt' ? t('page.crop.unit_pt', locale) : u === 'mm' ? t('page.crop.unit_mm', locale) : t('page.crop.unit_in', locale)}
+            </button>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          {[
+            { label: t('page.crop.top', locale), value: top, set: setTop },
+            { label: t('page.crop.right', locale), value: right, set: setRight },
+            { label: t('page.crop.bottom', locale), value: bottom, set: setBottom },
+            { label: t('page.crop.left', locale), value: left, set: setLeft },
+          ].map((m) => (
+            <div key={m.label}>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{m.label}</label>
+              <input type="number" min="0" step="0.1" value={m.value} onChange={e => m.set(e.target.value)}
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 dark:border-blue-400 dark:focus:border-blue-400" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="tool-info-box rounded-2xl p-5 mb-6">
+        <h3 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h3>
+        <p className="text-sm text-blue-700 dark:text-blue-300">{t('local.desc', locale)}</p>
+      </div>
+
+      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">✅ {t('result.success', locale)}</div>}
+
+      <button onClick={handleSubmit} disabled={loading || !file}
+        className={`w-full py-4 rounded-2xl font-bold text-lg transition
+          ${loading || !file ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
+        {loading ? `⏳ ${t('page.crop.loading', locale)}` : `${t('page.crop.btn', locale)}`}
+      </button>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
+        {[
+          { icon: '🔒', text: t('local.badge', locale) },
+          { icon: '⚡', text: t('local.nolimits', locale) },
+          { icon: '🆓', text: t('local.free', locale) },
+        ].map((item, i) => (
+          <div key={i} className="tool-feature-card rounded-xl p-4 border">
+            <div className="text-2xl mb-1">{item.icon}</div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

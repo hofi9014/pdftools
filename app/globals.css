@@ -1,0 +1,326 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --breakpoint-xs: 375px;
+}
+
+:root {
+  --coffee-bg: #FDFBF7;
+  --coffee-bg-alt: #F7F3EE;
+  --coffee-surface: rgba(255,255,255,0.7);
+  --coffee-surface-solid: #FFFFFF;
+  --coffee-surface-hover: #F7F3EE;
+  --coffee-border: rgba(60,36,21,0.08);
+  --coffee-border-strong: rgba(60,36,21,0.15);
+  --coffee-text: #2C1810;
+  --coffee-text-secondary: #6B4F3E;
+  --coffee-text-tertiary: #A69284;
+  --coffee-accent: #C28F5B;
+  --coffee-accent-hover: #B07D4A;
+  --coffee-accent-subtle: rgba(194,143,91,0.1);
+  --coffee-accent-soft: #F5EDE4;
+  --coffee-accent-glow: rgba(194,143,91,0.2);
+  --coffee-gold: #D4A574;
+  --coffee-gold-glow: rgba(212,165,116,0.3);
+  --coffee-card-bg: rgba(255,255,255,0.6);
+  --coffee-badge-bg: #F5EDE4;
+  --coffee-badge-text: #8B6F4A;
+  --coffee-mesh-1: rgba(212,165,116,0.08);
+  --coffee-mesh-2: rgba(194,143,91,0.05);
+  --coffee-mesh-3: rgba(245,237,228,0.4);
+}
+
+.dark {
+  --coffee-bg: #0A0807;
+  --coffee-bg-alt: #141110;
+  --coffee-surface: rgba(20,17,16,0.8);
+  --coffee-surface-solid: #141110;
+  --coffee-surface-hover: #1C1816;
+  --coffee-border: rgba(255,255,255,0.06);
+  --coffee-border-strong: rgba(255,255,255,0.12);
+  --coffee-text: #F5EDE4;
+  --coffee-text-secondary: rgba(245,237,228,0.65);
+  --coffee-text-tertiary: rgba(245,237,228,0.4);
+  --coffee-accent: #D4A574;
+  --coffee-accent-hover: #E0B888;
+  --coffee-accent-subtle: rgba(212,165,116,0.08);
+  --coffee-accent-soft: rgba(212,165,116,0.12);
+  --coffee-accent-glow: rgba(212,165,116,0.15);
+  --coffee-gold: #C28F5B;
+  --coffee-gold-glow: rgba(194,143,91,0.25);
+  --coffee-card-bg: rgba(20,17,16,0.5);
+  --coffee-badge-bg: rgba(212,165,116,0.1);
+  --coffee-badge-text: #D4A574;
+  --coffee-mesh-1: rgba(212,165,116,0.06);
+  --coffee-mesh-2: rgba(194,143,91,0.04);
+  --coffee-mesh-3: rgba(20,17,16,0.4);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--coffee-bg);
+  color: var(--coffee-text);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Mesh gradient background layer */
+.mesh-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, var(--coffee-mesh-1) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 20% 60%, var(--coffee-mesh-2) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 80% 30%, var(--coffee-gold-glow) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 30% at 50% 110%, var(--coffee-mesh-1) 0%, transparent 50%),
+    var(--coffee-bg);
+}
+
+/* Grain texture overlay */
+.grain-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* Glass card */
+.glass-card {
+  background: var(--coffee-card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--coffee-border);
+  border-radius: 16px;
+  transition: all 0.3s;
+}
+
+.glass-card:hover {
+  border-color: var(--coffee-accent);
+  box-shadow: 0 0 30px var(--coffee-accent-glow), inset 0 0 30px var(--coffee-accent-subtle);
+  transform: translateY(-3px);
+}
+
+/* Coffee card for homepage tools */
+.coffee-card {
+  background-color: var(--coffee-surface-solid);
+  border: 1px solid var(--coffee-border);
+  border-radius: 16px;
+  transition: all 0.25s;
+}
+
+.coffee-card:hover {
+  border-color: var(--coffee-accent);
+  box-shadow: 0 4px 20px var(--coffee-accent-glow);
+  transform: translateY(-2px);
+}
+
+.dark .coffee-card {
+  background-color: var(--coffee-surface-solid);
+}
+
+/* Accent button */
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--coffee-accent);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.btn-accent:hover {
+  background-color: var(--coffee-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--coffee-accent-glow);
+}
+
+/* Ghost button */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--coffee-text);
+  border: 1px solid var(--coffee-border-strong);
+  padding: 12px 28px;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-ghost:hover {
+  border-color: var(--coffee-text-secondary);
+  background: var(--coffee-surface-hover);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--coffee-accent), var(--coffee-gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Accent underline for links */
+.link-accent {
+  color: var(--coffee-accent);
+  transition: color 0.2s;
+}
+
+.link-accent:hover {
+  color: var(--coffee-accent-hover);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--coffee-border-strong);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--coffee-text-tertiary);
+}
+
+/* ===== Accent color overrides ===== */
+.bg-blue-600 {
+  background-color: var(--coffee-accent) !important;
+}
+.hover\:bg-blue-700:hover {
+  background-color: var(--coffee-accent-hover) !important;
+}
+:where(.dark, .dark *) .dark\:bg-blue-500 {
+  background-color: var(--coffee-accent) !important;
+}
+:where(.dark, .dark *) .dark\:hover\:bg-blue-600:hover {
+  background-color: var(--coffee-accent-hover) !important;
+}
+:where(.dark, .dark *) .dark\:focus\:border-blue-400:focus {
+  border-color: var(--coffee-accent) !important;
+}
+.focus\:border-blue-500:focus {
+  border-color: var(--coffee-accent) !important;
+}
+:where(.dark, .dark *) .dark\:border-blue-400 {
+  border-color: var(--coffee-accent) !important;
+}
+.border-blue-500 {
+  border-color: var(--coffee-accent) !important;
+}
+:where(.dark, .dark *) .dark\:bg-blue-900\/20 {
+  background-color: var(--coffee-accent-subtle) !important;
+}
+
+/* ===== Tool page overrides ===== */
+
+/* Cards */
+.tool-card {
+  background-color: var(--coffee-surface-solid);
+  border-color: var(--coffee-border);
+  border-radius: 16px;
+}
+
+.dark .tool-card {
+  background-color: var(--coffee-surface-solid);
+  border-color: var(--coffee-border);
+}
+
+/* Feature cards (3-column layout) */
+.tool-feature-card {
+  background-color: var(--coffee-surface-solid);
+  border-color: var(--coffee-border);
+  border-radius: 12px;
+}
+
+.dark .tool-feature-card {
+  background-color: var(--coffee-surface-solid);
+  border-color: var(--coffee-border);
+}
+
+/* Headings in tool pages */
+.tool-heading {
+  color: var(--coffee-text);
+}
+
+.tool-heading-secondary {
+  color: var(--coffee-text-secondary);
+}
+
+/* Info box (local processing notice) */
+.tool-info-box {
+  background-color: var(--coffee-accent-soft);
+  border-color: var(--coffee-accent);
+  border-radius: 16px;
+  color: var(--coffee-text);
+}
+
+.dark .tool-info-box {
+  background-color: var(--coffee-accent-subtle);
+  border-color: var(--coffee-accent);
+}
+
+/* Success box */
+.tool-success-box {
+  background-color: var(--coffee-accent-soft);
+  border-color: var(--coffee-accent);
+  border-radius: 16px;
+}
+
+.dark .tool-success-box {
+  background-color: var(--coffee-accent-subtle);
+  border-color: var(--coffee-accent);
+}
+
+/* Dropzone */
+.tool-dropzone {
+  border-width: 2px;
+  border-style: dashed;
+  border-color: var(--coffee-border-strong);
+  border-radius: 16px;
+  color: var(--coffee-text-secondary);
+  transition: all 0.2s;
+}
+
+.tool-dropzone:hover {
+  border-color: var(--coffee-accent);
+  background-color: var(--coffee-surface-hover);
+}
+
+.tool-dropzone-active {
+  border-color: var(--coffee-accent);
+  background-color: var(--coffee-accent-subtle);
+}

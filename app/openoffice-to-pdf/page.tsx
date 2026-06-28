@@ -1,0 +1,105 @@
+'use client';
+import { useState } from 'react';
+import { officeToPdf } from '@/lib/client-pdf';
+import { useLocale } from '@/lib/locale-context';
+import { t } from '@/lib/i18n';
+import { getToolIcon } from '@/lib/icons';
+
+export default function OpenOfficeToPDF() {
+  const { locale } = useLocale();
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+
+  const handleFile = (f: File | null) => {
+    if (!f) return;
+    const ext = f.name.toLowerCase().split('.').pop();
+    if (ext !== 'odt') { setError(t('page.openoffice.error_not_odt', locale)); return; }
+    setFile(f);
+    setError('');
+    setSuccess(false);
+  };
+
+  const handleConvert = async () => {
+    if (!file) { setError(t('page.openoffice.error_select_odt', locale)); return; }
+    setLoading(true);
+    setError('');
+    setSuccess(false);
+
+    try {
+      const blob = await officeToPdf(file);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name.replace('.odt', '.pdf');
+      a.click();
+      URL.revokeObjectURL(url);
+      setSuccess(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t('error.generic', locale));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-12">
+      <div className="text-center mb-10">
+        <div className="text-6xl mb-4">{getToolIcon('openoffice')}</div>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tool-heading mb-3">{t('tool.openoffice', locale)}</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">{t('page.openoffice.desc', locale)}</p>
+      </div>
+
+      <div
+        onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onClick={() => document.getElementById('fileInput')?.click()}
+        className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition mb-6
+          ${dragOver ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700'}
+          ${file ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}
+      >
+        {file ? (
+          <div>
+            <div className="text-5xl mb-3">📄</div>
+            <p className="font-medium tool-heading">{file.name}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{t('drag.change', locale)}</p>
+          </div>
+        ) : (
+          <div>
+            <div className="text-5xl mb-3">📂</div>
+            <p className="text-gray-600 dark:text-gray-300 font-medium">{t('page.openoffice.drag_title', locale)}</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.subtitle', locale)}</p>
+          </div>
+        )}
+        <input id="fileInput" type="file" accept=".odt" className="hidden"
+          onChange={e => handleFile(e.target.files?.[0] || null)} />
+      </div>
+
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 mb-6">
+        <h3 className="font-bold tool-heading mb-2">{t('section.info', locale)}</h3>
+        <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+          <li>{t('page.openoffice.info1', locale)}</li>
+          <li>{t('page.openoffice.info2', locale)}</li>
+          <li>{t('page.openoffice.info3', locale)}</li>
+        </ul>
+      </div>
+
+      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {success && (
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
+          {t('page.openoffice.success', locale)}
+        </div>
+      )}
+
+      <button onClick={handleConvert} disabled={loading || !file}
+        className={`w-full py-4 rounded-2xl font-bold text-lg transition
+          ${loading || !file ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
+        {loading ? `⏳ ${t('btn.loading', locale)}` : `📝 ${t('page.openoffice.btn', locale)}`}
+      </button>
+    </div>
+  );
+}

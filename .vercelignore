@@ -1,0 +1,16 @@
+node_modules
+.next
+*.test.*
+*.spec.*
+.git
+.gitignore
+README.md
+AGENTS.md
+CLAUDE.md
+struktura.txt
+diagnose.ts
+proxy.ts
+*.traineddata
+test-*
+*.pdf
+*.jpg
