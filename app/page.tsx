@@ -44,7 +44,6 @@ const toolDefs = [
   { key: "translate", href: "/ai-translate" },
   { key: "fillform", href: "/fill-form" },
   { key: "pdfa", href: "/to-pdfa" },
-  { key: "guide", href: "/guide" },
 ];
 
 export default function Home() {
@@ -86,7 +85,7 @@ export default function Home() {
       {/* Stats */}
       <div className="flex justify-center gap-12 sm:gap-16 py-8 px-4">
         <div className="text-center">
-          <div className="text-4xl font-black gradient-text">42</div>
+          <div className="text-4xl font-black gradient-text">40</div>
           <div className="text-sm mt-1" style={{ color: 'var(--coffee-text-tertiary)' }}>{t('stats.tools', locale)}</div>
         </div>
         <div className="w-px self-stretch" style={{ backgroundColor: 'var(--coffee-border-strong)' }} />
