@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { LocaleProvider } from "@/lib/locale-context";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -8,6 +9,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import HtmlLang from "@/components/HtmlLang";
 import SchemaHowTo from "@/components/SchemaHowTo";
 import Magnifier from "@/components/Magnifier";
+import CookieConsent from "@/components/CookieConsent";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -85,6 +87,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="alternate" hrefLang="ja" href="https://optimapdf.com/ja" />
         <link rel="alternate" hrefLang="hi" href="https://optimapdf.com/hi" />
         <link rel="alternate" hrefLang="x-default" href="https://optimapdf.com" />
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-KN3C22GVP8" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('consent', 'default', { analytics_storage: 'denied' });
+          gtag('js', new Date());
+          gtag('config', 'G-KN3C22GVP8', { anonymize_ip: true });`}
+        </Script>
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
         <div className="mesh-bg" />
@@ -95,6 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
           <PwaRegister />
           <Breadcrumbs />
+          <CookieConsent />
           <Magnifier />
           <main className="flex-1">{children}</main>
           <Footer />
