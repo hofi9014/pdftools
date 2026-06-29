@@ -88,7 +88,6 @@ export default function Footer() {
               <li><Link href="/help" className={linkStyle}>{t('help.link', locale)}</Link></li>
               <li><Link href="/privacy" className={linkStyle}>{t('nav.privacy', locale)}</Link></li>
               <li><Link href="/rodo" className={linkStyle}>{t('rodo.link', locale)}</Link></li>
-              <li><Link href="/terms" className={linkStyle}>{t('terms.link', locale)}</Link></li>
               <li><Link href="/security" className={linkStyle}>{t('security.link', locale)}</Link></li>
               <li><Link href="/guide" className={linkStyle}>{t('nav.guide', locale)}</Link></li>
             </ul>

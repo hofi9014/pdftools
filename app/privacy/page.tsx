@@ -14,7 +14,7 @@ const content = {
       },
       {
         h: '2. Administrator danych',
-        p: 'Administratorem danych osobowych jest OptimaPDF. Kontakt: kontakt@optimapdf.com. Administrator nie wyznaczył Inspektora Ochrony Danych — we wszystkich sprawach związanych z ochroną danych osobowych kontaktuj się bezpośrednio poprzez powyższy adres e-mail.',
+        p: 'Administratorem danych osobowych jest Leszek Hofman, Dąbrówka Nowa, Polska. Kontakt: kontakt@optimapdf.com. Administrator nie wyznaczył Inspektora Ochrony Danych — we wszystkich sprawach związanych z ochroną danych osobowych kontaktuj się bezpośrednio poprzez powyższy adres e-mail.',
       },
       {
         h: '3. Zakres i cele zbierania danych',
@@ -120,7 +120,7 @@ const content = {
       },
       {
         h: '2. Data controller',
-        p: 'The data controller is OptimaPDF. Contact: kontakt@optimapdf.com. The controller has not appointed a Data Protection Officer — for all matters related to personal data protection, contact us directly via the email address above.',
+        p: 'The data controller is Leszek Hofman, Dąbrówka Nowa, Poland. Contact: kontakt@optimapdf.com. The controller has not appointed a Data Protection Officer — for all matters related to personal data protection, contact us directly via the email address above.',
       },
       {
         h: '3. Scope and purposes of data collection',

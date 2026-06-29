@@ -10,7 +10,7 @@ const content = {
     sections: [
       {
         h: '1. Postanowienia ogólne',
-        p: 'Niniejszy Regulamin określa zasady korzystania z serwisu OptimaPDF (optimapdf.com). Korzystając z serwisu, akceptujesz postanowienia niniejszego Regulaminu.',
+        p: 'Niniejszy Regulamin określa zasady korzystania z serwisu OptimaPDF (optimapdf.com) prowadzonego przez Leszka Hofmana, Dąbrówka Nowa, Polska. Korzystając z serwisu, akceptujesz postanowienia niniejszego Regulaminu.',
       },
       {
         h: '2. Opis usług',
@@ -38,7 +38,7 @@ const content = {
     title: 'Terms of Service',
     updated: 'Last updated: June 29, 2026',
     sections: [
-      { h: '1. General Provisions', p: 'These Terms of Service govern your use of OptimaPDF (optimapdf.com). By using the service, you accept these terms.' },
+      { h: '1. General Provisions', p: 'These Terms of Service govern your use of OptimaPDF (optimapdf.com), operated by Leszek Hofman, Dąbrówka Nowa, Poland. By using the service, you accept these terms.' },
       { h: '2. Service Description', p: 'OptimaPDF offers free online PDF editing, conversion and management tools. All tools are available without registration. File processing happens locally in your browser — files are not sent to our server (except URL-to-PDF).' },
       { h: '3. Liability', p: 'OptimaPDF strives for accuracy but does not guarantee uninterrupted service. Users are advised to keep backups of their files.' },
       { h: '4. Copyright', p: 'The OptimaPDF name and logo are property of the service. Copying or distributing the code without permission is prohibited.' },

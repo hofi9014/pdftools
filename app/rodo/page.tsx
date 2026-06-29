@@ -10,7 +10,7 @@ const content = {
     sections: [
       {
         h: '1. Kim jesteśmy jako administrator danych',
-        p: 'Administratorem Twoich danych osobowych jest OptimaPDF (optimapdf.com). Jako podmiot świadczący usługi cyfrowe przetwarzamy dane wyłącznie w zakresie niezbędnym do zapewnienia działania narzędzi PDF online. We wszystkich sprawach związanych z ochroną danych możesz kontaktować się pod adresem e-mail: kontakt@optimapdf.com.',
+        p: 'Administratorem Twoich danych osobowych jest Leszek Hofman, Dąbrówka Nowa, Polska (optimapdf.com). Jako podmiot świadczący usługi cyfrowe przetwarzamy dane wyłącznie w zakresie niezbędnym do zapewnienia działania narzędzi PDF online. We wszystkich sprawach związanych z ochroną danych możesz kontaktować się pod adresem e-mail: kontakt@optimapdf.com.',
       },
       {
         h: '2. Jakie dane osobowe przetwarzamy i w jakim celu',
@@ -89,7 +89,7 @@ const content = {
     sections: [
       {
         h: '1. Who we are as data controller',
-        p: 'The controller of your personal data is OptimaPDF (optimapdf.com). As a digital service provider, we process data only to the extent necessary to provide online PDF tools. For all data protection matters, you can contact us at: kontakt@optimapdf.com.',
+        p: 'The controller of your personal data is Leszek Hofman, Dąbrówka Nowa, Poland (optimapdf.com). As a digital service provider, we process data only to the extent necessary to provide online PDF tools. For all data protection matters, you can contact us at: kontakt@optimapdf.com.',
       },
       {
         h: '2. What personal data we process and for what purpose',
