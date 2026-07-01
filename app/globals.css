@@ -9,6 +9,18 @@
 }
 
 :root {
+  --cat-edit: #C28F5B;
+  --cat-edit-bg: rgba(194,143,91,0.12);
+  --cat-edit-border: #C28F5B;
+  --cat-convert: #4A90A4;
+  --cat-convert-bg: rgba(74,144,164,0.12);
+  --cat-convert-border: #4A90A4;
+  --cat-secure: #B5573F;
+  --cat-secure-bg: rgba(181,87,63,0.12);
+  --cat-secure-border: #B5573F;
+  --cat-more: #7C6A9C;
+  --cat-more-bg: rgba(124,106,156,0.12);
+  --cat-more-border: #7C6A9C;
   --coffee-bg: #FDFBF7;
   --coffee-bg-alt: #F7F3EE;
   --coffee-surface: rgba(255,255,255,0.7);
@@ -35,6 +47,18 @@
 }
 
 .dark {
+  --cat-edit: #D4A574;
+  --cat-edit-bg: rgba(212,165,116,0.15);
+  --cat-edit-border: #D4A574;
+  --cat-convert: #6BB0C4;
+  --cat-convert-bg: rgba(107,176,196,0.15);
+  --cat-convert-border: #6BB0C4;
+  --cat-secure: #CC7259;
+  --cat-secure-bg: rgba(204,114,89,0.15);
+  --cat-secure-border: #CC7259;
+  --cat-more: #9B8AB8;
+  --cat-more-bg: rgba(155,138,184,0.15);
+  --cat-more-border: #9B8AB8;
   --coffee-bg: #0A0807;
   --coffee-bg-alt: #141110;
   --coffee-surface: rgba(20,17,16,0.8);

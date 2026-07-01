@@ -6,6 +6,7 @@ import CloudFilePicker from '@/components/CloudFilePicker';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import { RecommendedSize } from '@/components/UploadInfo';
 
 export default function CompressPDF() {
   const { locale } = useLocale();
@@ -111,6 +112,7 @@ export default function CompressPDF() {
           onChange={e => handleFiles(e.target.files)} />
       </div>
 
+      <RecommendedSize locale={locale} />
       <div className="flex justify-center gap-2 mb-6">
         <CloudFilePicker onFilesPicked={handleFiles} label={"☁️ " + t('cloud.add', locale)} />
       </div>
