@@ -759,6 +759,11 @@ const pl: Record<string, string> = {
   'edit.toolbar_text': 'Tekst',
   'edit.undo_btn': '↩ Cofnij',
   'edit.undo_title': 'Cofnij (Ctrl+Z)',
+  'edit.max_size': 'Plik jest zbyt duży. Maksymalny rozmiar to 100 MB.',
+  'edit.feature_text': 'Dodawaj tekst, kształty i obrazy',
+  'edit.feature_highlight': 'Podświetlaj, rysuj i dodawaj podpisy',
+  'edit.feature_edit_text': 'Edytuj istniejący tekst w PDF',
+  'edit.local_info': 'Wszystkie zmiany są zapisywane lokalnie. Obsługuje polskie znaki (ą, ć, ę, ł, ń, ó, ś, ź, ż).',
 };
 
 const en: Record<string, string> = {
@@ -1518,6 +1523,11 @@ const en: Record<string, string> = {
   'edit.toolbar_text': 'Text',
   'edit.undo_btn': '↩ Undo',
   'edit.undo_title': 'Undo (Ctrl+Z)',
+  'edit.max_size': 'File is too large. Maximum size is 100 MB.',
+  'edit.feature_text': 'Add text, shapes and images',
+  'edit.feature_highlight': 'Highlight, draw and add signatures',
+  'edit.feature_edit_text': 'Edit existing text in PDF',
+  'edit.local_info': 'All changes are saved locally. Supports Polish characters (ą, ć, ę, ł, ń, ó, ś, ź, ż).',
 };
 
 const es: Record<string, string> = {

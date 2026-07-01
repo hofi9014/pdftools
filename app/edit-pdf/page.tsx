@@ -17,7 +17,7 @@ export default function EditPdfPage() {
       return;
     }
     if (f.size > 100 * 1024 * 1024) {
-      alert('Plik jest zbyt duży. Maksymalny rozmiar to 100 MB.');
+      alert(t('edit.max_size', locale));
       return;
     }
     setFile(f);
@@ -69,13 +69,13 @@ export default function EditPdfPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {[
-          { icon: '✏️', text: 'Dodawaj tekst, kształty i obrazy' },
-          { icon: '🎨', text: 'Podświetlaj, rysuj i dodawaj podpisy' },
-          { icon: '📝', text: 'Edytuj istniejący tekst w PDF' },
+          { icon: '✏️', key: 'edit.feature_text' },
+          { icon: '🎨', key: 'edit.feature_highlight' },
+          { icon: '📝', key: 'edit.feature_edit_text' },
         ].map((item, i) => (
           <div key={i} className="tool-feature-card rounded-xl p-4 border text-center">
             <div className="text-2xl mb-1">{item.icon}</div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t(item.key, locale)}</p>
           </div>
         ))}
       </div>
@@ -83,7 +83,7 @@ export default function EditPdfPage() {
       <div className="tool-info-box rounded-2xl p-5 mb-6">
         <h3 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h3>
         <p className="text-sm text-blue-700 dark:text-blue-300">
-          {t('local.desc', locale)} Wszystkie zmiany są zapisywane lokalnie. Obsługuje polskie znaki (ą, ć, ę, ł, ń, ó, ś, ź, ż).
+          {t('local.desc', locale)} {t('edit.local_info', locale)}
         </p>
       </div>
 
