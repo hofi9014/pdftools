@@ -763,11 +763,18 @@ const pl: Record<string, string> = {
   'edit.feature_text': 'Dodawaj tekst, kształty i obrazy',
   'edit.feature_highlight': 'Podświetlaj, rysuj i dodawaj podpisy',
   'edit.feature_edit_text': 'Edytuj istniejący tekst w PDF',
-<<<<<<< HEAD
-  'edit.local_info': 'Wszystkie zmiany są zapisywane lokalnie. Obsługuje polskie znaki (ą, ć, ę, ł, ń, ó, ś, ź, ż).',
-=======
   'edit.local_saved': 'Wszystkie zmiany są zapisywane lokalnie.',
->>>>>>> c53a046 (i18n: translate edit.local_saved to all 14 languages, show Polish chars only for pl)
+  'lang.english': 'Angielski',
+  'lang.polish': 'Polski',
+  'lang.german': 'Niemiecki',
+  'lang.french': 'Francuski',
+  'lang.spanish': 'Hiszpański',
+  'lang.italian': 'Włoski',
+  'lang.russian': 'Rosyjski',
+  'lang.ukrainian': 'Ukraiński',
+  'lang.czech': 'Czeski',
+  'lang.chinese_simplified': 'Chiński (uproszczony)',
+  'lang.japanese': 'Japoński',
 };
 
 const en: Record<string, string> = {
@@ -1531,11 +1538,18 @@ const en: Record<string, string> = {
   'edit.feature_text': 'Add text, shapes and images',
   'edit.feature_highlight': 'Highlight, draw and add signatures',
   'edit.feature_edit_text': 'Edit existing text in PDF',
-<<<<<<< HEAD
-  'edit.local_info': 'All changes are saved locally. Supports Polish characters (ą, ć, ę, ł, ń, ó, ś, ź, ż).',
-=======
   'edit.local_saved': 'All changes are saved locally.',
->>>>>>> c53a046 (i18n: translate edit.local_saved to all 14 languages, show Polish chars only for pl)
+  'lang.english': 'English',
+  'lang.polish': 'Polish',
+  'lang.german': 'German',
+  'lang.french': 'French',
+  'lang.spanish': 'Spanish',
+  'lang.italian': 'Italian',
+  'lang.russian': 'Russian',
+  'lang.ukrainian': 'Ukrainian',
+  'lang.czech': 'Czech',
+  'lang.chinese_simplified': 'Chinese (Simplified)',
+  'lang.japanese': 'Japanese',
 };
 
 const es: Record<string, string> = {
@@ -2253,7 +2267,18 @@ const es: Record<string, string> = {
   'edit.toolbar_text': 'Texto',
   'edit.undo_btn': '↩ Deshacer',
   'edit.undo_title': 'Deshacer (Ctrl+Z)',
-  'edit.local_saved': 'Todos los cambios se guardan localmente.',
+  'edit.local_saved': 'Todos los cambios se guardan localmente.',  'lang.english': 'Inglés',
+  'lang.polish': 'Polaco',
+  'lang.german': 'Alemán',
+  'lang.french': 'Francés',
+  'lang.spanish': 'Español',
+  'lang.italian': 'Italiano',
+  'lang.russian': 'Ruso',
+  'lang.ukrainian': 'Ucraniano',
+  'lang.czech': 'Checo',
+  'lang.chinese_simplified': 'chino (simplificado)',
+  'lang.japanese': 'Japonés',
+
 };
 
 const de: Record<string, string> = {
@@ -2971,7 +2996,18 @@ const de: Record<string, string> = {
   'edit.toolbar_text': 'Text',
   'edit.undo_btn': '↩ Rückgängig',
   'edit.undo_title': 'Rückgängig machen (Strg+Z)',
-  'edit.local_saved': 'Alle Änderungen werden lokal gespeichert.',
+  'edit.local_saved': 'Alle Änderungen werden lokal gespeichert.',  'lang.english': 'Englisch',
+  'lang.polish': 'Polnisch',
+  'lang.german': 'Deutsch',
+  'lang.french': 'Französisch',
+  'lang.spanish': 'Spanisch',
+  'lang.italian': 'Italienisch',
+  'lang.russian': 'Russisch',
+  'lang.ukrainian': 'Ukrainisch',
+  'lang.czech': 'Tschechisch',
+  'lang.chinese_simplified': 'Chinesisch (vereinfacht)',
+  'lang.japanese': 'Japanisch',
+
 };
 
 const fr: Record<string, string> = {
@@ -3689,7 +3725,18 @@ const fr: Record<string, string> = {
   'edit.toolbar_text': 'Texte',
   'edit.undo_btn': '↩ Annuler',
   'edit.undo_title': 'Annuler (Ctrl+Z)',
-  'edit.local_saved': 'Toutes les modifications sont enregistrées localement.',
+  'edit.local_saved': 'Toutes les modifications sont enregistrées localement.',  'lang.english': 'Anglais',
+  'lang.polish': 'Polonais',
+  'lang.german': 'allemand',
+  'lang.french': 'français',
+  'lang.spanish': 'Espagnol',
+  'lang.italian': 'Italien',
+  'lang.russian': 'russe',
+  'lang.ukrainian': 'Ukrainien',
+  'lang.czech': 'Tchèque',
+  'lang.chinese_simplified': 'Chinois (simplifié)',
+  'lang.japanese': 'Japonais',
+
 };
 
 const it: Record<string, string> = {
@@ -4407,7 +4454,18 @@ const it: Record<string, string> = {
   'edit.toolbar_text': 'Testo',
   'edit.undo_btn': '↩ Annulla',
   'edit.undo_title': 'Annulla (Ctrl+Z)',
-  'edit.local_saved': 'Tutte le modifiche vengono salvate localmente.',
+  'edit.local_saved': 'Tutte le modifiche vengono salvate localmente.',  'lang.english': 'Inglese',
+  'lang.polish': 'Polacco',
+  'lang.german': 'tedesco',
+  'lang.french': 'Francese',
+  'lang.spanish': 'Spagnolo',
+  'lang.italian': 'Italiano',
+  'lang.russian': 'Russo',
+  'lang.ukrainian': 'Ucraino',
+  'lang.czech': 'Ceco',
+  'lang.chinese_simplified': 'Cinese (semplificato)',
+  'lang.japanese': 'Giapponese',
+
 };
 
 const pt: Record<string, string> = {
@@ -5125,7 +5183,18 @@ const pt: Record<string, string> = {
   'edit.toolbar_text': 'Texto',
   'edit.undo_btn': '↩ Desfazer',
   'edit.undo_title': 'Desfazer (Ctrl+Z)',
-  'edit.local_saved': 'Todas as alterações são salvas localmente.',
+  'edit.local_saved': 'Todas as alterações são salvas localmente.',  'lang.english': 'Inglês',
+  'lang.polish': 'Polonês',
+  'lang.german': 'Alemão',
+  'lang.french': 'Francês',
+  'lang.spanish': 'Espanhol',
+  'lang.italian': 'Italiano',
+  'lang.russian': 'Russo',
+  'lang.ukrainian': 'Ucraniano',
+  'lang.czech': 'Tcheco',
+  'lang.chinese_simplified': 'Chinês (simplificado)',
+  'lang.japanese': 'Japonês',
+
 };
 
 const is: Record<string, string> = {
@@ -5844,7 +5913,18 @@ const is: Record<string, string> = {
   'edit.toolbar_text': 'Texti',
   'edit.undo_btn': '↩ Afturkalla',
   'edit.undo_title': 'Afturkalla (Ctrl+Z)',
-  'edit.local_saved': 'Öll breytingar eru skráðar á staðnum.',
+  'edit.local_saved': 'Öll breytingar eru skráðar á staðnum.',  'lang.english': 'enska',
+  'lang.polish': 'pólska',
+  'lang.german': 'Þýska',
+  'lang.french': 'Franska',
+  'lang.spanish': 'Spænska',
+  'lang.italian': 'Ítalska',
+  'lang.russian': 'Rússneska',
+  'lang.ukrainian': 'Úkraínska',
+  'lang.czech': 'Česki',
+  'lang.chinese_simplified': 'Kínverska (einfölduð)',
+  'lang.japanese': 'Japanska',
+
 };
 
 const tr: Record<string, string> = {
@@ -6562,7 +6642,18 @@ const tr: Record<string, string> = {
   'edit.toolbar_text': 'Metin',
   'edit.undo_btn': '↩ Geri al',
   'edit.undo_title': 'Geri al (Ctrl+Z)',
-  'edit.local_saved': 'Tüm değişiklikler yerel olarak kaydedilir.',
+  'edit.local_saved': 'Tüm değişiklikler yerel olarak kaydedilir.',  'lang.english': 'İngilizce',
+  'lang.polish': 'Lehçe',
+  'lang.german': 'Almanca',
+  'lang.french': 'Fransızca',
+  'lang.spanish': 'İspanyolca',
+  'lang.italian': 'İtalyanca',
+  'lang.russian': 'Rusça',
+  'lang.ukrainian': 'Ukraynaca',
+  'lang.czech': 'Çekçe',
+  'lang.chinese_simplified': 'Çince (basitleştirilmiş)',
+  'lang.japanese': 'Japonca',
+
 };
 
 const sv: Record<string, string> = {
@@ -7280,7 +7371,18 @@ const sv: Record<string, string> = {
   'edit.toolbar_text': 'Text',
   'edit.undo_btn': '↩ Ångra',
   'edit.undo_title': 'Ångra (Ctrl+Z)',
-  'edit.local_saved': 'Alla ändringar sparas lokalt.',
+  'edit.local_saved': 'Alla ändringar sparas lokalt.',  'lang.english': 'Engelska',
+  'lang.polish': 'polska',
+  'lang.german': 'Tyska',
+  'lang.french': 'Franska',
+  'lang.spanish': 'Spanska',
+  'lang.italian': 'Italienska',
+  'lang.russian': 'Ryska',
+  'lang.ukrainian': 'Ukrainska',
+  'lang.czech': 'Tjeckiska',
+  'lang.chinese_simplified': 'Kinesiska (förenklad)',
+  'lang.japanese': 'japanska',
+
 };
 
 const no: Record<string, string> = {
@@ -7998,7 +8100,18 @@ const no: Record<string, string> = {
   'edit.toolbar_text': 'Tekst',
   'edit.undo_btn': '↩ Angre',
   'edit.undo_title': 'Angre (Ctrl+Z)',
-  'edit.local_saved': 'Alle endringer blir lagret lokalt.',
+  'edit.local_saved': 'Alle endringer blir lagret lokalt.',  'lang.english': 'Engelsk',
+  'lang.polish': 'Polsk',
+  'lang.german': 'tysk',
+  'lang.french': 'Fransk',
+  'lang.spanish': 'Spansk',
+  'lang.italian': 'Italiensk',
+  'lang.russian': 'Russisk',
+  'lang.ukrainian': 'Ukrainsk',
+  'lang.czech': 'Tsjekkisk',
+  'lang.chinese_simplified': 'Kinesisk (forenklet)',
+  'lang.japanese': 'Japansk',
+
 };
 
 const ja: Record<string, string> = {
@@ -8716,7 +8829,18 @@ const ja: Record<string, string> = {
   'edit.toolbar_text': 'テキスト',
   'edit.undo_btn': '↩ 元に戻す',
   'edit.undo_title': '元に戻す (Ctrl+Z)',
-  'edit.local_saved': 'すべての変更はローカルに保存されます。',
+  'edit.local_saved': 'すべての変更はローカルに保存されます。',  'lang.english': '英語',
+  'lang.polish': 'ポーランド語',
+  'lang.german': 'ドイツ語',
+  'lang.french': 'フランス語',
+  'lang.spanish': 'スペイン語',
+  'lang.italian': 'イタリア語',
+  'lang.russian': 'ロシア語',
+  'lang.ukrainian': 'ウクライナ語',
+  'lang.czech': 'チェコ語',
+  'lang.chinese_simplified': '中国語（簡体字）',
+  'lang.japanese': '日本語',
+
 };
 
 const hi: Record<string, string> = {
@@ -9435,7 +9559,18 @@ const hi: Record<string, string> = {
   'edit.toolbar_text': 'पाठ',
   'edit.undo_btn': '↩ पूर्ववत करें',
   'edit.undo_title': 'पूर्ववत करें (Ctrl+Z)',
-  'edit.local_saved': 'सभी परिवर्तन स्थानीय रूप से सहेजे जाते हैं।',
+  'edit.local_saved': 'सभी परिवर्तन स्थानीय रूप से सहेजे जाते हैं।',  'lang.english': 'अंग्रेजी',
+  'lang.polish': 'पोलिश',
+  'lang.german': 'जर्मन',
+  'lang.french': 'फ्रेंच',
+  'lang.spanish': 'स्पेनिश',
+  'lang.italian': 'इतालवी',
+  'lang.russian': 'रूसी',
+  'lang.ukrainian': 'यूक्रेनी',
+  'lang.czech': 'चेक',
+  'lang.chinese_simplified': 'चीनी (सरल)',
+  'lang.japanese': 'जापानी',
+
 };
 
 const ar: Record<string, string> = {
@@ -10191,7 +10326,18 @@ const ar: Record<string, string> = {
   'edit.toolbar_text': 'نص',
   'edit.undo_btn': '↩ تراجع',
   'edit.undo_title': 'تراجع (Ctrl+Z)',
-  'edit.local_saved': 'جميع التغييرات تُحفظ محليًا.',
+  'edit.local_saved': 'جميع التغييرات تُحفظ محليًا.',  'lang.english': 'الإنجليزية',
+  'lang.polish': 'بولندي',
+  'lang.german': 'الألمانية',
+  'lang.french': 'الفرنسية',
+  'lang.spanish': 'الإسبانية',
+  'lang.italian': 'الإيطالية',
+  'lang.russian': 'الروسية',
+  'lang.ukrainian': 'الأوكرانية',
+  'lang.czech': 'التشيكية',
+  'lang.chinese_simplified': 'الصينية (المبسطة)',
+  'lang.japanese': 'اليابانية',
+
 };
 const fa: Record<string, string> = {
   'back.to_home': '← بازگشت به صفحه اصلی',
@@ -10946,7 +11092,18 @@ const fa: Record<string, string> = {
   'edit.toolbar_text': 'متن',
   'edit.undo_btn': '↩ بازگشت',
   'edit.undo_title': 'بازگشت (Ctrl+Z)',
-  'edit.local_saved': 'همه تغییرات به صورت محلی ذخیره می‌شوند.',
+  'edit.local_saved': 'همه تغییرات به صورت محلی ذخیره می‌شوند.',  'lang.english': 'انگلیسی',
+  'lang.polish': 'لهستانی',
+  'lang.german': 'آلمانی',
+  'lang.french': 'فرانسوی',
+  'lang.spanish': 'اسپانیایی',
+  'lang.italian': 'ایتالیایی',
+  'lang.russian': 'روسی',
+  'lang.ukrainian': 'اوکراینی',
+  'lang.czech': 'چکى',
+  'lang.chinese_simplified': 'چینی (سادگی)',
+  'lang.japanese': 'ژاپنی',
+
 };
 const zh: Record<string, string> = {
   'back.to_home': '← 返回主页',
@@ -11701,7 +11858,18 @@ const zh: Record<string, string> = {
   'edit.toolbar_text': '文本',
   'edit.undo_btn': '↩ 撤销',
   'edit.undo_title': '撤销 (Ctrl+Z)',
-  'edit.local_saved': '所有更改都会被本地保存。',
+  'edit.local_saved': '所有更改都会被本地保存。',  'lang.english': '英语',
+  'lang.polish': '波兰语',
+  'lang.german': '德语',
+  'lang.french': '法语',
+  'lang.spanish': '西班牙语',
+  'lang.italian': '意大利语',
+  'lang.russian': '俄语',
+  'lang.ukrainian': '乌克兰语',
+  'lang.czech': '捷克语',
+  'lang.chinese_simplified': '汉语（简体）',
+  'lang.japanese': '日语',
+
 };
 
 export const all: Record<string, Record<string, string>> = {

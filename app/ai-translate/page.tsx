@@ -6,22 +6,23 @@ import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 
-const LANGUAGES = [
-  { value: 'angielski', label: 'Angielski' },
-  { value: 'polski', label: 'Polski' },
-  { value: 'niemiecki', label: 'Niemiecki' },
-  { value: 'francuski', label: 'Francuski' },
-  { value: 'hiszpański', label: 'Hiszpański' },
-  { value: 'włoski', label: 'Włoski' },
-  { value: 'rosyjski', label: 'Rosyjski' },
-  { value: 'ukraiński', label: 'Ukraiński' },
-  { value: 'czeski', label: 'Czeski' },
-  { value: 'chiński (uproszczony)', label: 'Chiński (uproszczony)' },
-  { value: 'japoński', label: 'Japoński' },
+const LANG_KEYS = [
+  { value: 'angielski', key: 'lang.english' },
+  { value: 'polski', key: 'lang.polish' },
+  { value: 'niemiecki', key: 'lang.german' },
+  { value: 'francuski', key: 'lang.french' },
+  { value: 'hiszpański', key: 'lang.spanish' },
+  { value: 'włoski', key: 'lang.italian' },
+  { value: 'rosyjski', key: 'lang.russian' },
+  { value: 'ukraiński', key: 'lang.ukrainian' },
+  { value: 'czeski', key: 'lang.czech' },
+  { value: 'chiński (uproszczony)', key: 'lang.chinese_simplified' },
+  { value: 'japoński', key: 'lang.japanese' },
 ];
 
 export default function AiTranslate() {
   const { locale } = useLocale();
+  const LANGUAGES = LANG_KEYS.map(l => ({ value: l.value, label: t(l.key, locale) }));
   const [file, setFile] = useState<File | null>(null);
   const [targetLang, setTargetLang] = useState('angielski');
   const [loading, setLoading] = useState(false);
