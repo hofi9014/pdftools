@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ikony - warianty</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+<!-- Phosphor -->
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #faf6f1;
+  color: #3c2a1e;
+  padding: 40px;
+}
+h1 { font-size: 28px; margin-bottom: 8px; }
+.sub { color: #7a5c3a; margin-bottom: 40px; }
+.pack {
+  background: #fff;
+  border: 1px solid #e0d5c8;
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 32px;
+}
+.pack h2 { font-size: 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: 0.15s;
+  cursor: default;
+  text-align: center;
+}
+.item:hover { border-color: #c7a97a; background: #fdfaf5; }
+.item svg { display: block; }
+.item .label { font-size: 11px; color: #7a5c3a; line-height: 1.3; }
+.ph { font-size: 28px; color: #5c3d2a; }
+</style>
+</head>
+<body>
+
+<h1>🧩 Porównanie stylów ikon</h1>
+<p class="sub">Trzy biblioteki SVG — kliknij wybrany wariant, a wdrożę go na stronę.</p>
+
+<!-- 1. Lucide -->
+<div class="pack" id="lucide">
+  <h2>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B6B4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+    Lucide Icons
+    <span style="font-size:12px;color:#aaa;font-weight:400;">— minimalistyczne, cienkie linie</span>
+  </h2>
+  <div class="grid" id="lucide-grid"></div>
+</div>
+
+<!-- 2. Heroicons -->
+<div class="pack" id="heroicons">
+  <h2>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B6B4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+    Heroicons (Outline)
+    <span style="font-size:12px;color:#aaa;font-weight:400;">— solidniejsze, 1.5px stroke</span>
+  </h2>
+  <div class="grid" id="heroicons-grid"></div>
+</div>
+
+<!-- 3. Phosphor -->
+<div class="pack" id="phosphor">
+  <h2>
+    <i class="ph ph-note-pencil" style="font-size:24px;color:#8B6B4A"></i>
+    Phosphor Icons
+    <span style="font-size:12px;color:#aaa;font-weight:400;">— regularny, można zmienić weight</span>
+  </h2>
+  <div class="grid" id="phosphor-grid"></div>
+</div>
+
+<script>
+// Narzędzia do pokazania
+const tools = [
+  { id: 'merge', label: 'Połącz PDF' },
+  { id: 'split', label: 'Podziel PDF' },
+  { id: 'compress', label: 'Kompresuj' },
+  { id: 'rotate', label: 'Obróć' },
+  { id: 'crop', label: 'Przytnij' },
+  { id: 'delete', label: 'Usuń strony' },
+  { id: 'extract', label: 'Wyodrębnij' },
+  { id: 'reorder', label: 'Zmień kolejność' },
+  { id: 'add-page', label: 'Dodaj stronę' },
+  { id: 'edit', label: 'Edytuj PDF' },
+  { id: 'page-numbers', label: 'Numery stron' },
+  { id: 'watermark', label: 'Znak wodny' },
+  { id: 'redact', label: 'Redaguj' },
+  { id: 'flatten', label: 'Spłaszcz' },
+  { id: 'metadata', label: 'Metadane' },
+  { id: 'word', label: 'PDF → Word' },
+  { id: 'wordtopdf', label: 'Word → PDF' },
+  { id: 'jpgTopdf', label: 'Obrazy → PDF' },
+  { id: 'images', label: 'PDF → Obrazy' },
+  { id: 'excel', label: 'PDF → Excel' },
+  { id: 'excel2pdf', label: 'Excel → PDF' },
+  { id: 'ppt', label: 'PDF → PowerPoint' },
+  { id: 'openoffice', label: 'OpenOffice → PDF' },
+  { id: 'txt', label: 'PDF → TXT' },
+  { id: 'svg', label: 'PDF → SVG' },
+  { id: 'epub', label: 'PDF → EPUB' },
+  { id: 'html', label: 'HTML → PDF' },
+  { id: 'html2pdf', label: 'PDF → HTML' },
+  { id: 'url', label: 'URL → PDF' },
+  { id: 'protect', label: 'Zabezpiecz' },
+  { id: 'unlock', label: 'Odblokuj' },
+  { id: 'sign', label: 'Podpisz' },
+  { id: 'aichat', label: 'AI Chat' },
+  { id: 'aisummary', label: 'AI Streszczenie' },
+  { id: 'translate', label: 'Tłumacz AI' },
+  { id: 'ocr', label: 'OCR' },
+  { id: 'compare', label: 'Porównaj' },
+  { id: 'fillform', label: 'Wypełnij formularz' },
+  { id: 'pdfa', label: 'PDF/A' },
+  { id: 'guide', label: 'Jak to działa' },
+  { id: 'home', label: 'Strona Główna' },
+];
+
+// Mapowanie narzędzi na ikony Lucide
+const lucideMap = {
+  merge: 'files',
+  split: 'file-down',
+  compress: 'archive',
+  rotate: 'rotate-cw',
+  crop: 'crop',
+  delete: 'trash-2',
+  extract: 'file-output',
+  reorder: 'list',
+  'add-page': 'file-plus',
+  edit: 'pencil-line',
+  'page-numbers': 'list-ordered',
+  watermark: 'droplets',
+  redact: 'eye-off',
+  flatten: 'layers',
+  metadata: 'info',
+  word: 'file-text',
+  wordtopdf: 'file-input',
+  jpgTopdf: 'image-plus',
+  images: 'image',
+  excel: 'table',
+  excel2pdf: 'table',
+  ppt: 'presentation',
+  openoffice: 'file-text',
+  txt: 'file-text',
+  svg: 'file-image',
+  epub: 'book',
+  html: 'file-code',
+  html2pdf: 'file-code',
+  url: 'globe',
+  protect: 'lock',
+  unlock: 'unlock',
+  sign: 'pen',
+  aichat: 'bot',
+  aisummary: 'file-text',
+  translate: 'languages',
+  ocr: 'scan',
+  compare: 'files',
+  fillform: 'check-square',
+  pdfa: 'archive',
+  guide: 'book-open',
+  home: 'home',
+};
+const lucideFallback = 'file';
+
+// Heroicons map (nazwy bez rozszerzenia)
+const heroMap = {
+  merge: 'document',
+  split: 'document-arrow-down',
+  compress: 'archive-box',
+  rotate: 'arrow-path-rounded-square',
+  crop: 'crop',
+  delete: 'trash',
+  extract: 'document-arrow-up',
+  reorder: 'bars-3',
+  'add-page': 'document-plus',
+  edit: 'pencil',
+  'page-numbers': 'list-ol',
+  watermark: 'beaker',
+  redact: 'eye-slash',
+  flatten: 'layers',
+  metadata: 'information-circle',
+  word: 'document-text',
+  wordtopdf: 'document-arrow-up',
+  jpgTopdf: 'photo-plus',
+  images: 'photo',
+  excel: 'table-cells',
+  excel2pdf: 'table-cells',
+  ppt: 'presentation-chart-bar',
+  openoffice: 'document-text',
+  txt: 'document-text',
+  svg: 'photo',
+  epub: 'book-open',
+  html: 'code-bracket',
+  html2pdf: 'code-bracket',
+  url: 'globe-alt',
+  protect: 'lock-closed',
+  unlock: 'lock-open',
+  sign: 'pencil-square',
+  aichat: 'sparkles',
+  aisummary: 'document-text',
+  translate: 'language',
+  ocr: 'document-magnifying-glass',
+  compare: 'arrows-right-left',
+  fillform: 'check-circle',
+  pdfa: 'archive-box',
+  guide: 'book-open',
+  home: 'home',
+};
+const heroFallback = 'document';
+
+// Lucide SVG
+function lucideSvg(name) {
+  // Używamy prostych SVG inline zamiast dynamicznego ładowania
+  const icons = {
+    files: '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>',
+    'file-down': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/>',
+    archive: '<path d="M20 6v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6"/><path d="M22 6H2"/><path d="M8 12h8"/><path d="M8 16h6"/>',
+    'rotate-cw': '<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>',
+    crop: '<path d="M6 6v8a2 2 0 0 0 2 2h8"/><path d="M18 18V6a2 2 0 0 0-2-2H8"/>',
+    'trash-2': '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>',
+    'file-output': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/>',
+    list: '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+    'file-plus': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>',
+    'pencil-line': '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/>',
+    'list-ordered': '<line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/>',
+    droplets: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5S12 2 12 2S8 10 5 14.5A7 7 0 0 0 12 22Z"/><line x1="12" y1="18" x2="12" y2="14"/><line x1="10" y1="16" x2="14" y2="16"/>',
+    'eye-off': '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>',
+    layers: '<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
+    info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+    'file-text': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
+    'file-input': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/>',
+    'image-plus': '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4"/><line x1="15" y1="3" x2="15" y2="9"/><line x1="12" y1="6" x2="18" y2="6"/><circle cx="9" cy="13" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L14 13"/>',
+    image: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+    table: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>',
+    presentation: '<path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/>',
+    book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+    'file-code': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="10 13 8 15 10 17"/><polyline points="14 13 16 15 14 17"/>',
+    globe: '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+    lock: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    unlock: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>',
+    pen: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+    bot: '<path d="M12 8V4m0 4a4 4 0 0 1 4 4v4a4 4 0 0 1-4 4m0-12a4 4 0 0 0-4 4v4a4 4 0 0 0 4 4"/><rect x="8" y="4" width="8" height="4" rx="2"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/><path d="M9 17c1.5-1 4.5-1 6 0"/>',
+    languages: '<path d="M5 8h14M8 4v4m8-4v4"/><circle cx="12" cy="14" r="5"/><path d="M10 14h4"/><path d="M12 10v8"/>',
+    scan: '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M3 17v2a2 2 0 0 0 2 2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M17 21h2a2 2 0 0 0 2-2v-2"/><rect x="7" y="9" width="10" height="6" rx="1"/>',
+    'check-square': '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><polyline points="9 12 11 14 15 10"/>',
+    'book-open': '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+    home: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  };
+  const svg = icons[name] || icons[Object.keys(icons)[0]];
+  return `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5c3d2a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${svg}</svg>`;
+}
+
+// Heroicons SVG (inline uproszczone)
+function heroSvg(name) {
+  const icons = {
+    document: '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>',
+    'document-arrow-down': '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>',
+    'archive-box': '<path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/>',
+    'arrow-path-rounded-square': '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3"/>',
+    crop: '<path stroke-linecap="round" stroke-linejoin="round" d="M6 13.5V3.75m0 9.75a1.5 1.5 0 0 1-1.5-1.5m1.5 0H3.75m0 0A1.5 1.5 0 0 1 2.25 12m1.5 0h7.5m-7.5 0V6m0 6v6.75m0 0A1.5 1.5 0 0 0 6 20.25M6 20.25h7.5m-7.5 0H18m3.75 0V12M21.75 12a1.5 1.5 0 0 1-1.5 1.5m1.5-1.5v-7.5m0 7.5h-7.5m-7.5-7.5V9m0-3.75v-1.5"/>',
+    trash: '<path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/>',
+    'document-arrow-up': '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>',
+    'bars-3': '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>',
+    'document-plus': '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>',
+    pencil: '<path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/>',
+    'list-ol': '<path stroke-linecap="round" stroke-linejoin="round" d="M14 6h7M14 12h7M14 18h7M3 6h.008v.008H3V6Zm0 6h.008v.008H3V12Zm0 6h.008v.008H3V18Zm0-15v3m0 0h3m-3 0H3m0 9h.008v.008H3V12Zm0 6h.008v.008H3V18Zm0 3h3m-3 0v-1.5m0 1.5h3"/>',
+    beaker: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/>',
+    'eye-slash': '<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/>',
+    layers: '<path stroke-linecap="round" stroke-linejoin="round" d="M6 6V4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V6m0 0v9m0-9h3m-3 0H6m12 0v9m0-9H6m12 9v2.25A1.5 1.5 0 0 1 16.5 21h-9A1.5 1.5 0 0 1 6 19.5V15m12 0H6"/>',
+    'information-circle': '<path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/>',
+    'document-text': '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>',
+    photo: '<path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.41a2.25 2.25 0 0 1 3.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>',
+    'photo-plus': '<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75 5.159 5.159A2.25 2.25 0 0 1 7.284 3.5h9.432a2.25 2.25 0 0 1 2.125 1.659l2.91 10.591m-18 0 1.591 1.591a2.25 2.25 0 0 0 3.182 0l3.409-3.409m-3.182 0 .796-.795a2.25 2.25 0 0 1 3.182 0l2.614 2.614M15.75 12.75l.75-.75a2.25 2.25 0 0 1 3.182 0l1.409 1.409M18 3.75v6m-3-3h6"/>',
+    'table-cells': '<path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M10.875 12h2.25m-2.25 0a1.125 1.125 0 0 1-1.125 1.125M13.125 12c.621 0 1.125.504 1.125 1.125m-2.25 0v4.5m0-4.5c0 .621-.504 1.125-1.125 1.125m2.25 0a1.125 1.125 0 0 0 1.125 1.125M12 17.625v-4.5m0 4.5c0 .621.504 1.125 1.125 1.125M12 17.625c0 .621-.504 1.125-1.125 1.125m0 0h2.25"/>',
+    'presentation-chart-bar': '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5m.75-9 3-3 2.148 2.148A12.061 12.061 0 0 1 16.5 7.605"/>',
+    'book-open': '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/>',
+    'code-bracket': '<path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m5.25-3 2.25 16.5"/>',
+    'globe-alt': '<path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418"/>',
+    'lock-closed': '<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/>',
+    'lock-open': '<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/>',
+    'pencil-square': '<path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/>',
+    sparkles: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"/>',
+    language: '<path stroke-linecap="round" stroke-linejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.78.147 2.653.255m-9.334 12.138a8.852 8.852 0 0 0 6.08 1.716M3 17.502a48.6 48.6 0 0 0 6.08 1.716m0 0a48.663 48.663 0 0 0 4.754-.454"/>',
+    'document-magnifying-glass': '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Zm3.75 11.625a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/>',
+    'arrows-right-left': '<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>',
+    'check-circle': '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>',
+    home: '<path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>',
+  };
+  const svg = icons[name] || icons[Object.keys(icons)[0]];
+  return `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5c3d2a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${svg}</svg>`;
+}
+
+// Phosphor - używamy tagów <i> z klasami phosphor
+function phClass(name) {
+  const map = {
+    merge: 'ph-files',
+    split: 'ph-arrow-bend-down-left',
+    compress: 'ph-archive',
+    rotate: 'ph-arrow-clockwise',
+    crop: 'ph-crop',
+    delete: 'ph-trash',
+    extract: 'ph-arrow-square-up',
+    reorder: 'ph-list-bullets',
+    'add-page': 'ph-file-plus',
+    edit: 'ph-pencil',
+    'page-numbers': 'ph-list-numbers',
+    watermark: 'ph-drop',
+    redact: 'ph-eye-closed',
+    flatten: 'ph-stack',
+    metadata: 'ph-info',
+    word: 'ph-file-text',
+    wordtopdf: 'ph-file-arrow-up',
+    jpgTopdf: 'ph-images',
+    images: 'ph-image',
+    excel: 'ph-table',
+    excel2pdf: 'ph-table',
+    ppt: 'ph-presentation',
+    openoffice: 'ph-file-text',
+    txt: 'ph-file-text',
+    svg: 'ph-file-image',
+    epub: 'ph-book',
+    html: 'ph-file-code',
+    html2pdf: 'ph-file-code',
+    url: 'ph-globe',
+    protect: 'ph-lock',
+    unlock: 'ph-lock-open',
+    sign: 'ph-signature',
+    aichat: 'ph-robot',
+    aisummary: 'ph-file-text',
+    translate: 'ph-translate',
+    ocr: 'ph-magnifying-glass',
+    compare: 'ph-arrows-left-right',
+    fillform: 'ph-check-square',
+    pdfa: 'ph-archive',
+    guide: 'ph-book-open',
+    home: 'ph-house',
+  };
+  return map[name] || 'ph-file';
+}
+
+function renderGrid(containerId, type) {
+  const grid = document.getElementById(containerId);
+  tools.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    if (type === 'lucide') div.innerHTML = lucideSvg(lucideMap[t.id] || lucideFallback) + `<div class="label">${t.label}</div>`;
+    else if (type === 'heroicons') div.innerHTML = heroSvg(heroMap[t.id] || heroFallback) + `<div class="label">${t.label}</div>`;
+    else if (type === 'phosphor') div.innerHTML = `<i class="${phClass(t.id)} ph" style="font-size:28px;color:#5c3d2a"></i>` + `<div class="label">${t.label}</div>`;
+    grid.appendChild(div);
+  });
+}
+
+renderGrid('lucide-grid', 'lucide');
+renderGrid('heroicons-grid', 'heroicons');
+renderGrid('phosphor-grid', 'phosphor');
+</script>
+
+<style>
+/* phosphor fix */
+.ph { line-height: 1; }
+</style>
+</body>
+</html>

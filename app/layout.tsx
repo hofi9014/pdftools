@@ -44,13 +44,8 @@ export const metadata: Metadata = {
     description: "40 darmowych narzedzi PDF: scalaj, dziel, kompresuj, konwertuj, edytuj PDF, tlumacz AI, podpisz PDF, OCR, AI Chat, AI Streszczenie, porownaj PDF, PowerPoint, HTML.",
   },
   icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/icon-192.svg", sizes: "192x192", type: "image/svg+xml" },
-      { url: "/icon-512.svg", sizes: "512x512", type: "image/svg+xml" },
-    ],
-    apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
+    icon: { url: "/icon", sizes: "32x32", type: "image/png" },
+    apple: { url: "/logo.png", sizes: "180x180" },
   },
   manifest: "/manifest.webmanifest",
   other: {
@@ -91,7 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script id="google-analytics" strategy="afterInteractive">
           {`window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
-          gtag('consent', 'default', { analytics_storage: 'denied' });
+          gtag('consent', 'default', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
           gtag('js', new Date());
           gtag('config', 'G-KN3C22GVP8', { anonymize_ip: true });`}
         </Script>

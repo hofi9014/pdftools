@@ -6,7 +6,7 @@ import { t } from '@/lib/i18n';
 const content = {
   pl: {
     title: 'Polityka prywatności',
-    updated: 'Ostatnia aktualizacja: 25 czerwca 2026',
+    updated: 'Ostatnia aktualizacja: 30 czerwca 2026',
     sections: [
       {
         h: '1. Postanowienia ogólne',
@@ -50,6 +50,7 @@ const content = {
         h: '5. Odbiorcy danych',
         p: 'Dane mogą być przekazywane następującym kategoriom odbiorców:',
         items: [
+          'Google LLC (Google Analytics) — anonimowe dane statystyczne o ruchu na stronie, na podstawie Twojej zgody.',
           'Podmioty przetwarzające na nasze zlecenie (hosting, OpenRouter.ai) — na podstawie umowy powierzenia przetwarzania danych.',
           'Organy uprawnione na podstawie przepisów prawa — wyłącznie w przypadkach przewidzianych prawem.',
         ],
@@ -93,12 +94,17 @@ const content = {
           'Limit rozmiaru pliku — maksymalnie 100 MB.',
           'Weryfikacja typu pliku — sprawdzamy sygnaturę (magic bytes) przed przetworzeniem.',
           'Brak logowania — nie wymagamy rejestracji ani logowania.',
-          'Brak cookies śledzących — nie używamy cookies reklamowych ani analitycznych stron trzecich.',
         ],
       },
       {
-        h: '10. LocalStorage i cookies',
-        p: 'Strona korzysta wyłącznie z localStorage (pamięć lokalna przeglądarki) do przechowywania preferencji użytkownika (motyw, język). Nie używamy cookies służących do śledzenia, targetowania reklam ani analityki behawioralnej. Dane w localStorage są w pełni kontrolowane przez użytkownika i mogą być w każdej chwili usunięte.',
+        h: '10. Google Analytics i zgoda na analitykę',
+        p: 'Serwis korzysta z Google Analytics (Google LLC, USA) do anonimowej analizy ruchu. Google Analytics zbiera zagregowane dane statystyczne, takie jak: liczba odwiedzin, czas spędzony na stronie, typ przeglądarki, przybliżona lokalizacja (poziom kraju), źródło ruchu. Dane są anonimizowane (anonymize_ip: true).',
+        items: [
+          'Przy pierwszej wizycie wyświetlany jest baner zgody — Google Analytics jest aktywowany dopiero po kliknięciu "Akceptuję".',
+          'W każdej chwili możesz wycofać zgodę, usuwając zapis "cookie-consent" z localStorage przeglądarki.',
+          'Google Analytics nie jest używane do targetowania reklam ani profilowania behawioralnego.',
+          'Dane w localStorage (motyw, język, preferencje zgód) są w pełni kontrolowane przez użytkownika i mogą być w każdej chwili usunięte.',
+        ],
       },
       {
         h: '11. Funkcje AI i OpenRouter',
@@ -112,7 +118,7 @@ const content = {
   },
   en: {
     title: 'Privacy Policy',
-    updated: 'Last updated: June 25, 2026',
+    updated: 'Last updated: June 30, 2026',
     sections: [
       {
         h: '1. General provisions',
@@ -156,6 +162,7 @@ const content = {
         h: '5. Data recipients',
         p: 'Data may be transferred to the following categories of recipients:',
         items: [
+          'Google LLC (Google Analytics) — anonymized traffic statistics, based on your consent.',
           'Processors acting on our behalf (hosting, OpenRouter.ai) — based on data processing agreements.',
           'Authorities entitled under legal provisions — only in cases provided for by law.',
         ],
@@ -199,12 +206,17 @@ const content = {
           'File size limit — maximum 100 MB.',
           'File type verification — we check the file signature (magic bytes) before processing.',
           'No login required — we do not require registration or login.',
-          'No tracking cookies — we do not use advertising or third-party analytical cookies.',
         ],
       },
       {
-        h: '10. LocalStorage and cookies',
-        p: 'The website only uses localStorage (browser local storage) to store user preferences (theme, language). We do not use cookies for tracking, ad targeting, or behavioral analytics. localStorage data is fully controlled by the user and can be deleted at any time.',
+        h: '10. Google Analytics and analytics consent',
+        p: 'This website uses Google Analytics (Google LLC, USA) for anonymous traffic analysis. Google Analytics collects aggregated statistical data such as: visit count, time spent on site, browser type, approximate location (country level), traffic source. Data is anonymized (anonymize_ip: true).',
+        items: [
+          'On first visit, a consent banner is shown — Google Analytics is only activated after clicking "Accept".',
+          'You can withdraw consent at any time by removing the "cookie-consent" entry from your browser\'s localStorage.',
+          'Google Analytics is not used for ad targeting or behavioral profiling.',
+          'Data in localStorage (theme, language, consent preferences) is fully controlled by the user and can be deleted at any time.',
+        ],
       },
       {
         h: '11. AI functions and OpenRouter',

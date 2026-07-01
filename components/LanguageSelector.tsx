@@ -4,13 +4,15 @@ import { locales, t } from '@/lib/i18n';
 import { useState, useRef, useEffect } from 'react';
 
 const flagMap: Record<string, string> = {
-  pl: '🇵🇱', en: '🇬🇧', es: '🇪🇸', de: '🇩🇪', fr: '🇫🇷', it: '🇮🇹', pt: '🇵🇹',
-  is: '🇮🇸', tr: '🇹🇷', sv: '🇸🇪', no: '🇳🇴', ja: '🇯🇵', hi: '🇮🇳',
+  ar: '🇸🇦', de: '🇩🇪', en: '🇬🇧', es: '🇪🇸', fa: '🇮🇷', fr: '🇫🇷', hi: '🇮🇳',
+  is: '🇮🇸', it: '🇮🇹', ja: '🇯🇵', no: '🇳🇴', pl: '🇵🇱', pt: '🇵🇹',
+  sv: '🇸🇪', tr: '🇹🇷', zh: '🇨🇳',
 };
 
 const labelMap: Record<string, string> = {
-  pl: 'Polski', en: 'English', es: 'Español', de: 'Deutsch', fr: 'Français', it: 'Italiano', pt: 'Português',
-  is: 'Íslenska', tr: 'Türkçe', sv: 'Svenska', no: 'Norsk', ja: '日本語', hi: 'हिन्दी',
+  ar: 'العربية', de: 'Deutsch', en: 'English', es: 'Español', fa: 'فارسی',
+  fr: 'Français', hi: 'हिन्दी', is: 'Íslenska', it: 'Italiano', ja: '日本語',
+  no: 'Norsk', pl: 'Polski', pt: 'Português', sv: 'Svenska', tr: 'Türkçe', zh: '中文',
 };
 
 export default function LanguageSelector() {

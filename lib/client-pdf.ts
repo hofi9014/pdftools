@@ -6,9 +6,10 @@ export async function initPdfjs(): Promise<void> {
   if (pdfjsInitPromise) return pdfjsInitPromise;
   pdfjsInitPromise = (async () => {
     const pdfjsLib = await import('pdfjs-dist');
-    // @ts-expect-error - pdf worker has no types
-    const workerSrc = (await import('pdfjs-dist/build/pdf.worker.min.mjs')).default;
-    pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(new Blob([workerSrc], { type: 'application/javascript' }));
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.min.mjs',
+      import.meta.url
+    ).toString();
   })();
   return pdfjsInitPromise;
 }
@@ -830,31 +831,136 @@ function rgbFromHex(hex: string) {
   return rgb(r, g, b);
 }
 
-export async function editPdfClient(file: File, pageIndex: number, elements: { type: 'text' | 'rect'; x: number; y: number; text?: string; size?: number; color?: string; width?: number; height?: number; opacity?: number }[]): Promise<Blob> {
+export type PdfEditElement = {
+  type: 'text' | 'rect' | 'line' | 'arrow' | 'circle' | 'highlight' | 'image' | 'freehand';
+  x: number;
+  y: number;
+  text?: string;
+  size?: number;
+  color?: string;
+  width?: number;
+  height?: number;
+  opacity?: number;
+  font?: 'Arial' | 'Times New Roman' | 'Courier New' | 'Georgia' | 'Verdana';
+  bold?: boolean;
+  italic?: boolean;
+  x2?: number;
+  y2?: number;
+  imageDataUrl?: string;
+  points?: { x: number; y: number }[];
+};
+
+export async function editPdfClient(file: File, pageIndex: number, elements: PdfEditElement[], pageWidth?: number, pageHeight?: number): Promise<Blob> {
   const buf = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(buf);
   const pages = pdfDoc.getPages();
-  if (pageIndex < 0 || pageIndex >= pages.length) throw new Error('Nieprawidłowy numer strony');
+  if (pageIndex < 0 || pageIndex >= pages.length) throw new Error('Invalid page number');
 
   const page = pages[pageIndex];
-  const { height } = page.getSize();
+  const { height: pdfHeight } = page.getSize();
+  const scaleY = pdfHeight / (pageHeight || pdfHeight);
+  const scaleX = pdfHeight / (pageHeight || pdfHeight);
 
   for (const el of elements) {
-    const normalizedY = height - el.y;
     const opacity = el.opacity ?? 1;
+    const sx = (pageWidth && pageWidth !== pdfHeight) ? (el.x / (pageWidth || pdfHeight)) * pdfHeight : el.x * scaleX;
+    const sy = pdfHeight - (el.y * scaleY);
+    const sColor = el.color || '#000000';
+
     if (el.type === 'rect') {
       page.drawRectangle({
-        x: el.x, y: normalizedY - (el.height || 20),
-        width: el.width || 100, height: el.height || 20,
-        color: el.color ? rgbFromHex(el.color) : rgb(1, 0, 0), opacity,
+        x: sx, y: sy - (el.height || 20) * scaleY,
+        width: (el.width || 100) * scaleX, height: (el.height || 20) * scaleY,
+        color: rgbFromHex(sColor), opacity,
         borderColor: rgb(0, 0, 0), borderWidth: 0,
       });
+    } else if (el.type === 'highlight') {
+      page.drawRectangle({
+        x: sx, y: sy - (el.height || 30) * scaleY,
+        width: (el.width || 200) * scaleX, height: (el.height || 30) * scaleY,
+        color: rgb(1, 1, 0), opacity: 0.3,
+        borderColor: rgb(1, 1, 0), borderWidth: 0,
+      });
+    } else if (el.type === 'line' && el.x2 !== undefined && el.y2 !== undefined) {
+      const sx2 = (pageWidth ? (el.x2 / pageWidth) * pdfHeight : el.x2 * scaleX);
+      const sy2 = pdfHeight - (el.y2 * scaleY);
+      page.drawLine({
+        start: { x: sx, y: sy }, end: { x: sx2, y: sy2 },
+        color: rgbFromHex(sColor), thickness: (el.size || 2) * scaleY, opacity,
+      });
+    } else if (el.type === 'arrow' && el.x2 !== undefined && el.y2 !== undefined) {
+      const sx2 = (pageWidth ? (el.x2 / pageWidth) * pdfHeight : el.x2 * scaleX);
+      const sy2 = pdfHeight - (el.y2 * scaleY);
+      page.drawLine({
+        start: { x: sx, y: sy }, end: { x: sx2, y: sy2 },
+        color: rgbFromHex(sColor), thickness: (el.size || 2) * scaleY, opacity,
+      });
+    } else if (el.type === 'circle') {
+      page.drawEllipse({
+        x: sx, y: sy,
+        xScale: ((el.width || 50) / 2) * scaleX,
+        yScale: ((el.height || 50) / 2) * scaleY,
+        color: rgbFromHex(sColor), opacity,
+      });
+    } else if (el.type === 'image' && el.imageDataUrl) {
+      try {
+        const imgData = el.imageDataUrl.split(',')[1];
+        const imgBytes = Uint8Array.from(atob(imgData), c => c.charCodeAt(0));
+        const isPng = el.imageDataUrl.startsWith('data:image/png');
+        const img = isPng ? await pdfDoc.embedPng(imgBytes) : await pdfDoc.embedJpg(imgBytes);
+        const dw = (el.width || 100) * scaleX;
+        const dh = (el.height || 100) * scaleY;
+        page.drawImage(img, { x: sx, y: sy - dh, width: dw, height: dh, opacity });
+      } catch {}
+    } else if (el.type === 'freehand' && el.points && el.points.length > 1) {
+      const fCanvas = document.createElement('canvas');
+      const fCtx = fCanvas.getContext('2d')!;
+      fCanvas.width = 2000;
+      fCanvas.height = 2000;
+      fCtx.strokeStyle = sColor;
+      fCtx.lineWidth = (el.size || 3) * 2;
+      fCtx.lineCap = 'round';
+      fCtx.lineJoin = 'round';
+      fCtx.beginPath();
+      fCtx.moveTo(el.points[0].x, el.points[0].y);
+      for (let i = 1; i < el.points.length; i++) {
+        fCtx.lineTo(el.points[i].x, el.points[i].y);
+      }
+      fCtx.stroke();
+      const fBlob = await new Promise<Blob>(resolve => fCanvas.toBlob(b => resolve(b!), 'image/png'));
+      const fBuf = new Uint8Array(await fBlob.arrayBuffer());
+      const fImg = await pdfDoc.embedPng(fBuf);
+      page.drawImage(fImg, {
+        x: sx, y: sy - 500,
+        width: 500 * scaleX, height: 500 * scaleY,
+        opacity,
+      });
     } else if (el.type === 'text' && el.text) {
-      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      const safeText = [...el.text].map(c => c.charCodeAt(0) < 128 ? c : '?').join('');
-      page.drawText(safeText, {
-        x: el.x, y: normalizedY, size: el.size || 12, font,
-        color: el.color ? rgbFromHex(el.color) : rgb(0, 0, 0), opacity,
+      const fontName = el.font || 'Arial';
+      const fontStyle = `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}`;
+      const fontSize = (el.size || 16) * scaleY * 2;
+      const fnt = `${fontStyle}${fontSize}px ${fontName}`;
+      const tCanvas = document.createElement('canvas');
+      const tCtx = tCanvas.getContext('2d')!;
+      tCtx.font = fnt;
+      const tMetrics = tCtx.measureText(el.text);
+      const tW = Math.ceil(tMetrics.width) + 8;
+      const tH = Math.ceil(fontSize * 1.4) + 8;
+      tCanvas.width = tW;
+      tCanvas.height = tH;
+      const tCtx2 = tCanvas.getContext('2d')!;
+      tCtx2.font = fnt;
+      tCtx2.fillStyle = sColor;
+      tCtx2.textBaseline = 'top';
+      tCtx2.fillText(el.text, 4, 4);
+      const tBlob2 = await new Promise<Blob>(resolve => tCanvas.toBlob(b => resolve(b!), 'image/png'));
+      const tBuf2 = new Uint8Array(await tBlob2.arrayBuffer());
+      const tImg = await pdfDoc.embedPng(tBuf2);
+      const tScale = (el.size || 16) / 16;
+      page.drawImage(tImg, {
+        x: sx, y: sy - (tH / 2) * scaleY * tScale,
+        width: tW * scaleX * tScale, height: tH * scaleY * tScale,
+        opacity,
       });
     }
   }

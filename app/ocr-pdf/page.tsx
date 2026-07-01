@@ -5,6 +5,42 @@ import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 
+const LANGUAGES = [
+  { value: 'pol', labelKey: 'page.ocr.lang_polish' },
+  { value: 'eng', labelKey: 'page.ocr.lang_english' },
+  { value: 'deu', labelKey: 'page.ocr.lang_german' },
+  { value: 'fra', labelKey: 'page.ocr.lang_french' },
+  { value: 'spa', labelKey: 'page.ocr.lang_spanish' },
+  { value: 'ita', labelKey: 'page.ocr.lang_italian' },
+  { value: 'rus', labelKey: 'page.ocr.lang_russian' },
+  { value: 'ara', labelKey: 'page.ocr.lang_arabic' },
+  { value: 'bul', labelKey: 'page.ocr.lang_bulgarian' },
+  { value: 'chi_sim', labelKey: 'page.ocr.lang_chinese_simplified' },
+  { value: 'chi_tra', labelKey: 'page.ocr.lang_chinese_traditional' },
+  { value: 'hrv', labelKey: 'page.ocr.lang_croatian' },
+  { value: 'ces', labelKey: 'page.ocr.lang_czech' },
+  { value: 'dan', labelKey: 'page.ocr.lang_danish' },
+  { value: 'nld', labelKey: 'page.ocr.lang_dutch' },
+  { value: 'fin', labelKey: 'page.ocr.lang_finnish' },
+  { value: 'ell', labelKey: 'page.ocr.lang_greek' },
+  { value: 'hin', labelKey: 'page.ocr.lang_hindi' },
+  { value: 'hun', labelKey: 'page.ocr.lang_hungarian' },
+  { value: 'ind', labelKey: 'page.ocr.lang_indonesian' },
+  { value: 'jpn', labelKey: 'page.ocr.lang_japanese' },
+  { value: 'kor', labelKey: 'page.ocr.lang_korean' },
+  { value: 'lit', labelKey: 'page.ocr.lang_lithuanian' },
+  { value: 'lav', labelKey: 'page.ocr.lang_latvian' },
+  { value: 'nor', labelKey: 'page.ocr.lang_norwegian' },
+  { value: 'por', labelKey: 'page.ocr.lang_portuguese' },
+  { value: 'ron', labelKey: 'page.ocr.lang_romanian' },
+  { value: 'srp', labelKey: 'page.ocr.lang_serbian' },
+  { value: 'slk', labelKey: 'page.ocr.lang_slovak' },
+  { value: 'slv', labelKey: 'page.ocr.lang_slovenian' },
+  { value: 'swe', labelKey: 'page.ocr.lang_swedish' },
+  { value: 'tur', labelKey: 'page.ocr.lang_turkish' },
+  { value: 'ukr', labelKey: 'page.ocr.lang_ukrainian' },
+];
+
 async function downloadBlob(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -23,6 +59,9 @@ export default function OCRPDF() {
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [language, setLanguage] = useState('pol');
+  const [recognizedText, setRecognizedText] = useState('');
+  const [ocrDone, setOcrDone] = useState(false);
+  const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
 
   const handleFiles = (newFiles: FileList | File[] | null) => {
     if (!newFiles || newFiles.length === 0) return;
@@ -32,11 +71,17 @@ export default function OCRPDF() {
     else setError('');
     setFiles(prev => [...prev, ...pdfs]);
     setSuccess(false);
+    setOcrDone(false);
+    setRecognizedText('');
+    setPdfData(null);
   };
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
     setSuccess(false);
+    setOcrDone(false);
+    setRecognizedText('');
+    setPdfData(null);
   };
 
   const handleOCR = async () => {
@@ -45,34 +90,60 @@ export default function OCRPDF() {
     setError('');
     setSuccess(false);
     setProgress(0);
+    setOcrDone(false);
+    setRecognizedText('');
+    setPdfData(null);
 
     try {
       const { ocrPdfClient } = await import('@/lib/client-ocr');
-      const batchResults: { name: string; data: Blob }[] = [];
+      const allText: string[] = [];
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const result = await ocrPdfClient(file, language);
-        const blob = new Blob([result as BlobPart], { type: 'application/pdf' });
-        batchResults.push({ name: file.name.replace('.pdf', '_ocr.pdf'), data: blob });
+        allText.push(result.text);
+        if (i === 0) setPdfData(result.pdfData);
         setProgress(i + 1);
       }
 
-      if (batchResults.length === 1) {
-        await downloadBlob(batchResults[0].data, batchResults[0].name);
-      } else {
-        const zip = new JSZip();
-        batchResults.forEach(r => zip.file(r.name, r.data));
-        const zipBlob = await zip.generateAsync({ type: 'blob' });
-        await downloadBlob(zipBlob, 'ocr-wyniki.zip');
-      }
-
+      const combinedText = allText.join('\n\n');
+      setRecognizedText(combinedText);
+      setOcrDone(true);
       setSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('error.generic', locale));
     } finally {
       setLoading(false);
     }
+  };
+
+  const downloadPDF = async () => {
+    if (!pdfData) return;
+    const blob = new Blob([pdfData as BlobPart], { type: 'application/pdf' });
+    const name = files.length === 1 ? files[0].name.replace('.pdf', '_ocr.pdf') : 'ocr-wyniki.pdf';
+    await downloadBlob(blob, name);
+  };
+
+  const downloadTXT = () => {
+    if (!recognizedText) return;
+    const blob = new Blob([recognizedText], { type: 'text/plain;charset=utf-8' });
+    const name = files.length === 1 ? files[0].name.replace('.pdf', '_ocr.txt') : 'ocr-wyniki.txt';
+    downloadBlob(blob, name);
+  };
+
+  const downloadDOCX = async () => {
+    if (!recognizedText) return;
+    const { Document, Packer, Paragraph, TextRun } = await import('docx');
+    const doc = new Document({
+      sections: [{
+        children: recognizedText.split('\n').map(line =>
+          new Paragraph({ children: [new TextRun(line || ' ')] })
+        ),
+      }],
+    });
+    const blob = await Packer.toBlob(doc);
+    const name = files.length === 1 ? files[0].name.replace('.pdf', '_ocr.docx') : 'ocr-wyniki.docx';
+    downloadBlob(blob, name);
   };
 
   return (
@@ -102,7 +173,7 @@ export default function OCRPDF() {
         <div className="tool-card rounded-2xl shadow-sm border mb-6">
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
             <p className="font-medium text-gray-700 dark:text-gray-300">{files.length} {t('files.count', locale)}</p>
-            <button onClick={() => { setFiles([]); setSuccess(false); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
+            <button onClick={() => { setFiles([]); setSuccess(false); setOcrDone(false); setRecognizedText(''); setPdfData(null); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
           </div>
           {files.map((file, i) => (
             <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -133,13 +204,9 @@ export default function OCRPDF() {
         <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.ocr.language_label', locale)}</h3>
         <select value={language} onChange={e => setLanguage(e.target.value)}
           className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 dark:border-blue-400 dark:focus:border-blue-400 bg-white dark:bg-gray-800 tool-heading">
-          <option value="pol">{t('page.ocr.lang_polish', locale)}</option>
-          <option value="eng">{t('page.ocr.lang_english', locale)}</option>
-          <option value="deu">{t('page.ocr.lang_german', locale)}</option>
-          <option value="fra">{t('page.ocr.lang_french', locale)}</option>
-          <option value="spa">{t('page.ocr.lang_spanish', locale)}</option>
-          <option value="ita">{t('page.ocr.lang_italian', locale)}</option>
-          <option value="rus">{t('page.ocr.lang_russian', locale)}</option>
+          {LANGUAGES.map(lang => (
+            <option key={lang.value} value={lang.value}>{t(lang.labelKey, locale)}</option>
+          ))}
         </select>
       </div>
 
@@ -149,17 +216,46 @@ export default function OCRPDF() {
       </div>
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
-        {success && (
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
-            ✅ {files.length > 1 ? t('page.ocr.success_zip', locale) : t('page.ocr.success_single', locale)}
-          </div>
-        )}
 
-      <button onClick={handleOCR} disabled={loading || files.length === 0}
-        className={`w-full py-4 rounded-2xl font-bold text-lg transition
-          ${loading || files.length === 0 ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
-        {loading ? `⏳ ${t('page.ocr.loading', locale)} ${progress}/${files.length}` : `🔍 ${t('page.ocr.button', locale)}`}
-      </button>
+      {!loading && !ocrDone && (
+        <button onClick={handleOCR} disabled={loading || files.length === 0}
+          className={`w-full py-4 rounded-2xl font-bold text-lg transition mb-6
+            ${loading || files.length === 0 ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
+          {loading ? `⏳ ${t('page.ocr.loading', locale)} ${progress}/${files.length}` : `🔍 ${t('page.ocr.button', locale)}`}
+        </button>
+      )}
+
+      {success && (
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
+          ✅ {files.length > 1 ? t('page.ocr.success_zip', locale) : t('page.ocr.success_single', locale)}
+        </div>
+      )}
+
+      {ocrDone && recognizedText && (
+        <div className="tool-card rounded-2xl border p-6 mb-6">
+          <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3">{t('page.ocr.preview_label', locale)}</h3>
+          <textarea readOnly value={recognizedText}
+            className="w-full h-64 border border-gray-200 dark:border-gray-600 rounded-xl p-4 text-sm font-mono bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 resize-y"
+          />
+          <div className="flex flex-wrap gap-3 mt-4">
+            <button onClick={downloadPDF} className="flex-1 min-w-[140px] py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition text-sm">
+              📄 {t('page.ocr.download_pdf', locale)}
+            </button>
+            <button onClick={downloadTXT} className="flex-1 min-w-[140px] py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-xl transition text-sm">
+              📝 {t('page.ocr.download_txt', locale)}
+            </button>
+            <button onClick={downloadDOCX} className="flex-1 min-w-[140px] py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition text-sm">
+              📃 {t('page.ocr.download_docx', locale)}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {ocrDone && !recognizedText && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 rounded-xl p-4 mb-6">
+          ⚠️ {t('page.ocr.no_text_found', locale)}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
         {[

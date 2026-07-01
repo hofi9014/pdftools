@@ -16,7 +16,7 @@ export function LocaleProvider({ children, defaultLocale }: { children: ReactNod
   useEffect(() => {
     setMounted(true);
     const saved = localStorage.getItem('locale') as Locale | null;
-    if (saved && ['pl','en','es','de','fr','it','pt','is','tr','sv','no','ja','hi'].includes(saved)) setLocale(saved);
+    if (saved && ['ar','de','en','es','fa','fr','hi','is','it','ja','no','pl','pt','sv','tr','zh'].includes(saved)) setLocale(saved);
   }, []);
 
   const handleSet = (l: Locale) => {

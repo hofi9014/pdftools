@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
+import { getCategoryIcon } from '@/lib/icons';
 import ThemeToggle from './ThemeToggle';
 import LanguageSelector from './LanguageSelector';
 import MobileMenu from './MobileMenu';
@@ -13,13 +14,12 @@ interface CatTool {
 
 interface Category {
   key: string;
-  icon: string;
   tools: CatTool[];
 }
 
 const categories: Category[] = [
   {
-    key: 'edit', icon: '✏️',
+    key: 'edit',
     tools: [
       { key: 'merge', href: '/merge' },
       { key: 'split', href: '/split' },
@@ -39,7 +39,7 @@ const categories: Category[] = [
     ],
   },
   {
-    key: 'convert', icon: '🔄',
+    key: 'convert',
     tools: [
       { key: 'word', href: '/pdf-to-word' },
       { key: 'wordtopdf', href: '/word-to-pdf' },
@@ -59,7 +59,7 @@ const categories: Category[] = [
     ],
   },
   {
-    key: 'secure', icon: '🔒',
+    key: 'secure',
     tools: [
       { key: 'protect', href: '/protect-pdf' },
       { key: 'unlock', href: '/unlock-pdf' },
@@ -67,7 +67,7 @@ const categories: Category[] = [
     ],
   },
   {
-    key: 'more', icon: '🧩',
+    key: 'more',
     tools: [
       { key: 'aichat', href: '/ai-chat' },
       { key: 'aisummary', href: '/ai-summary' },
@@ -86,10 +86,10 @@ export default function Header() {
   return (
     <header className="border-b border-[var(--coffee-border)] bg-[var(--coffee-surface)] backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 text-xl font-bold shrink-0" style={{ color: 'var(--coffee-text)' }}>
-          <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-[var(--coffee-accent)] to-[var(--coffee-gold)] flex items-center justify-center text-white text-sm font-bold shadow-[0_0_12px_var(--coffee-accent-glow)]">O</span>
-          <span className="hidden xs:inline">OptimaPDF</span>
-          <span className="xs:hidden">OP</span>
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <img src="/logo.png" alt="OptimaPDF" className="h-10 w-auto" />
+          <span className="hidden xs:inline text-xl font-bold" style={{ color: 'var(--coffee-text)' }}>OptimaPDF</span>
+          <span className="xs:hidden text-xl font-bold" style={{ color: 'var(--coffee-text)' }}>OP</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1 text-sm font-medium" style={{ color: 'var(--coffee-text-secondary)' }}>
@@ -97,7 +97,7 @@ export default function Header() {
           {categories.map(cat => (
             <div key={cat.key} className="relative group">
               <button className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition cursor-pointer whitespace-nowrap" style={{ color: 'var(--coffee-text-secondary)' }}>
-                {cat.icon}
+                {getCategoryIcon(cat.key)}
                 <span>{t(`nav.category.${cat.key}`, locale)}</span>
                 <svg className="w-3 h-3 ml-0.5 mt-0.5 transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
               </button>
