@@ -763,7 +763,11 @@ const pl: Record<string, string> = {
   'edit.feature_text': 'Dodawaj tekst, kształty i obrazy',
   'edit.feature_highlight': 'Podświetlaj, rysuj i dodawaj podpisy',
   'edit.feature_edit_text': 'Edytuj istniejący tekst w PDF',
+<<<<<<< HEAD
   'edit.local_info': 'Wszystkie zmiany są zapisywane lokalnie. Obsługuje polskie znaki (ą, ć, ę, ł, ń, ó, ś, ź, ż).',
+=======
+  'edit.local_saved': 'Wszystkie zmiany są zapisywane lokalnie.',
+>>>>>>> c53a046 (i18n: translate edit.local_saved to all 14 languages, show Polish chars only for pl)
 };
 
 const en: Record<string, string> = {
@@ -1527,7 +1531,11 @@ const en: Record<string, string> = {
   'edit.feature_text': 'Add text, shapes and images',
   'edit.feature_highlight': 'Highlight, draw and add signatures',
   'edit.feature_edit_text': 'Edit existing text in PDF',
+<<<<<<< HEAD
   'edit.local_info': 'All changes are saved locally. Supports Polish characters (ą, ć, ę, ł, ń, ó, ś, ź, ż).',
+=======
+  'edit.local_saved': 'All changes are saved locally.',
+>>>>>>> c53a046 (i18n: translate edit.local_saved to all 14 languages, show Polish chars only for pl)
 };
 
 const es: Record<string, string> = {
@@ -2245,6 +2253,7 @@ const es: Record<string, string> = {
   'edit.toolbar_text': 'Texto',
   'edit.undo_btn': '↩ Deshacer',
   'edit.undo_title': 'Deshacer (Ctrl+Z)',
+  'edit.local_saved': 'Todos los cambios se guardan localmente.',
 };
 
 const de: Record<string, string> = {
@@ -2962,6 +2971,7 @@ const de: Record<string, string> = {
   'edit.toolbar_text': 'Text',
   'edit.undo_btn': '↩ Rückgängig',
   'edit.undo_title': 'Rückgängig machen (Strg+Z)',
+  'edit.local_saved': 'Alle Änderungen werden lokal gespeichert.',
 };
 
 const fr: Record<string, string> = {
@@ -3679,6 +3689,7 @@ const fr: Record<string, string> = {
   'edit.toolbar_text': 'Texte',
   'edit.undo_btn': '↩ Annuler',
   'edit.undo_title': 'Annuler (Ctrl+Z)',
+  'edit.local_saved': 'Toutes les modifications sont enregistrées localement.',
 };
 
 const it: Record<string, string> = {
@@ -4396,6 +4407,7 @@ const it: Record<string, string> = {
   'edit.toolbar_text': 'Testo',
   'edit.undo_btn': '↩ Annulla',
   'edit.undo_title': 'Annulla (Ctrl+Z)',
+  'edit.local_saved': 'Tutte le modifiche vengono salvate localmente.',
 };
 
 const pt: Record<string, string> = {
@@ -5113,6 +5125,7 @@ const pt: Record<string, string> = {
   'edit.toolbar_text': 'Texto',
   'edit.undo_btn': '↩ Desfazer',
   'edit.undo_title': 'Desfazer (Ctrl+Z)',
+  'edit.local_saved': 'Todas as alterações são salvas localmente.',
 };
 
 const is: Record<string, string> = {
@@ -5831,6 +5844,7 @@ const is: Record<string, string> = {
   'edit.toolbar_text': 'Texti',
   'edit.undo_btn': '↩ Afturkalla',
   'edit.undo_title': 'Afturkalla (Ctrl+Z)',
+  'edit.local_saved': 'Öll breytingar eru skráðar á staðnum.',
 };
 
 const tr: Record<string, string> = {
@@ -6548,6 +6562,7 @@ const tr: Record<string, string> = {
   'edit.toolbar_text': 'Metin',
   'edit.undo_btn': '↩ Geri al',
   'edit.undo_title': 'Geri al (Ctrl+Z)',
+  'edit.local_saved': 'Tüm değişiklikler yerel olarak kaydedilir.',
 };
 
 const sv: Record<string, string> = {
@@ -7265,6 +7280,7 @@ const sv: Record<string, string> = {
   'edit.toolbar_text': 'Text',
   'edit.undo_btn': '↩ Ångra',
   'edit.undo_title': 'Ångra (Ctrl+Z)',
+  'edit.local_saved': 'Alla ändringar sparas lokalt.',
 };
 
 const no: Record<string, string> = {
@@ -7982,6 +7998,7 @@ const no: Record<string, string> = {
   'edit.toolbar_text': 'Tekst',
   'edit.undo_btn': '↩ Angre',
   'edit.undo_title': 'Angre (Ctrl+Z)',
+  'edit.local_saved': 'Alle endringer blir lagret lokalt.',
 };
 
 const ja: Record<string, string> = {
@@ -8699,6 +8716,7 @@ const ja: Record<string, string> = {
   'edit.toolbar_text': 'テキスト',
   'edit.undo_btn': '↩ 元に戻す',
   'edit.undo_title': '元に戻す (Ctrl+Z)',
+  'edit.local_saved': 'すべての変更はローカルに保存されます。',
 };
 
 const hi: Record<string, string> = {
@@ -9417,6 +9435,7 @@ const hi: Record<string, string> = {
   'edit.toolbar_text': 'पाठ',
   'edit.undo_btn': '↩ पूर्ववत करें',
   'edit.undo_title': 'पूर्ववत करें (Ctrl+Z)',
+  'edit.local_saved': 'सभी परिवर्तन स्थानीय रूप से सहेजे जाते हैं।',
 };
 
 const ar: Record<string, string> = {
@@ -10172,6 +10191,7 @@ const ar: Record<string, string> = {
   'edit.toolbar_text': 'نص',
   'edit.undo_btn': '↩ تراجع',
   'edit.undo_title': 'تراجع (Ctrl+Z)',
+  'edit.local_saved': 'جميع التغييرات تُحفظ محليًا.',
 };
 const fa: Record<string, string> = {
   'back.to_home': '← بازگشت به صفحه اصلی',
@@ -10926,6 +10946,7 @@ const fa: Record<string, string> = {
   'edit.toolbar_text': 'متن',
   'edit.undo_btn': '↩ بازگشت',
   'edit.undo_title': 'بازگشت (Ctrl+Z)',
+  'edit.local_saved': 'همه تغییرات به صورت محلی ذخیره می‌شوند.',
 };
 const zh: Record<string, string> = {
   'back.to_home': '← 返回主页',
@@ -11680,6 +11701,7 @@ const zh: Record<string, string> = {
   'edit.toolbar_text': '文本',
   'edit.undo_btn': '↩ 撤销',
   'edit.undo_title': '撤销 (Ctrl+Z)',
+  'edit.local_saved': '所有更改都会被本地保存。',
 };
 
 export const all: Record<string, Record<string, string>> = {
