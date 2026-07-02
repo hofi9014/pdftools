@@ -1,4 +1,4 @@
-import type { Locale } from '@/lib/i18n';
+import { locales, type Locale } from '@/lib/i18n';
 
 export const localeGuidesSlug: Record<Locale, string> = {
   pl: 'przewodnik', en: 'guides', de: 'anleitungen',
@@ -8,13 +8,11 @@ export const localeGuidesSlug: Record<Locale, string> = {
   hi: 'गाइड', ja: 'ガイド', zh: '指南',
 };
 
-const segmentToLocaleMap: Record<string, Locale> = {};
-for (const [locale, segment] of Object.entries(localeGuidesSlug)) {
-  segmentToLocaleMap[segment] = locale as Locale;
-}
-
 export function localeFromSegment(segment: string): Locale {
-  return segmentToLocaleMap[segment] || 'en';
+  for (const locale of locales) {
+    if (localeGuidesSlug[locale] === segment) return locale;
+  }
+  return 'en';
 }
 
 export function getLocaleSegment(locale: Locale): string {
