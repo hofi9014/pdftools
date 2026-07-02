@@ -20,13 +20,7 @@ function extractWords(data: unknown): Word[] {
 }
 
 function extractFullText(data: unknown): string {
-  const blocks = (data as Record<string, unknown>)?.blocks;
-  if (!blocks || typeof blocks !== 'object') return '';
-  return (Object.values(blocks) as Record<string, unknown>[]).map((b: Record<string, unknown>) =>
-    ((b.lines || []) as Record<string, unknown>[]).map((l: Record<string, unknown>) =>
-      (l.words as { text: string }[] || []).map(w => w.text).join(' ')
-    ).join('\n')
-  ).join('\n\n');
+  return (data as Record<string, unknown>)?.text as string ?? '';
 }
 
 function preprocessCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {

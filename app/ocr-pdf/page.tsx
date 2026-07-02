@@ -213,7 +213,7 @@ export default function OCRPDF() {
 
       <div className="tool-card rounded-2xl border p-6 mb-6">
         <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.ocr.language_label', locale)}</h3>
-        <select value={language} onChange={e => setLanguage(e.target.value)}
+        <select id="ocr-language" name="ocr-language" value={language} onChange={e => setLanguage(e.target.value)}
           className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 dark:border-blue-400 dark:focus:border-blue-400 bg-white dark:bg-gray-800 tool-heading">
           {LANGUAGES.map(lang => (
             <option key={lang.value} value={lang.value}>{t(lang.labelKey, locale)}</option>
@@ -245,7 +245,7 @@ export default function OCRPDF() {
       {ocrDone && recognizedText && (
         <div className="tool-card rounded-2xl border p-6 mb-6">
           <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3">{t('page.ocr.preview_label', locale)}</h3>
-          <textarea readOnly value={recognizedText}
+          <textarea id="ocr-result" readOnly value={recognizedText}
             className="w-full h-64 border border-gray-200 dark:border-gray-600 rounded-xl p-4 text-sm font-mono bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 resize-y"
           />
           <div className="flex flex-wrap gap-3 mt-4">
