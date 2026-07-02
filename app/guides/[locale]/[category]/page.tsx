@@ -51,7 +51,7 @@ export default async function CategoryPage({
         href={`/${getLocaleSegment(locale)}`}
         className="text-sm text-blue-600 hover:underline mb-4 inline-block"
       >
-        ← {t('guides.back_to_all', locale)}
+        {t('guides.back_to_all', locale)}
       </Link>
 
       <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">

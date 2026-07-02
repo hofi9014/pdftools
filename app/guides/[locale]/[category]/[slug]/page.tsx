@@ -78,7 +78,7 @@ export default async function ArticlePage({
           {t('guides.article_not_found', locale)}
         </h1>
         <Link href={`/${getLocaleSegment(locale)}`} className="text-blue-600 hover:underline mt-4 inline-block">
-          ← {t('guides.all_guides', locale)}
+          {t('guides.all_guides', locale)}
         </Link>
       </div>
     );
@@ -141,7 +141,7 @@ export default async function ArticlePage({
         href={`/${getLocaleSegment(locale)}/${category}`}
         className="text-sm text-blue-600 hover:underline mb-4 inline-block"
       >
-        ← {t('guides.back_to_category', locale)}
+        {t('guides.back_to_category', locale)}
       </Link>
 
       <article>
