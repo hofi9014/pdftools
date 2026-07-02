@@ -102,7 +102,12 @@ export async function ocrPdfClient(
   const newPdf = await PDFDocument.create();
 
   const { createWorker } = await import('tesseract.js');
-  const tessWorker = await createWorker(language);
+  const tessWorker = await createWorker(language, undefined, {
+    workerPath: '/tesseract/worker.min.js',
+    corePath: '/tesseract/',
+    langPath: '/tesseract/lang-data',
+    gzip: false,
+  });
 
   let fullText = '';
   const totalPages = origPdf.getPageCount();
