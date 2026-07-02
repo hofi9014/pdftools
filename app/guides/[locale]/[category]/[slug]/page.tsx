@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { locales } from '@/lib/i18n';
+import { locales, t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
 import { getArticle, getAllArticles } from '@/lib/guides';
@@ -75,10 +75,10 @@ export default async function ArticlePage({
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 text-center">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-          {locale === 'pl' ? 'Artykuł nie znaleziony' : 'Article not found'}
+          {t('guides.article_not_found', locale)}
         </h1>
         <Link href={`/${getLocaleSegment(locale)}`} className="text-blue-600 hover:underline mt-4 inline-block">
-          ← {locale === 'pl' ? 'Wszystkie przewodniki' : 'All guides'}
+          ← {t('guides.all_guides', locale)}
         </Link>
       </div>
     );
@@ -124,7 +124,7 @@ export default async function ArticlePage({
             '@type': 'BreadcrumbList',
             itemListElement: [
               { '@type': 'ListItem', position: 1, name: 'OptimaPDF', item: 'https://optimapdf.com/' },
-              { '@type': 'ListItem', position: 2, name: locale === 'pl' ? 'Przewodniki' : 'Guides', item: `https://optimapdf.com/${getLocaleSegment(locale)}` },
+              { '@type': 'ListItem', position: 2, name: t('guides.breadcrumb', locale), item: `https://optimapdf.com/${getLocaleSegment(locale)}` },
               { '@type': 'ListItem', position: 3, name: title, item: canonical },
             ],
           }),
@@ -141,16 +141,16 @@ export default async function ArticlePage({
         href={`/${getLocaleSegment(locale)}/${category}`}
         className="text-sm text-blue-600 hover:underline mb-4 inline-block"
       >
-        ← {locale === 'pl' ? 'Powrót do kategorii' : 'Back to category'}
+        ← {t('guides.back_to_category', locale)}
       </Link>
 
       <article>
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">{title}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {locale === 'pl' ? 'Opublikowano' : 'Published'}: {article.publishedAt}
+            {t('guides.published', locale)}: {article.publishedAt}
             {article.updatedAt !== article.publishedAt && (
-              <> · {locale === 'pl' ? 'Zaktualizowano' : 'Updated'}: {article.updatedAt}</>
+              <> · {t('guides.updated', locale)}: {article.updatedAt}</>
             )}
           </p>
         </header>
@@ -162,7 +162,7 @@ export default async function ArticlePage({
         {article.faq.length > 0 && (
           <section className="mt-12 border-t border-gray-200 dark:border-gray-700 pt-8">
             <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6">
-              {locale === 'pl' ? 'Najczęściej zadawane pytania' : 'Frequently Asked Questions'}
+              {t('guides.faq_title', locale)}
             </h2>
             <div className="space-y-4">
               {article.faq.map((faq, i) => (

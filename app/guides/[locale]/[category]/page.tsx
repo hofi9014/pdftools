@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { locales } from '@/lib/i18n';
+import { locales, t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
 import { getArticlesByCategory } from '@/lib/guides';
@@ -51,7 +51,7 @@ export default async function CategoryPage({
         href={`/${getLocaleSegment(locale)}`}
         className="text-sm text-blue-600 hover:underline mb-4 inline-block"
       >
-        ← {locale === 'pl' ? 'Wszystkie przewodniki' : 'All guides'}
+        ← {t('guides.back_to_all', locale)}
       </Link>
 
       <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -83,7 +83,7 @@ export default async function CategoryPage({
 
       {articles.length === 0 && (
         <p className="text-gray-500 dark:text-gray-400">
-          {locale === 'pl' ? 'Brak artykułów w tej kategorii.' : 'No articles in this category.'}
+          {t('guides.no_articles', locale)}
         </p>
       )}
     </div>

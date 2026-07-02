@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { locales } from '@/lib/i18n';
+import { locales, t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
 import { getAllArticles, getAllCategories } from '@/lib/guides';
@@ -38,12 +38,10 @@ export default async function GuidesHubPage({ params }: { params: Promise<{ loca
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-        {locale === 'pl' ? 'Przewodniki' : 'Guides'}
+        {t('guides.hub_title', locale)}
       </h1>
       <p className="text-gray-500 dark:text-gray-400 mb-10">
-        {locale === 'pl'
-          ? 'Szczegółowe instrukcje krok po kroku dla narzędzi OptimaPDF.'
-          : 'Step-by-step guides for OptimaPDF tools.'}
+        {t('guides.hub_subtitle', locale)}
       </p>
 
       {categories.map(cat => {
