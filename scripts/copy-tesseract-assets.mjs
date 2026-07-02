@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, readdirSync, existsSync } from 'fs';
+import { copyFileSync, mkdirSync, readdirSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -22,12 +22,23 @@ for (const f of readdirSync(coreDir)) {
   }
 }
 
-// traineddata
-for (const lang of ['pol', 'eng']) {
-  const src = join(root, `${lang}.traineddata`);
-  if (existsSync(src)) {
-    copyFileSync(src, join(langDest, `${lang}.traineddata`));
+// traineddata - download gzipped from jsdelivr (smaller, reliable extension)
+async function downloadLangData() {
+  const langs = ['pol', 'eng'];
+  for (const lang of langs) {
+    const url = `https://cdn.jsdelivr.net/npm/@tesseract.js-data/${lang}/4.0.0_best_int/${lang}.traineddata.gz`;
+    const outPath = join(langDest, `${lang}.traineddata.gz`);
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const buf = Buffer.from(await resp.arrayBuffer());
+      writeFileSync(outPath, buf);
+      console.log(`  ${lang}.traineddata.gz downloaded (${(buf.length / 1024 / 1024).toFixed(1)} MB)`);
+    } catch (e) {
+      console.error(`  Failed to download ${lang} traineddata: ${e.message}`);
+    }
   }
 }
 
+await downloadLangData();
 console.log('Tesseract assets copied to public/tesseract/');

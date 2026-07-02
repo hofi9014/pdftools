@@ -106,7 +106,6 @@ export async function ocrPdfClient(
     workerPath: '/tesseract/worker.min.js',
     corePath: '/tesseract/',
     langPath: '/tesseract/lang-data',
-    gzip: false,
   });
 
   let fullText = '';
