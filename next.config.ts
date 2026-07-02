@@ -20,12 +20,18 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['@napi-rs/canvas'],
   poweredByHeader: false,
   async redirects() {
+    const segments = ['przewodnik', 'guides', 'guides-fr', 'anleitungen', 'guias', 'guias-pt', 'guide', 'guider', 'guider-no', 'handbaekur', 'rehber', 'دليل', 'راهنما', 'गाइड', 'ガイド', '指南'];
     return [
       {
         source: '/pdf-to-jpg',
         destination: '/pdf-to-images',
         permanent: true,
       },
+      ...segments.map((segment) => ({
+        source: `/${segment}`,
+        destination: `/guides/${segment}`,
+        permanent: true,
+      })),
     ];
   },
   async headers() {
