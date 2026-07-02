@@ -55,6 +55,7 @@ export default function OCRPDF() {
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [progressLabel, setProgressLabel] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -97,13 +98,22 @@ export default function OCRPDF() {
     try {
       const { ocrPdfClient } = await import('@/lib/client-ocr');
       const allText: string[] = [];
+      let totalPages = 0;
+      let completedPages = 0;
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const result = await ocrPdfClient(file, language);
+        setProgressLabel(`Strona ${completedPages + 1}...`);
+        const result = await ocrPdfClient(file, language, (page, total) => {
+          totalPages = total;
+          completedPages = completedPages - (completedPages % Math.max(1, totalPages)) + page - 1;
+          setProgress(completedPages + page);
+          setProgressLabel(`Strona ${page}/${total}`);
+        });
+        completedPages += totalPages;
         allText.push(result.text);
         if (i === 0) setPdfData(result.pdfData);
-        setProgress(i + 1);
+        setProgress(completedPages);
       }
 
       const combinedText = allText.join('\n\n');
@@ -111,6 +121,7 @@ export default function OCRPDF() {
       setOcrDone(true);
       setSuccess(true);
     } catch (err: unknown) {
+      console.error('[OCR] Błąd w UI:', err);
       setError(err instanceof Error ? err.message : t('error.generic', locale));
     } finally {
       setLoading(false);
@@ -193,7 +204,7 @@ export default function OCRPDF() {
                 <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                   <div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${(progress / files.length) * 100}%` }} />
                 </div>
-                <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">{progress}/{files.length}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">{progressLabel || `${progress}/${files.length}`}</span>
               </div>
             </div>
           )}
@@ -221,7 +232,7 @@ export default function OCRPDF() {
         <button onClick={handleOCR} disabled={loading || files.length === 0}
           className={`w-full py-4 rounded-2xl font-bold text-lg transition mb-6
             ${loading || files.length === 0 ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
-          {loading ? `⏳ ${t('page.ocr.loading', locale)} ${progress}/${files.length}` : `🔍 ${t('page.ocr.button', locale)}`}
+          {loading ? `⏳ ${t('page.ocr.loading', locale)} ${progressLabel || `${progress}/${files.length}`}` : `🔍 ${t('page.ocr.button', locale)}`}
         </button>
       )}
 

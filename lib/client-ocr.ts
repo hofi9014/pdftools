@@ -83,36 +83,44 @@ async function createOcrPage(
 
 export async function ocrPdfClient(
   file: File,
-  language = 'pol'
+  language = 'pol',
+  onProgress?: (page: number, total: number) => void
 ): Promise<{ pdfData: Uint8Array; text: string }> {
-  const buf = await file.arrayBuffer();
+  const buf = await file.arrayBuffer().catch((e) => {
+    console.error('[OCR] Error reading file:', e);
+    throw new Error('Nie można odczytać pliku');
+  });
+
+  const bufForPdfjs = buf.slice(0);
+  const bufForPdfLib = buf.slice(0);
 
   const pdfjsLib = await import('pdfjs-dist');
   await initPdfjs();
-  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(bufForPdfjs) }).promise;
 
-  const origPdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  const origPdf = await PDFDocument.load(bufForPdfLib, { ignoreEncryption: true });
   const newPdf = await PDFDocument.create();
 
   const { createWorker } = await import('tesseract.js');
   const tessWorker = await createWorker(language);
 
   let fullText = '';
+  const totalPages = origPdf.getPageCount();
 
-  for (let i = 0; i < origPdf.getPageCount(); i++) {
+  for (let i = 0; i < totalPages; i++) {
+    onProgress?.(i + 1, totalPages);
     try {
       const page = await doc.getPage(i + 1);
-      const viewport = page.getViewport({ scale: 1.5 });
+      const viewport = page.getViewport({ scale: 2.0 });
+
       const canvas = document.createElement('canvas');
       canvas.width = viewport.width;
       canvas.height = viewport.height;
-      const ctx = canvas.getContext('2d')!;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
       await page.render({ canvas, canvasContext: ctx, viewport }).promise;
-
       preprocessCanvas(canvas);
 
-      const imageData = canvas.toDataURL('image/png');
-      const { data } = await tessWorker.recognize(imageData);
+      const { data } = await tessWorker.recognize(canvas.toDataURL('image/png'));
       const words = extractWords(data);
       await createOcrPage(newPdf, origPdf, i, words);
 
@@ -120,8 +128,17 @@ export async function ocrPdfClient(
       if (pageText) {
         fullText += (fullText ? '\n\n' : '') + pageText;
       }
+
+      console.log(`[OCR] Page ${i + 1}/${totalPages} — ${words.length} words`);
     } catch (e) {
-      console.error('OCR page', i + 1, 'error:', (e as Error)?.message || e);
+      const err = e as Error;
+      console.error('========== OCR ERROR ==========');
+      console.error('Page:', i + 1, '/', totalPages);
+      console.error('Name:', err.name);
+      console.error('Message:', err.message);
+      console.error('Stack:', err.stack);
+      console.error('===============================');
+      throw new Error(`Błąd OCR na stronie ${i + 1}: ${err.message}`);
     }
   }
 
