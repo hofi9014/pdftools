@@ -28,8 +28,8 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       ...segments.map((segment) => ({
-        source: `/${segment}`,
-        destination: `/guides/${segment}`,
+        source: `/${segment}/:path*`,
+        destination: `/guides/${segment}/:path*`,
         permanent: true,
       })),
     ];
