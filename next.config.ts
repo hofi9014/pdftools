@@ -27,7 +27,14 @@ const nextConfig: NextConfig = {
         destination: '/pdf-to-images',
         permanent: true,
       },
+      // exact match dla wszystkich segmentów (root → /guides/{segment})
       ...segments.map((segment) => ({
+        source: `/${segment}`,
+        destination: `/guides/${segment}`,
+        permanent: true,
+      })),
+      // wildcard catch-all dla segmentów które nie są prefiksem /guides/
+      ...segments.filter((s) => s !== 'guides').map((segment) => ({
         source: `/${segment}/:path*`,
         destination: `/guides/${segment}/:path*`,
         permanent: true,
