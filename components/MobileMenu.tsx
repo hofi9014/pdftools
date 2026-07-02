@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
+import { localeGuidesSlug } from '@/lib/guides-slugs';
 
 const toolKeys = [
   { key: 'merge', href: '/merge' },
@@ -68,8 +69,13 @@ export default function MobileMenu() {
         <>
           <div className="fixed inset-0 bg-black/30 z-40 md:hidden" onClick={() => setOpen(false)} />
           <div className="fixed top-16 left-0 right-0 bottom-0 z-50 md:hidden flex flex-col" style={{ backgroundColor: 'var(--coffee-surface-solid)' }}>
-            <div className="sticky top-0 px-4 py-3 border-b border-[var(--coffee-border)] shrink-0" style={{ backgroundColor: 'var(--coffee-surface-solid)' }}>
-              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--coffee-text-tertiary)' }}>{t('nav.tools', locale)}</span>
+            <div className="sticky top-0 px-4 py-3 border-b border-[var(--coffee-border)] shrink-0 space-y-1" style={{ backgroundColor: 'var(--coffee-surface-solid)' }}>
+              <Link href="/" className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>{t('nav.home', locale)}</Link>
+              <Link href="/guide" className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📖 {t('nav.guide', locale)}</Link>
+              <Link href={`/${localeGuidesSlug[locale]}`} className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📚 {t('nav.guides', locale)}</Link>
+              <div className="pt-2 border-t border-[var(--coffee-border)]">
+                <span className="text-xs font-semibold uppercase tracking-wider px-3" style={{ color: 'var(--coffee-text-tertiary)' }}>{t('nav.tools', locale)}</span>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto overscroll-contain">
               {toolKeys.map((tk) => (

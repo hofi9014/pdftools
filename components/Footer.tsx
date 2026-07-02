@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
+import { localeGuidesSlug } from '@/lib/guides-slugs';
 
 const toolLinks = [
   { key: 'merge', href: '/merge' },
@@ -90,6 +91,7 @@ export default function Footer() {
               <li><Link href="/rodo" className={linkStyle}>{t('rodo.link', locale)}</Link></li>
               <li><Link href="/security" className={linkStyle}>{t('security.link', locale)}</Link></li>
               <li><Link href="/guide" className={linkStyle}>{t('nav.guide', locale)}</Link></li>
+              <li><Link href={`/${localeGuidesSlug[locale]}`} className={linkStyle}>{t('nav.guides', locale)}</Link></li>
             </ul>
           </div>
         </div>

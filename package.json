@@ -7,7 +7,8 @@
     "build": "node scripts/copy-tesseract-assets.mjs && next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "node scripts/copy-tesseract-assets.mjs"
+    "postinstall": "node scripts/copy-tesseract-assets.mjs",
+    "validate:guides": "npx --yes tsx scripts/validate-guides.ts"
   },
   "dependencies": {
     "@ilovepdf/ilovepdf-nodejs": "^0.3.1",

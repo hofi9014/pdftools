@@ -2,6 +2,8 @@
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import { localeGuidesSlug } from '@/lib/guides-slugs';
+import guides from '@/content/guides';
 
 const toolDefs = [
   { key: "merge", href: "/merge" },
@@ -194,6 +196,37 @@ export default function Home() {
               </span>
             </a>
           ))}
+        </div>
+      </section>
+
+      {/* Guides */}
+      <section className="max-w-5xl mx-auto px-4 py-4">
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--coffee-surface-solid)', border: '1px solid var(--coffee-border)' }}>
+          <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--coffee-text)' }}>📚 {t('nav.guides', locale)}</h3>
+          <p className="text-sm mb-4" style={{ color: 'var(--coffee-text-secondary)' }}>
+            {locale === 'pl' ? 'Szczegółowe instrukcje krok po kroku dla narzędzi OptimaPDF.' : 'Step-by-step guides for OptimaPDF tools.'}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            {guides.slice(0, 4).map(article => {
+              const title = (article.title as Record<string, string>)[locale] || article.title.en;
+              const excerpt = (article.excerpt as Record<string, string>)[locale] || article.excerpt.en;
+              return (
+                <a key={article.slug} href={`/${localeGuidesSlug[locale]}/${article.category}/${article.slug}`}
+                  className="block p-4 rounded-xl transition"
+                  style={{ backgroundColor: 'var(--coffee-surface)', border: '1px solid var(--coffee-border)' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--coffee-accent)'; e.currentTarget.style.boxShadow = '0 4px 20px var(--coffee-accent-glow)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--coffee-border)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                  <h4 className="font-semibold text-sm mb-1" style={{ color: 'var(--coffee-text)' }}>{title}</h4>
+                  <p className="text-xs leading-relaxed line-clamp-2" style={{ color: 'var(--coffee-text-secondary)' }}>{excerpt}</p>
+                </a>
+              );
+            })}
+          </div>
+          <a href={`/${localeGuidesSlug[locale]}`}
+            className="inline-flex items-center gap-1 text-sm font-medium transition-opacity hover:opacity-80"
+            style={{ color: 'var(--coffee-accent)' }}>
+            {locale === 'pl' ? 'Wszystkie poradniki →' : 'All guides →'}
+          </a>
         </div>
       </section>
 

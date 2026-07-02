@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
+import { localeGuidesSlug } from '@/lib/guides-slugs';
 import { getCategoryIcon } from '@/lib/icons';
 import ThemeToggle from './ThemeToggle';
 import LanguageSelector from './LanguageSelector';
@@ -116,6 +117,7 @@ export default function Header() {
             </div>
           ))}
           <Link href="/guide" className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition" style={{ color: 'var(--coffee-text-secondary)' }}>📖 {t('nav.guide', locale)}</Link>
+          <Link href={`/${localeGuidesSlug[locale]}`} className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition" style={{ color: 'var(--coffee-text-secondary)' }}>📚 {t('nav.guides', locale)}</Link>
         </nav>
 
         <div className="flex items-center gap-1.5">
