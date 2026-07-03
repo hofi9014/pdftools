@@ -9,8 +9,9 @@ export const localeGuidesSlug: Record<Locale, string> = {
 };
 
 export function localeFromSegment(segment: string): Locale {
+  const normalized = segment.normalize('NFC');
   for (const locale of locales) {
-    if (localeGuidesSlug[locale] === segment) return locale;
+    if (localeGuidesSlug[locale].normalize('NFC') === normalized) return locale;
   }
   return 'en';
 }

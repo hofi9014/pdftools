@@ -1,7 +1,10 @@
 'use client';
 import { useLocale } from '@/lib/locale-context';
 import { locales, t } from '@/lib/i18n';
-import { useState, useRef, useEffect } from 'react';
+import type { Locale } from '@/lib/i18n';
+import { localeGuidesSlug, localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 const flagMap: Record<string, string> = {
   ar: '🇸🇦', de: '🇩🇪', en: '🇬🇧', es: '🇪🇸', fa: '🇮🇷', fr: '🇫🇷', hi: '🇮🇳',
@@ -15,10 +18,16 @@ const labelMap: Record<string, string> = {
   no: 'Norsk', pl: 'Polski', pt: 'Português', sv: 'Svenska', tr: 'Türkçe', zh: '中文',
 };
 
+function isGuidesPath(pathname: string): boolean {
+  return pathname === '/guides' || pathname.startsWith('/guides/');
+}
+
 export default function LanguageSelector() {
   const { locale, setLocale } = useLocale();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -27,6 +36,23 @@ export default function LanguageSelector() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleChange = useCallback((code: Locale) => {
+    setOpen(false);
+
+    if (isGuidesPath(pathname)) {
+      const segments = pathname.split('/').filter(Boolean);
+      const currentLocaleSeg = segments[1] || '';
+      const currentLocale = localeFromSegment(currentLocaleSeg);
+      if (currentLocale !== code) {
+        localStorage.setItem('locale', code);
+        segments[1] = getLocaleSegment(code);
+        router.push('/' + segments.join('/'));
+        return;
+      }
+    }
+    setLocale(code);
+  }, [pathname, setLocale, router]);
 
   return (
     <div className="relative" ref={ref}>
@@ -56,7 +82,7 @@ export default function LanguageSelector() {
           {locales.map(code => (
             <button
               key={code}
-              onClick={() => { setLocale(code); setOpen(false); }}
+              onClick={() => handleChange(code)}
               className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition`}
               style={{
                 color: code === locale ? 'var(--coffee-accent)' : 'var(--coffee-text-secondary)',

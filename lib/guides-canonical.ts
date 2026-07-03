@@ -9,5 +9,5 @@ export function buildCanonicalUrl(article: GuideArticle, locale: Locale): string
     return article.canonicalOverride[locale]!;
   }
   const segment = getLocaleSegment(locale);
-  return `${BASE}/${segment}/${article.category}/${article.slug}`;
+  return `${BASE}/guides/${segment}/${article.category}/${article.slug}`;
 }

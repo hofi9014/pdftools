@@ -91,7 +91,7 @@ export default function Footer() {
               <li><Link href="/rodo" className={linkStyle}>{t('rodo.link', locale)}</Link></li>
               <li><Link href="/security" className={linkStyle}>{t('security.link', locale)}</Link></li>
               <li><Link href="/guide" className={linkStyle}>{t('nav.guide', locale)}</Link></li>
-              <li><Link href={`/${localeGuidesSlug[locale]}`} className={linkStyle}>{t('nav.guides', locale)}</Link></li>
+              <li><Link href={`/guides/${localeGuidesSlug[locale]}`} className={linkStyle}>{t('nav.guides', locale)}</Link></li>
             </ul>
           </div>
         </div>

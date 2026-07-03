@@ -72,7 +72,7 @@ export default function MobileMenu() {
             <div className="sticky top-0 px-4 py-3 border-b border-[var(--coffee-border)] shrink-0 space-y-1" style={{ backgroundColor: 'var(--coffee-surface-solid)' }}>
               <Link href="/" className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>{t('nav.home', locale)}</Link>
               <Link href="/guide" className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📖 {t('nav.guide', locale)}</Link>
-              <Link href={`/${localeGuidesSlug[locale]}`} className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📚 {t('nav.guides', locale)}</Link>
+              <Link href={`/guides/${localeGuidesSlug[locale]}`} className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📚 {t('nav.guides', locale)}</Link>
               <div className="pt-2 border-t border-[var(--coffee-border)]">
                 <span className="text-xs font-semibold uppercase tracking-wider px-3" style={{ color: 'var(--coffee-text-tertiary)' }}>{t('nav.tools', locale)}</span>
               </div>

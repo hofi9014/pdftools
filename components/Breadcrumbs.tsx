@@ -3,6 +3,9 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
+import { localeGuidesSlug, localeFromSegment } from '@/lib/guides-slugs';
+
+const guidesLocaleSegments = new Set(Object.values(localeGuidesSlug));
 
 const segmentToKey: Record<string, string> = {
   'merge': 'merge',
@@ -65,7 +68,17 @@ export default function Breadcrumbs() {
         </li>
         {segments.map((seg, i) => {
           const key = segmentToKey[seg];
-          const label = key ? t(`tool.${key}`, locale) : seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
+          let label: string;
+          if (key) {
+            label = t(`tool.${key}`, locale);
+          } else if (seg === 'guides') {
+            // skip — the next segment is the locale segment
+            return null;
+          } else if (guidesLocaleSegments.has(seg)) {
+            label = t('guides.breadcrumb', locale);
+          } else {
+            label = seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
+          }
           const href = '/' + segments.slice(0, i + 1).join('/');
           const isLast = i === segments.length - 1;
           return (

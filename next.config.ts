@@ -20,7 +20,8 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['@napi-rs/canvas'],
   poweredByHeader: false,
   async redirects() {
-    const segments = ['przewodnik', 'guides', 'guides-fr', 'anleitungen', 'guias', 'guias-pt', 'guide', 'guider', 'guider-no', 'handbaekur', 'rehber', 'دليل', 'راهنما', 'गाइड', 'ガイド', '指南'];
+    // all locale segments EXCEPT 'guide' which conflicts with /guide static page
+    const segments = ['przewodnik', 'guides', 'guides-fr', 'anleitungen', 'guias', 'guias-pt', 'guider', 'guider-no', 'handbaekur', 'rehber', 'دليل', 'راهنما', 'गाइड', 'ガイド', '指南'];
     return [
       {
         source: '/pdf-to-jpg',
@@ -39,6 +40,12 @@ const nextConfig: NextConfig = {
         destination: `/guides/${segment}/:path*`,
         permanent: true,
       })),
+      // backward compat for Italian guide paths (/guide/xxx → /guides/guide/xxx)
+      {
+        source: '/guide/:path*',
+        destination: '/guides/guide/:path*',
+        permanent: true,
+      },
     ];
   },
   async headers() {

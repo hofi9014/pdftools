@@ -48,7 +48,7 @@ export default async function CategoryPage({
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <Link
-        href={`/${getLocaleSegment(locale)}`}
+        href={`/guides/${getLocaleSegment(locale)}`}
         className="text-sm text-blue-600 hover:underline mb-4 inline-block"
       >
         {t('guides.back_to_all', locale)}
@@ -68,7 +68,7 @@ export default async function CategoryPage({
         {articles.map(article => (
           <Link
             key={article.slug}
-            href={`/${getLocaleSegment(locale)}/${category}/${article.slug}`}
+            href={`/guides/${getLocaleSegment(locale)}/${category}/${article.slug}`}
             className="block p-5 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm transition"
           >
             <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">

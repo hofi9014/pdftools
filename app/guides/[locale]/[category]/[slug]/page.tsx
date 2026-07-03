@@ -77,7 +77,7 @@ export default async function ArticlePage({
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
           {t('guides.article_not_found', locale)}
         </h1>
-        <Link href={`/${getLocaleSegment(locale)}`} className="text-blue-600 hover:underline mt-4 inline-block">
+        <Link href={`/guides/${getLocaleSegment(locale)}`} className="text-blue-600 hover:underline mt-4 inline-block">
           {t('guides.all_guides', locale)}
         </Link>
       </div>
@@ -124,7 +124,7 @@ export default async function ArticlePage({
             '@type': 'BreadcrumbList',
             itemListElement: [
               { '@type': 'ListItem', position: 1, name: 'OptimaPDF', item: 'https://optimapdf.com/' },
-              { '@type': 'ListItem', position: 2, name: t('guides.breadcrumb', locale), item: `https://optimapdf.com/${getLocaleSegment(locale)}` },
+              { '@type': 'ListItem', position: 2, name: t('guides.breadcrumb', locale), item: `https://optimapdf.com/guides/${getLocaleSegment(locale)}` },
               { '@type': 'ListItem', position: 3, name: title, item: canonical },
             ],
           }),
@@ -138,7 +138,7 @@ export default async function ArticlePage({
       )}
 
       <Link
-        href={`/${getLocaleSegment(locale)}/${category}`}
+        href={`/guides/${getLocaleSegment(locale)}/${category}`}
         className="text-sm text-blue-600 hover:underline mb-4 inline-block"
       >
         {t('guides.back_to_category', locale)}

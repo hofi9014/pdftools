@@ -24,15 +24,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: path === '' ? 1.0 : 0.8,
   }));
 
-  // hub pages: /{localeSegment}
+  // hub pages: /guides/{localeSegment}
   for (const locale of locales) {
     const segment = localeGuidesSlug[locale];
     const hreflang: Record<string, string> = {};
     for (const l of locales) {
-      hreflang[l] = `${base}/${localeGuidesSlug[l as Locale]}`;
+      hreflang[l] = `${base}/guides/${localeGuidesSlug[l as Locale]}`;
     }
     pages.push({
-      url: `${base}/${segment}`,
+      url: `${base}/guides/${segment}`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.7,
@@ -40,14 +40,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
-  // category pages: /{localeSegment}/{category}
+  // category pages: /guides/{localeSegment}/{category}
   for (const locale of locales) {
     for (const article of guides) {
       const segment = localeGuidesSlug[locale];
-      const url = `${base}/${segment}/${article.category}`;
+      const url = `${base}/guides/${segment}/${article.category}`;
       const hreflang: Record<string, string> = {};
       for (const l of locales) {
-        hreflang[l] = `${base}/${localeGuidesSlug[l as Locale]}/${article.category}`;
+        hreflang[l] = `${base}/guides/${localeGuidesSlug[l as Locale]}/${article.category}`;
       }
       if (!pages.some(p => p.url === url)) {
         pages.push({
