@@ -34,6 +34,7 @@ declare global {
         multiselect?: boolean;
         extensions?: string[];
       }) => void;
+      save: (url: string, name: string, opts: { success?: () => void; cancel?: () => void }) => void;
     };
     OneDrive?: {
       open: (opts: {

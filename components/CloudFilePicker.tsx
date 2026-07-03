@@ -46,6 +46,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
     try {
       if (!GOOGLE_CLIENT_ID || !GOOGLE_API_KEY) { throw new Error('Google Drive not configured'); }
 
+      await loadScript('https://accounts.google.com/gsi/client', 'google-gsi');
       await loadScript('https://apis.google.com/js/api.js', 'google-api');
 
       await new Promise<void>((resolve) => {

@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import JSZip from 'jszip';
 import { compressPDFClient } from '@/lib/client-pdf';
 import CloudFilePicker from '@/components/CloudFilePicker';
+import CloudFileSaver from '@/components/CloudFileSaver';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -17,6 +18,7 @@ export default function CompressPDF() {
   const [error, setError] = useState('');
   const [results, setResults] = useState<{ name: string; originalSize: number; compressedSize: number }[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const processedBlobRef = useRef<Blob | null>(null);
 
   const formatSize = (bytes: number) => {
     const kb = bytes / 1024;
@@ -65,6 +67,7 @@ export default function CompressPDF() {
 
       if (batchResults.length === 1) {
         const r = batchResults[0];
+        processedBlobRef.current = r.data;
         const url = URL.createObjectURL(r.data);
         const a = document.createElement('a');
         a.href = url;
@@ -75,6 +78,7 @@ export default function CompressPDF() {
         const zip = new JSZip();
         batchResults.forEach(r => zip.file(r.name, r.data));
         const zipBlob = await zip.generateAsync({ type: 'blob' });
+        processedBlobRef.current = zipBlob;
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
@@ -160,6 +164,16 @@ export default function CompressPDF() {
         <div className="tool-success-box rounded-2xl p-5 mb-6 text-center">
           <p className="font-bold text-green-700 dark:text-green-400">✅ {t('page.compress.all_done', locale)}</p>
           <p className="text-sm text-green-600 dark:text-green-300 mt-1">{t('page.compress.savings', locale)} -{totalSavings}%</p>
+          {processedBlobRef.current && (
+            <div className="flex justify-center mt-3">
+              <CloudFileSaver blob={processedBlobRef.current} fileName="skompresowane.zip" />
+            </div>
+          )}
+        </div>
+      )}
+      {results.length === 1 && processedBlobRef.current && (
+        <div className="flex justify-center mb-6">
+          <CloudFileSaver blob={processedBlobRef.current} fileName={results[0].name} />
         </div>
       )}
 
