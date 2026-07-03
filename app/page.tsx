@@ -225,7 +225,7 @@ export default function Home() {
           <a href={`/guides/${localeGuidesSlug[locale]}`}
             className="inline-flex items-center gap-1 text-sm font-medium transition-opacity hover:opacity-80"
             style={{ color: 'var(--coffee-accent)' }}>
-            {locale === 'pl' ? 'Wszystkie poradniki →' : 'All guides →'}
+            {t('guides.all_guides', locale)} →
           </a>
         </div>
       </section>
