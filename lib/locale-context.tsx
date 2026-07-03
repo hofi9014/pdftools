@@ -5,9 +5,10 @@ import { type Locale } from './i18n';
 interface LocaleCtx {
   locale: Locale;
   setLocale: (l: Locale) => void;
+  setLocaleLocal: (l: Locale) => void;
 }
 
-const LocaleContext = createContext<LocaleCtx>({ locale: 'pl', setLocale: () => {} });
+const LocaleContext = createContext<LocaleCtx>({ locale: 'pl', setLocale: () => {}, setLocaleLocal: () => {} });
 
 export function LocaleProvider({ children, defaultLocale }: { children: ReactNode; defaultLocale?: Locale }) {
   const [locale, setLocale] = useState<Locale>(defaultLocale || 'pl');
@@ -24,8 +25,12 @@ export function LocaleProvider({ children, defaultLocale }: { children: ReactNod
     localStorage.setItem('locale', l);
   };
 
+  const handleSetLocal = (l: Locale) => {
+    setLocale(l);
+  };
+
   return (
-    <LocaleContext.Provider value={{ locale, setLocale: handleSet }}>
+    <LocaleContext.Provider value={{ locale, setLocale: handleSet, setLocaleLocal: handleSetLocal }}>
       {children}
     </LocaleContext.Provider>
   );

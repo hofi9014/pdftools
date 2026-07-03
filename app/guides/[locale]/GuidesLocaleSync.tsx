@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import type { Locale } from '@/lib/i18n';
 
 export default function GuidesLocaleSync({ locale }: { locale: Locale }) {
-  const { setLocale } = useLocale();
-  useEffect(() => { setLocale(locale); }, [locale, setLocale]);
+  const { setLocaleLocal } = useLocale();
+  useEffect(() => { setLocaleLocal(locale); }, [locale, setLocaleLocal]);
   return null;
 }
