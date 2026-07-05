@@ -5,6 +5,8 @@ import { getToolIcon } from '@/lib/icons';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import guides from '@/content/guides';
 
+const aiTools = new Set(['aichat', 'aisummary', 'translate']);
+
 const toolDefs = [
   { key: "merge", href: "/merge" },
   { key: "split", href: "/split" },
@@ -162,6 +164,17 @@ export default function Home() {
         </div>
       </section>
 
+      {/* AI disclaimer */}
+      <section className="max-w-3xl mx-auto px-4 py-4">
+        <div className="rounded-xl p-4 text-xs leading-relaxed" style={{
+          backgroundColor: 'color-mix(in srgb, var(--coffee-accent) 8%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--coffee-accent) 20%, transparent)',
+          color: 'var(--coffee-text-secondary)'
+        }}>
+          {t('hero.ai_disclaimer', locale)}
+        </div>
+      </section>
+
       {/* Scenarios */}
       <section className="max-w-5xl mx-auto px-4 py-8">
         <h3 className="text-3xl font-bold text-center mb-10" style={{ color: 'var(--coffee-text)' }}>{t('home.scenarios_title', locale)}</h3>
@@ -296,6 +309,17 @@ export default function Home() {
                       <div className="text-3xl sm:text-4xl mb-3">{getToolIcon(tool.key)}</div>
                       <h4 className="font-bold mb-1 text-sm sm:text-base" style={{ color: 'var(--coffee-text)' }}>{t(`tool.${tool.key}`, locale)}</h4>
                       <p className="text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--coffee-text-tertiary)' }}>{t(`desc.${tool.key}`, locale)}</p>
+                      {aiTools.has(tool.key) && (
+                        <span className="inline-block mt-2 text-[10px] font-medium px-2 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: 'color-mix(in srgb, var(--coffee-accent) 12%, transparent)',
+                            color: 'var(--coffee-accent)',
+                            border: '1px solid color-mix(in srgb, var(--coffee-accent) 25%, transparent)',
+                            alignSelf: 'flex-start',
+                          }}>
+                          {t('hero.ai_badge', locale)}
+                        </span>
+                      )}
                     </a>
                   ))}
                 </div>

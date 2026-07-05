@@ -53,7 +53,7 @@ export default function FillForm() {
     setSuccess(false);
     try {
       const result = await fillFormFields(file, values);
-      const blob = await downloadPdf(result, file.name.replace('.pdf', '_wypelniony.pdf'));
+      const blob = await downloadPdf(result, file.name.replace('.pdf', '_wypełniony.pdf'));
       processedBlobRef.current = blob;
       setSuccess(true);
     } catch (err: unknown) {
@@ -165,7 +165,7 @@ export default function FillForm() {
       )}
       {success && file && processedBlobRef.current && (
         <div className="flex justify-center mb-6">
-          <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', '_wypelniony.pdf')} />
+          <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', '_wypełniony.pdf')} />
         </div>
       )}
 

@@ -24,15 +24,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "OptimaPDF - Darmowe narzedzia PDF online",
+    default: "OptimaPDF - Darmowe narzędzia PDF online",
     template: "%s | OptimaPDF",
   },
-    description: "Scalaj, dziel, kompresuj, konwertuj i edytuj pliki PDF za darmo online. 40 narzedzi PDF, AI Chat, AI Streszczenie, Tlumacz AI, edytor PDF, podpis elektroniczny, OCR, ochrona haslem. Bez instalacji, bezpiecznie i szybko.",
-    keywords: ["PDF", "laczenie PDF", "dzielenie PDF", "kompresja PDF", "konwersja PDF", "edytor PDF", "OCR PDF", "AI PDF", "darmowe narzedzia PDF", "PDF do PowerPoint", "porownaj PDF", "Excel do PDF", "tlumacz PDF AI"],
+    description: "Scalaj, dziel, kompresuj, konwertuj i edytuj pliki PDF za darmo online. 40 narzędzi PDF, AI Chat, AI Streszczenie, Tłumacz AI, edytor PDF, podpis elektroniczny, OCR, ochrona hasłem. Bez instalacji, bezpiecznie i szybko.",
+    keywords: ["PDF", "łączenie PDF", "dzielenie PDF", "kompresja PDF", "konwersja PDF", "edytor PDF", "OCR PDF", "AI PDF", "darmowe narzędzia PDF", "PDF do PowerPoint", "porównaj PDF", "Excel do PDF", "tłumacz PDF AI"],
   robots: { index: true, follow: true },
   openGraph: {
-    title: "OptimaPDF - Darmowe narzedzia PDF online",
-    description: "40 darmowych narzedzi PDF: scalaj, dziel, kompresuj, konwertuj, edytuj PDF, tlumacz AI, podpisz PDF, OCR, AI Chat, AI Streszczenie, porownaj PDF, PowerPoint, HTML. Bez instalacji, za darmo.",
+    title: "OptimaPDF - Darmowe narzędzia PDF online",
+    description: "40 darmowych narzędzi PDF: scalaj, dziel, kompresuj, konwertuj, edytuj PDF, tłumacz AI, podpisz PDF, OCR, AI Chat, AI Streszczenie, porównaj PDF, PowerPoint, HTML. Bez instalacji, za darmo.",
     url: "https://optimapdf.com",
     siteName: "OptimaPDF",
     locale: "pl_PL",
@@ -40,8 +40,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "OptimaPDF - Darmowe narzedzia PDF online",
-    description: "40 darmowych narzedzi PDF: scalaj, dziel, kompresuj, konwertuj, edytuj PDF, tlumacz AI, podpisz PDF, OCR, AI Chat, AI Streszczenie, porownaj PDF, PowerPoint, HTML.",
+    title: "OptimaPDF - Darmowe narzędzia PDF online",
+    description: "40 darmowych narzędzi PDF: scalaj, dziel, kompresuj, konwertuj, edytuj PDF, tłumacz AI, podpisz PDF, OCR, AI Chat, AI Streszczenie, porównaj PDF, PowerPoint, HTML.",
   },
   icons: {
     icon: { url: "/icon", sizes: "32x32", type: "image/png" },
