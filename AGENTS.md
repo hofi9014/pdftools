@@ -8,7 +8,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Opis
 Polskojęzyczna aplikacja webowa do edycji plików PDF (Next.js 16, React 19, Tailwind CSS 4, TypeScript).
-**Wszystkie narzędzia działają w całości po stronie klienta (przeglądarka).** Jeden endpoint: `/api/url-to-pdf`.
+**Wszystkie narzędzia działają w całości po stronie klienta (przeglądarka).** Dwa endpointy: `/api/url-to-pdf` i `/api/exports`.
 
 ## Strony (50 statycznych, wszystkie ○)
 - `/` — strona główna z listą narzędzi (PL/EN, i18n)
@@ -35,10 +35,12 @@ Polskojęzyczna aplikacja webowa do edycji plików PDF (Next.js 16, React 19, Ta
 - `downloadPdf`, `downloadZip`
 
 ## Komponenty
-- `CloudFilePicker` — "☁️ Dodaj z chmury" (merge, compress, rotate-pdf)
+- `CloudFilePicker` — "☁️ Dodaj z chmury" (merge, compress, rotate-pdf) — Google Drive (Picker API), Dropbox (Chooser), OneDrive (SDK)
+- `CloudFileSaver` — "Zapisz do:" Google Drive, Dropbox (Saver przez /api/exports), OneDrive (Graph API)
 - `PagePreview` — miniatury PDF (tryby: delete/extract/reorder; 4 strony)
 - `LanguageToggle` — PL/EN (Header)
 - `ThemeToggle`, `MobileMenu`, `Breadcrumbs` (i18n), `SchemaHowTo`, `PwaRegister`
+- Komponenty poradników: `ContentBlockRenderer`, `CTATool` w `components/guides/`
 
 ## Zależności klienckie
 - `pdf-lib` — tworzenie/modyfikacja PDF
@@ -49,9 +51,36 @@ Polskojęzyczna aplikacja webowa do edycji plików PDF (Next.js 16, React 19, Ta
 - `pptxgenjs` — PowerPoint, `xlsx` — Excel
 
 ## Backend
-- `app/api/url-to-pdf/route.ts` — jedyny endpoint (CORS)
+- `app/api/url-to-pdf/route.ts` — endpoint do konwersji URL → PDF (CORS)
+- `app/api/exports/route.ts` — POST: przyjmuje plik, zapisuje w pamięci podręcznej (5min TTL), zwraca podpisany HMAC URL (/api/exports/{id}?expiry=&hmac=)
+- `app/api/exports/[id]/route.ts` — GET: weryfikuje HMAC, sprawdza TTL, konsumuje jednorazowo, zwraca plik (używane przez Dropbox Saver)
+- `lib/exports.ts` — `storeFile()`, `signExportUrl()`, `verifyAndConsume()` (Map in-memory, HMAC-SHA256, timingSafeEqual)
+- Tokeny OAuth (Google/Dropbox/OneDrive) przechowywane wyłącznie w pamięci JS (React state/ref), nigdy nie trafiają do backendu ani localStorage
+
+## System poradników (guides)
+- Lokalizacja: `content/guides/{category}/{slug}.ts` — dane w TS (bez CMS/markdown)
+- Routing: `/guides/{localeSegment}/{category}/{slug}`
+- 16 locale segmentów (localeGuidesSlug w `lib/guides-slugs.ts`)
+- Typ `GuideArticle` w `types/guide.ts`: title, excerpt, body (ContentBlock[]), faq, relatedTool
+- Komponenty renderujące: `ContentBlockRenderer` (paragraph/heading/step/list/cta), `CTATool`
+- Schema.org: HowTo + FAQPage + BreadcrumbList na stronach artykułów
+- Walidacja w buildzie: `validateGuides()` — sprawdza wszystkie tłumaczenia, długość excerptów, poprawność ToolSlug
+- Skrypt: `npm run validate:guides`
+- Stare strony: `/guide` (lista narzędzi z instrukcjami), `/guides/[locale]/` (hub), `/guides/[locale]/[category]/` (lista kategorii), `/guides/[locale]/[category]/[slug]/` (artykuł)
+- Kategorie: compress-pdf (docelowo więcej)
+
+## Integracja z chmurą
+- Google Drive: OAuth 2.0 (drive.file) + Picker API do wyboru plików, upload przez Google Drive API (multipart)
+- Dropbox: Chooser API do wyboru plików (direct link); Saver API + /api/exports do zapisu (plik → podpisany URL → Dropbox pobiera)
+- OneDrive: SDK (js.live.net) do wyboru plików; OAuth implicit grant (popup + postMessage przez onedrive-oauth.html) + Graph API upload
+
+## Bezpieczeństwo
+- CSP w next.config.ts: strict (self, tylko zaufane domeny cloud)
+- HMAC-SHA256 + timingSafeEqual dla signed URL-i eksportu
+- Pliki w pamięci serwera: 5 min TTL, jednorazowe użycie, cleanup co 60s
+- Żaden token OAuth nie jest przechowywany po stronie serwera
 
 ## Uruchamianie
 - `npm run dev` — dev server
-- `npm run build` — build (49 stron statycznych)
+- `npm run build` — build
 - `npm run lint` — eslint

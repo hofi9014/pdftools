@@ -4,6 +4,7 @@ import { useLocale } from '@/lib/locale-context';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID || '';
 const DROPBOX_KEY = process.env.NEXT_PUBLIC_DROPBOX_APP_KEY || '';
+const ONEDRIVE_CLIENT_ID = process.env.NEXT_PUBLIC_ONEDRIVE_CLIENT_ID || '';
 
 interface CloudFileSaverProps {
   blob: Blob;
@@ -11,16 +12,57 @@ interface CloudFileSaverProps {
   onDone?: () => void;
 }
 
-function loadScript(src: string, id: string): Promise<void> {
+function loadScript(src: string, id: string, attrs?: Record<string, string>): Promise<void> {
   return new Promise((resolve, reject) => {
     if (document.getElementById(id)) { resolve(); return; }
     const s = document.createElement('script');
     s.id = id;
     s.src = src;
     s.async = true;
+    if (attrs) { for (const [k, v] of Object.entries(attrs)) s.setAttribute(k, v); }
     s.onload = () => resolve();
     s.onerror = () => reject(new Error(`Failed to load ${src}`));
     document.head.appendChild(s);
+  });
+}
+
+async function getMicrosoftToken(clientId: string): Promise<string> {
+  const redirectUri = window.location.origin + '/onedrive-oauth.html';
+  const scopes = 'Files.ReadWrite.All offline_access';
+  const authUrl = 'https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize'
+    + '?client_id=' + encodeURIComponent(clientId)
+    + '&response_type=token'
+    + '&redirect_uri=' + encodeURIComponent(redirectUri)
+    + '&scope=' + encodeURIComponent(scopes)
+    + '&prompt=select_account';
+
+  const popup = window.open(authUrl, 'onedrive-login', 'width=600,height=700');
+  if (!popup) throw new Error('Popup blocked');
+
+  return new Promise<string>((resolve, reject) => {
+    const handler = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      if (e.data?.type === 'onedrive-token') {
+        window.removeEventListener('message', handler);
+        resolve(e.data.accessToken);
+      }
+    };
+    window.addEventListener('message', handler);
+
+    const timer = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(timer);
+        window.removeEventListener('message', handler);
+        reject(new Error('Login cancelled'));
+      }
+    }, 500);
+
+    const timeout = setTimeout(() => {
+      clearInterval(timer);
+      window.removeEventListener('message', handler);
+      popup.close();
+      reject(new Error('Login timeout'));
+    }, 120000);
   });
 }
 
@@ -76,12 +118,32 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
     }
   }, [blob, fileName, onDone]);
 
+  const saveToOneDrive = useCallback(async () => {
+    if (!ONEDRIVE_CLIENT_ID) { setError('OneDrive not configured'); return; }
+    setSaving('onedrive');
+    setError('');
+    try {
+      const token = await getMicrosoftToken(ONEDRIVE_CLIENT_ID);
+      const res = await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/${encodeURIComponent(fileName)}:/content`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': blob.type || 'application/pdf' },
+        body: blob,
+      });
+      if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+      setSaving(null);
+      onDone?.();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'OneDrive save failed');
+      setSaving(null);
+    }
+  }, [blob, fileName, onDone]);
+
   const saveToDropbox = useCallback(async () => {
     if (!DROPBOX_KEY) { setError('Dropbox not configured'); return; }
     setSaving('dropbox');
     setError('');
     try {
-      await loadScript('https://www.dropbox.com/static/api/2/dropins.js', 'dropboxjs');
+      await loadScript('https://www.dropbox.com/static/api/2/dropins.js', 'dropboxjs', { 'data-app-key': DROPBOX_KEY });
 
       const formData = new FormData();
       formData.append('file', blob, fileName);
@@ -138,6 +200,22 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
             <span>📦</span>
           )}
           Dropbox
+        </button>
+      )}
+
+      {!!ONEDRIVE_CLIENT_ID && (
+        <button
+          onClick={saveToOneDrive}
+          disabled={!!saving}
+          className="text-xs px-3 py-1.5 rounded-lg border transition disabled:opacity-50 flex items-center gap-1.5"
+          style={{ color: 'var(--coffee-text-secondary)', borderColor: 'var(--coffee-border)' }}
+        >
+          {saving === 'onedrive' ? (
+            <span className="inline-block w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <span>☁️</span>
+          )}
+          OneDrive
         </button>
       )}
 

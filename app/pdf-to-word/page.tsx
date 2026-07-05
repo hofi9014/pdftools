@@ -1,10 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import JSZip from 'jszip';
 import { pdfToWord } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import CloudFileSaver from '@/components/CloudFileSaver';
 
 export default function PDFToWord() {
   const { locale } = useLocale();
@@ -14,6 +15,8 @@ export default function PDFToWord() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const processedBlobRef = useRef<Blob | null>(null);
+  const downloadFileNameRef = useRef('');
 
   const handleFiles = (newFiles: FileList | File[] | null) => {
     if (!newFiles || newFiles.length === 0) return;
@@ -49,6 +52,8 @@ export default function PDFToWord() {
 
       if (batchResults.length === 1) {
         const r = batchResults[0];
+        processedBlobRef.current = r.data;
+        downloadFileNameRef.current = r.name;
         const url = URL.createObjectURL(r.data);
         const a = document.createElement('a');
         a.href = url;
@@ -59,6 +64,8 @@ export default function PDFToWord() {
         const zip = new JSZip();
         batchResults.forEach(r => zip.file(r.name, r.data));
         const zipBlob = await zip.generateAsync({ type: 'blob' });
+        processedBlobRef.current = zipBlob;
+        downloadFileNameRef.current = 'dokumenty-word.zip';
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
@@ -142,6 +149,11 @@ export default function PDFToWord() {
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
           ✅ {files.length > 1 ? t('result.zip', locale) : t('result.success', locale)}
+        </div>
+      )}
+      {success && processedBlobRef.current && (
+        <div className="flex justify-center mb-6">
+          <CloudFileSaver blob={processedBlobRef.current} fileName={downloadFileNameRef.current} />
         </div>
       )}
 

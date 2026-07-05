@@ -10,7 +10,7 @@ const csp = [
   "media-src 'self' data: blob:",
   "worker-src 'self' blob:",
   "connect-src 'self' https://openrouter.ai https://www.googletagmanager.com https://*.google-analytics.com https://analytics.google.com https://apis.google.com https://accounts.google.com https://www.googleapis.com https://content.dropboxapi.com https://*.dropboxusercontent.com https://api.onedrive.com https://graph.microsoft.com",
-  "frame-src https://onedrive.live.com https://docs.google.com https://www.dropbox.com https://*.dropboxusercontent.com",
+  "frame-src https://onedrive.live.com https://docs.google.com https://www.dropbox.com https://*.dropboxusercontent.com https://login.microsoftonline.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { flattenPDF, downloadPdf } from '@/lib/client-pdf';
+import CloudFileSaver from '@/components/CloudFileSaver';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -12,6 +13,7 @@ export default function FlattenPdf() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const processedBlobRef = useRef<Blob | null>(null);
 
   const handleFile = (f: File | null) => {
     if (!f) return;
@@ -29,7 +31,8 @@ export default function FlattenPdf() {
 
     try {
       const result = await flattenPDF(file);
-      await downloadPdf(result, file.name.replace('.pdf', '') + '-spłaszczony.pdf');
+      const blob = await downloadPdf(result, file.name.replace('.pdf', '') + '-spłaszczony.pdf');
+      processedBlobRef.current = blob;
       setSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('error.generic', locale));
@@ -83,6 +86,11 @@ export default function FlattenPdf() {
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
       {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">            ✅ {t('page.flatten.success', locale)}</div>}
+      {success && file && processedBlobRef.current && (
+        <div className="flex justify-center mb-6">
+          <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', '') + '-spłaszczony.pdf'} />
+        </div>
+      )}
 
       <button onClick={handleFlatten} disabled={loading || !file}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition

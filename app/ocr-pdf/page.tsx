@@ -1,9 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import JSZip from 'jszip';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import CloudFileSaver from '@/components/CloudFileSaver';
 
 const LANGUAGES = [
   { value: 'pol', labelKey: 'page.ocr.lang_polish' },
@@ -59,6 +60,8 @@ export default function OCRPDF() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const processedBlobRef = useRef<Blob | null>(null);
+  const downloadFileNameRef = useRef('');
   const [language, setLanguage] = useState('pol');
   const [recognizedText, setRecognizedText] = useState('');
   const [ocrDone, setOcrDone] = useState(false);
@@ -131,15 +134,17 @@ export default function OCRPDF() {
   const downloadPDF = async () => {
     if (!pdfData) return;
     const blob = new Blob([pdfData as BlobPart], { type: 'application/pdf' });
-    const name = files.length === 1 ? files[0].name.replace('.pdf', '_ocr.pdf') : 'ocr-wyniki.pdf';
-    await downloadBlob(blob, name);
+    processedBlobRef.current = blob;
+    downloadFileNameRef.current = files.length === 1 ? files[0].name.replace('.pdf', '_ocr.pdf') : 'ocr-wyniki.pdf';
+    await downloadBlob(blob, downloadFileNameRef.current);
   };
 
   const downloadTXT = () => {
     if (!recognizedText) return;
     const blob = new Blob([recognizedText], { type: 'text/plain;charset=utf-8' });
-    const name = files.length === 1 ? files[0].name.replace('.pdf', '_ocr.txt') : 'ocr-wyniki.txt';
-    downloadBlob(blob, name);
+    processedBlobRef.current = blob;
+    downloadFileNameRef.current = files.length === 1 ? files[0].name.replace('.pdf', '_ocr.txt') : 'ocr-wyniki.txt';
+    downloadBlob(blob, downloadFileNameRef.current);
   };
 
   const downloadDOCX = async () => {
@@ -153,8 +158,9 @@ export default function OCRPDF() {
       }],
     });
     const blob = await Packer.toBlob(doc);
-    const name = files.length === 1 ? files[0].name.replace('.pdf', '_ocr.docx') : 'ocr-wyniki.docx';
-    downloadBlob(blob, name);
+    processedBlobRef.current = blob;
+    downloadFileNameRef.current = files.length === 1 ? files[0].name.replace('.pdf', '_ocr.docx') : 'ocr-wyniki.docx';
+    downloadBlob(blob, downloadFileNameRef.current);
   };
 
   return (
@@ -239,6 +245,11 @@ export default function OCRPDF() {
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
           ✅ {files.length > 1 ? t('page.ocr.success_zip', locale) : t('page.ocr.success_single', locale)}
+        </div>
+      )}
+      {success && processedBlobRef.current && (
+        <div className="flex justify-center mb-6">
+          <CloudFileSaver blob={processedBlobRef.current} fileName={downloadFileNameRef.current} />
         </div>
       )}
 

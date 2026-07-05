@@ -1,9 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { pdfToSvgPages } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import CloudFileSaver from '@/components/CloudFileSaver';
 
 async function downloadZip(items: { svg: string; name: string }[]) {
   const JSZip = (await import('jszip')).default;
@@ -18,6 +19,7 @@ async function downloadZip(items: { svg: string; name: string }[]) {
   a.download = 'strony-pdf.svg.zip';
   a.click();
   URL.revokeObjectURL(url);
+  return blob;
 }
 
 export default function PdfToSvg() {
@@ -27,6 +29,8 @@ export default function PdfToSvg() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const processedBlobRef = useRef<Blob | null>(null);
+  const downloadFileNameRef = useRef('');
 
   const handleFile = (f: File | null) => {
     if (!f) return;
@@ -46,6 +50,8 @@ export default function PdfToSvg() {
       const svgs = await pdfToSvgPages(file);
       if (svgs.length === 1) {
         const blob = new Blob([svgs[0].svg], { type: 'image/svg+xml' });
+        processedBlobRef.current = blob;
+        downloadFileNameRef.current = svgs[0].name;
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -53,7 +59,9 @@ export default function PdfToSvg() {
         a.click();
         URL.revokeObjectURL(url);
       } else {
-        await downloadZip(svgs);
+        const blob = await downloadZip(svgs);
+        processedBlobRef.current = blob;
+        downloadFileNameRef.current = 'strony-pdf.svg.zip';
       }
       setSuccess(true);
     } catch (err: unknown) {
@@ -103,6 +111,11 @@ export default function PdfToSvg() {
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
       {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">{t('page.svg.success', locale)}</div>}
+      {success && processedBlobRef.current && (
+        <div className="flex justify-center mb-6">
+          <CloudFileSaver blob={processedBlobRef.current} fileName={downloadFileNameRef.current} />
+        </div>
+      )}
 
       <button onClick={handleSubmit} disabled={loading || !file}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition

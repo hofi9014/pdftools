@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import CloudFileSaver from '@/components/CloudFileSaver';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -10,6 +11,7 @@ export default function UrlToPdf() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const processedBlobRef = useRef<Blob | null>(null);
 
   const handleConvert = async () => {
     if (!url.trim()) { setError(t('page.url.no_url', locale)); return; }
@@ -30,6 +32,7 @@ export default function UrlToPdf() {
       if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
 
       const blob = await res.blob();
+      processedBlobRef.current = blob;
       const urlObj = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = urlObj;
@@ -69,6 +72,11 @@ export default function UrlToPdf() {
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
       {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">✅ {t('page.url.success', locale)}</div>}
+      {success && processedBlobRef.current && (
+        <div className="flex justify-center mb-6">
+          <CloudFileSaver blob={processedBlobRef.current} fileName="strona.pdf" />
+        </div>
+      )}
 
       <button onClick={handleConvert} disabled={loading || !url.trim()}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition

@@ -13,6 +13,48 @@ const categoryLabels: Record<string, Record<Locale, string>> = {
     is: 'Þjappa PDF', tr: 'PDF Sıkıştırma', ar: 'ضغط PDF',
     fa: 'فشرده‌سازی PDF', hi: 'PDF संपीड़न', ja: 'PDF圧縮', zh: '压缩PDF',
   },
+  'merge-pdf': {
+    pl: 'Łączenie PDF', en: 'Merge PDF', de: 'PDF-Zusammenfügung',
+    es: 'Combinar PDF', fr: 'Fusionner PDF', it: 'Unire PDF',
+    pt: 'Unir PDF', sv: 'Slå ihop PDF', no: 'Slå sammen PDF',
+    is: 'Sameina PDF', tr: 'PDF Birleştirme', ar: 'دمج PDF',
+    fa: 'ادغام PDF', hi: 'PDF मर्ज करें', ja: 'PDF結合', zh: '合并PDF',
+  },
+  'split-pdf': {
+    pl: 'Dzielenie PDF', en: 'Split PDF', de: 'PDF-Teilung',
+    es: 'Dividir PDF', fr: 'Diviser PDF', it: 'Dividere PDF',
+    pt: 'Dividir PDF', sv: 'Dela PDF', no: 'Dele PDF',
+    is: 'Skipta PDF', tr: 'PDF Bölme', ar: 'تقسيم PDF',
+    fa: 'تقسیم PDF', hi: 'PDF विभाजित करें', ja: 'PDF分割', zh: '拆分PDF',
+  },
+  'protect-pdf': {
+    pl: 'Zabezpieczanie PDF', en: 'Protect PDF', de: 'PDF-Schutz',
+    es: 'Proteger PDF', fr: 'Protéger PDF', it: 'Proteggere PDF',
+    pt: 'Proteger PDF', sv: 'Skydda PDF', no: 'Beskytt PDF',
+    is: 'Vernda PDF', tr: 'PDF Koruma', ar: 'حماية PDF',
+    fa: 'محافظت از PDF', hi: 'PDF सुरक्षित करें', ja: 'PDF保護', zh: '保护PDF',
+  },
+  'unlock-pdf': {
+    pl: 'Odblokowywanie PDF', en: 'Unlock PDF', de: 'PDF-Entsperrung',
+    es: 'Desbloquear PDF', fr: 'Déverrouiller PDF', it: 'Sbloccare PDF',
+    pt: 'Desbloquear PDF', sv: 'Lås upp PDF', no: 'Lås opp PDF',
+    is: 'Opna PDF', tr: 'PDF Kilidini Aç', ar: 'فتح قفل PDF',
+    fa: 'باز کردن قفل PDF', hi: 'PDF अनलॉक करें', ja: 'PDFロック解除', zh: '解锁PDF',
+  },
+  'pdf-to-word': {
+    pl: 'PDF do Worda', en: 'PDF to Word', de: 'PDF zu Word',
+    es: 'PDF a Word', fr: 'PDF vers Word', it: 'PDF in Word',
+    pt: 'PDF para Word', sv: 'PDF till Word', no: 'PDF til Word',
+    is: 'PDF í Word', tr: 'PDF\'den Word\'e', ar: 'PDF إلى Word',
+    fa: 'PDF به Word', hi: 'PDF से Word', ja: 'PDFからWordへ', zh: 'PDF转Word',
+  },
+  'jpg-to-pdf': {
+    pl: 'JPG do PDF', en: 'JPG to PDF', de: 'JPG zu PDF',
+    es: 'JPG a PDF', fr: 'JPG en PDF', it: 'JPG in PDF',
+    pt: 'JPG para PDF', sv: 'JPG till PDF', no: 'JPG til PDF',
+    is: 'JPG í PDF', tr: 'JPG\'den PDF\'ye', ar: 'JPG إلى PDF',
+    fa: 'JPG به PDF', hi: 'JPG से PDF', ja: 'JPGからPDFへ', zh: 'JPG转PDF',
+  },
 };
 
 function getCategoryLabel(category: string, locale: Locale): string {

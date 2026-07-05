@@ -1,6 +1,7 @@
  'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { addWatermark, downloadPdf } from '@/lib/client-pdf';
+import CloudFileSaver from '@/components/CloudFileSaver';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -16,6 +17,7 @@ export default function WatermarkPDF() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const processedBlobRef = useRef<Blob | null>(null);
 
   const handleFile = (f: File | null) => {
     if (!f) return;
@@ -38,7 +40,8 @@ export default function WatermarkPDF() {
         fontSize: parseInt(fontSize, 10),
         position: position as 'top' | 'center' | 'bottom',
       });
-      await downloadPdf(result, file.name.replace('.pdf', '_znak_wodny.pdf'));
+      const blob = await downloadPdf(result, file.name.replace('.pdf', '_znak_wodny.pdf'));
+      processedBlobRef.current = blob;
       setSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('error.generic', locale));
@@ -184,6 +187,11 @@ export default function WatermarkPDF() {
 
         {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
         {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">✅ {t('result.success', locale)}</div>}
+        {success && file && processedBlobRef.current && (
+          <div className="flex justify-center mb-6">
+            <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', '_znak_wodny.pdf')} />
+          </div>
+        )}
 
         <button onClick={handleWatermark} disabled={loading || !file || !text.trim()}
           className={`w-full py-4 rounded-2xl font-bold text-lg transition

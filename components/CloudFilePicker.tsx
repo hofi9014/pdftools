@@ -14,13 +14,14 @@ interface CloudFilePickerProps {
   label?: string;
 }
 
-function loadScript(src: string, id?: string): Promise<void> {
+function loadScript(src: string, id?: string, attrs?: Record<string, string>): Promise<void> {
   return new Promise((resolve, reject) => {
     if (id && document.getElementById(id)) { resolve(); return; }
     const s = document.createElement('script');
     if (id) s.id = id;
     s.src = src;
     s.async = true;
+    if (attrs) { for (const [k, v] of Object.entries(attrs)) s.setAttribute(k, v); }
     s.onload = () => resolve();
     s.onerror = () => reject(new Error(`Failed to load ${src}`));
     document.head.appendChild(s);
@@ -89,7 +90,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
     try {
       if (!DROPBOX_KEY) { throw new Error('Dropbox not configured'); }
 
-      await loadScript(`https://www.dropbox.com/static/api/2/dropins.js`, 'dropboxjs');
+      await loadScript(`https://www.dropbox.com/static/api/2/dropins.js`, 'dropboxjs', { 'data-app-key': DROPBOX_KEY });
 
       window.Dropbox!.choose({
         success: async (files: { link: string; name: string }[]) => {

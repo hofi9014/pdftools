@@ -33,14 +33,14 @@ export default function CTATool({ tool, locale }: { tool: ToolSlug; locale: stri
   return (
     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-5 my-6 text-center">
       <p className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">
-        {locale === 'pl' ? 'Wypróbuj narzędzie' : 'Try the tool'}
+        {t('guides.try_tool', locale)}
       </p>
       <p className="text-2xl mb-3">{toolName}</p>
       <Link
         href={href}
         className="inline-block px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition text-sm"
       >
-        {locale === 'pl' ? 'Otwórz narzędzie →' : 'Open tool →'}
+        {t('guides.open_tool', locale)}
       </Link>
     </div>
   );

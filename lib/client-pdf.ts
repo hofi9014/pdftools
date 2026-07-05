@@ -183,7 +183,7 @@ export async function flattenPDF(file: File): Promise<Uint8Array> {
   return pdf.save();
 }
 
-export async function downloadPdf(data: Uint8Array, filename: string) {
+export async function downloadPdf(data: Uint8Array, filename: string): Promise<Blob> {
   const blob = new Blob([data as unknown as BlobPart], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -191,9 +191,10 @@ export async function downloadPdf(data: Uint8Array, filename: string) {
   a.download = filename.endsWith('.pdf') ? filename : filename + '.pdf';
   a.click();
   URL.revokeObjectURL(url);
+  return blob;
 }
 
-export async function downloadZip(buffers: { data: Uint8Array; name: string }[]): Promise<void> {
+export async function downloadZip(buffers: { data: Uint8Array; name: string }[]): Promise<Blob> {
   const JSZip = (await import('jszip')).default;
   const zip = new JSZip();
   buffers.forEach((b, i) => zip.file(b.name || `file-${i + 1}.pdf`, b.data as unknown as Uint8Array<ArrayBuffer>));
@@ -204,6 +205,7 @@ export async function downloadZip(buffers: { data: Uint8Array; name: string }[])
   a.download = 'archive.zip';
   a.click();
   URL.revokeObjectURL(url);
+  return blob;
 }
 
 export function parsePageRanges(input: string, totalPages?: number): number[] {

@@ -1,6 +1,7 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import DOMPurify from 'dompurify';
+import CloudFileSaver from '@/components/CloudFileSaver';
 import { htmlToPdf } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
@@ -12,6 +13,7 @@ export default function HtmlToPdf() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const processedBlobRef = useRef<Blob | null>(null);
 
   const handleConvert = async () => {
     if (!html.trim()) { setError(t('page.html2pdf.no_html', locale)); return; }
@@ -21,6 +23,7 @@ export default function HtmlToPdf() {
 
     try {
       const blob = await htmlToPdf(html);
+      processedBlobRef.current = blob;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -72,6 +75,11 @@ export default function HtmlToPdf() {
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
       {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">✅ {t('page.html2pdf.success', locale)}</div>}
+      {success && processedBlobRef.current && (
+        <div className="flex justify-center mb-6">
+          <CloudFileSaver blob={processedBlobRef.current} fileName="dokument.pdf" />
+        </div>
+      )}
 
       <button onClick={handleConvert} disabled={loading || !html.trim()}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition

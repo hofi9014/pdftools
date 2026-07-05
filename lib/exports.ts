@@ -4,6 +4,40 @@ import { createHmac, timingSafeEqual } from 'crypto';
 const TTL_MS = 5 * 60 * 1000; // 5 minutes
 const HMAC_ALGO = 'sha256';
 
+// Rate limiting: fixed window per IP
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX = 10; // max 10 requests per window
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+let rateLimitCleanupTimer: ReturnType<typeof setInterval> | null = null;
+function ensureRateLimitCleanup() {
+  if (rateLimitCleanupTimer) return;
+  rateLimitCleanupTimer = setInterval(() => {
+    const now = Date.now();
+    for (const [key, val] of rateLimitStore) {
+      if (now > val.resetAt) rateLimitStore.delete(key);
+    }
+    if (rateLimitStore.size === 0 && rateLimitCleanupTimer) {
+      clearInterval(rateLimitCleanupTimer);
+      rateLimitCleanupTimer = null;
+    }
+  }, RATE_LIMIT_WINDOW_MS);
+}
+
+export function checkRateLimit(clientIp: string): { allowed: boolean; remaining: number; resetAt: number } {
+  const now = Date.now();
+  const entry = rateLimitStore.get(clientIp);
+  if (!entry || now > entry.resetAt) {
+    rateLimitStore.set(clientIp, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    ensureRateLimitCleanup();
+    return { allowed: true, remaining: RATE_LIMIT_MAX - 1, resetAt: now + RATE_LIMIT_WINDOW_MS };
+  }
+  entry.count++;
+  if (entry.count > RATE_LIMIT_MAX) {
+    return { allowed: false, remaining: 0, resetAt: entry.resetAt };
+  }
+  return { allowed: true, remaining: RATE_LIMIT_MAX - entry.count, resetAt: entry.resetAt };
+}
+
 interface StoredFile {
   buffer: Buffer;
   contentType: string;

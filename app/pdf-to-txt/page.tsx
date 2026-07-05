@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import CloudFileSaver from '@/components/CloudFileSaver';
 import { extractTextFromPDF } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
@@ -12,6 +13,7 @@ export default function PDFToTxt() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const processedBlobRef = useRef<Blob | null>(null);
 
   const handleFile = (f: File | null) => {
     if (!f) return;
@@ -30,6 +32,7 @@ export default function PDFToTxt() {
     try {
       const text = await extractTextFromPDF(file);
       const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      processedBlobRef.current = blob;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -92,6 +95,11 @@ export default function PDFToTxt() {
         {success && (
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
             ✅ {t('page.txt.success', locale)}
+          </div>
+        )}
+        {success && file && processedBlobRef.current && (
+          <div className="flex justify-center mb-6">
+            <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', '.txt')} />
           </div>
         )}
 

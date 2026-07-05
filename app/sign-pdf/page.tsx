@@ -2,6 +2,7 @@
 import { useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import SignatureCanvas from 'react-signature-canvas';
+import CloudFileSaver from '@/components/CloudFileSaver';
 import { signPdfClient } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
@@ -45,7 +46,9 @@ export default function SignPdf() {
   const [preset, setPreset] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const sigRef = useRef<SignatureCanvas | null>(null);
+  const processedBlobRef = useRef<Blob | null>(null);
 
   const clearSignature = useCallback(() => {
     sigRef.current?.clear();
@@ -86,12 +89,14 @@ export default function SignPdf() {
         unit,
         preset,
       });
+      processedBlobRef.current = blob;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `podpisany-${file.name}`;
       a.click();
       URL.revokeObjectURL(url);
+      setSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('page.edit.unknown_error', locale));
     } finally { setLoading(false); }
@@ -184,6 +189,17 @@ export default function SignPdf() {
           {loading ? t('page.sign.loading', locale) : t('page.sign.btn', locale)}
         </button>
       </form>
+
+      {success && (
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
+          ✅ {t('result.success', locale)}
+        </div>
+      )}
+      {success && file && processedBlobRef.current && (
+        <div className="flex justify-center mb-6">
+          <CloudFileSaver blob={processedBlobRef.current} fileName={`podpisany-${file.name}`} />
+        </div>
+      )}
 
       <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
         <h2 className="font-semibold tool-heading mb-2">{t('section.how_it_works', locale)}</h2>
