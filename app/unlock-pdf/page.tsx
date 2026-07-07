@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
+import CloudFilePicker from '@/components/CloudFilePicker';
 import { unlockPdfClient } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
@@ -82,6 +83,10 @@ export default function UnlockPDF() {
           <input id="fileInput" type="file" accept=".pdf" className="hidden"
             onChange={e => handleFile(e.target.files?.[0] || null)} />
         </div>
+
+      <div className="flex justify-center gap-2 mb-6">
+        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
+      </div>
 
         {/* Hasło */}
         <div className="tool-card rounded-2xl border p-6 mb-6">

@@ -3,6 +3,7 @@ import { useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import SignatureCanvas from 'react-signature-canvas';
 import CloudFileSaver from '@/components/CloudFileSaver';
+import CloudFilePicker from '@/components/CloudFilePicker';
 import { signPdfClient } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
@@ -114,6 +115,10 @@ export default function SignPdf() {
         <div className="tool-dropzone rounded-xl p-6 text-center cursor-pointer transition" onClick={() => document.getElementById('file-input')?.click()}>
           <input id="file-input" type="file" accept=".pdf" className="hidden" onChange={(e) => { setFile(e.target.files?.[0] || null); setError(''); }} />
           {file ? <p className="!text-[var(--coffee-accent)] font-medium">{file.name}</p> : <p className="text-gray-400 dark:text-gray-500">{t('page.edit.click_select', locale)}</p>}
+        </div>
+
+        <div className="flex justify-center gap-2 mb-6">
+          <CloudFilePicker onFilesPicked={(f) => { setFile(f[0] || null); setError(''); }} label={"☁️ " + t('cloud.add', locale)} />
         </div>
 
         <div>

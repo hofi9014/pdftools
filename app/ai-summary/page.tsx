@@ -1,10 +1,11 @@
 'use client';
 import { useState, useCallback } from 'react';
 import { extractTextFromPDF } from '@/lib/client-pdf';
-import { getApiKey, setApiKey, hasApiKey, summarizeText, getPreview } from '@/lib/client-ai';
+import { summarizeText } from '@/lib/client-ai';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import CloudFilePicker from '@/components/CloudFilePicker';
 
 export default function AiSummary() {
   const { locale } = useLocale();
@@ -13,14 +14,12 @@ export default function AiSummary() {
   const [summary, setSummary] = useState('');
   const [error, setError] = useState('');
   const [note, setNote] = useState('');
-  const [showKeyInput, setShowKeyInput] = useState(false);
-  const [keyInput, setKeyInput] = useState(getApiKey());
-  const [aiOk, setAiOk] = useState(hasApiKey());
   const [dragOver, setDragOver] = useState(false);
 
-  const saveKey = () => {
-    if (keyInput.trim()) { setApiKey(keyInput.trim()); setAiOk(true); setShowKeyInput(false); }
-    else { setApiKey(''); setAiOk(false); }
+  const handleFile = (f: File | null) => {
+    if (!f) return;
+    if (f.type !== 'application/pdf') { setError(t('error.onlypdf', locale)); return; }
+    setFile(f); setError(''); setSummary(''); setNote('');
   };
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
@@ -30,16 +29,11 @@ export default function AiSummary() {
     try {
       const text = await extractTextFromPDF(file);
       if (!text.trim()) { throw new Error(t('page.aisummary.no_text', locale)); }
-      if (aiOk) {
-        const result = await summarizeText(text, getApiKey());
-        setSummary(result);
-      } else {
-        setSummary(getPreview(text));
-        setNote(t('page.aisummary.preview_note', locale));
-      }
+      const result = await summarizeText(text);
+      setSummary(result);
     } catch (err: unknown) { setError(err instanceof Error ? err.message : t('error.generic', locale)); }
     finally { setLoading(false); }
-  }, [file, aiOk]);
+  }, [file]);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
@@ -49,29 +43,18 @@ export default function AiSummary() {
         <p className="text-gray-500 dark:text-gray-400 mt-2">{t('page.aisummary.desc', locale)}</p>
       </div>
 
-      <div className="flex justify-end mb-4">
-        <button onClick={() => setShowKeyInput(!showKeyInput)}
-          className={`text-xs px-3 py-1.5 rounded-lg border transition ${aiOk ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400'}`}>
-          {aiOk ? <>✓ {t('page.aisummary.api_key_set', locale)}</> : <>⚙️ {t('page.aisummary.set_key', locale)}</>}
-        </button>
-      </div>
-      {showKeyInput && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 mb-6 flex gap-2 items-center">
-          <input type="password" value={keyInput} onChange={e => setKeyInput(e.target.value)}
-            placeholder="sk-or-v1-..." className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800" />
-          <button onClick={saveKey} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">{t('page.aisummary.save_key', locale)}</button>
-          <button onClick={() => { setApiKey(''); setAiOk(false); setKeyInput(''); setShowKeyInput(false); }} className="text-gray-400 hover:text-red-500 text-sm">✕</button>
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} className="tool-card rounded-2xl border p-8 space-y-6">
-        <div onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f?.type === 'application/pdf') setFile(f); }}
+          <div onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onClick={() => document.getElementById('file-input')?.click()}
           className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${dragOver ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-600 hover:border-blue-400'} ${file ? 'border-green-400 dark:border-green-500' : ''}`}>
-          <input id="file-input" type="file" accept=".pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f?.type === 'application/pdf') setFile(f); setError(''); }} />
+          <input id="file-input" type="file" accept=".pdf" className="hidden" onChange={(e) => handleFile(e.target.files?.[0] || null)} />
           {file ? <p className="!text-[var(--coffee-accent)] font-medium">{file.name}</p> : <p className="text-gray-400 dark:text-gray-500">{t('page.aisummary.click_to_select', locale)}</p>}
+        </div>
+
+        <div className="flex justify-center gap-2 mb-6">
+          <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
         </div>
 
         <button type="submit" disabled={!file || loading} className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-medium rounded-xl transition">
@@ -99,6 +82,8 @@ export default function AiSummary() {
           <li>{t('page.aisummary.howto_5', locale)}</li>
         </ul>
       </div>
+
+      <p className="mt-6 text-center text-xs text-gray-400 dark:text-gray-500">⚡ 15 darmowych zapytań AI dziennie</p>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFileSaver from '@/components/CloudFileSaver';
+import CloudFilePicker from '@/components/CloudFilePicker';
 
 export default function PDFToWord() {
   const { locale } = useLocale();
@@ -103,6 +104,10 @@ export default function PDFToWord() {
         <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.multiple', locale)}</p>
         <input id="fileInput" type="file" accept=".pdf" multiple className="hidden"
           onChange={e => handleFiles(e.target.files)} />
+      </div>
+
+      <div className="flex justify-center gap-2 mb-6">
+        <CloudFilePicker onFilesPicked={handleFiles} label={"☁️ " + t('cloud.add', locale)} />
       </div>
 
       {files.length > 0 && (

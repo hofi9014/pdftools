@@ -34,12 +34,22 @@ async function urlToFile(url: string, name: string): Promise<File> {
   return new File([blob], name, { type: blob.type || 'application/pdf' });
 }
 
+function cleanupOAuthUrl() {
+  if (window.location.search.includes('oauth=')) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('oauth');
+    window.history.replaceState(null, '', url.toString());
+  }
+}
+
 export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...props }: CloudFilePickerProps) {
   const { locale } = useLocale();
   const label = props.label ?? t('cloud.add', locale);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const googleTokenRef = useRef<string>('');
+  const bcRef = useRef<BroadcastChannel | null>(null);
+  const oauthIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   const handleGoogleDrive = useCallback(async () => {
     setOpen(false);
@@ -121,29 +131,113 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
 
       await loadScript('https://js.live.net/v7.2/OneDrive.js', 'onedrive-js');
 
+      // Clean stale OneDrive OAuth tokens from localStorage that could cause
+      // "Another popup is already opened" error: the SDK's Oauth.auth() adds a
+      // message listener BEFORE opening the popup. If a stale token from a
+      // previous flow is delivered via postMessage/MessageEvent, the listener
+      // sees a state/source mismatch and throws popupOpen before the popup
+      // even opens.
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('onedrive-oauth-')) {
+          const v = localStorage.getItem(k);
+          console.log('[OneDrive] Cleaning stale token key:', k, v ? v.substring(0, 80) : '(empty)');
+          localStorage.removeItem(k);
+        }
+      }
+
+      // Also clear the OneDrive SDK's own LoginCache hint for this clientId.
+      // Stale login hints can cause OAuth to redirect with wrong parameters,
+      // leading to silent failures. The SDK stores cache under 'odpickerv7cache'.
+      try {
+        const sdkCacheRaw = localStorage.getItem('odpickerv7cache');
+        if (sdkCacheRaw) {
+          const sdkCache = JSON.parse(sdkCacheRaw);
+          const hintKey = 'od7-' + ONEDRIVE_CLIENT_ID;
+          if (sdkCache.odsdkLoginHint && sdkCache.odsdkLoginHint[hintKey]) {
+            console.log('[OneDrive] Cleaning stale SDK login hint:', hintKey,
+              JSON.stringify(sdkCache.odsdkLoginHint[hintKey]));
+            delete sdkCache.odsdkLoginHint[hintKey];
+            localStorage.setItem('odpickerv7cache', JSON.stringify(sdkCache));
+          }
+        }
+      } catch (e) {
+        console.warn('[OneDrive] Failed to clean SDK cache:', e);
+      }
+
+      const deliverToken = (payload: string) => {
+        window.postMessage(payload, window.location.origin);
+        window.dispatchEvent(new MessageEvent('message', { data: payload, origin: window.location.origin }));
+      };
+
+      try {
+        bcRef.current = new BroadcastChannel('onedrive-oauth');
+        bcRef.current.onmessage = (event) => {
+          if (event.data?.type === 'onedrive-token') deliverToken(event.data.payload);
+        };
+      } catch {}
+
+      oauthIntervalRef.current = setInterval(() => {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('onedrive-oauth-')) {
+            const payload = localStorage.getItem(key);
+            localStorage.removeItem(key);
+            if (payload) deliverToken(payload);
+            break;
+          }
+        }
+      }, 300);
+
+      const redirectUri = window.location.origin + '/onedrive-picker-oauth.html';
+
       window.OneDrive!.open({
         clientId: ONEDRIVE_CLIENT_ID,
         action: 'download',
         multiSelect: true,
-        advanced: { queryParameters: 'select=id,name,content.downloadUrl' },
-        success: async (files: { name: string; content?: { downloadUrl: string } }[]) => {
+        advanced: {
+          redirectUri,
+          queryParameters: 'select=id,name,content.downloadUrl',
+        },
+        success: async (files: any) => {
+          const fileList: any[] = Array.isArray(files) ? files : (files?.value || []);
           try {
             const result = await Promise.all(
-              files.map(async (f) => {
-                const url = f.content?.downloadUrl || '';
-                if (!url) { throw new Error('No download URL'); }
+              fileList.map(async (f: any) => {
+                const url = f.downloadUrl || f.content?.downloadUrl || f.webUrl || f['@microsoft.graph.downloadUrl'] || '';
+                if (!url) { throw new Error('No download URL for ' + f.name); }
                 return urlToFile(url, f.name);
               })
             );
             onFilesPicked(result);
-          } catch { }
+          } catch (e) {
+            console.error('OneDrive download error:', e);
+          }
           setLoading(null);
+          cleanupOAuthUrl();
+          if (oauthIntervalRef.current) { clearInterval(oauthIntervalRef.current); oauthIntervalRef.current = undefined; }
+          if (bcRef.current) { bcRef.current.close(); bcRef.current = null; }
         },
-        cancel: () => setLoading(null),
+        cancel: () => {
+          setLoading(null);
+          cleanupOAuthUrl();
+          if (oauthIntervalRef.current) { clearInterval(oauthIntervalRef.current); oauthIntervalRef.current = undefined; }
+          if (bcRef.current) { bcRef.current.close(); bcRef.current = null; }
+        },
+        error: (err: any) => {
+          console.error('OneDrive error:', err);
+          setLoading(null);
+          cleanupOAuthUrl();
+          if (oauthIntervalRef.current) { clearInterval(oauthIntervalRef.current); oauthIntervalRef.current = undefined; }
+          if (bcRef.current) { bcRef.current.close(); bcRef.current = null; }
+        },
       });
     } catch (e) {
       console.error('OneDrive error:', e);
       setLoading(null);
+      cleanupOAuthUrl();
+      if (oauthIntervalRef.current) { clearInterval(oauthIntervalRef.current); oauthIntervalRef.current = undefined; }
+      if (bcRef.current) { bcRef.current.close(); bcRef.current = null; }
     }
   }, [onFilesPicked]);
 

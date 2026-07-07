@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
+import CloudFilePicker from '@/components/CloudFilePicker';
 import { pdfToOdt } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
@@ -79,6 +80,10 @@ export default function PDFToOpenOffice() {
         )}
         <input id="fileInput" type="file" accept=".pdf" className="hidden"
           onChange={e => handleFile(e.target.files?.[0] || null)} />
+      </div>
+
+      <div className="flex justify-center gap-2 mb-6">
+        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
       </div>
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 mb-6">

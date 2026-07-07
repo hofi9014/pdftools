@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import CloudFilePicker from '@/components/CloudFilePicker';
 import PdfEditor from '@/components/edit-pdf/PdfEditor';
 
 export default function EditPdfPage() {
@@ -65,6 +66,10 @@ export default function EditPdfPage() {
         <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.subtitle', locale)}</p>
         <input id="fileInput" type="file" accept=".pdf" className="hidden"
           onChange={e => handleFile(e.target.files?.[0] ?? null)} />
+      </div>
+
+      <div className="flex justify-center gap-2 mb-6">
+        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">

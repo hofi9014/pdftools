@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { extractFormFields, fillFormFields, downloadPdf, type FormField } from '@/lib/client-pdf';
 import CloudFileSaver from '@/components/CloudFileSaver';
+import CloudFilePicker from '@/components/CloudFilePicker';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -95,6 +96,10 @@ export default function FillForm() {
         )}
         <input id="fileInput" type="file" accept=".pdf" className="hidden"
           onChange={e => handleFile(e.target.files?.[0] || null)} />
+      </div>
+
+      <div className="flex justify-center gap-2 mb-6">
+        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
       </div>
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}

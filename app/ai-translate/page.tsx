@@ -1,10 +1,11 @@
 'use client';
 import { useState } from 'react';
 import { extractTextFromPDF } from '@/lib/client-pdf';
-import { getApiKey, setApiKey, hasApiKey, translateText } from '@/lib/client-ai';
+import { translateText } from '@/lib/client-ai';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import CloudFilePicker from '@/components/CloudFilePicker';
 
 const LANG_KEYS = [
   { value: 'angielski', key: 'lang.english' },
@@ -29,15 +30,6 @@ export default function AiTranslate() {
   const [error, setError] = useState('');
   const [result, setResult] = useState<{ translated: string; original: string } | null>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [showKeyInput, setShowKeyInput] = useState(false);
-  const [keyInput, setKeyInput] = useState(getApiKey());
-  const [aiOk, setAiOk] = useState(hasApiKey());
-
-  const saveKey = () => {
-    if (keyInput.trim()) { setApiKey(keyInput.trim()); setAiOk(true); setShowKeyInput(false); }
-    else { setApiKey(''); setAiOk(false); }
-  };
-
   const handleFile = (f: File | null) => {
     if (!f) return;
     if (f.type !== 'application/pdf') { setError(t('error.onlypdf', locale)); return; }
@@ -46,12 +38,11 @@ export default function AiTranslate() {
 
   const handleTranslate = async () => {
     if (!file) { setError(t('error.select', locale)); return; }
-    if (!aiOk) { setError(t('page.translate.api_required', locale)); return; }
     setLoading(true); setError(''); setResult(null);
     try {
       const text = await extractTextFromPDF(file);
       if (!text.trim()) throw new Error(t('page.translate.no_text', locale));
-      const translated = await translateText(text, targetLang, getApiKey());
+      const translated = await translateText(text, targetLang);
       setResult({ translated, original: text.slice(0, 500) });
     } catch (err: unknown) { setError(err instanceof Error ? err.message : t('error.generic', locale)); }
     finally { setLoading(false); }
@@ -64,21 +55,6 @@ export default function AiTranslate() {
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tool-heading mb-3">{t('tool.translate', locale)}</h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">{t('page.translate.desc', locale)}</p>
       </div>
-
-      <div className="flex justify-end mb-4">
-        <button onClick={() => setShowKeyInput(!showKeyInput)}
-          className={`text-xs px-3 py-1.5 rounded-lg border transition ${aiOk ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400'}`}>
-          {aiOk ? <>✓ {t('page.translate.api_key_set', locale)}</> : <>⚙️ {t('page.translate.set_key', locale)}</>}
-        </button>
-      </div>
-      {showKeyInput && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 mb-6 flex gap-2 items-center">
-          <input type="password" value={keyInput} onChange={e => setKeyInput(e.target.value)}
-            placeholder="sk-or-v1-..." className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800" />
-          <button onClick={saveKey} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">{t('page.translate.save_key', locale)}</button>
-          <button onClick={() => { setApiKey(''); setAiOk(false); setKeyInput(''); setShowKeyInput(false); }} className="text-gray-400 hover:text-red-500 text-sm">✕</button>
-        </div>
-      )}
 
       <div onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -102,6 +78,10 @@ export default function AiTranslate() {
           </div>
         )}
         <input id="fileInput" type="file" accept=".pdf" className="hidden" onChange={e => handleFile(e.target.files?.[0] || null)} />
+      </div>
+
+      <div className="flex justify-center gap-2 mb-6">
+        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -156,6 +136,8 @@ export default function AiTranslate() {
           </div>
         ))}
       </div>
+
+      <p className="mt-6 text-center text-xs text-gray-400 dark:text-gray-500">⚡ 15 darmowych zapytań AI dziennie</p>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
+import CloudFilePicker from '@/components/CloudFilePicker';
 import { imagesToPdf } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
@@ -18,8 +19,8 @@ export default function JPGToPDF() {
 
   const acceptedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/tiff', 'image/webp'];
 
-  const handleFiles = (newFiles: FileList | null) => {
-    if (!newFiles) return;
+  const handleFiles = (newFiles: FileList | File[] | null) => {
+    if (!newFiles || newFiles.length === 0) return;
     const images = Array.from(newFiles).filter(f => acceptedTypes.includes(f.type));
     if (images.length !== newFiles.length) {
       setError(t('page.jpgTopdf.not_images', locale));
@@ -89,9 +90,13 @@ export default function JPGToPDF() {
             accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff,.webp"
             multiple className="hidden"
             onChange={e => handleFiles(e.target.files)} />
-        </div>
+      </div>
 
-        {files.length > 0 && (
+      <div className="flex justify-center gap-2 mb-6">
+        <CloudFilePicker onFilesPicked={handleFiles} accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff,.webp" label={"☁️ " + t('cloud.add', locale)} />
+      </div>
+
+      {files.length > 0 && (
           <div className="tool-card rounded-2xl shadow-sm border mb-6">
             <div className="p-4 border-b border-gray-100 dark:border-gray-700">
               <p className="font-medium text-gray-700 dark:text-gray-300">{files.length} {t('files.count', locale)}</p>

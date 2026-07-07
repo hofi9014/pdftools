@@ -5,6 +5,8 @@ import { useLocale } from '@/lib/locale-context';
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID || '';
 const DROPBOX_KEY = process.env.NEXT_PUBLIC_DROPBOX_APP_KEY || '';
 const ONEDRIVE_CLIENT_ID = process.env.NEXT_PUBLIC_ONEDRIVE_CLIENT_ID || '';
+const GOOGLE_TOKEN_CACHE_KEY = 'optimapdf_google_token';
+const GOOGLE_TOKEN_EXPIRY_KEY = 'optimapdf_google_expires_at';
 
 interface CloudFileSaverProps {
   blob: Blob;
@@ -74,6 +76,13 @@ async function getGoogleToken(): Promise<string> {
       scope: 'https://www.googleapis.com/auth/drive.file',
       callback: (resp) => {
         if (resp.error) { reject(new Error(resp.error)); return; }
+        try {
+          sessionStorage.setItem(GOOGLE_TOKEN_CACHE_KEY, resp.access_token);
+          const expiresIn = (resp as { expires_in?: number }).expires_in;
+          if (expiresIn) {
+            sessionStorage.setItem(GOOGLE_TOKEN_EXPIRY_KEY, String(Date.now() + (expiresIn - 300) * 1000));
+          }
+        } catch { /* sessionStorage unavailable */ }
         resolve(resp.access_token);
       },
     });
@@ -94,6 +103,16 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
     try {
       let token = googleTokenRef.current;
       if (!token) {
+        try {
+          const cached = sessionStorage.getItem(GOOGLE_TOKEN_CACHE_KEY);
+          const expiry = sessionStorage.getItem(GOOGLE_TOKEN_EXPIRY_KEY);
+          if (cached && expiry && Date.now() < Number(expiry)) {
+            token = cached;
+            googleTokenRef.current = token;
+          }
+        } catch { /* ignore */ }
+      }
+      if (!token) {
         token = await getGoogleToken();
         googleTokenRef.current = token;
       }
@@ -113,6 +132,10 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
       onDone?.();
     } catch (e) {
       googleTokenRef.current = '';
+      try {
+        sessionStorage.removeItem(GOOGLE_TOKEN_CACHE_KEY);
+        sessionStorage.removeItem(GOOGLE_TOKEN_EXPIRY_KEY);
+      } catch { /* ignore */ }
       setError(e instanceof Error ? e.message : 'Google Drive save failed');
       setSaving(null);
     }

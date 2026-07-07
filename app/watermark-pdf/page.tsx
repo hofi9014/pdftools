@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { addWatermark, downloadPdf } from '@/lib/client-pdf';
 import CloudFileSaver from '@/components/CloudFileSaver';
+import CloudFilePicker from '@/components/CloudFilePicker';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -84,6 +85,10 @@ export default function WatermarkPDF() {
           <input id="fileInput" type="file" accept=".pdf" className="hidden"
             onChange={e => handleFile(e.target.files?.[0] || null)} />
         </div>
+
+      <div className="flex justify-center gap-2 mb-6">
+        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
+      </div>
 
         {/* Podgląd znaku wodnego */}
         {text && (

@@ -41,9 +41,13 @@ declare global {
         clientId: string;
         action?: string;
         multiSelect?: boolean;
-        advanced?: { queryParameters?: string };
+        advanced?: {
+          queryParameters?: string;
+          redirectUri?: string;
+        };
         success: (files: { name: string; content?: { downloadUrl: string } }[]) => void;
         cancel?: () => void;
+        error?: (error: Error) => void;
       }) => void;
     };
   }

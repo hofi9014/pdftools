@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
+import CloudFilePicker from '@/components/CloudFilePicker';
 import { pdfToPptxClient } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
@@ -80,6 +81,10 @@ export default function PDFToPowerPoint() {
           <input id="fileInput" type="file" accept=".pdf" className="hidden"
             onChange={e => handleFile(e.target.files?.[0] || null)} />
         </div>
+
+      <div className="flex justify-center gap-2 mb-6">
+        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
+      </div>
 
         <div className="tool-info-box rounded-2xl p-5 mb-6">
           <h3 className="font-bold tool-heading mb-2">{t('section.conversion_info', locale)}</h3>
