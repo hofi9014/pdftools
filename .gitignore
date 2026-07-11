@@ -51,4 +51,4 @@ next-env.d.ts
 *.log
 *.mjs
 eslint_output.json
-*.png
+/*.png
