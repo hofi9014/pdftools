@@ -41,6 +41,8 @@ const infoLinks = [
   { href: '/#tools', labelKey: null },
   { href: '/faq', labelKey: 'faq.link' },
   { href: '/help', labelKey: 'help.link' },
+  { href: '/nasze-zasady', labelKey: 'nav.rules' },
+  { href: '/wsparcie', labelKey: 'nav.support' },
   { href: '/privacy', labelKey: 'nav.privacy' },
   { href: '/rodo', labelKey: 'rodo.link' },
   { href: '/security', labelKey: 'security.link' },
@@ -87,6 +89,8 @@ export default function Footer() {
               <li><Link href="/#tools" className={linkStyle}>{t('footer.all_tools', locale)}</Link></li>
               <li><Link href="/faq" className={linkStyle}>{t('faq.link', locale)}</Link></li>
               <li><Link href="/help" className={linkStyle}>{t('help.link', locale)}</Link></li>
+              <li><Link href="/nasze-zasady" className={linkStyle}>{t('nav.rules', locale)}</Link></li>
+              <li><Link href="/wsparcie" className={linkStyle}>{t('nav.support', locale)}</Link></li>
               <li><Link href="/privacy" className={linkStyle}>{t('nav.privacy', locale)}</Link></li>
               <li><Link href="/rodo" className={linkStyle}>{t('rodo.link', locale)}</Link></li>
               <li><Link href="/security" className={linkStyle}>{t('security.link', locale)}</Link></li>
