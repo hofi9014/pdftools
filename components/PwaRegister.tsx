@@ -1,14 +1,22 @@
 'use client';
 import { useEffect } from 'react';
 
+const SW_URL = '/sw.js';
+
 export default function PwaRegister() {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
-    // Unregister ALL service workers to clear stale caches
+
     navigator.serviceWorker.getRegistrations().then(regs => {
-      regs.forEach(reg => reg.unregister());
+      // Unregister any SW that is NOT ours — cleans up stale registrations
+      // from previous experiments or other SWs on the same origin.
+      const unregisterOthers = regs
+        .filter(r => r.active?.scriptURL !== self.location.origin + SW_URL)
+        .map(r => r.unregister());
+      return Promise.all(unregisterOthers);
+    }).then(() => {
+      navigator.serviceWorker.register(SW_URL);
     });
-    // Do NOT re-register — prevents SW cache poisoning after updates
   }, []);
   return null;
 }

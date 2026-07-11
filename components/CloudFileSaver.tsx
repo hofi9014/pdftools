@@ -1,6 +1,8 @@
 'use client';
 import { useState, useCallback, useRef } from 'react';
 import { useLocale } from '@/lib/locale-context';
+import { t } from '@/lib/i18n';
+import { useOnlineStatus } from '@/lib/useOnlineStatus';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID || '';
 const DROPBOX_KEY = process.env.NEXT_PUBLIC_DROPBOX_APP_KEY || '';
@@ -92,12 +94,14 @@ async function getGoogleToken(): Promise<string> {
 
 export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSaverProps) {
   const { locale } = useLocale();
+  const isOnline = useOnlineStatus();
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState('');
   const googleTokenRef = useRef<string>('');
 
   const saveToGoogleDrive = useCallback(async () => {
     if (!GOOGLE_CLIENT_ID) { setError('Google Drive not configured'); return; }
+    if (!navigator.onLine) { setError('__offline__'); return; }
     setSaving('google');
     setError('');
     try {
@@ -143,6 +147,7 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
 
   const saveToOneDrive = useCallback(async () => {
     if (!ONEDRIVE_CLIENT_ID) { setError('OneDrive not configured'); return; }
+    if (!navigator.onLine) { setError('__offline__'); return; }
     setSaving('onedrive');
     setError('');
     try {
@@ -163,6 +168,7 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
 
   const saveToDropbox = useCallback(async () => {
     if (!DROPBOX_KEY) { setError('Dropbox not configured'); return; }
+    if (!navigator.onLine) { setError('__offline__'); return; }
     setSaving('dropbox');
     setError('');
     try {
@@ -242,7 +248,7 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
         </button>
       )}
 
-      {error && <p className="text-xs text-red-500 ml-2">⚠️ {error}</p>}
+      {error && <p className="text-xs text-red-500 ml-2">⚠️ {error === '__offline__' ? t('cloud.offline', locale) : error}</p>}
     </div>
   );
 }

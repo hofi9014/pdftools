@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>OptimaPDF — brak internetu</title>
+<style>
+  :root {
+    --bg: #FDFBF7;
+    --surface: #FFFFFF;
+    --accent: #C28F5B;
+    --accent-hover: #B07D4A;
+    --text: #2C1810;
+    --text-secondary: #6B4F3E;
+    --border: rgba(60,36,21,0.08);
+    --glow: rgba(194,143,91,0.2);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0A0807;
+      --surface: #141110;
+      --accent: #D4A574;
+      --accent-hover: #E0B888;
+      --text: #F5EDE4;
+      --text-secondary: rgba(245,237,228,0.65);
+      --border: rgba(255,255,255,0.06);
+      --glow: rgba(212,165,116,0.15);
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    transition: background 0.3s, color 0.3s;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 3rem 2.5rem;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .logo {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1.5rem;
+    border-radius: 14px;
+  }
+  h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+  p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    margin-top: 1rem;
+    transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
+  }
+  .btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--glow);
+  }
+  .lang-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .lang-toggle:hover { background: var(--glow); }
+  .pl-only, .en-only { display: none; }
+  .lang-pl .pl-only { display: block; }
+  .lang-en .en-only { display: block; }
+</style>
+</head>
+<body class="lang-pl">
+<button class="lang-toggle" onclick="document.body.className=document.body.className==='lang-pl'?'lang-en':'lang-pl'" aria-label="Przełącz język / Switch language">PL/EN</button>
+<div class="card">
+  <img class="logo" src="/logo.png" alt="OptimaPDF" width="64" height="64">
+  <div class="pl-only">
+    <h1>Brak połączenia z internetem</h1>
+    <p>Ta strona nie została jeszcze pobrana do pamięci offline.</p>
+    <p>Połącz się z internetem, otwórz ją raz, a następnym razem będzie dostępna offline.</p>
+  </div>
+  <div class="en-only">
+    <h1>No internet connection</h1>
+    <p>This page hasn't been cached for offline use yet.</p>
+    <p>Connect to the internet, open it once, and it'll be available offline next time.</p>
+  </div>
+  <a class="btn" href="/">Strona główna / Home</a>
+</div>
+</body>
+</html>

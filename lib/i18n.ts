@@ -1,4 +1,4 @@
-export const defaultLocale = 'en' as const;
+﻿export const defaultLocale = 'en' as const;
 export const locales = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'] as const;
 export type Locale = (typeof locales)[number];
 
@@ -811,6 +811,14 @@ const pl: Record<string, string> = {
   'lang.czech': 'Czeski',
   'lang.chinese_simplified': 'Chiński (uproszczony)',
   'lang.japanese': 'Japoński',
+  'cloud.offline': 'Ta funkcja wymaga połączenia z internetem',
+  'install.title': 'Zainstaluj aplikację OptimaPDF',
+  'install.desc': 'Szybki dostęp ze strony głównej, działa offline',
+  'install.button': 'Zainstaluj',
+  'install.dismiss': 'Nie teraz',
+  'install.ios': 'Na iOS: Udostępnij → Dodaj do ekranu głównego',
+  'cloud.feature': '☁️ Importuj i zapisuj pliki bezpośrednio z/do Google Drive, Dropbox i OneDrive – dostępne w niemal wszystkich narzędziach, za darmo, bez dodatkowych kont premium',
+  'hero.offline_pitch': '⭐ Zainstaluj jako aplikację i pracuj bez internetu – jedyne narzędzie PDF, które działa w pełni offline dzięki lokalnemu przetwarzaniu',
 };
 
 const en: Record<string, string> = {
@@ -1622,6 +1630,14 @@ const en: Record<string, string> = {
   'lang.czech': 'Czech',
   'lang.chinese_simplified': 'Chinese (Simplified)',
   'lang.japanese': 'Japanese',
+  'cloud.offline': 'This feature requires an internet connection',
+  'install.title': 'Install OptimaPDF app',
+  'install.desc': 'Quick access from home screen, works offline',
+  'install.button': 'Install',
+  'install.dismiss': 'Not now',
+  'install.ios': 'On iOS: Share → Add to Home Screen',
+  'cloud.feature': '☁️ Import and save files directly from/to Google Drive, Dropbox and OneDrive – available in almost all tools, for free, no premium accounts needed',
+  'hero.offline_pitch': '⭐ Install as an app and work without internet – the only PDF tool that works fully offline thanks to local processing',
 };
 
 const es: Record<string, string> = {
@@ -2355,7 +2371,8 @@ const es: Record<string, string> = {
   'edit.toolbar_text': 'Texto',
   'edit.undo_btn': '↩ Deshacer',
   'edit.undo_title': 'Deshacer (Ctrl+Z)',
-  'edit.local_saved': 'Todos los cambios se guardan localmente.',  'lang.english': 'Inglés',
+  'edit.local_saved': 'Todos los cambios se guardan localmente.',
+  'lang.english': 'Inglés',
   'lang.polish': 'Polaco',
   'lang.german': 'Alemán',
   'lang.french': 'Francés',
@@ -2366,7 +2383,14 @@ const es: Record<string, string> = {
   'lang.czech': 'Checo',
   'lang.chinese_simplified': 'chino (simplificado)',
   'lang.japanese': 'Japonés',
-
+  'cloud.offline': 'Esta función requiere conexión a Internet',
+  'install.title': 'Instalar la aplicación OptimaPDF',
+  'install.desc': 'Acceso rápido desde la pantalla de inicio, funciona sin conexión',
+  'install.button': 'Instalar',
+  'install.dismiss': 'Ahora no',
+  'install.ios': 'En iOS: Compartir → Añadir a pantalla de inicio',
+  'cloud.feature': '☁️ Importa y guarda archivos directamente desde/hacia Google Drive, Dropbox y OneDrive – disponible en casi todas las herramientas, gratis, sin cuentas premium',
+  'hero.offline_pitch': '⭐ Instala como aplicación y trabaja sin internet – la única herramienta PDF que funciona completamente offline gracias al procesamiento local',
 };
 
 const de: Record<string, string> = {
@@ -3100,7 +3124,8 @@ const de: Record<string, string> = {
   'edit.toolbar_text': 'Text',
   'edit.undo_btn': '↩ Rückgängig',
   'edit.undo_title': 'Rückgängig machen (Strg+Z)',
-  'edit.local_saved': 'Alle Änderungen werden lokal gespeichert.',  'lang.english': 'Englisch',
+  'edit.local_saved': 'Alle Änderungen werden lokal gespeichert.',
+  'lang.english': 'Englisch',
   'lang.polish': 'Polnisch',
   'lang.german': 'Deutsch',
   'lang.french': 'Französisch',
@@ -3111,7 +3136,14 @@ const de: Record<string, string> = {
   'lang.czech': 'Tschechisch',
   'lang.chinese_simplified': 'Chinesisch (vereinfacht)',
   'lang.japanese': 'Japanisch',
-
+  'cloud.offline': 'Diese Funktion erfordert eine Internetverbindung',
+  'install.title': 'OptimaPDF-App installieren',
+  'install.desc': 'Schneller Zugriff vom Startbildschirm, offline nutzbar',
+  'install.button': 'Installieren',
+  'install.dismiss': 'Jetzt nicht',
+  'install.ios': 'Auf iOS: Teilen → Zum Startbildschirm hinzufügen',
+  'cloud.feature': '☁️ Importieren und speichern Sie Dateien direkt von/zu Google Drive, Dropbox und OneDrive – verfügbar in fast allen Tools, kostenlos, ohne Premium-Konto',
+  'hero.offline_pitch': '⭐ Als App installieren und ohne Internet arbeiten – das einzige PDF-Tool, das dank lokaler Verarbeitung vollständig offline funktioniert',
 };
 
 const fr: Record<string, string> = {
@@ -3845,7 +3877,8 @@ const fr: Record<string, string> = {
   'edit.toolbar_text': 'Texte',
   'edit.undo_btn': '↩ Annuler',
   'edit.undo_title': 'Annuler (Ctrl+Z)',
-  'edit.local_saved': 'Toutes les modifications sont enregistrées localement.',  'lang.english': 'Anglais',
+  'edit.local_saved': 'Toutes les modifications sont enregistrées localement.',
+  'lang.english': 'Anglais',
   'lang.polish': 'Polonais',
   'lang.german': 'allemand',
   'lang.french': 'français',
@@ -3856,7 +3889,14 @@ const fr: Record<string, string> = {
   'lang.czech': 'Tchèque',
   'lang.chinese_simplified': 'Chinois (simplifié)',
   'lang.japanese': 'Japonais',
-
+  'cloud.offline': 'Cette fonction nécessite une connexion Internet',
+  'install.title': 'Installer l’application OptimaPDF',
+  'install.desc': 'Accès rapide depuis l’écran d’accueil, fonctionne hors ligne',
+  'install.button': 'Installer',
+  'install.dismiss': 'Pas maintenant',
+  'install.ios': 'Sur iOS : Partager → Ajouter à l’écran d’accueil',
+  'cloud.feature': '☁️ Importez et enregistrez des fichiers directement depuis/vers Google Drive, Dropbox et OneDrive – disponible dans presque tous les outils, gratuitement, sans compte premium',
+  'hero.offline_pitch': '⭐ Installez comme application et travaillez sans internet – le seul outil PDF qui fonctionne entièrement hors ligne grâce au traitement local',
 };
 
 const it: Record<string, string> = {
@@ -4590,7 +4630,8 @@ const it: Record<string, string> = {
   'edit.toolbar_text': 'Testo',
   'edit.undo_btn': '↩ Annulla',
   'edit.undo_title': 'Annulla (Ctrl+Z)',
-  'edit.local_saved': 'Tutte le modifiche vengono salvate localmente.',  'lang.english': 'Inglese',
+  'edit.local_saved': 'Tutte le modifiche vengono salvate localmente.',
+  'lang.english': 'Inglese',
   'lang.polish': 'Polacco',
   'lang.german': 'tedesco',
   'lang.french': 'Francese',
@@ -4601,7 +4642,14 @@ const it: Record<string, string> = {
   'lang.czech': 'Ceco',
   'lang.chinese_simplified': 'Cinese (semplificato)',
   'lang.japanese': 'Giapponese',
-
+  'cloud.offline': 'Questa funzione richiede una connessione Internet',
+  'install.title': 'Installa l’app OptimaPDF',
+  'install.desc': 'Accesso rapido dalla schermata home, funziona offline',
+  'install.button': 'Installa',
+  'install.dismiss': 'Non ora',
+  'install.ios': 'Su iOS: Condividi → Aggiungi alla schermata Home',
+  'cloud.feature': '☁️ Importa e salva file direttamente da/a Google Drive, Dropbox e OneDrive – disponibile in quasi tutti gli strumenti, gratuitamente, senza account premium',
+  'hero.offline_pitch': '⭐ Installa come app e lavora senza internet – l\'unico strumento PDF che funziona completamente offline grazie all\'elaborazione locale',
 };
 
 const pt: Record<string, string> = {
@@ -5335,7 +5383,8 @@ const pt: Record<string, string> = {
   'edit.toolbar_text': 'Texto',
   'edit.undo_btn': '↩ Desfazer',
   'edit.undo_title': 'Desfazer (Ctrl+Z)',
-  'edit.local_saved': 'Todas as alterações são salvas localmente.',  'lang.english': 'Inglês',
+  'edit.local_saved': 'Todas as alterações são salvas localmente.',
+  'lang.english': 'Inglês',
   'lang.polish': 'Polonês',
   'lang.german': 'Alemão',
   'lang.french': 'Francês',
@@ -5346,7 +5395,14 @@ const pt: Record<string, string> = {
   'lang.czech': 'Tcheco',
   'lang.chinese_simplified': 'Chinês (simplificado)',
   'lang.japanese': 'Japonês',
-
+  'cloud.offline': 'Esta função requer conexão com a internet',
+  'install.title': 'Instalar o aplicativo OptimaPDF',
+  'install.desc': 'Acesso rápido da tela inicial, funciona offline',
+  'install.button': 'Instalar',
+  'install.dismiss': 'Agora não',
+  'install.ios': 'No iOS: Compartilhar → Adicionar à tela inicial',
+  'cloud.feature': '☁️ Importe e salve arquivos diretamente do/para Google Drive, Dropbox e OneDrive – disponível em quase todas as ferramentas, grátis, sem contas premium',
+  'hero.offline_pitch': '⭐ Instale como aplicativo e trabalhe sem internet – a única ferramenta PDF que funciona totalmente offline graças ao processamento local',
 };
 
 const is: Record<string, string> = {
@@ -6081,7 +6137,8 @@ const is: Record<string, string> = {
   'edit.toolbar_text': 'Texti',
   'edit.undo_btn': '↩ Afturkalla',
   'edit.undo_title': 'Afturkalla (Ctrl+Z)',
-  'edit.local_saved': 'Öll breytingar eru skráðar á staðnum.',  'lang.english': 'enska',
+  'edit.local_saved': 'Öll breytingar eru skráðar á staðnum.',
+  'lang.english': 'enska',
   'lang.polish': 'pólska',
   'lang.german': 'Þýska',
   'lang.french': 'Franska',
@@ -6092,7 +6149,14 @@ const is: Record<string, string> = {
   'lang.czech': 'Česki',
   'lang.chinese_simplified': 'Kínverska (einfölduð)',
   'lang.japanese': 'Japanska',
-
+  'cloud.offline': 'Þessi eiginleiki krefst nettengingar',
+  'install.title': 'Setja upp OptimaPDF forritið',
+  'install.desc': 'Fljótur aðgangur af heimaskjá, virkar án nettengingar',
+  'install.button': 'Setja upp',
+  'install.dismiss': 'Ekki núna',
+  'install.ios': 'Á iOS: Deila → Bæta við heimaskjá',
+  'cloud.feature': '☁️ Flytja inn og vista skrár beint frá/í Google Drive, Dropbox og OneDrive – fáanlegt í næstum öllum verkfærum, ökeypis, engin premium reikningur þörf',
+  'hero.offline_pitch': '⭐ Settu upp sem forrit og vinndu án internets – eina PDF tólið sem virkar að fullu offline vegna staðbundinnar vinnslu',
 };
 
 const tr: Record<string, string> = {
@@ -6826,7 +6890,8 @@ const tr: Record<string, string> = {
   'edit.toolbar_text': 'Metin',
   'edit.undo_btn': '↩ Geri al',
   'edit.undo_title': 'Geri al (Ctrl+Z)',
-  'edit.local_saved': 'Tüm değişiklikler yerel olarak kaydedilir.',  'lang.english': 'İngilizce',
+  'edit.local_saved': 'Tüm değişiklikler yerel olarak kaydedilir.',
+  'lang.english': 'İngilizce',
   'lang.polish': 'Lehçe',
   'lang.german': 'Almanca',
   'lang.french': 'Fransızca',
@@ -6837,7 +6902,14 @@ const tr: Record<string, string> = {
   'lang.czech': 'Çekçe',
   'lang.chinese_simplified': 'Çince (basitleştirilmiş)',
   'lang.japanese': 'Japonca',
-
+  'cloud.offline': 'Bu özellik internet bağlantısı gerektirir',
+  'install.title': 'OptimaPDF uygulamasını yükle',
+  'install.desc': 'Ana ekrandan hızlı erişim, çevrimdışı çalışır',
+  'install.button': 'Yükle',
+  'install.dismiss': 'Şimdi değil',
+  'install.ios': 'iOS’da: Paylaş → Ana Ekrana Ekle',
+  'cloud.feature': '☁️ Dosyaları doğrudan Google Drive, Dropbox ve OneDrive’dan/içine aktarın ve kaydedin – neredeyse tüm araçlarda mevcut, ücretsiz, premium hesap gerekmez',
+  'hero.offline_pitch': '⭐ Uygulama olarak yükleyin ve internetsiz çalışın – yerel işleme sayesinde tamamen çevrimdışı çalışan tek PDF aracı',
 };
 
 const sv: Record<string, string> = {
@@ -7571,7 +7643,8 @@ const sv: Record<string, string> = {
   'edit.toolbar_text': 'Text',
   'edit.undo_btn': '↩ Ångra',
   'edit.undo_title': 'Ångra (Ctrl+Z)',
-  'edit.local_saved': 'Alla ändringar sparas lokalt.',  'lang.english': 'Engelska',
+  'edit.local_saved': 'Alla ändringar sparas lokalt.',
+  'lang.english': 'Engelska',
   'lang.polish': 'polska',
   'lang.german': 'Tyska',
   'lang.french': 'Franska',
@@ -7582,7 +7655,14 @@ const sv: Record<string, string> = {
   'lang.czech': 'Tjeckiska',
   'lang.chinese_simplified': 'Kinesiska (förenklad)',
   'lang.japanese': 'japanska',
-
+  'cloud.offline': 'Den här funktionen kräver en internetanslutning',
+  'install.title': 'Installera OptimaPDF-appen',
+  'install.desc': 'Snabb åtkomst från startskärmen, fungerar offline',
+  'install.button': 'Installera',
+  'install.dismiss': 'Inte nu',
+  'install.ios': 'På iOS: Dela → Lägg till på hemskärmen',
+  'cloud.feature': '☁️ Importera och spara filer direkt från/till Google Drive, Dropbox och OneDrive – tillgängligt i nästan alla verktyg, gratis, inget premiumkonto behövs',
+  'hero.offline_pitch': '⭐ Installera som app och arbeta utan internet – det enda PDF-verktyget som fungerar helt offline tack vare lokal bearbetning',
 };
 
 const no: Record<string, string> = {
@@ -8316,7 +8396,8 @@ const no: Record<string, string> = {
   'edit.toolbar_text': 'Tekst',
   'edit.undo_btn': '↩ Angre',
   'edit.undo_title': 'Angre (Ctrl+Z)',
-  'edit.local_saved': 'Alle endringer blir lagret lokalt.',  'lang.english': 'Engelsk',
+  'edit.local_saved': 'Alle endringer blir lagret lokalt.',
+  'lang.english': 'Engelsk',
   'lang.polish': 'Polsk',
   'lang.german': 'tysk',
   'lang.french': 'Fransk',
@@ -8327,7 +8408,14 @@ const no: Record<string, string> = {
   'lang.czech': 'Tsjekkisk',
   'lang.chinese_simplified': 'Kinesisk (forenklet)',
   'lang.japanese': 'Japansk',
-
+  'cloud.offline': 'Denne funksjonen krever internettilkobling',
+  'install.title': 'Installer OptimaPDF-appen',
+  'install.desc': 'Rask tilgang fra startsiden, fungerer uten internett',
+  'install.button': 'Installer',
+  'install.dismiss': 'Ikke nå',
+  'install.ios': 'På iOS: Del → Legg til startskjerm',
+  'cloud.feature': '☁️ Importer og lagre filer direkte fra/til Google Drive, Dropbox og OneDrive – tilgjengelig i nesten alle verktøy, gratis, ingen premiumkonto nødvendig',
+  'hero.offline_pitch': '⭐ Installer som app og jobb uten internett – det eneste PDF-verktøyet som fungerer helt offline takket være lokal behandling',
 };
 
 const ja: Record<string, string> = {
@@ -9061,7 +9149,8 @@ const ja: Record<string, string> = {
   'edit.toolbar_text': 'テキスト',
   'edit.undo_btn': '↩ 元に戻す',
   'edit.undo_title': '元に戻す (Ctrl+Z)',
-  'edit.local_saved': 'すべての変更はローカルに保存されます。',  'lang.english': '英語',
+  'edit.local_saved': 'すべての変更はローカルに保存されます。',
+  'lang.english': '英語',
   'lang.polish': 'ポーランド語',
   'lang.german': 'ドイツ語',
   'lang.french': 'フランス語',
@@ -9072,7 +9161,14 @@ const ja: Record<string, string> = {
   'lang.czech': 'チェコ語',
   'lang.chinese_simplified': '中国語（簡体字）',
   'lang.japanese': '日本語',
-
+  'cloud.offline': 'この機能にはインターネット接続が必要です',
+  'install.title': 'OptimaPDFアプリをインストール',
+  'install.desc': 'ホーム画面からクイックアクセス、オフラインで動作',
+  'install.button': 'インストール',
+  'install.dismiss': 'いまはない',
+  'install.ios': 'iOS：共有 → ホーム画面に追加',
+  'cloud.feature': '☁️ Google Drive、Dropbox、OneDriveから/へ直接ファイルをインポート・保存–ほとんどすべてのツールで利用可能、無料、プレミアムアカウント不要',
+  'hero.offline_pitch': '⭐ アプリとしてインストールしてオフラインで動作 – ローカル処理により完全オフラインで動作する唯一のPDFツール',
 };
 
 const hi: Record<string, string> = {
@@ -9807,7 +9903,8 @@ const hi: Record<string, string> = {
   'edit.toolbar_text': 'पाठ',
   'edit.undo_btn': '↩ पूर्ववत करें',
   'edit.undo_title': 'पूर्ववत करें (Ctrl+Z)',
-  'edit.local_saved': 'सभी परिवर्तन स्थानीय रूप से सहेजे जाते हैं।',  'lang.english': 'अंग्रेजी',
+  'edit.local_saved': 'सभी परिवर्तन स्थानीय रूप से सहेजे जाते हैं।',
+  'lang.english': 'अंग्रेजी',
   'lang.polish': 'पोलिश',
   'lang.german': 'जर्मन',
   'lang.french': 'फ्रेंच',
@@ -9818,7 +9915,14 @@ const hi: Record<string, string> = {
   'lang.czech': 'चेक',
   'lang.chinese_simplified': 'चीनी (सरल)',
   'lang.japanese': 'जापानी',
-
+  'cloud.offline': 'इस सुविधा के लिए इंटरनेट कनेक्शन आवश्यक है',
+  'install.title': 'OptimaPDF एप्लिकेशन इंस्टॉल करें',
+  'install.desc': 'होम स्क्रीन से त्वरित पहुंच, ऑफलाइन काम करता है',
+  'install.button': 'इंस्टॉल करें',
+  'install.dismiss': 'अभी नहीं',
+  'install.ios': 'iOS पर: शेयर → होम स्क्रीन में जोड़ें',
+  'cloud.feature': '☁️ Google Drive, Dropbox aur OneDrive se/meं सीधे फ़ाइलें इंपोर्ट और सेव करें – लगभग सभी टूल्स में उपलब्ध, मुफ्त, कोई प्रीमियम खाता आवश्यक नहीं',
+  'hero.offline_pitch': '⭐ एप के रूप में इंस्टॉल करें और बिना इंटरनेट काम करें – एकमात्र PDF टूल जो स्थानीय प्रॉसेसिंग के कारण पूरी तरह ऑफलाइन काम करता है',
 };
 
 const ar: Record<string, string> = {
@@ -10590,7 +10694,8 @@ const ar: Record<string, string> = {
   'edit.toolbar_text': 'نص',
   'edit.undo_btn': '↩ تراجع',
   'edit.undo_title': 'تراجع (Ctrl+Z)',
-  'edit.local_saved': 'جميع التغييرات تُحفظ محليًا.',  'lang.english': 'الإنجليزية',
+  'edit.local_saved': 'جميع التغييرات تُحفظ محليًا.',
+  'lang.english': 'الإنجليزية',
   'lang.polish': 'بولندي',
   'lang.german': 'الألمانية',
   'lang.french': 'الفرنسية',
@@ -10601,7 +10706,14 @@ const ar: Record<string, string> = {
   'lang.czech': 'التشيكية',
   'lang.chinese_simplified': 'الصينية (المبسطة)',
   'lang.japanese': 'اليابانية',
-
+  'cloud.offline': 'هذه الميزة تتطلب اتصالاً بالإنترنت',
+  'install.title': 'تثبيت تطبيق OptimaPDF',
+  'install.desc': 'وصول سريع من الشاشة الرئيسية، يعمل بدون اتصال',
+  'install.button': 'تثبيت',
+  'install.dismiss': 'ليس الآن',
+  'install.ios': 'على iOS: مشاركة → إضافة إلى الشاشة الرئيسية',
+  'cloud.feature': '☁️ استيراد وحفظ الملفات مباشرة من/إلى Google Drive وDropbox وOneDrive – متاح في جميع الأدوات تقريباً، مجاناً، لا حاجة لحساب مميز',
+  'hero.offline_pitch': '⭐ تثبيت كتطبيق والعمل بدون انترنت – أداة PDF الوحيدة التي تعمل بالكامل خارج الخط بفضل المعالجة المحلية',
 };
 const fa: Record<string, string> = {
   'back.to_home': '← بازگشت به صفحه اصلی',
@@ -11372,7 +11484,8 @@ const fa: Record<string, string> = {
   'edit.toolbar_text': 'متن',
   'edit.undo_btn': '↩ بازگشت',
   'edit.undo_title': 'بازگشت (Ctrl+Z)',
-  'edit.local_saved': 'همه تغییرات به صورت محلی ذخیره می‌شوند.',  'lang.english': 'انگلیسی',
+  'edit.local_saved': 'همه تغییرات به صورت محلی ذخیره می‌شوند.',
+  'lang.english': 'انگلیسی',
   'lang.polish': 'لهستانی',
   'lang.german': 'آلمانی',
   'lang.french': 'فرانسوی',
@@ -11383,7 +11496,14 @@ const fa: Record<string, string> = {
   'lang.czech': 'چکى',
   'lang.chinese_simplified': 'چینی (سادگی)',
   'lang.japanese': 'ژاپنی',
-
+  'cloud.offline': 'این ویژگی به اتصال اینترنت نیاز دارد',
+  'install.title': 'نصب برنامه OptimaPDF',
+  'install.desc': 'دسترسی سریع از صفحه نخست، بدون اینترنت کار می‌کند',
+  'install.button': 'نصب',
+  'install.dismiss': 'اکنون نه',
+  'install.ios': 'در iOS: اشتراک‌گذاری → افزودن به صفحه نخست',
+  'cloud.feature': '☁️ واردات و ذخیره سازی فایل‌ها مستقیماً از/به Google Drive، Dropbox و OneDrive – در تقریباً همه ابزارها در دسترس، رایگان، بدون حساب پریمیوم',
+  'hero.offline_pitch': '⭐ به عنوان یک برنامه نصب کنید و بدون اینترنت کار کنید – تنها ابزار PDF که به صورت کامل آفلاین به دلیل پردازش محلی کار می‌کند',
 };
 const zh: Record<string, string> = {
   'back.to_home': '← 返回主页',
@@ -12154,7 +12274,8 @@ const zh: Record<string, string> = {
   'edit.toolbar_text': '文本',
   'edit.undo_btn': '↩ 撤销',
   'edit.undo_title': '撤销 (Ctrl+Z)',
-  'edit.local_saved': '所有更改都会被本地保存。',  'lang.english': '英语',
+  'edit.local_saved': '所有更改都会被本地保存。',
+  'lang.english': '英语',
   'lang.polish': '波兰语',
   'lang.german': '德语',
   'lang.french': '法语',
@@ -12165,7 +12286,14 @@ const zh: Record<string, string> = {
   'lang.czech': '捷克语',
   'lang.chinese_simplified': '汉语（简体）',
   'lang.japanese': '日语',
-
+  'cloud.offline': '此功能需要互联网连接',
+  'install.title': '安装OptimaPDF应用程序',
+  'install.desc': '从主屏快速访问，离线工作',
+  'install.button': '安装',
+  'install.dismiss': '暂不',
+  'install.ios': '在 iOS 上：分享 → 添加至主屏幕',
+  'cloud.feature': '☁️ 直接从/向 Google Drive、Dropbox 和 OneDrive 导入和保存文件 – 几乎所有工具中均可使用，免费，无需高级账户',
+  'hero.offline_pitch': '⭐ 作为应用程序安装并在无网络情况下工作 – 唯一凭借本地处理完全离线工作的PDF工具',
 };
 
 export const all: Record<string, Record<string, string>> = {

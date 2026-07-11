@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useLocale } from "@/lib/locale-context";
 
@@ -32,14 +32,17 @@ function updateConsent(status: string) {
 
 export default function CookieConsent() {
   const { locale } = useLocale();
-  const [show, setShow] = useState<boolean | null>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("cookie-consent");
-      if (stored === "accepted") updateConsent("granted");
-      return stored ? false : true;
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("cookie-consent");
+    if (stored === "accepted") {
+      updateConsent("granted");
     }
-    return null;
-  });
+    if (!stored) {
+      queueMicrotask(() => setShow(true));
+    }
+  }, []);
   const lang = locale === "pl" ? content.pl : content.en;
 
   const accept = useCallback(() => {

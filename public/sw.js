@@ -1,92 +1,112 @@
-const CACHE = 'pdftools-v5';
-const TOOL_PAGES = [
-  '/', '/merge', '/split', '/compress', '/pdf-to-word', '/word-to-pdf',
-  '/pdf-to-jpg', '/jpg-to-pdf', '/protect-pdf', '/unlock-pdf', '/rotate-pdf',
-  '/page-numbers', '/watermark-pdf', '/ocr-pdf', '/extract-pages', '/delete-pages',
-  '/reorder-pages', '/crop-pdf', '/add-page', '/edit-pdf', '/metadata',
-  '/openoffice-to-pdf', '/pdf-to-openoffice', '/pdf-to-excel', '/excel-to-pdf',
-  '/pdf-to-txt', '/pdf-to-svg', '/redact-pdf', '/pdf-to-epub',
-  '/ai-chat', '/ai-summary', '/ai-translate', '/pdf-to-powerpoint', '/compare-pdf',
-  '/html-to-pdf', '/url-to-pdf', '/pdf-to-html', '/flatten-pdf',
-  '/sign-pdf', '/privacy',
-  '/fill-form', '/pdf-to-images', '/to-pdfa',
+const CACHE_NAME = 'optimapdf-v1';
+const OFFLINE_URL = '/offline.html';
+const STATIC_PATTERNS = [
+  '/_next/static/',
+  '/tesseract/worker.min.js',
+  '/tesseract/tesseract-core-',
+  '/icons/',
+  '/favicon.ico',
+  '/logo.png',
+  '/manifest.json',
 ];
 
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE).then((c) => {
-      return c.addAll([
-        '/',
-        '/manifest.webmanifest',
-        '/icon.svg',
-        '/icon-192.svg',
-        '/icon-512.svg',
-      ]);
-    })
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.add(OFFLINE_URL))
   );
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => { if (k !== CACHE) return caches.delete(k); }))
-    )
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(k => k !== CACHE_NAME && !k.startsWith('tesseract-lang-'))
+          .map(k => caches.delete(k))
+      )
+    ).then(() => self.clients.claim())
   );
-  e.waitUntil(clients.claim());
 });
 
-self.addEventListener('fetch', (e) => {
-  const url = new URL(e.request.url);
+function isStaticAsset(url) {
+  return STATIC_PATTERNS.some(p => url.pathname.startsWith(p)) ||
+         url.pathname.endsWith('.css') && !url.pathname.startsWith('/api/') ||
+         url.pathname.endsWith('.js') && !url.pathname.startsWith('/api/');
+}
 
-  // Only handle same-origin requests
+function cacheFirst(request) {
+  return caches.open(CACHE_NAME).then(cache =>
+    cache.match(request).then(match =>
+      match || fetch(request).then(response => {
+        if (response.ok) cache.put(request, response.clone());
+        return response;
+      })
+    )
+  );
+}
+
+function networkFirstWithFallback(request) {
+  return fetch(request).then(response => {
+    if (response.ok) {
+      const clone = response.clone();
+      caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+    }
+    return response;
+  }).catch(() =>
+    caches.match(request).then(match => match || caches.match(OFFLINE_URL))
+  );
+}
+
+function networkOnly(request) {
+  return fetch(request);
+}
+
+function tesseractLangStrategy(request, lang) {
+  const langCache = 'tesseract-lang-' + lang;
+  return caches.open(langCache).then(cache =>
+    cache.match(request).then(match =>
+      match || fetch(request).then(response => {
+        if (response.ok) {
+          cache.put(request, response.clone());
+        }
+        return response;
+      })
+    )
+  );
+}
+
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  // Early return for external domains — let them pass through untouched
   if (url.origin !== self.location.origin) return;
 
-  const path = url.pathname;
-
-  // Tool pages: stale-while-revalidate for instant offline
-  if (TOOL_PAGES.includes(path)) {
-    e.respondWith(
-      caches.match(e.request).then((cached) => {
-        const fetchPromise = fetch(e.request).then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE).then((c) => c.put(e.request, clone));
-          }
-          return response;
-        }).catch(() => cached);
-        return cached || fetchPromise;
-      })
-    );
+  // Tesseract language data — on-demand cache per language
+  const langMatch = url.pathname.match(/^\/tesseract\/lang-data\/([\w-]+)\.traineddata(\.gz)?$/);
+  if (langMatch) {
+    event.respondWith(tesseractLangStrategy(event.request, langMatch[1]));
     return;
   }
 
-  // Static assets (JS, CSS, fonts, images): cache-first
-  if (path.match(/\.(js|css|woff2?|ttf|png|svg|ico|json)$/)) {
-    e.respondWith(
-      caches.match(e.request).then((cached) =>
-        cached || fetch(e.request).then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, clone));
-          return response;
-        })
-      )
-    );
+  // API calls — network only (no offline fallback, APIs need backend)
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(networkOnly(event.request));
     return;
   }
 
-  // API routes: network-only, NEVER cache
-  if (path.startsWith('/api/')) {
-    e.respondWith(fetch(e.request));
+  // Static assets — cache first
+  if (isStaticAsset(url)) {
+    event.respondWith(cacheFirst(event.request));
     return;
   }
 
-  // Default: network-first with cache fallback
-  e.respondWith(
-    fetch(e.request).then((response) => {
-      const clone = response.clone();
-      caches.open(CACHE).then((c) => c.put(e.request, clone));
-      return response;
-    }).catch(() => caches.match(e.request))
-  );
+  // Navigation — network first with offline.html fallback
+  if (event.request.mode === 'navigate') {
+    event.respondWith(networkFirstWithFallback(event.request));
+    return;
+  }
+
+  // Default: network first with cached fallback
+  event.respondWith(networkFirstWithFallback(event.request));
 });

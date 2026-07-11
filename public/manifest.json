@@ -1,0 +1,21 @@
+{
+  "name": "OptimaPDF",
+  "short_name": "OptimaPDF",
+  "description": "Edycja i konwersja PDF w 100% lokalnie w przeglądarce. Ponad 40 darmowych narzędzi PDF: scalaj, dziel, kompresuj, konwertuj, edytuj PDF, AI Chat, OCR, podpis elektroniczny, ochrona hasłem. Bez instalacji, bezpiecznie i szybko.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDFBF7",
+  "theme_color": "#C28F5B",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -47,9 +47,10 @@ export const metadata: Metadata = {
     icon: { url: "/icon", sizes: "32x32", type: "image/png" },
     apple: { url: "/logo.png", sizes: "180x180" },
   },
-  manifest: "/manifest.webmanifest",
+  manifest: "/manifest.json",
   other: {
     "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
     "mobile-web-app-capable": "yes",
   },
 };
@@ -58,16 +59,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pl" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            try {
-              const theme = localStorage.getItem('theme');
-              if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-              }
-            } catch(e) {}
-          `,
-        }} />
         <link rel="alternate" hrefLang="pl" href="https://optimapdf.com" />
         <link rel="alternate" hrefLang="en" href="https://optimapdf.com/en" />
         <link rel="alternate" hrefLang="es" href="https://optimapdf.com/es" />
@@ -92,6 +83,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`try{const t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`}
+        </Script>
         <div className="mesh-bg" />
         <div className="grain-overlay" />
         <LocaleProvider>

@@ -84,3 +84,17 @@ Polskojęzyczna aplikacja webowa do edycji plików PDF (Next.js 16, React 19, Ta
 - `npm run dev` — dev server
 - `npm run build` — build
 - `npm run lint` — eslint
+
+## ⚠️ Next.js app/ vs public/ — konwencje plików
+Projekt używa plików konwencji Next.js w `app/`, które generują endpointy build-time:
+- `app/robots.ts` → `/robots.txt`
+- `app/sitemap.ts` → `/sitemap.xml`
+- `app/icon.tsx` → `/icon` (PNG, statyczny)
+- ~~`app/manifest.ts`~~ — usunięty, użyty `public/manifest.json`
+
+**Next.js zawsze preferuje pliki w `app/` nad `public/` dla tych samych ścieżek.** Jeśli ktoś doda:
+- `public/robots.txt` — zostanie zignorowany (robi to `app/robots.ts`)
+- `public/sitemap.xml` — zostanie zignorowany (robi to `app/sitemap.ts`)
+- `public/favicon.ico` — nie jest referencjonowany w `<link>` (używane jest `/icon` z `app/icon.tsx`)
+
+Nie dodawać plików w `public/` o tych samych nazwach — będą martwe.

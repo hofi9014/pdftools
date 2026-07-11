@@ -1,7 +1,8 @@
 'use client';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
+import { useOnlineStatus } from '@/lib/useOnlineStatus';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID || '';
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_API_KEY || '';
@@ -45,14 +46,17 @@ function cleanupOAuthUrl() {
 export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...props }: CloudFilePickerProps) {
   const { locale } = useLocale();
   const label = props.label ?? t('cloud.add', locale);
+  const isOnline = useOnlineStatus();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
+  const [offlineMsg, setOfflineMsg] = useState('');
   const googleTokenRef = useRef<string>('');
   const bcRef = useRef<BroadcastChannel | null>(null);
   const oauthIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   const handleGoogleDrive = useCallback(async () => {
     setOpen(false);
+    if (!navigator.onLine) { setOfflineMsg('offline'); return; }
     setLoading('google');
     try {
       if (!GOOGLE_CLIENT_ID || !GOOGLE_API_KEY) { throw new Error('Google Drive not configured'); }
@@ -96,6 +100,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
 
   const handleDropbox = useCallback(async () => {
     setOpen(false);
+    if (!navigator.onLine) { setOfflineMsg('offline'); return; }
     setLoading('dropbox');
     try {
       if (!DROPBOX_KEY) { throw new Error('Dropbox not configured'); }
@@ -125,25 +130,29 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
 
   const handleOneDrive = useCallback(async () => {
     setOpen(false);
+    if (!navigator.onLine) { setOfflineMsg('offline'); return; }
     setLoading('onedrive');
     try {
       if (!ONEDRIVE_CLIENT_ID) { throw new Error('OneDrive not configured'); }
 
       await loadScript('https://js.live.net/v7.2/OneDrive.js', 'onedrive-js');
 
-      // Clean stale OneDrive OAuth tokens from localStorage that could cause
-      // "Another popup is already opened" error: the SDK's Oauth.auth() adds a
-      // message listener BEFORE opening the popup. If a stale token from a
-      // previous flow is delivered via postMessage/MessageEvent, the listener
-      // sees a state/source mismatch and throws popupOpen before the popup
-      // even opens.
-      for (let i = localStorage.length - 1; i >= 0; i--) {
+      // Snapshot all pre-existing OneDrive OAuth keys BEFORE any cleanup, so the
+      // interval below can distinguish stale keys (which must be removed but NOT
+      // delivered) from fresh keys created by the current OAuth flow. Delivering
+      // a stale token to the SDK triggers "Another popup is already opened".
+      const preExistingKeys = new Set<string>();
+      for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
         if (k && k.startsWith('onedrive-oauth-')) {
-          const v = localStorage.getItem(k);
-          console.log('[OneDrive] Cleaning stale token key:', k, v ? v.substring(0, 80) : '(empty)');
-          localStorage.removeItem(k);
+          preExistingKeys.add(k);
         }
+      }
+
+      // Remove stale keys — ONLY removeItem, NO deliverToken.
+      for (const k of preExistingKeys) {
+        console.log('[OneDrive] Removing stale token key:', k);
+        localStorage.removeItem(k);
       }
 
       // Also clear the OneDrive SDK's own LoginCache hint for this clientId.
@@ -165,9 +174,33 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
         console.warn('[OneDrive] Failed to clean SDK cache:', e);
       }
 
+      // Deduplication set: the same payload can arrive via multiple paths
+      // (localStorage interval, BroadcastChannel, window.opener.postMessage).
+      // Delivering it more than once gives the SDK a second [OneDriveSDK-OauthResponse]
+      // for a completed flow, which triggers "Another popup is already opened".
+      const deliveredPayloads = new Set<string>();
+
       const deliverToken = (payload: string) => {
-        window.postMessage(payload, window.location.origin);
-        window.dispatchEvent(new MessageEvent('message', { data: payload, origin: window.location.origin }));
+        if (deliveredPayloads.has(payload)) return;
+        deliveredPayloads.add(payload);
+
+        // Defer delivery so the popup's direct window.opener.postMessage (which
+        // passes the SDK's e.source === popupWindow check) arrives first. Our
+        // same-window postMessage fails that check and would otherwise reject
+        // the SDK's OAuth promise with "Another popup is already opened".
+        setTimeout(() => {
+          window.postMessage(payload, window.location.origin);
+        }, 0);
+
+        try {
+          const stateMatch = payload.match(/"state":"([^"]+)"/);
+          if (stateMatch) {
+            const lsKey = 'onedrive-oauth-' + stateMatch[1];
+            if (localStorage.getItem(lsKey) !== null) {
+              localStorage.removeItem(lsKey);
+            }
+          }
+        } catch { /* ignore */ }
       };
 
       try {
@@ -183,7 +216,17 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
           if (key && key.startsWith('onedrive-oauth-')) {
             const payload = localStorage.getItem(key);
             localStorage.removeItem(key);
-            if (payload) deliverToken(payload);
+            if (payload) {
+              // Only deliver keys that appeared AFTER the snapshot (fresh).
+              // Stale keys that survived the initial cleanup are removed but
+              // NOT delivered — delivering them would confuse the SDK and
+              // cause "Another popup is already opened".
+              if (preExistingKeys.has(key)) {
+                console.log('[OneDrive] Silently removed stale token (not delivered):', key);
+              } else {
+                deliverToken(payload);
+              }
+            }
             break;
           }
         }
@@ -254,6 +297,12 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
     input.click();
   }, [onFilesPicked, accept]);
 
+  useEffect(() => {
+    if (!offlineMsg) return;
+    const t = setTimeout(() => setOfflineMsg(''), 3000);
+    return () => clearTimeout(t);
+  }, [offlineMsg]);
+
   const hasGoogle = !!(GOOGLE_CLIENT_ID && GOOGLE_API_KEY);
   const hasDropbox = !!DROPBOX_KEY;
   const hasOneDrive = !!ONEDRIVE_CLIENT_ID;
@@ -296,6 +345,11 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
           <button onClick={handleLocal} className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3">
             <span className="text-lg">💻</span> {locale === 'pl' ? 'To urządzenie' : 'This device'}
           </button>
+        </div>
+      )}
+      {offlineMsg && (
+        <div className="absolute top-full left-0 mt-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2 shadow-lg z-50 whitespace-nowrap">
+          ⚠️ {t('cloud.offline', locale)}
         </div>
       )}
     </div>

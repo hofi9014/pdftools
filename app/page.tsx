@@ -4,6 +4,7 @@ import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import guides from '@/content/guides';
+import InstallBanner from '@/components/InstallBanner';
 
 const aiTools = new Set(['aichat', 'aisummary', 'translate']);
 
@@ -85,6 +86,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <InstallBanner />
 
       {/* Stats */}
       <div className="flex justify-center gap-12 sm:gap-16 py-8 px-4">
@@ -172,6 +175,28 @@ export default function Home() {
           color: 'var(--coffee-text-secondary)'
         }}>
           {t('hero.ai_disclaimer', locale)}
+        </div>
+      </section>
+
+      {/* Cloud feature */}
+      <section className="max-w-3xl mx-auto px-4 py-4">
+        <div className="rounded-xl p-4 text-xs leading-relaxed" style={{
+          backgroundColor: 'color-mix(in srgb, var(--coffee-accent) 8%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--coffee-accent) 20%, transparent)',
+          color: 'var(--coffee-text-secondary)'
+        }}>
+          {t('cloud.feature', locale)}
+        </div>
+      </section>
+
+      {/* Offline PWA pitch */}
+      <section className="max-w-3xl mx-auto px-4 py-4">
+        <div className="rounded-xl p-4 text-xs leading-relaxed" style={{
+          backgroundColor: 'color-mix(in srgb, var(--coffee-accent) 8%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--coffee-accent) 20%, transparent)',
+          color: 'var(--coffee-text-secondary)'
+        }}>
+          {t('hero.offline_pitch', locale)}
         </div>
       </section>
 

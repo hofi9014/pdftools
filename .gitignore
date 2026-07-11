@@ -46,3 +46,9 @@ next-env.d.ts
 
 # generated tesseract assets
 /public/tesseract/
+
+# dev/test junk
+*.log
+*.mjs
+eslint_output.json
+*.png

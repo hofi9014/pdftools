@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+    (function() {
+      var hash = location.hash.substring(1);
+      if (!hash || hash.indexOf('access_token=') < 0) return;
+      var params = {};
+      hash.split('&').forEach(function(p) {
+        var kv = p.split('=');
+        params[kv[0]] = decodeURIComponent(kv.slice(1).join('='));
+      });
+      if (!params.access_token || !params.state) return;
+
+      var payload = '[OneDriveSDK-OauthResponse]' + JSON.stringify({
+        type: 'success',
+        accessToken: params.access_token,
+        idToken: params.id_token || '',
+        state: params.state
+      });
+
+      // Store in localStorage for main page to pick up
+      try { localStorage.setItem('onedrive-oauth-' + params.state, payload); } catch(e) {}
+
+      // Also try BroadcastChannel
+      try { var bc = new BroadcastChannel('onedrive-oauth'); bc.postMessage({ type: 'onedrive-token', payload: payload }); bc.close(); } catch(e) {}
+
+      // If opener available, use postMessage too
+      if (window.opener) {
+        window.opener.postMessage(payload, location.origin);
+      }
+
+      // Clear hash so SDK on this page doesn't also try postMessage
+      history.replaceState(null, '', location.pathname);
+    })();
+  </script>
+  <script src="https://js.live.net/v7.2/OneDrive.js"></script>
+</head>
+<body>
+</body>
+</html>
