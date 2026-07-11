@@ -3,10 +3,25 @@ import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 
+/* ------------------------------------------------------------------ */
+/*  Skonfiguruj poniższe stałe przed wdrożeniem                       */
+/* ------------------------------------------------------------------ */
+const STRIPE_DONATE_URL = 'https://buy.stripe.com/00k3cYbMh7Td4pK8ww'; /* ← wstaw swój link Stripe Payment Links */
+const SUPPORTER_BADGE_URL = '/supporter-badge.svg';                   /* ← ścieżka do odznaki (opcjonalnie)    */
+/* ------------------------------------------------------------------ */
+
 const content = {
   pl: {
     title: 'Wsparcie',
-    subtitle: 'Masz pytanie? Jesteśmy tutaj, aby pomóc.',
+    subtitle: 'Jak możesz pomóc w rozwoju OptimaPDF.',
+    donateSection: {
+      h: '☕️ Postaw nam kawę',
+      p: 'OptimaPDF jest darmowy i pozostanie darmowy. Jeśli nasze narzędzia są dla Ciebie przydatne, możesz wesprzeć rozwój serwisu dobrowolną wpłatą. Każda, nawet najmniejsza kwota, pomaga pokryć koszty utrzymania serwerów, API i domeny. Nie ma żadnych zobowiązań — to czysto dobrowolne wsparcie.',
+      button: '☕️ Postaw kawę',
+      note: 'Payments processed securely by Stripe. No account required.',
+      badgeLabel: 'Jesteś supporterem OptimaPDF?',
+      badgeDesc: 'Jeśli dokonałeś wpłaty, możesz poprosić o odznakę "Supporter" — wyślij nam e-mail z potwierdzeniem transakcji, a dodamy Cię do listy supporterów na stronie.',
+    },
     sections: [
       {
         h: '📧 Kontakt e-mail',
@@ -47,7 +62,15 @@ const content = {
   },
   en: {
     title: 'Support',
-    subtitle: 'Have a question? We are here to help.',
+    subtitle: 'How you can help OptimaPDF grow.',
+    donateSection: {
+      h: '☕️ Buy us a coffee',
+      p: 'OptimaPDF is free and will remain free. If you find our tools useful, you can support the development of the site with a voluntary donation. Every amount, no matter how small, helps cover server, API, and domain costs. There are no obligations — this is purely voluntary support.',
+      button: '☕️ Buy us a coffee',
+      note: 'Payments processed securely by Stripe. No account required.',
+      badgeLabel: 'Are you an OptimaPDF supporter?',
+      badgeDesc: 'If you have made a donation, you can request a "Supporter" badge — send us an email with your transaction confirmation and we will add you to the supporter list on the site.',
+    },
     sections: [
       {
         h: '📧 Email contact',
@@ -101,8 +124,38 @@ export default function SupportPage() {
       </div>
 
       <div className="tool-card rounded-2xl border p-8 space-y-8 text-sm leading-relaxed" style={{ color: 'var(--coffee-text-secondary)' }}>
+        {/* Donation section — prominent, at the top */}
+        <section className="text-center pb-6 border-b" style={{ borderColor: 'var(--coffee-border)' }}>
+          <h2 className="text-xl font-bold tool-heading mb-3">{lang.donateSection.h}</h2>
+          <p className="mb-4 max-w-lg mx-auto">{lang.donateSection.p}</p>
+          <a
+            href={STRIPE_DONATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-6 py-3 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90"
+            style={{ backgroundColor: 'var(--coffee-accent)', color: '#fff' }}
+          >
+            {lang.donateSection.button}
+          </a>
+          <p className="mt-2 text-xs opacity-60">{lang.donateSection.note}</p>
+        </section>
+
+        {/* Supporter badge info */}
+        <section className="text-center">
+          <h2 className="text-lg font-bold tool-heading mb-2">🏅 {lang.donateSection.badgeLabel}</h2>
+          <p className="max-w-lg mx-auto">{lang.donateSection.badgeDesc}</p>
+          {SUPPORTER_BADGE_URL && (
+            <div className="mt-4 flex justify-center gap-4 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border" style={{ borderColor: 'var(--coffee-border)', backgroundColor: 'var(--coffee-badge-bg)' }}>
+                <span>⭐</span> Supporter
+              </span>
+            </div>
+          )}
+        </section>
+
+        {/* Other sections */}
         {lang.sections.map((sec, i) => (
-          <section key={i}>
+          <section key={i} className="pt-2">
             <h2 className="text-lg sm:text-xl font-bold tool-heading mb-3">{sec.h}</h2>
             <p className="mb-2">{sec.p}</p>
             {sec.link && (
