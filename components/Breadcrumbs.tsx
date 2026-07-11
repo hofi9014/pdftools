@@ -74,6 +74,8 @@ export default function Breadcrumbs() {
           } else if (seg === 'guides') {
             // skip — the next segment is the locale segment
             return null;
+          } else if (seg === 'guide') {
+            label = t('nav.guide', locale);
           } else if (guidesLocaleSegments.has(seg)) {
             label = t('guides.breadcrumb', locale);
           } else {

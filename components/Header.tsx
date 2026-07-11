@@ -109,11 +109,22 @@ export default function Header() {
               <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none group-hover:pointer-events-auto">
                 <div className="bg-[var(--coffee-surface-solid)] dark:bg-[var(--coffee-surface-solid)] rounded-2xl shadow-xl border border-[var(--coffee-border)] p-4 min-w-[200px] backdrop-blur-xl">
                   <div className="grid gap-1">
-                    {cat.tools.map(tool => (
-                      <Link key={tool.href} href={tool.href}
-                        className="block px-3 py-2 rounded-lg text-sm transition hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }}>
-                        {tool.icon && <span className="mr-1.5">{tool.icon}</span>}{t(tool.navKey ?? `tool.${tool.key}`, locale)}
-                      </Link>
+                    {cat.tools.map((tool, i) => (
+                      <div key={tool.href}>
+                        {cat.key === 'more' && i === 7 && (
+                          <>
+                            <div className="border-t my-1.5" style={{ borderColor: 'var(--coffee-border)' }} />
+                            <span className="block px-3 py-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--coffee-text-tertiary)' }}>
+                              {t('footer.info', locale)}
+                            </span>
+                          </>
+                        )}
+                        <Link href={tool.href}
+                          className="block px-3 py-2 rounded-lg text-sm transition hover:bg-[var(--coffee-surface-hover)]"
+                          style={{ color: 'var(--coffee-text-secondary)' }}>
+                          {tool.icon && <span className="mr-1.5">{tool.icon}</span>}{t(tool.navKey ?? `tool.${tool.key}`, locale)}
+                        </Link>
+                      </div>
                     ))}
                   </div>
                 </div>
