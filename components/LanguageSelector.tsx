@@ -47,6 +47,7 @@ export default function LanguageSelector() {
       if (currentLocale !== code) {
         localStorage.setItem('locale', code);
         segments[1] = getLocaleSegment(code);
+        setLocale(code);
         router.push('/' + segments.join('/'));
         return;
       }

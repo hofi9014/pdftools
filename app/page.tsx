@@ -5,6 +5,7 @@ import { getToolIcon } from '@/lib/icons';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import guides from '@/content/guides';
 import InstallBanner from '@/components/InstallBanner';
+import InstallSection from '@/components/InstallSection';
 
 const aiTools = new Set(['aichat', 'aisummary', 'translate']);
 
@@ -166,6 +167,8 @@ export default function Home() {
           </a>
         </div>
       </section>
+
+      <InstallSection />
 
       {/* AI disclaimer */}
       <section className="max-w-3xl mx-auto px-4 py-4">

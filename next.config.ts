@@ -42,9 +42,10 @@ const nextConfig: NextConfig = {
         permanent: true,
       })),
       // backward compat for Italian guide paths (/guide/xxx → /guides/guide/xxx)
+      // Must use :path+ (one-or-more) to NOT redirect /guide itself (which is a real page)
       {
-        source: '/guide/:path*',
-        destination: '/guides/guide/:path*',
+        source: '/guide/:path+',
+        destination: '/guides/guide/:path+',
         permanent: true,
       },
     ];

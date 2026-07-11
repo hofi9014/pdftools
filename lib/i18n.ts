@@ -821,6 +821,11 @@ const pl: Record<string, string> = {
   'install.ios': 'Na iOS: Udostępnij → Dodaj do ekranu głównego',
   'cloud.feature': '☁️ Importuj i zapisuj pliki bezpośrednio z/do Google Drive, Dropbox i OneDrive – dostępne w niemal wszystkich narzędziach, za darmo, bez dodatkowych kont premium',
   'hero.offline_pitch': '⭐ Zainstaluj jako aplikację i pracuj bez internetu – jedyne narzędzie PDF, które działa w pełni offline dzięki lokalnemu przetwarzaniu',
+  'installSection.title': '📲 Zainstaluj OptimaPDF jako aplikację',
+  'installSection.point1': 'Działa offline — korzystaj z narzędzi bez dostępu do internetu',
+  'installSection.point2': 'Szybszy dostęp — uruchamiaj z ekranu głównego jak zwykłą aplikację',
+  'installSection.point3': 'Zawsze pod ręką — bez wpisywania adresu za każdym razem',
+  'installSection.button': 'Zainstaluj teraz',
 };
 
 const en: Record<string, string> = {
@@ -1642,6 +1647,11 @@ const en: Record<string, string> = {
   'install.ios': 'On iOS: Share → Add to Home Screen',
   'cloud.feature': '☁️ Import and save files directly from/to Google Drive, Dropbox and OneDrive – available in almost all tools, for free, no premium accounts needed',
   'hero.offline_pitch': '⭐ Install as an app and work without internet – the only PDF tool that works fully offline thanks to local processing',
+  'installSection.title': '📲 Install OptimaPDF as an app',
+  'installSection.point1': 'Works offline — use the tools without internet access',
+  'installSection.point2': 'Quick access — launch from home screen like a regular app',
+  'installSection.point3': 'Always at hand — no need to type the address every time',
+  'installSection.button': 'Install now',
 };
 
 const es: Record<string, string> = {
@@ -2397,6 +2407,11 @@ const es: Record<string, string> = {
   'install.ios': 'En iOS: Compartir → Añadir a pantalla de inicio',
   'cloud.feature': '☁️ Importa y guarda archivos directamente desde/hacia Google Drive, Dropbox y OneDrive – disponible en casi todas las herramientas, gratis, sin cuentas premium',
   'hero.offline_pitch': '⭐ Instala como aplicación y trabaja sin internet – la única herramienta PDF que funciona completamente offline gracias al procesamiento local',
+  'installSection.title': '📲 Instala OptimaPDF como una aplicación',
+  'installSection.point1': 'Funciona sin conexión — usa las herramientas sin acceso a internet',
+  'installSection.point2': 'Acceso rápido — abre desde la pantalla de inicio como una app normal',
+  'installSection.point3': 'Siempre a mano — sin necesidad de escribir la dirección cada vez',
+  'installSection.button': 'Instalar ahora',
 };
 
 const de: Record<string, string> = {
@@ -3152,6 +3167,11 @@ const de: Record<string, string> = {
   'install.ios': 'Auf iOS: Teilen → Zum Startbildschirm hinzufügen',
   'cloud.feature': '☁️ Importieren und speichern Sie Dateien direkt von/zu Google Drive, Dropbox und OneDrive – verfügbar in fast allen Tools, kostenlos, ohne Premium-Konto',
   'hero.offline_pitch': '⭐ Als App installieren und ohne Internet arbeiten – das einzige PDF-Tool, das dank lokaler Verarbeitung vollständig offline funktioniert',
+  'installSection.title': '📲 OptimaPDF als App installieren',
+  'installSection.point1': 'Funktioniert offline — nutze die Werkzeuge ohne Internetzugang',
+  'installSection.point2': 'Schneller Zugriff — vom Startbildschirm wie eine normale App starten',
+  'installSection.point3': 'Immer griffbereit — keine Adresseingabe jedes Mal nötig',
+  'installSection.button': 'Jetzt installieren',
 };
 
 const fr: Record<string, string> = {
@@ -3907,6 +3927,11 @@ const fr: Record<string, string> = {
   'install.ios': 'Sur iOS : Partager → Ajouter à l’écran d’accueil',
   'cloud.feature': '☁️ Importez et enregistrez des fichiers directement depuis/vers Google Drive, Dropbox et OneDrive – disponible dans presque tous les outils, gratuitement, sans compte premium',
   'hero.offline_pitch': '⭐ Installez comme application et travaillez sans internet – le seul outil PDF qui fonctionne entièrement hors ligne grâce au traitement local',
+  'installSection.title': '📲 Installez OptimaPDF en tant qu\u2019application',
+  'installSection.point1': 'Fonctionne hors ligne — utilisez les outils sans accès internet',
+  'installSection.point2': 'Accès rapide — lancez depuis l\u2019écran d\u2019accueil comme une app normale',
+  'installSection.point3': 'Toujours à portée — plus besoin de taper l\u2019adresse à chaque fois',
+  'installSection.button': 'Installer maintenant',
 };
 
 const it: Record<string, string> = {
@@ -4662,6 +4687,11 @@ const it: Record<string, string> = {
   'install.ios': 'Su iOS: Condividi → Aggiungi alla schermata Home',
   'cloud.feature': '☁️ Importa e salva file direttamente da/a Google Drive, Dropbox e OneDrive – disponibile in quasi tutti gli strumenti, gratuitamente, senza account premium',
   'hero.offline_pitch': '⭐ Installa come app e lavora senza internet – l\'unico strumento PDF che funziona completamente offline grazie all\'elaborazione locale',
+  'installSection.title': '📲 Installa OptimaPDF come app',
+  'installSection.point1': 'Funziona offline — usa gli strumenti senza connessione internet',
+  'installSection.point2': 'Accesso rapido — avvia dalla schermata home come una app normale',
+  'installSection.point3': 'Sempre a portata — senza dover digitare l\u2019indirizzo ogni volta',
+  'installSection.button': 'Installa ora',
 };
 
 const pt: Record<string, string> = {
@@ -5417,6 +5447,11 @@ const pt: Record<string, string> = {
   'install.ios': 'No iOS: Compartilhar → Adicionar à tela inicial',
   'cloud.feature': '☁️ Importe e salve arquivos diretamente do/para Google Drive, Dropbox e OneDrive – disponível em quase todas as ferramentas, grátis, sem contas premium',
   'hero.offline_pitch': '⭐ Instale como aplicativo e trabalhe sem internet – a única ferramenta PDF que funciona totalmente offline graças ao processamento local',
+  'installSection.title': '📲 Instale o OptimaPDF como aplicativo',
+  'installSection.point1': 'Funciona offline — use as ferramentas sem acesso à internet',
+  'installSection.point2': 'Acesso rápido — inicie da tela inicial como um aplicativo normal',
+  'installSection.point3': 'Sempre à mão — sem precisar digitar o endereço toda vez',
+  'installSection.button': 'Instalar agora',
 };
 
 const is: Record<string, string> = {
@@ -6173,6 +6208,11 @@ const is: Record<string, string> = {
   'install.ios': 'Á iOS: Deila → Bæta við heimaskjá',
   'cloud.feature': '☁️ Flytja inn og vista skrár beint frá/í Google Drive, Dropbox og OneDrive – fáanlegt í næstum öllum verkfærum, ökeypis, engin premium reikningur þörf',
   'hero.offline_pitch': '⭐ Settu upp sem forrit og vinndu án internets – eina PDF tólið sem virkar að fullu offline vegna staðbundinnar vinnslu',
+  'installSection.title': '📲 Settu upp OptimaPDF sem forrit',
+  'installSection.point1': 'Virkar án nettengingar — notaðu verkfærin án internetaðgangs',
+  'installSection.point2': 'Fljótur aðgangur — ræstu af heimaskjá eins og venjulegt forrit',
+  'installSection.point3': 'Alltaf við höndina — þarf ekki að slá inn vefslóðina í hvert skipti',
+  'installSection.button': 'Setja upp núna',
 };
 
 const tr: Record<string, string> = {
@@ -6928,6 +6968,11 @@ const tr: Record<string, string> = {
   'install.ios': 'iOS’da: Paylaş → Ana Ekrana Ekle',
   'cloud.feature': '☁️ Dosyaları doğrudan Google Drive, Dropbox ve OneDrive’dan/içine aktarın ve kaydedin – neredeyse tüm araçlarda mevcut, ücretsiz, premium hesap gerekmez',
   'hero.offline_pitch': '⭐ Uygulama olarak yükleyin ve internetsiz çalışın – yerel işleme sayesinde tamamen çevrimdışı çalışan tek PDF aracı',
+  'installSection.title': '📲 OptimaPDF\u2019yi uygulama olarak yükle',
+  'installSection.point1': 'Çevrimdışı çalışır — araçları internet olmadan kullanın',
+  'installSection.point2': 'Hızlı erişim — normal bir uygulama gibi ana ekrandan başlatın',
+  'installSection.point3': 'Her zaman elinizin altında — her seferinde adres yazmaya gerek yok',
+  'installSection.button': 'Şimdi yükle',
 };
 
 const sv: Record<string, string> = {
@@ -7683,6 +7728,11 @@ const sv: Record<string, string> = {
   'install.ios': 'På iOS: Dela → Lägg till på hemskärmen',
   'cloud.feature': '☁️ Importera och spara filer direkt från/till Google Drive, Dropbox och OneDrive – tillgängligt i nästan alla verktyg, gratis, inget premiumkonto behövs',
   'hero.offline_pitch': '⭐ Installera som app och arbeta utan internet – det enda PDF-verktyget som fungerar helt offline tack vare lokal bearbetning',
+  'installSection.title': '📲 Installera OptimaPDF som en app',
+  'installSection.point1': 'Fungerar offline — använd verktygen utan internet',
+  'installSection.point2': 'Snabb åtkomst — starta från hemskärmen som en vanlig app',
+  'installSection.point3': 'Alltid till hands — behöver inte skriva adressen varje gång',
+  'installSection.button': 'Installera nu',
 };
 
 const no: Record<string, string> = {
@@ -8438,6 +8488,11 @@ const no: Record<string, string> = {
   'install.ios': 'På iOS: Del → Legg til startskjerm',
   'cloud.feature': '☁️ Importer og lagre filer direkte fra/til Google Drive, Dropbox og OneDrive – tilgjengelig i nesten alle verktøy, gratis, ingen premiumkonto nødvendig',
   'hero.offline_pitch': '⭐ Installer som app og jobb uten internett – det eneste PDF-verktøyet som fungerer helt offline takket være lokal behandling',
+  'installSection.title': '📲 Installer OptimaPDF som en app',
+  'installSection.point1': 'Fungerer offline — bruk verktøyene uten internettilgang',
+  'installSection.point2': 'Rask tilgang — start fra startsiden som en vanlig app',
+  'installSection.point3': 'Alltid for hånden — trenger ikke skrive inn adressen hver gang',
+  'installSection.button': 'Installer nå',
 };
 
 const ja: Record<string, string> = {
@@ -9193,6 +9248,11 @@ const ja: Record<string, string> = {
   'install.ios': 'iOS：共有 → ホーム画面に追加',
   'cloud.feature': '☁️ Google Drive、Dropbox、OneDriveから/へ直接ファイルをインポート・保存–ほとんどすべてのツールで利用可能、無料、プレミアムアカウント不要',
   'hero.offline_pitch': '⭐ アプリとしてインストールしてオフラインで動作 – ローカル処理により完全オフラインで動作する唯一のPDFツール',
+  'installSection.title': '📲 OptimaPDFをアプリとしてインストール',
+  'installSection.point1': 'オフラインで動作 — インターネットなしでツールを使用',
+  'installSection.point2': 'クイックアクセス — ホーム画面から通常のアプリのように起動',
+  'installSection.point3': 'いつでも手元に — 毎回アドレスを入力する必要なし',
+  'installSection.button': '今すぐインストール',
 };
 
 const hi: Record<string, string> = {
@@ -9949,6 +10009,11 @@ const hi: Record<string, string> = {
   'install.ios': 'iOS पर: शेयर → होम स्क्रीन में जोड़ें',
   'cloud.feature': '☁️ Google Drive, Dropbox aur OneDrive se/meं सीधे फ़ाइलें इंपोर्ट और सेव करें – लगभग सभी टूल्स में उपलब्ध, मुफ्त, कोई प्रीमियम खाता आवश्यक नहीं',
   'hero.offline_pitch': '⭐ एप के रूप में इंस्टॉल करें और बिना इंटरनेट काम करें – एकमात्र PDF टूल जो स्थानीय प्रॉसेसिंग के कारण पूरी तरह ऑफलाइन काम करता है',
+  'installSection.title': '📲 OptimaPDF को एक ऐप के रूप में इंस्टॉल करें',
+  'installSection.point1': 'ऑफलाइन काम करता है — इंटरनेट के बिना टूल का उपयोग करें',
+  'installSection.point2': 'त्वरित पहुंच — सामान्य ऐप की तरह होम स्क्रीन से लॉन्च करें',
+  'installSection.point3': 'हमेशा हाथ में — हर बार पता टाइप करने की जरूरत नहीं',
+  'installSection.button': 'अभी इंस्टॉल करें',
 };
 
 const ar: Record<string, string> = {
@@ -10742,6 +10807,11 @@ const ar: Record<string, string> = {
   'install.ios': 'على iOS: مشاركة → إضافة إلى الشاشة الرئيسية',
   'cloud.feature': '☁️ استيراد وحفظ الملفات مباشرة من/إلى Google Drive وDropbox وOneDrive – متاح في جميع الأدوات تقريباً، مجاناً، لا حاجة لحساب مميز',
   'hero.offline_pitch': '⭐ تثبيت كتطبيق والعمل بدون انترنت – أداة PDF الوحيدة التي تعمل بالكامل خارج الخط بفضل المعالجة المحلية',
+  'installSection.title': '📲 تثبيت OptimaPDF كتطبيق',
+  'installSection.point1': 'يعمل بدون اتصال — استخدم الأدوات دون الوصول إلى الإنترنت',
+  'installSection.point2': 'وصول سريع — شغّل من الشاشة الرئيسية كتطبيق عادي',
+  'installSection.point3': 'دائماً في متناول اليد — لا حاجة لكتابة العنوان في كل مرة',
+  'installSection.button': 'تثبيت الآن',
 };
 const fa: Record<string, string> = {
   'back.to_home': '← بازگشت به صفحه اصلی',
@@ -11534,6 +11604,11 @@ const fa: Record<string, string> = {
   'install.ios': 'در iOS: اشتراک‌گذاری → افزودن به صفحه نخست',
   'cloud.feature': '☁️ واردات و ذخیره سازی فایل‌ها مستقیماً از/به Google Drive، Dropbox و OneDrive – در تقریباً همه ابزارها در دسترس، رایگان، بدون حساب پریمیوم',
   'hero.offline_pitch': '⭐ به عنوان یک برنامه نصب کنید و بدون اینترنت کار کنید – تنها ابزار PDF که به صورت کامل آفلاین به دلیل پردازش محلی کار می‌کند',
+  'installSection.title': '📲 نصب OptimaPDF به عنوان یک برنامه',
+  'installSection.point1': 'آفلاین کار می‌کند — بدون دسترسی به اینترنت از ابزارها استفاده کنید',
+  'installSection.point2': 'دسترسی سریع — مانند یک برنامه معمولی از صفحه اصلی اجرا کنید',
+  'installSection.point3': 'همیشه در دسترس — بدون نیاز به تایپ آدرس هر بار',
+  'installSection.button': 'اکنون نصب کنید',
 };
 const zh: Record<string, string> = {
   'back.to_home': '← 返回主页',
@@ -12326,6 +12401,11 @@ const zh: Record<string, string> = {
   'install.ios': '在 iOS 上：分享 → 添加至主屏幕',
   'cloud.feature': '☁️ 直接从/向 Google Drive、Dropbox 和 OneDrive 导入和保存文件 – 几乎所有工具中均可使用，免费，无需高级账户',
   'hero.offline_pitch': '⭐ 作为应用程序安装并在无网络情况下工作 – 唯一凭借本地处理完全离线工作的PDF工具',
+  'installSection.title': '📲 将OptimaPDF安装为应用程序',
+  'installSection.point1': '离线工作 — 无需互联网即可使用工具',
+  'installSection.point2': '快速访问 — 像普通应用一样从主屏幕启动',
+  'installSection.point3': '随时在手 — 无需每次输入地址',
+  'installSection.button': '立即安装',
 };
 
 export const all: Record<string, Record<string, string>> = {

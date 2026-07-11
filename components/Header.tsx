@@ -11,6 +11,8 @@ import MobileMenu from './MobileMenu';
 interface CatTool {
   key: string;
   href: string;
+  navKey?: string;
+  icon?: string;
 }
 
 interface Category {
@@ -77,6 +79,8 @@ const categories: Category[] = [
       { key: 'compare', href: '/compare-pdf' },
       { key: 'fillform', href: '/fill-form' },
       { key: 'pdfa', href: '/to-pdfa' },
+      { key: 'rules', href: '/nasze-zasady', navKey: 'nav.rules', icon: '📜' },
+      { key: 'support', href: '/wsparcie', navKey: 'nav.support', icon: '💬' },
     ],
   },
 ];
@@ -108,7 +112,7 @@ export default function Header() {
                     {cat.tools.map(tool => (
                       <Link key={tool.href} href={tool.href}
                         className="block px-3 py-2 rounded-lg text-sm transition hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }}>
-                        {t(`tool.${tool.key}`, locale)}
+                        {tool.icon && <span className="mr-1.5">{tool.icon}</span>}{t(tool.navKey ?? `tool.${tool.key}`, locale)}
                       </Link>
                     ))}
                   </div>
