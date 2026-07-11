@@ -3,9 +3,17 @@ import { useState, useEffect } from 'react';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 
+let _deferredPrompt: Event | null = null;
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    _deferredPrompt = e;
+  });
+}
+
 export default function InstallBanner() {
   const { locale } = useLocale();
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(_deferredPrompt);
   const [installed, setInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -21,6 +29,9 @@ export default function InstallBanner() {
     }
     if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream) {
       setIsIOS(true);
+    }
+    if (!deferredPrompt && _deferredPrompt) {
+      setDeferredPrompt(_deferredPrompt);
     }
     const handler = (e: Event) => {
       e.preventDefault();

@@ -5,6 +5,7 @@ import { LocaleProvider } from "@/lib/locale-context";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PwaRegister from "@/components/PwaRegister";
+import InstallBanner from "@/components/InstallBanner";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import HtmlLang from "@/components/HtmlLang";
 import SchemaHowTo from "@/components/SchemaHowTo";
@@ -94,6 +95,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
           <PwaRegister />
           <Breadcrumbs />
+          <InstallBanner />
           <CookieConsent />
           <Magnifier />
           <main className="flex-1">{children}</main>
