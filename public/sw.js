@@ -95,9 +95,16 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Static assets — cache first
+  // Static assets — cache first in production, network-only on localhost (dev)
+  // During development, Next.js serves JS bundles under stable URLs without content
+  // hashes. A cache-first SW would serve stale bundles after code changes. Using
+  // network-only on localhost ensures the browser always gets the freshest bundle.
   if (isStaticAsset(url)) {
-    event.respondWith(cacheFirst(event.request));
+    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+      event.respondWith(networkOnly(event.request));
+    } else {
+      event.respondWith(cacheFirst(event.request));
+    }
     return;
   }
 

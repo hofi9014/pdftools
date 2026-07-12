@@ -3,10 +3,12 @@ import { useState, useCallback, useRef } from 'react';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { useOnlineStatus } from '@/lib/useOnlineStatus';
+import SharePointPickerDialog from './SharePointPickerDialog';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID || '';
 const DROPBOX_KEY = process.env.NEXT_PUBLIC_DROPBOX_APP_KEY || '';
 const ONEDRIVE_CLIENT_ID = process.env.NEXT_PUBLIC_ONEDRIVE_CLIENT_ID || '';
+const SHAREPOINT_CLIENT_ID = process.env.NEXT_PUBLIC_SHAREPOINT_CLIENT_ID || '';
 const GOOGLE_TOKEN_CACHE_KEY = 'optimapdf_google_token';
 const GOOGLE_TOKEN_EXPIRY_KEY = 'optimapdf_google_expires_at';
 
@@ -96,6 +98,7 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
   const { locale } = useLocale();
   const isOnline = useOnlineStatus();
   const [saving, setSaving] = useState<string | null>(null);
+  const [showSharePoint, setShowSharePoint] = useState(false);
   const [error, setError] = useState('');
   const googleTokenRef = useRef<string>('');
 
@@ -165,6 +168,12 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
       setSaving(null);
     }
   }, [blob, fileName, onDone]);
+
+  const handleSharePoint = useCallback(() => {
+    if (!SHAREPOINT_CLIENT_ID) { setError('SharePoint not configured'); return; }
+    if (!navigator.onLine) { setError('__offline__'); return; }
+    setShowSharePoint(true);
+  }, []);
 
   const saveToDropbox = useCallback(async () => {
     if (!DROPBOX_KEY) { setError('Dropbox not configured'); return; }
@@ -248,7 +257,28 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
         </button>
       )}
 
+      {!!SHAREPOINT_CLIENT_ID && (
+        <button
+          onClick={handleSharePoint}
+          disabled={!!saving || showSharePoint}
+          className="text-xs px-3 py-1.5 rounded-lg border transition disabled:opacity-50 flex items-center gap-1.5"
+          style={{ color: 'var(--coffee-text-secondary)', borderColor: 'var(--coffee-border)' }}
+        >
+          <span>🏢</span> SharePoint
+        </button>
+      )}
+
       {error && <p className="text-xs text-red-500 ml-2">⚠️ {error === '__offline__' ? t('cloud.offline', locale) : error}</p>}
+
+      <SharePointPickerDialog
+        mode="saver"
+        open={showSharePoint}
+        onClose={() => setShowSharePoint(false)}
+        onDone={onDone}
+        blob={blob}
+        fileName={fileName}
+        clientId={SHAREPOINT_CLIENT_ID}
+      />
     </div>
   );
 }

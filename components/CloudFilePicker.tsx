@@ -3,11 +3,13 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { useOnlineStatus } from '@/lib/useOnlineStatus';
+import SharePointPickerDialog from './SharePointPickerDialog';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID || '';
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_API_KEY || '';
 const DROPBOX_KEY = process.env.NEXT_PUBLIC_DROPBOX_APP_KEY || '';
 const ONEDRIVE_CLIENT_ID = process.env.NEXT_PUBLIC_ONEDRIVE_CLIENT_ID || '';
+const SHAREPOINT_CLIENT_ID = process.env.NEXT_PUBLIC_SHAREPOINT_CLIENT_ID || '';
 
 interface CloudFilePickerProps {
   onFilesPicked: (files: File[]) => void;
@@ -50,6 +52,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const [offlineMsg, setOfflineMsg] = useState('');
+  const [showSharePoint, setShowSharePoint] = useState(false);
   const googleTokenRef = useRef<string>('');
   const bcRef = useRef<BroadcastChannel | null>(null);
   const oauthIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
@@ -284,6 +287,13 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
     }
   }, [onFilesPicked]);
 
+  const handleSharePoint = useCallback(() => {
+    setOpen(false);
+    if (!navigator.onLine) { setOfflineMsg('offline'); return; }
+    if (!SHAREPOINT_CLIENT_ID) { return; }
+    setShowSharePoint(true);
+  }, []);
+
   const handleLocal = useCallback(() => {
     setOpen(false);
     const input = document.createElement('input');
@@ -306,8 +316,9 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
   const hasGoogle = !!(GOOGLE_CLIENT_ID && GOOGLE_API_KEY);
   const hasDropbox = !!DROPBOX_KEY;
   const hasOneDrive = !!ONEDRIVE_CLIENT_ID;
+  const hasSharePoint = !!SHAREPOINT_CLIENT_ID;
 
-  const anyConfigured = hasGoogle || hasDropbox || hasOneDrive;
+  const anyConfigured = hasGoogle || hasDropbox || hasOneDrive || hasSharePoint;
 
   return (
     <div className="relative inline-block">
@@ -319,7 +330,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
         {loading ? (
           <span className="flex items-center gap-1.5">
             <span className="inline-block w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            {loading === 'google' ? 'Google Drive...' : loading === 'dropbox' ? 'Dropbox...' : 'OneDrive...'}
+            {loading === 'google' ? 'Google Drive...' : loading === 'dropbox' ? 'Dropbox...' : loading === 'onedrive' ? 'OneDrive...' : 'SharePoint...'}
           </span>
         ) : (
           <span>☁️ {label}</span>
@@ -342,6 +353,11 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
               <span className="text-lg">☁️</span> OneDrive
             </button>
           )}
+          {hasSharePoint && (
+            <button onClick={handleSharePoint} className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+              <span className="text-lg">🏢</span> SharePoint
+            </button>
+          )}
           <button onClick={handleLocal} className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3">
             <span className="text-lg">💻</span> {locale === 'pl' ? 'To urządzenie' : 'This device'}
           </button>
@@ -352,6 +368,14 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
           ⚠️ {t('cloud.offline', locale)}
         </div>
       )}
+
+      <SharePointPickerDialog
+        mode="picker"
+        open={showSharePoint}
+        onClose={() => setShowSharePoint(false)}
+        onFilesPicked={onFilesPicked}
+        clientId={SHAREPOINT_CLIENT_ID}
+      />
     </div>
   );
 }
