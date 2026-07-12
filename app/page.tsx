@@ -4,7 +4,6 @@ import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import guides from '@/content/guides';
-import InstallBanner from '@/components/InstallBanner';
 import InstallSection from '@/components/InstallSection';
 
 const aiTools = new Set(['aichat', 'aisummary', 'translate']);
@@ -87,8 +86,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <InstallBanner />
 
       {/* Stats */}
       <div className="flex justify-center gap-12 sm:gap-16 py-8 px-4">
