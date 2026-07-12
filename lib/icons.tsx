@@ -72,6 +72,10 @@ const tools: Record<string, React.ReactNode> = {
   fillform:     row(<>{em('📋')}{fi('#dc2626','PDF',7)}</>),
   pdfa:         row(<>{fi('#dc2626','PDF',7)}{ar()}{em('🏛️')}</>),
   guide:        em('📘'),
+  cloud:        em('☁️'),
+  'cloud-access':   em('☁️'),
+  'cloud-relogin':  em('☁️'),
+  'cloud-privacy':  em('☁️'),
 };
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -79,6 +83,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
   convert: <span style={s}>🔄</span>,
   secure:  <span style={s}>🔒</span>,
   more:    <span style={s}>🧩</span>,
+  cloud:   <span style={s}>☁️</span>,
 };
 
 export function getToolIcon(key: string): React.ReactNode {

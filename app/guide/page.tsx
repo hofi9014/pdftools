@@ -529,6 +529,157 @@ export default function GuidePage() {
             </section>
           ))}
       </div>
+
+      {/* Cloud integration section */}
+      <section className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl sm:text-2xl font-bold mb-3 tool-heading">
+          {{
+            pl: 'Jak działa import/eksport z chmury',
+            ar: 'كيف يعمل الاستيراد/التصدير من السحابة',
+            de: 'So funktioniert Cloud-Import/-Export',
+            en: 'How cloud import/export works',
+            es: 'Cómo funciona la importación/exportación desde la nube',
+            fa: 'واردات / صادرات ابری چگونه کار می‌کند',
+            fr: 'Comment fonctionne l\'import/export depuis le cloud',
+            hi: 'क्लाउड इम्पोर्ट/एक्सपोर्ट कैसे काम करता है',
+            is: 'Hvernig virkar skýja innflutningur/útflutningur',
+            it: 'Come funziona l\'importazione/esportazione dal cloud',
+            ja: 'クラウドインポート/エクスポートの仕組み',
+            no: 'Hvordan skyimport/-eksport fungerer',
+            pt: 'Como funciona a importação/exportação da nuvem',
+            sv: 'Hur molnimport/-export fungerar',
+            tr: 'Bulut içe/dışa aktarma nasıl çalışır',
+            zh: '云导入/导出的工作原理',
+          }[locale] || 'How cloud import/export works'}
+        </h2>
+        <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 sm:p-6 space-y-4 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0 mt-0.5">🔐</span>
+            <div>
+              <strong>{{
+                pl: 'Logowanie przez oficjalne okno dostawcy',
+                ar: 'تسجيل الدخول عبر نافذة المزود الرسمية',
+                de: 'Anmeldung über das offizielle Anbieterfenster',
+                en: 'Login through the official provider window',
+                es: 'Inicio de sesión a través de la ventana oficial del proveedor',
+                fa: 'ورود از طریق پنجره رسمی ارائه‌دهنده',
+                fr: 'Connexion via la fenêtre officielle du fournisseur',
+                hi: 'आधिकारिक प्रदाता विंडो के माध्यम से लॉगिन',
+                is: 'Innskráning í gegnum opinberan glugga þjónustuveitanda',
+                it: 'Accesso tramite la finestra ufficiale del provider',
+                ja: '公式プロバイダーウィンドウからのログイン',
+                no: 'Pålogging via det offisielle leverandørvinduet',
+                pt: 'Login através da janela oficial do provedor',
+                sv: 'Inloggning via leverantörens officiella fönster',
+                tr: 'Resmi sağlayıcı penceresi üzerinden giriş',
+                zh: '通过官方提供商窗口登录',
+              }[locale] || 'Login through the official provider window'}</strong>
+              {' '}{{
+                pl: 'Gdy klikniesz "Dodaj z chmury" i wybierzesz Google Drive, Dropbox, OneDrive lub SharePoint, otwiera się oficjalne okno logowania wybranego dostawcy. OptimaPDF NIGDY nie widzi ani nie przechowuje Twojego hasła — cała komunikacja logowania odbywa się bezpośrednio między Tobą a dostawcą usługi.',
+                ar: 'عند النقر على "إضافة من السحابة" واختيار Google Drive أو Dropbox أو OneDrive أو SharePoint، يتم فتح نافذة تسجيل الدخول الرسمية للمزود المختار. OptimaPDF لا ترى أو تخزن كلمة مرورك أبدًا - جميع اتصالات تسجيل الدخول تتم مباشرة بينك وبين مزود الخدمة.',
+                de: 'Wenn Sie auf "Aus Cloud hinzufügen" klicken und Google Drive, Dropbox, OneDrive oder SharePoint auswählen, öffnet sich das offizielle Anmeldefenster des jeweiligen Anbieters. OptimaPDF sieht oder speichert NIEMALS Ihr Passwort – die gesamte Anmeldekommunikation erfolgt direkt zwischen Ihnen und dem Dienstanbieter.',
+                en: 'When you click "Add from cloud" and choose Google Drive, Dropbox, OneDrive or SharePoint, the official login window of the selected provider opens. OptimaPDF NEVER sees or stores your password — all login communication happens directly between you and the service provider.',
+                es: 'Al hacer clic en "Añadir desde la nube" y seleccionar Google Drive, Dropbox, OneDrive o SharePoint, se abre la ventana de inicio de sesión oficial del proveedor seleccionado. OptimaPDF NUNCA ve ni almacena tu contraseña — toda la comunicación de inicio de sesión ocurre directamente entre tú y el proveedor del servicio.',
+                fa: 'وقتی روی "افزودن از ابر" کلیک می‌کنید و Google Drive، Dropbox، OneDrive یا SharePoint را انتخاب می‌کنید، پنجره رسمی ورود ارائه‌دهنده انتخاب شده باز می‌شود. OptimaPDF هرگز رمز عبور شما را نمی‌بیند یا ذخیره نمی‌کند - تمام ارتباطات ورود مستقیماً بین شما و ارائه‌دهنده خدمت انجام می‌شود.',
+                fr: 'Lorsque vous cliquez sur "Ajouter depuis le cloud" et choisissez Google Drive, Dropbox, OneDrive ou SharePoint, la fenêtre de connexion officielle du fournisseur sélectionné s\'ouvre. OptimaPDF ne voit NI stocke jamais votre mot de passe — toutes les communications de connexion se font directement entre vous et le fournisseur de services.',
+                hi: 'जब आप "क्लाउड से जोड़ें" पर क्लिक करते हैं और Google Drive, Dropbox, OneDrive या SharePoint चुनते हैं, तो चयनित प्रदाता की आधिकारिक लॉगिन विंडो खुलती है। OptimaPDF आपका पासवर्ड कभी नहीं देखता या संग्रहीत नहीं करता — सभी लॉगिन संचार सीधे आपके और सेवा प्रदाता के बीच होता है।',
+                is: 'Þegar þú smellir á "Bæta við úr skýi" og velur Google Drive, Dropbox, OneDrive eða SharePoint, opnast opinber innskráningargluggi valins þjónustuaðila. OptimaPDF sér aldrei eða geymir lykilorðið þitt — öll innskráningarsamskipti fara fram beint á milli þín og þjónustuaðilans.',
+                it: 'Quando fai clic su "Aggiungi dal cloud" e scegli Google Drive, Dropbox, OneDrive o SharePoint, si apre la finestra di accesso ufficiale del provider selezionato. OptimaPDF NON vede né memorizza mai la tua password — tutta la comunicazione di accesso avviene direttamente tra te e il fornitore del servizio.',
+                ja: '「クラウドから追加」をクリックしてGoogle Drive、Dropbox、OneDrive、SharePointを選択すると、選択したプロバイダーの公式ログインウィンドウが開きます。OptimaPDFはお客様のパスワードを決して見たり保存したりしません。すべてのログイン通信はお客様とサービスプロバイダー間で直接行われます。',
+                no: 'Når du klikker på "Legg til fra sky" og velger Google Drive, Dropbox, OneDrive eller SharePoint, åpnes det offisielle innloggingsvinduet til den valgte leverandøren. OptimaPDF ser eller lagrer ALDRI passordet ditt — all innloggingskommunikasjon skjer direkte mellom deg og tjenesteleverandøren.',
+                pt: 'Quando clica em "Adicionar da nuvem" e escolhe Google Drive, Dropbox, OneDrive ou SharePoint, abre-se a janela de login oficial do fornecedor selecionado. O OptimaPDF NUNCA vê nem armazena a sua palavra-passe — toda a comunicação de login ocorre diretamente entre si e o fornecedor do serviço.',
+                sv: 'När du klickar på "Lägg till från molnet" och väljer Google Drive, Dropbox, OneDrive eller SharePoint, öppnas det officiella inloggningsfönstret för den valda leverantören. OptimaPDF ser eller lagrar ALDRIG ditt lösenord — all inloggningskommunikation sker direkt mellan dig och tjänsteleverantören.',
+                tr: '"Buluttan Ekle"ye tıklayıp Google Drive, Dropbox, OneDrive veya SharePoint\'i seçtiğinizde, seçilen sağlayıcının resmi oturum açma penceresi açılır. OptimaPDF şifrenizi ASLA görmez veya saklamaz — tüm oturum açma iletişimi doğrudan sizinle hizmet sağlayıcı arasında gerçekleşir.',
+                zh: '当您点击"从云添加"并选择Google Drive、Dropbox、OneDrive或SharePoint时，所选提供商的官方登录窗口将打开。OptimaPDF永远不会看到或存储您的密码——所有登录通信直接在您和服务提供商之间进行。',
+              }[locale] || 'When you click "Add from cloud" and choose a provider, the official login window opens. OptimaPDF never sees or stores your password.'}
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0 mt-0.5">⏳</span>
+            <div>
+              <strong>{{
+                pl: 'Sesja tymczasowa',
+                ar: 'جلسة مؤقتة',
+                de: 'Temporäre Sitzung',
+                en: 'Temporary session',
+                es: 'Sesión temporal',
+                fa: 'نشاط موقت',
+                fr: 'Session temporaire',
+                hi: 'अस्थायी सत्र',
+                is: 'Tímabundin seta',
+                it: 'Sessione temporanea',
+                ja: '一時的なセッション',
+                no: 'Midlertidig økt',
+                pt: 'Sessão temporária',
+                sv: 'Tillfällig session',
+                tr: 'Geçici oturum',
+                zh: '临时会话',
+              }[locale] || 'Temporary session'}</strong>
+              {' '}{{
+                pl: 'Token autoryzacyjny jest ważny tylko przez ograniczony czas i wygasa po zamknięciu karty przeglądarki. Przy kolejnej wizycie możesz zostać poproszony o ponowne zalogowanie — to zabezpieczenie zapobiega nieautoryzowanemu dostępowi, jeśli zostawisz komputer bez nadzoru.',
+                ar: 'رمز التفويض صالح فقط لفترة محدودة وينتهي عند إغلاق علامة تبويب المتصفح. قد يُطلب منك إعادة تسجيل الدخول في زيارتك التالية - هذا الإجراء الأمني يمنع الوصول غير المصرح به إذا تركت جهاز الكمبيوتر الخاص بك دون مراقبة.',
+                de: 'Das Autorisierungstoken ist nur für einen begrenzten Zeitraum gültig und läuft ab, wenn Sie den Browser-Tab schließen. Bei Ihrem nächsten Besuch werden Sie möglicherweise erneut zur Anmeldung aufgefordert – diese Sicherheitsmaßnahme verhindert unbefugten Zugriff, falls Sie Ihren Computer unbeaufsichtigt lassen.',
+                en: 'The authorization token is only valid for a limited time and expires when you close the browser tab. On your next visit you may be asked to log in again — this security measure prevents unauthorized access if you leave your computer unattended.',
+                es: 'El token de autorización solo es válido por un tiempo limitado y caduca al cerrar la pestaña del navegador. En su próxima visita, es posible que se le pida que inicie sesión nuevamente; esta medida de seguridad evita el acceso no autorizado si deja su computadora desatendida.',
+                fa: 'توکن مجوز فقط برای مدت زمان محدودی معتبر است و با بسته شدن برگه مرورگر منقضی می‌شود. در بازدید بعدی ممکن است از شما خواسته شود دوباره وارد شوید - این اقدام امنیتی از دسترسی غیرمجاز در صورت ترک رایانه جلوگیری می‌کند.',
+                fr: 'Le jeton d\'autorisation n\'est valable que pour une durée limitée et expire lorsque vous fermez l\'onglet du navigateur. Lors de votre prochaine visite, il vous sera peut-être demandé de vous reconnecter — cette mesure de sécurité empêche tout accès non autorisé si vous laissez votre ordinateur sans surveillance.',
+                hi: 'प्राधिकरण टोकन केवल सीमित समय के लिए मान्य होता है और ब्राउज़र टैब बंद करने पर समाप्त हो जाता है। आपकी अगली यात्रा पर आपसे फिर से लॉग इन करने के लिए कहा जा सकता है — यह सुरक्षा उपाय आपके कंप्यूटर को बिना निगरानी छोड़ने पर अनधिकृत पहुंच को रोकता है।',
+                is: 'Auðkenningartákn gildir aðeins í takmarkaðan tíma og rennur út þegar þú lokar vafraflipanum. Næst þegar þú heimsækir síðuna gætir þú verið beðinn um að skrá þig inn aftur — þessi öryggisráðstöfun kemur í veg fyrir óviðkomandi aðgang ef þú skilur tölvuna þína eftir án eftirlits.',
+                it: 'Il token di autorizzazione è valido solo per un tempo limitato e scade quando chiudi la scheda del browser. Alla visita successiva potrebbe esserti chiesto di accedere nuovamente — questa misura di sicurezza previene l\'accesso non autorizzato se lasci il computer incustodito.',
+                ja: '認証トークンは限られた時間のみ有効で、ブラウザタブを閉じると期限切れになります。次回訪問時には再度ログインを求められる場合があります。このセキュリティ対策により、コンピューターを無人にした場合の不正アクセスを防ぎます。',
+                no: 'Autorisasjonstokenet er bare gyldig i en begrenset periode og utløper når du lukker nettleserfanen. Ved neste besøk kan du bli bedt om å logge på igjen — denne sikkerhetstiltaket forhindrer uautorisert tilgang hvis du forlater datamaskinen uten tilsyn.',
+                pt: 'O token de autorização é válido apenas por um tempo limitado e expira quando fecha o separador do navegador. Na sua próxima visita, poderá ser-lhe pedido que inicie sessão novamente — esta medida de segurança impede o acesso não autorizado se deixar o seu computador sem vigilância.',
+                sv: 'Auktorisationstokenet är endast giltigt under en begränsad tid och upphör att gälla när du stänger webbläsarfliken. Vid ditt nästa besök kan du bli ombedd att logga in igen — denna säkerhetsåtgärd förhindrar obehörig åtkomst om du lämnar din dator utan uppsikt.',
+                tr: 'Yetkilendirme tokeni yalnızca sınırlı bir süre için geçerlidir ve tarayıcı sekmesini kapattığınızda sona erer. Bir sonraki ziyaretinizde tekrar oturum açmanız istenebilir — bu güvenlik önlemi, bilgisayarınızı gözetimsiz bırakmanız durumunda yetkisiz erişimi önler.',
+                zh: '授权令牌仅在有限时间内有效，并在您关闭浏览器标签页时过期。下次访问时，您可能会被要求重新登录——此安全措施可防止您在计算机无人看管时发生未经授权的访问。',
+              }[locale] || 'The authorization token is only valid for a limited time and expires when you close the browser tab.'}
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0 mt-0.5">💻</span>
+            <div>
+              <strong>{{
+                pl: 'Zapisane połączenia — tylko lokalnie',
+                ar: 'الاتصالات المحفوظة - محليًا فقط',
+                de: 'Gespeicherte Verbindungen — nur lokal',
+                en: 'Saved connections — local only',
+                es: 'Conexiones guardadas — solo local',
+                fa: 'اتصالات ذخیره شده - فقط محلی',
+                fr: 'Connexions enregistrées — uniquement locales',
+                hi: 'सहेजे गए कनेक्शन — केवल स्थानीय',
+                is: 'Vistaðar tengingar — aðeins staðvært',
+                it: 'Connessioni salvate — solo locali',
+                ja: '保存された接続 — ローカルのみ',
+                no: 'Lagrede tilkoblinger — kun lokalt',
+                pt: 'Conexões salvas — apenas local',
+                sv: 'Sparade anslutningar — endast lokalt',
+                tr: 'Kaydedilen bağlantılar — yalnızca yerel',
+                zh: '已保存的连接 — 仅本地',
+              }[locale] || 'Saved connections — local only'}</strong>
+              {' '}{{
+                pl: 'Dla SharePoint, OneDrive i Google Drive zapamiętujemy ostatnio używane witryny i foldery wyłącznie lokalnie w Twojej przeglądarce (localStorage). Te dane NIGDY nie są wysyłane na serwer OptimaPDF, nie są synchronizowane między urządzeniami i nie są widoczne dla innych osób korzystających z tej strony.',
+                ar: 'بالنسبة لـ SharePoint وOneDrive وGoogle Drive، نحفظ المواقع والمجلدات المستخدمة مؤخرًا محليًا فقط في متصفحك (localStorage). لا يتم إرسال هذه البيانات أبدًا إلى خادم OptimaPDF، ولا تتم مزامنتها بين الأجهزة، ولا يمكن للأشخاص الآخرين الذين يستخدمون هذا الموقع رؤيتها.',
+                de: 'Für SharePoint, OneDrive und Google Drive merken wir uns die zuletzt verwendeten Websites und Ordner ausschließlich lokal in Ihrem Browser (localStorage). Diese Daten werden NIEMALS an den OptimaPDF-Server gesendet, nicht zwischen Geräten synchronisiert und sind für andere Benutzer dieser Website nicht sichtbar.',
+                en: 'For SharePoint, OneDrive and Google Drive, we remember recently used sites and folders exclusively locally in your browser (localStorage). This data is NEVER sent to the OptimaPDF server, is not synced between devices, and is not visible to other people using this site.',
+                es: 'Para SharePoint, OneDrive y Google Drive, recordamos los sitios y carpetas utilizados recientemente exclusivamente de forma local en su navegador (localStorage). Estos datos NUNCA se envían al servidor de OptimaPDF, no se sincronizan entre dispositivos y no son visibles para otras personas que usan este sitio.',
+                fa: 'برای SharePoint، OneDrive و Google Drive، سایت‌ها و پوشه‌های اخیراً استفاده شده را فقط به صورت محلی در مرورگر شما (localStorage) ذخیره می‌کنیم. این داده‌ها هرگز به سرور OptimaPDF ارسال نمی‌شوند، بین دستگاه‌ها همگام‌سازی نمی‌شوند و برای سایر افراد استفاده‌کننده از این سایت قابل مشاهده نیستند.',
+                fr: 'Pour SharePoint, OneDrive et Google Drive, nous mémorisons les sites et dossiers récemment utilisés exclusivement localement dans votre navigateur (localStorage). Ces données ne sont JAMAIS envoyées au serveur OptimaPDF, ne sont pas synchronisées entre les appareils et ne sont pas visibles par d\'autres personnes utilisant ce site.',
+                hi: 'SharePoint, OneDrive और Google Drive के लिए, हम हाल ही में उपयोग की गई साइटों और फ़ोल्डरों को विशेष रूप से आपके ब्राउज़र (localStorage) में स्थानीय रूप से संग्रहीत करते हैं। यह डेटा कभी भी OptimaPDF सर्वर पर नहीं भेजा जाता, उपकरणों के बीच सिंक नहीं किया जाता, और इस साइट का उपयोग करने वाले अन्य लोगों को दिखाई नहीं देता।',
+                is: 'Fyrir SharePoint, OneDrive og Google Drive, muna við nýlega notuð svæði og möppur aðeins staðvært í vafranum þínum (localStorage). Þessi gögn eru ALDREI send til OptimaPDF þjónsins, ekki samstillt á milli tækja og ekki sýnileg öðrum sem nota þessa síðu.',
+                it: 'Per SharePoint, OneDrive e Google Drive, memorizziamo i siti e le cartelle utilizzati di recente esclusivamente localmente nel tuo browser (localStorage). Questi dati NON vengono mai inviati al server OptimaPDF, non vengono sincronizzati tra dispositivi e non sono visibili ad altre persone che utilizzano questo sito.',
+                ja: 'SharePoint、OneDrive、Google Driveについて、最近使用したサイトやフォルダをお客様のブラウザ（localStorage）にのみローカルに保存します。このデータがOptimaPDFサーバーに送信されることは決してなく、デバイス間で同期されることもなく、このサイトを使用する他の人には表示されません。',
+                no: 'For SharePoint, OneDrive og Google Drive husker vi nylig brukte områder og mapper utelukkende lokalt i nettleseren din (localStorage). Disse dataene blir ALDRI sendt til OptimaPDF-serveren, synkroniseres ikke mellom enheter og er ikke synlige for andre som bruker dette nettstedet.',
+                pt: 'Para SharePoint, OneDrive e Google Drive, memorizamos os sites e pastas utilizados recentemente exclusivamente localmente no seu navegador (localStorage). Estes dados NUNCA são enviados para o servidor OptimaPDF, não são sincronizados entre dispositivos e não são visíveis para outras pessoas que utilizam este site.',
+                sv: 'För SharePoint, OneDrive och Google Drive kommer vi ihåg nyligen använda webbplatser och mappar enbart lokalt i din webbläsare (localStorage). Dessa data skickas ALDRIG till OptimaPDF-servern, synkroniseras inte mellan enheter och är inte synliga för andra personer som använder denna webbplats.',
+                tr: 'SharePoint, OneDrive ve Google Drive için, en son kullanılan siteleri ve klasörleri yalnızca tarayıcınızda (localStorage) yerel olarak hatırlıyoruz. Bu veriler ASLA OptimaPDF sunucusuna gönderilmez, cihazlar arasında senkronize edilmez ve bu siteyi kullanan diğer kişiler tarafından görülemez.',
+                zh: '对于SharePoint、OneDrive和Google Drive，我们仅在您的浏览器（localStorage）中本地记住最近使用的站点和文件夹。这些数据绝不会发送到OptimaPDF服务器，不会在设备之间同步，并且使用此站点的其他人不可见。',
+              }[locale] || 'Recently used sites and folders are stored exclusively locally in your browser (localStorage). This data is never sent to the server.'}
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

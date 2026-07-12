@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024; // 100MB
-const RATE_LIMIT_REQUESTS = 30; // requests per window
-const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024;
+const RATE_LIMIT_REQUESTS = 30;
+const RATE_LIMIT_WINDOW_MS = 60_000;
 const ALLOWED_ORIGINS = [
   'https://optimapdf.com',
   'https://www.optimapdf.com',
   'http://localhost:3000',
 ];
-
 const rateMap = new Map<string, { count: number; resetAt: number }>();
 
 function getClientIp(request: NextRequest): string {
@@ -34,11 +33,12 @@ export function proxy(request: NextRequest) {
   const ip = getClientIp(request);
   const method = request.method;
 
-  // Apply to all API routes
+  const response = NextResponse.next();
+
+  // API handling
   if (pathname.startsWith('/api/')) {
     console.log(`[${new Date().toISOString()}] ${method} ${pathname} ip=${ip}`);
 
-    // Rate limiting
     if (!checkRateLimit(ip)) {
       console.warn(`[RATE LIMIT] ${method} ${pathname} ip=${ip}`);
       return NextResponse.json(
@@ -47,9 +47,7 @@ export function proxy(request: NextRequest) {
       );
     }
 
-    // Skip non-POST methods (except for GET-based API routes)
     if (request.method === 'POST') {
-      // Origin / Referer validation (CSRF protection)
       const origin = request.headers.get('origin') || request.headers.get('referer') || '';
       if (origin) {
         const isAllowed = ALLOWED_ORIGINS.some(allowed => origin.startsWith(allowed));
@@ -62,7 +60,6 @@ export function proxy(request: NextRequest) {
         }
       }
 
-      // File size limit check
       const contentLength = request.headers.get('content-length');
       if (contentLength) {
         const size = parseInt(contentLength, 10);
@@ -77,7 +74,7 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
