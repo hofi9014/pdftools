@@ -1,56 +1,102 @@
 'use client';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
+import { getCategoryIcon } from '@/lib/icons';
 
-const toolKeys = [
-  { key: 'merge', href: '/merge' },
-  { key: 'split', href: '/split' },
-  { key: 'compress', href: '/compress' },
-  { key: 'word', href: '/pdf-to-word' },
-  { key: 'wordtopdf', href: '/word-to-pdf' },
-  { key: 'jpgTopdf', href: '/jpg-to-pdf' },
-  { key: 'protect', href: '/protect-pdf' },
-  { key: 'unlock', href: '/unlock-pdf' },
-  { key: 'rotate', href: '/rotate-pdf' },
-  { key: 'watermark', href: '/watermark-pdf' },
-  { key: 'pagenumbers', href: '/page-numbers' },
-  { key: 'ocr', href: '/ocr-pdf' },
-  { key: 'extract', href: '/extract-pages' },
-  { key: 'delete', href: '/delete-pages' },
-  { key: 'reorder', href: '/reorder-pages' },
-  { key: 'crop', href: '/crop-pdf' },
-  { key: 'addpage', href: '/add-page' },
-  { key: 'edit', href: '/edit-pdf' },
-  { key: 'sign', href: '/sign-pdf' },
-  { key: 'metadata', href: '/metadata' },
-  { key: 'excel', href: '/pdf-to-excel' },
-  { key: 'excel2pdf', href: '/excel-to-pdf' },
-  { key: 'txt', href: '/pdf-to-txt' },
-  { key: 'ppt', href: '/pdf-to-powerpoint' },
-  { key: 'compare', href: '/compare-pdf' },
-  { key: 'html', href: '/html-to-pdf' },
-  { key: 'url', href: '/url-to-pdf' },
-  { key: 'html2pdf', href: '/pdf-to-html' },
-  { key: 'flatten', href: '/flatten-pdf' },
-  { key: 'openoffice', href: '/openoffice-to-pdf' },
-  { key: 'pdf2openoffice', href: '/pdf-to-openoffice' },
-  { key: 'aichat', href: '/ai-chat' },
-  { key: 'aisummary', href: '/ai-summary' },
-  { key: 'translate', href: '/ai-translate' },
-  { key: 'svg', href: '/pdf-to-svg' },
-  { key: 'redact', href: '/redact-pdf' },
-  { key: 'epub', href: '/pdf-to-epub' },
-  { key: 'fillform', href: '/fill-form' },
-  { key: 'images', href: '/pdf-to-images' },
-  { key: 'pdfa', href: '/to-pdfa' },
+interface CatTool {
+  key: string;
+  href: string;
+  navKey?: string;
+  icon?: string;
+}
+
+interface Category {
+  key: string;
+  tools: CatTool[];
+}
+
+const categories: Category[] = [
+  {
+    key: 'edit',
+    tools: [
+      { key: 'merge', href: '/merge' },
+      { key: 'split', href: '/split' },
+      { key: 'compress', href: '/compress' },
+      { key: 'rotate', href: '/rotate-pdf' },
+      { key: 'crop', href: '/crop-pdf' },
+      { key: 'delete', href: '/delete-pages' },
+      { key: 'extract', href: '/extract-pages' },
+      { key: 'reorder', href: '/reorder-pages' },
+      { key: 'addpage', href: '/add-page' },
+      { key: 'edit', href: '/edit-pdf' },
+      { key: 'pagenumbers', href: '/page-numbers' },
+      { key: 'watermark', href: '/watermark-pdf' },
+      { key: 'redact', href: '/redact-pdf' },
+      { key: 'flatten', href: '/flatten-pdf' },
+      { key: 'metadata', href: '/metadata' },
+    ],
+  },
+  {
+    key: 'convert',
+    tools: [
+      { key: 'word', href: '/pdf-to-word' },
+      { key: 'wordtopdf', href: '/word-to-pdf' },
+      { key: 'jpgTopdf', href: '/jpg-to-pdf' },
+      { key: 'images', href: '/pdf-to-images' },
+      { key: 'excel', href: '/pdf-to-excel' },
+      { key: 'excel2pdf', href: '/excel-to-pdf' },
+      { key: 'ppt', href: '/pdf-to-powerpoint' },
+      { key: 'openoffice', href: '/openoffice-to-pdf' },
+      { key: 'pdf2openoffice', href: '/pdf-to-openoffice' },
+      { key: 'txt', href: '/pdf-to-txt' },
+      { key: 'svg', href: '/pdf-to-svg' },
+      { key: 'epub', href: '/pdf-to-epub' },
+      { key: 'html', href: '/html-to-pdf' },
+      { key: 'html2pdf', href: '/pdf-to-html' },
+      { key: 'url', href: '/url-to-pdf' },
+    ],
+  },
+  {
+    key: 'secure',
+    tools: [
+      { key: 'protect', href: '/protect-pdf' },
+      { key: 'unlock', href: '/unlock-pdf' },
+      { key: 'sign', href: '/sign-pdf' },
+    ],
+  },
+  {
+    key: 'more',
+    tools: [
+      { key: 'aichat', href: '/ai-chat' },
+      { key: 'aisummary', href: '/ai-summary' },
+      { key: 'translate', href: '/ai-translate' },
+      { key: 'ocr', href: '/ocr-pdf' },
+      { key: 'compare', href: '/compare-pdf' },
+      { key: 'fillform', href: '/fill-form' },
+      { key: 'pdfa', href: '/to-pdfa' },
+      { key: 'rules', href: '/nasze-zasady', navKey: 'nav.rules', icon: '📜' },
+      { key: 'support', href: '/wsparcie', navKey: 'nav.support', icon: '💬' },
+    ],
+  },
 ];
 
 export default function MobileMenu() {
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const { locale } = useLocale();
+
+  const toggleCategory = useCallback((key: string) => {
+    setExpanded(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
 
   return (
     <>
@@ -65,30 +111,59 @@ export default function MobileMenu() {
           )}
         </svg>
       </button>
-      {open && (
+      {open && typeof window !== 'undefined' && createPortal(
         <>
           <div className="fixed inset-0 bg-black/30 z-40 md:hidden" onClick={() => setOpen(false)} />
           <div className="fixed top-16 left-0 right-0 bottom-0 z-50 md:hidden flex flex-col" style={{ backgroundColor: 'var(--coffee-surface-solid)' }}>
-            <div className="sticky top-0 px-4 py-3 border-b border-[var(--coffee-border)] shrink-0 space-y-1" style={{ backgroundColor: 'var(--coffee-surface-solid)' }}>
-              <Link href="/" className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>{t('nav.home', locale)}</Link>
-              <Link href="/guide" className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📖 {t('nav.guide', locale)}</Link>
-              <Link href={`/guides/${localeGuidesSlug[locale]}`} className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📚 {t('nav.guides', locale)}</Link>
-              <div className="pt-2 border-t border-[var(--coffee-border)]">
+            <div className="flex-1 overflow-y-auto overscroll-contain">
+              <div className="px-4 py-3 space-y-1">
+                <Link href="/" className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>{t('nav.home', locale)}</Link>
+                <Link href="/guide" className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📖 {t('nav.guide', locale)}</Link>
+                <Link href={`/guides/${localeGuidesSlug[locale]}`} className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📚 {t('nav.guides', locale)}</Link>
+              </div>
+              <div className="px-4 pb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider px-3" style={{ color: 'var(--coffee-text-tertiary)' }}>{t('nav.tools', locale)}</span>
               </div>
-            </div>
-            <div className="flex-1 overflow-y-auto overscroll-contain">
-              {toolKeys.map((tk) => (
-                <Link key={tk.href} href={tk.href}
-                  className="block px-4 py-4 text-sm border-b border-[var(--coffee-border)] last:border-0 min-h-[44px] flex items-center hover:bg-[var(--coffee-accent-subtle)]"
-                  style={{ color: 'var(--coffee-text-secondary)' }}
-                  onClick={() => setOpen(false)}>
-                  {t(`tool.${tk.key}`, locale)}
-                </Link>
+              {categories.map(cat => (
+                <div key={cat.key}>
+                  <button onClick={() => toggleCategory(cat.key)}
+                    className="flex items-center justify-between w-full px-4 py-4 text-sm font-semibold border-b border-[var(--coffee-border)] min-h-[44px] hover:bg-[var(--coffee-surface-hover)]"
+                    style={{ color: 'var(--coffee-text-secondary)' }}>
+                    <span className="flex items-center gap-2">
+                      {getCategoryIcon(cat.key)}
+                      <span>{t(`nav.category.${cat.key}`, locale)}</span>
+                    </span>
+                    <svg className={`w-4 h-4 transition-transform ${expanded.has(cat.key) ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {expanded.has(cat.key) && (
+                    <div className="bg-[var(--coffee-surface)]">
+                      {cat.tools.map((tool, i) => (
+                        <div key={tool.href}>
+                          {cat.key === 'more' && i === 7 && (
+                            <div className="border-t border-[var(--coffee-border)] mx-4 py-1">
+                              <span className="block px-3 py-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--coffee-text-tertiary)' }}>
+                                {t('footer.info', locale)}
+                              </span>
+                            </div>
+                          )}
+                          <Link href={tool.href}
+                            className="flex items-center gap-2 px-7 py-4 text-sm border-b border-[var(--coffee-border)] last:border-0 min-h-[44px] hover:bg-[var(--coffee-surface-hover)]"
+                            style={{ color: 'var(--coffee-text-secondary)' }}
+                            onClick={() => setOpen(false)}>
+                            {tool.icon && <span>{tool.icon}</span>}{t(tool.navKey ?? `tool.${tool.key}`, locale)}
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </>
   );

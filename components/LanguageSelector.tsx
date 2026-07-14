@@ -7,9 +7,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 const flagMap: Record<string, string> = {
-  ar: '🇸🇦', de: '🇩🇪', en: '🇬🇧', es: '🇪🇸', fa: '🇮🇷', fr: '🇫🇷', hi: '🇮🇳',
-  is: '🇮🇸', it: '🇮🇹', ja: '🇯🇵', no: '🇳🇴', pl: '🇵🇱', pt: '🇵🇹',
-  sv: '🇸🇪', tr: '🇹🇷', zh: '🇨🇳',
+  ar: 'sa', de: 'de', en: 'gb', es: 'es', fa: 'ir', fr: 'fr', hi: 'in',
+  is: 'is', it: 'it', ja: 'jp', no: 'no', pl: 'pl', pt: 'pt',
+  sv: 'se', tr: 'tr', zh: 'cn',
 };
 
 const labelMap: Record<string, string> = {
@@ -64,7 +64,7 @@ export default function LanguageSelector() {
         aria-label={t('lang.switch', locale)}
         title={t('lang.switch', locale)}
       >
-        <span className="text-base leading-none">{flagMap[locale] || '🌐'}</span>
+        <img src={`/flags/${flagMap[locale]}.svg`} alt="" className="inline-block w-auto h-4" />
         <span className="hidden sm:inline">{labelMap[locale]}</span>
         <svg className="w-3.5 h-3.5 transition-transform" style={{ transform: open ? 'rotate(180deg)' : 'none' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -92,7 +92,7 @@ export default function LanguageSelector() {
               onMouseEnter={e => { if (code !== locale) (e.target as HTMLElement).style.backgroundColor = 'var(--coffee-surface-hover)'; }}
               onMouseLeave={e => { if (code !== locale) (e.target as HTMLElement).style.backgroundColor = 'transparent'; }}
             >
-              <span className="text-base leading-none">{flagMap[code] || '🌐'}</span>
+              <img src={`/flags/${flagMap[code]}.svg`} alt="" className="inline-block w-auto h-4" />
               {labelMap[code]}
             </button>
           ))}

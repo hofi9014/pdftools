@@ -6,8 +6,14 @@ import { t } from '@/lib/i18n';
 /* ------------------------------------------------------------------ */
 /*  Skonfiguruj poniższe stałe przed wdrożeniem                       */
 /* ------------------------------------------------------------------ */
-const STRIPE_DONATE_URL = 'https://buy.stripe.com/00k3cYbMh7Td4pK8ww'; /* ← wstaw swój link Stripe Payment Links */
+/*                                                                      */
+/*  UWAGA — link TESTOWY (tryb Sandbox Stripe). Zwróć uwagę na 'test_'  */
+/*  w URL. Przed uruchomieniem prawdziwych wpłat ZASTĄP go linkiem     */
+/*  produkcyjnym Stripe (bez 'test_').                                 */
+/*                                                                      */
+const STRIPE_DONATE_URL = 'https://buy.stripe.com/test_aFafZie8kb3OcUecDwgfu00';
 const SUPPORTER_BADGE_URL = '/supporter-badge.svg';                   /* ← ścieżka do odznaki (opcjonalnie)    */
+const IS_TEST_MODE = STRIPE_DONATE_URL.includes('test_');              /* ← automatycznie wykrywa tryb testowy   */
 /* ------------------------------------------------------------------ */
 
 const content = {
@@ -138,6 +144,12 @@ export default function SupportPage() {
             {lang.donateSection.button}
           </a>
           <p className="mt-2 text-xs opacity-60">{lang.donateSection.note}</p>
+          {IS_TEST_MODE && (
+            <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide"
+              style={{ backgroundColor: '#fef08a', color: '#854d0e', border: '1px solid #facc15' }}>
+              ⚠️ TRYB TESTOWY (Stripe Sandbox)
+            </div>
+          )}
         </section>
 
         {/* Supporter badge info */}
