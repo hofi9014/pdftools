@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -53,6 +54,25 @@ const toolDefs = [
 
 export default function Home() {
   const { locale } = useLocale();
+  const [search, setSearch] = useState('');
+  const searchPlaceholder: Record<string, string> = {
+    pl: 'Szukaj narzędzia...',
+    en: 'Search tools...',
+    es: 'Buscar herramientas...',
+    de: 'Werkzeuge suchen...',
+    fr: 'Rechercher des outils...',
+    it: 'Cerca strumenti...',
+    pt: 'Procurar ferramentas...',
+    is: 'Leita að tólum...',
+    tr: 'Araçları ara...',
+    sv: 'Sök verktyg...',
+    no: 'Søk verktøy...',
+    ja: 'ツールを検索...',
+    hi: 'उपकरण खोजें...',
+    ar: 'بحث عن أدوات...',
+    fa: 'جستجوی ابزارها...',
+    zh: '搜索工具...',
+  };
 
   return (
     <main>
@@ -110,6 +130,24 @@ export default function Home() {
         <p className="text-xs leading-relaxed" style={{ color: 'var(--coffee-text-tertiary)' }}>
           {t('home.limit_note', locale)}
         </p>
+      </div>
+
+      {/* Search bar */}
+      <div className="max-w-md mx-auto px-4 py-6">
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder={searchPlaceholder[locale] || 'Search tools...'}
+          className="w-full px-5 py-3 rounded-xl text-base outline-none transition-shadow"
+          style={{
+            backgroundColor: 'var(--coffee-surface-solid)',
+            border: '2px solid var(--coffee-border)',
+            color: 'var(--coffee-text)',
+          }}
+          onFocus={e => { e.currentTarget.style.borderColor = 'var(--coffee-accent)'; e.currentTarget.style.boxShadow = '0 0 0 3px var(--coffee-accent-glow)'; }}
+          onBlur={e => { e.currentTarget.style.borderColor = 'var(--coffee-border)'; e.currentTarget.style.boxShadow = 'none'; }}
+        />
       </div>
 
       {/* Popular tools */}
@@ -299,7 +337,14 @@ export default function Home() {
           const catBg = (k: string) => `var(--cat-${k}-bg)`;
 
           return categories.map(cat => {
-            const tools = toolDefs.filter(t => toolCategory[t.key] === cat.key);
+            let tools = toolDefs.filter(t => toolCategory[t.key] === cat.key);
+            if (search) {
+              const q = search.toLowerCase();
+              tools = tools.filter(tt =>
+                t(`tool.${tt.key}`, locale).toLowerCase().includes(q) ||
+                t(`desc.${tt.key}`, locale).toLowerCase().includes(q)
+              );
+            }
             if (tools.length === 0) return null;
             return (
               <div key={cat.key} className="mb-12 last:mb-0">

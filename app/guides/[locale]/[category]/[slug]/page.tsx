@@ -93,12 +93,17 @@ export default async function ArticlePage({
     '@type': 'HowTo',
     name: title,
     description: (article.excerpt as Record<string, string>)[locale] || article.excerpt.en,
+    image: 'https://optimapdf.com/icon-512.svg',
+    estimatedCost: { '@type': 'MonetaryAmount', currency: locale === 'pl' ? 'PLN' : 'USD', value: '0' },
+    supply: { '@type': 'HowToSupply', name: locale === 'pl' ? 'Plik PDF' : 'PDF file' },
+    tool: { '@type': 'HowToTool', name: 'OptimaPDF' },
     step: steps.map((s, i) => ({
       '@type': 'HowToStep',
       position: i + 1,
       name: (s.title as Record<string, string>)[locale] || s.title.en,
       text: (s.text as Record<string, string>)[locale] || s.text.en,
     })),
+    inLanguage: locale,
   } : null;
 
   const faqSchema = article.faq.length > 0 ? {

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
@@ -336,6 +336,24 @@ export default function FaqPage() {
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
 
+  const faqSchema = useMemo(() => {
+    const mainEntity = faqData.flatMap(cat =>
+      cat.items.map(item => ({
+        '@type': 'Question' as const,
+        name: lc(locale, item.q),
+        acceptedAnswer: {
+          '@type': 'Answer' as const,
+          text: lc(locale, item.a),
+        },
+      }))
+    );
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage' as const,
+      mainEntity,
+    };
+  }, [locale]);
+
   const toggleSection = (key: string) => {
     setOpenSections(prev => {
       const next = new Set(prev);
@@ -356,6 +374,8 @@ export default function FaqPage() {
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-12">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+
       <div className="text-center mb-12">
         <div className="text-5xl mb-4">❓</div>
         <h1 className="text-3xl sm:text-4xl font-bold tool-heading mb-3">
