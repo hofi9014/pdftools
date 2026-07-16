@@ -9,7 +9,6 @@ import InstallBanner from "@/components/InstallBanner";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import HtmlLang from "@/components/HtmlLang";
 import SchemaHowTo from "@/components/SchemaHowTo";
-import HreflangTags from "@/components/HreflangTags";
 import Magnifier from "@/components/Magnifier";
 import CookieConsent from "@/components/CookieConsent";
 import "./globals.css";
@@ -59,7 +58,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pl" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-KN3C22GVP8" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
@@ -79,8 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
         <div className="mesh-bg" />
         <div className="grain-overlay" />
-        <LocaleProvider>
-          <HreflangTags />
+        <LocaleProvider defaultLocale="en">
           <HtmlLang />
           <SchemaHowTo />
           <Header />
