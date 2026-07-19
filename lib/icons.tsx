@@ -1,4 +1,5 @@
 import React from 'react';
+import PdfBadge from '@/components/PdfBadge';
 
 const s: React.CSSProperties = {
   filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.2)) drop-shadow(0 0 3px rgba(255,255,255,0.15))',
@@ -11,66 +12,86 @@ const d: React.CSSProperties = {
 };
 
 const em = (emoji: string) => <span style={s}>{emoji}</span>;
-const ar = () => <span style={d}>➡️</span>;
-const pls = () => <span style={{ ...d, color: '#22c55e' }}>➕</span>;
-const dn = () => <span style={d}>⬇️</span>;
-const up = () => <span style={d}>⬆️</span>;
+const isx: React.CSSProperties = { display: 'inline-block', verticalAlign: 'middle', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))' };
+
+const ar = () => (
+  <svg width="0.55em" height="0.55em" viewBox="0 0 20 20" style={isx}>
+    <defs><linearGradient id="arG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#94a3b8"/><stop offset="100%" stopColor="#64748b"/></linearGradient></defs>
+    <path d="M3,10 L17,10 M11,4 L17,10 L11,16" fill="none" stroke="url(#arG)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+const pls = () => (
+  <svg width="0.55em" height="0.55em" viewBox="0 0 20 20" style={isx}>
+    <defs><linearGradient id="plsG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#4ade80"/><stop offset="100%" stopColor="#16a34a"/></linearGradient></defs>
+    <path d="M10,4 L10,16 M4,10 L16,10" fill="none" stroke="url(#plsG)" strokeWidth="2.5" strokeLinecap="round"/>
+  </svg>
+);
+const dn = () => (
+  <svg width="0.55em" height="0.55em" viewBox="0 0 20 20" style={isx}>
+    <defs><linearGradient id="dnG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#94a3b8"/><stop offset="100%" stopColor="#64748b"/></linearGradient></defs>
+    <path d="M10,3 L10,17 M4,11 L10,17 L16,11" fill="none" stroke="url(#dnG)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+const up = () => (
+  <svg width="0.55em" height="0.55em" viewBox="0 0 20 20" style={isx}>
+    <defs><linearGradient id="upG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#94a3b8"/><stop offset="100%" stopColor="#64748b"/></linearGradient></defs>
+    <path d="M10,17 L10,3 M4,9 L10,3 L16,9" fill="none" stroke="url(#upG)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
 
 const row = (children: React.ReactNode) =>
   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '1px' }}>{children}</span>;
 
-const fi = (bg: string, letter: string, ls = 12) => (
-  <svg viewBox="0 0 24 24" width="1.2em" height="1.2em" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))', display: 'inline-block', verticalAlign: '-0.2em' }}>
-    <rect x="1.5" y="1.5" width="21" height="21" rx="5" fill={bg} />
-    <rect x="1.5" y="1.5" width="21" height="6" rx="3" fill="rgba(255,255,255,0.18)" />
-    <text x="12" y="16.5" textAnchor="middle" fill="white" fontSize={ls} fontWeight="bold" fontFamily="Arial, sans-serif">{letter}</text>
-  </svg>
-);
 
 const tools: Record<string, React.ReactNode> = {
-  merge:    row(<>{fi('#dc2626','PDF',7)}{pls()}{fi('#dc2626','PDF',7)}{ar()}{fi('#dc2626','PDF',7)}</>),
-  split:    row(<>{fi('#dc2626','PDF',7)}{ar()}{fi('#dc2626','PDF',7)}{fi('#dc2626','PDF',7)}</>),
-  compress:  row(<>{fi('#dc2626','PDF',7)}<span style={d}>🗜️</span></>),
-  rotate:   row(<>{em('🔄')}{fi('#dc2626','PDF',7)}</>),
-  crop:     row(<>{em('✂️')}{fi('#dc2626','PDF',7)}</>),
-  edit:     row(<>{em('✏️')}{fi('#dc2626','PDF',7)}</>),
-  sign:     row(<>{em('✍️')}{fi('#dc2626','PDF',7)}</>),
-  watermark:row(<>{em('💧')}{fi('#dc2626','PDF',7)}</>),
-  pagenumbers: row(<>{em('🔢')}{fi('#dc2626','PDF',7)}</>),
-  delete:   row(<>{em('🗑️')}{fi('#dc2626','PDF',7)}</>),
-  extract:  row(<>{fi('#dc2626','PDF',7)}{em('✅')}{ar()}{fi('#dc2626','PDF',7)}</>),
-  reorder:  row(<>{em('🔀')}{fi('#dc2626','PDF',7)}</>),
-  addpage:  row(<>{fi('#dc2626','PDF',7)}{pls()}</>),
-  metadata: row(<>{em('🏷️')}{fi('#dc2626','PDF',7)}</>),
-  redact:   row(<>{em('🚫')}{fi('#dc2626','PDF',7)}</>),
-  flatten:  row(<>{fi('#dc2626','PDF',7)}{fi('#dc2626','PDF',7)}{dn()}{fi('#dc2626','PDF',7)}</>),
+  merge:    row(<>{<PdfBadge />}{pls()}{<PdfBadge />}{ar()}{<PdfBadge />}</>),
+  split:    row(<>{<PdfBadge />}{ar()}{<PdfBadge />}{<PdfBadge />}</>),
+  compress:  row(<>{<PdfBadge />}<span style={d}>🗜️</span></>),
+  rotate:   row(<>{em('🔄')}{<PdfBadge />}</>),
+  crop:     row(<>{em('✂️')}{<PdfBadge />}</>),
+  edit:     row(<>{em('✏️')}{<PdfBadge />}</>),
+  sign:     row(<>{em('✍️')}{<PdfBadge />}</>),
+  watermark:row(<>{em('💧')}{<PdfBadge />}</>),
+  pagenumbers: row(<>{em('🔢')}{<PdfBadge />}</>),
+  delete:   row(<>{em('🗑️')}{<PdfBadge />}</>),
+  extract:  row(<>{<PdfBadge />}{em('✅')}{ar()}{<PdfBadge />}</>),
+  reorder:  row(<>{em('🔀')}{<PdfBadge />}</>),
+  addpage:  row(<>{<PdfBadge />}{pls()}</>),
+  metadata: row(<>{em('🏷️')}{<PdfBadge />}</>),
+  redact:   row(<>{em('🚫')}{<PdfBadge />}</>),
+  flatten:  row(<>{<PdfBadge />}{<PdfBadge />}{dn()}{<PdfBadge />}</>),
 
-  word:         row(<>{fi('#dc2626','PDF',7)}{ar()}{fi('#2563eb','W')}</>),
-  wordtopdf:    row(<>{fi('#2563eb','W')}{ar()}{fi('#dc2626','PDF',7)}</>),
-  jpgTopdf:     row(<>{em('🖼️')}{ar()}{fi('#dc2626','PDF',7)}</>),
-  images:       row(<>{fi('#dc2626','PDF',7)}{ar()}{em('🖼️')}</>),
-  excel:        row(<>{fi('#dc2626','PDF',7)}{ar()}{fi('#16a34a','X')}</>),
-  excel2pdf:    row(<>{fi('#16a34a','X')}{ar()}{fi('#dc2626','PDF',7)}</>),
-  ppt:          row(<>{fi('#dc2626','PDF',7)}{ar()}{fi('#ea580c','P')}</>),
-  openoffice:   row(<>{fi('#14b8a6','OO',8)}{ar()}{fi('#dc2626','PDF',7)}</>),
-  pdf2openoffice: row(<>{fi('#dc2626','PDF',7)}{ar()}{fi('#14b8a6','OO',8)}</>),
-  txt:          row(<>{fi('#dc2626','PDF',7)}{ar()}{em('📃')}</>),
-  svg:          row(<>{fi('#dc2626','PDF',7)}{ar()}{em('🎨')}</>),
-  epub:         row(<>{fi('#dc2626','PDF',7)}{ar()}{em('📖')}</>),
-  html:         row(<>{em('🌐')}{ar()}{fi('#dc2626','PDF',7)}</>),
-  url:          row(<>{em('🔗')}{ar()}{fi('#dc2626','PDF',7)}</>),
-  html2pdf:     row(<>{fi('#dc2626','PDF',7)}{ar()}{em('🌐')}</>),
+  word:         row(<>{<PdfBadge />}{ar()}{<PdfBadge type="DOC" />}</>),
+  wordtopdf:    row(<>{<PdfBadge type="DOC" />}{ar()}{<PdfBadge />}</>),
+  jpgTopdf:     row(<>{em('🖼️')}{ar()}{<PdfBadge />}</>),
+  images:       row(<>{<PdfBadge />}{ar()}{em('🖼️')}</>),
+  excel:        row(<>{<PdfBadge />}{ar()}{<PdfBadge type="XLS" />}</>),
+  excel2pdf:    row(<>{<PdfBadge type="XLS" />}{ar()}{<PdfBadge />}</>),
+  ppt:          row(<>{<PdfBadge />}{ar()}{<PdfBadge type="PPT" />}</>),
+  openoffice:   row(<>{<PdfBadge type="ODT" />}{ar()}{<PdfBadge />}</>),
+  pdf2openoffice: row(<>{<PdfBadge />}{ar()}{<PdfBadge type="ODT" />}</>),
+  txt:          row(<>{<PdfBadge />}{ar()}{em('📃')}</>),
+  svg:          row(<>{<PdfBadge />}{ar()}{em('🎨')}</>),
+  epub:         row(<>{<PdfBadge />}{ar()}{em('📖')}</>),
+  html:         row(<>{em('🌐')}{ar()}{<PdfBadge />}</>),
+  url:          row(<>{em('🔗')}{ar()}{<PdfBadge />}</>),
+  html2pdf:     row(<>{<PdfBadge />}{ar()}{em('🌐')}</>),
 
-  protect:      row(<>{em('🔒')}{fi('#dc2626','PDF',7)}</>),
-  unlock:       row(<>{em('🔓')}{fi('#dc2626','PDF',7)}</>),
+  protect:      row(<>{em('🔒')}{<PdfBadge />}</>),
+  unlock:       row(<>{em('🔓')}{<PdfBadge />}</>),
 
-  aichat:       row(<>{em('💬')}{em('✨')}{fi('#dc2626','PDF',7)}</>),
-  aisummary:    row(<>{fi('#dc2626','PDF',7)}{ar()}{em('📝')}<span style={{fontSize:'0.5em',color:'#f59e0b'}}>✨</span></>),
-  translate:    row(<>{fi('#dc2626','PDF',7)}{ar()}{em('🌐')}<span style={s}>✨</span></>),
-  ocr:          row(<>{em('🔍')}{fi('#dc2626','PDF',7)}</>),
-  compare:      row(<>{fi('#dc2626','PDF',7)}<span style={d}>↔️</span>{fi('#dc2626','PDF',7)}</>),
-  fillform:     row(<>{em('📋')}{fi('#dc2626','PDF',7)}</>),
-  pdfa:         row(<>{fi('#dc2626','PDF',7)}{ar()}{em('🏛️')}</>),
+  aichat:       row(<>{em('💬')}{em('✨')}{<PdfBadge />}</>),
+  aisummary:    row(<>{<PdfBadge />}{ar()}{em('📝')}<span style={{fontSize:'0.5em',color:'#f59e0b'}}>✨</span></>),
+  translate:    row(<>{<PdfBadge />}{ar()}{em('🌐')}<span style={s}>✨</span></>),
+  ocr:          row(<>{em('🔍')}{<PdfBadge />}</>),
+  compare:      row(<>{<PdfBadge />}
+    <svg width="0.55em" height="0.55em" viewBox="0 0 22 20" style={isx}>
+      <defs><linearGradient id="cmpG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#94a3b8"/><stop offset="100%" stopColor="#64748b"/></linearGradient></defs>
+      <path d="M6,5 L3,10 L6,15 M3,10 L19,10 M16,5 L19,10 L16,15" fill="none" stroke="url(#cmpG)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  {<PdfBadge />}</>),
+  fillform:     row(<>{em('📋')}{<PdfBadge />}</>),
+  pdfa:         row(<>{<PdfBadge />}{ar()}{em('🏛️')}</>),
   guide:        em('📘'),
   cloud:        em('☁️'),
   'cloud-access':   em('☁️'),
