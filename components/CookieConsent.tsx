@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { useLocale } from "@/lib/locale-context";
+import { useHydrationSafeLocale } from "@/lib/locale-context";
 
 declare global {
   interface Window {
@@ -31,7 +31,7 @@ function updateConsent(status: string) {
 }
 
 export default function CookieConsent() {
-  const { locale } = useLocale();
+  const locale = useHydrationSafeLocale();
   const [show, setShow] = useState(false);
 
   useEffect(() => {

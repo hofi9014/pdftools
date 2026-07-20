@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
-import { useLocale } from '@/lib/locale-context';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { initPdfjs } from '@/lib/client-pdf';
 
@@ -18,7 +18,7 @@ interface Thumbnail {
 }
 
 export default function PagePreview({ file, mode, selectedPages, onSelectionChange, onNewOrder }: PagePreviewProps) {
-  const { locale } = useLocale();
+  const locale = useHydrationSafeLocale();
   const [thumbnails, setThumbnails] = useState<Thumbnail[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);

@@ -18,9 +18,10 @@ interface LocaleCtx {
   locale: Locale;
   setLocale: (l: Locale) => void;
   setLocaleLocal: (l: Locale) => void;
+  mounted: boolean;
 }
 
-const LocaleContext = createContext<LocaleCtx>({ locale: 'pl', setLocale: () => {}, setLocaleLocal: () => {} });
+const LocaleContext = createContext<LocaleCtx>({ locale: 'en', setLocale: () => {}, setLocaleLocal: () => {}, mounted: false });
 
 export function LocaleProvider({ children, defaultLocale }: { children: ReactNode; defaultLocale?: Locale }) {
   const [locale, setLocale] = useState<Locale>(defaultLocale || 'en');
@@ -49,7 +50,7 @@ export function LocaleProvider({ children, defaultLocale }: { children: ReactNod
   };
 
   return (
-    <LocaleContext.Provider value={{ locale, setLocale: handleSet, setLocaleLocal: handleSetLocal }}>
+    <LocaleContext.Provider value={{ locale, setLocale: handleSet, setLocaleLocal: handleSetLocal, mounted }}>
       {children}
     </LocaleContext.Provider>
   );
@@ -57,4 +58,11 @@ export function LocaleProvider({ children, defaultLocale }: { children: ReactNod
 
 export function useLocale() {
   return useContext(LocaleContext);
+}
+
+/** Returns locale during SSR/hydration, only switching to the detected locale after mount. */
+export function useHydrationSafeLocale(): Locale {
+  const { locale, mounted } = useLocale();
+  if (typeof window === 'undefined' || !mounted) return 'en';
+  return locale;
 }

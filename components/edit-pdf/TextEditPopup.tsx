@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { useLocale } from '@/lib/locale-context';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { FONT_OPTIONS, getFontFamily } from '@/lib/pdf/fonts';
 import type { TextEdit } from '@/lib/pdf/exportEditedPdf';
@@ -28,7 +28,7 @@ interface Props {
 const COLORS = ['#000000', '#ff0000', '#0000ff', '#00aa00', '#ff8800', '#8800ff'];
 
 export default function TextEditPopup({ block, onSave, onCancel, position }: Props) {
-  const { locale } = useLocale();
+  const locale = useHydrationSafeLocale();
   const [text, setText] = useState(block.originalText);
   const [fontSize, setFontSize] = useState(Math.min(Math.max(block.fontSize, 8), 72));
   const [color, setColor] = useState('#000000');

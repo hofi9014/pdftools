@@ -1,30 +1,8 @@
 'use client';
 import { usePathname } from 'next/navigation';
-import { useLocale } from '@/lib/locale-context';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
-
-const segKey: Record<string, string> = {
-  merge: 'merge', split: 'split', compress: 'compress',
-  'pdf-to-word': 'word', 'word-to-pdf': 'wordtopdf',
-  'pdf-to-images': 'images', 'jpg-to-pdf': 'jpgTopdf',
-  'protect-pdf': 'protect', 'unlock-pdf': 'unlock',
-  'rotate-pdf': 'rotate', 'page-numbers': 'pagenumbers',
-  'watermark-pdf': 'watermark', 'ocr-pdf': 'ocr',
-  'extract-pages': 'extract', 'delete-pages': 'delete',
-  'reorder-pages': 'reorder', 'crop-pdf': 'crop',
-  'add-page': 'addpage', 'edit-pdf': 'edit', 'sign-pdf': 'sign',
-  metadata: 'metadata', 'pdf-to-excel': 'excel',
-  'excel-to-pdf': 'excel2pdf', 'pdf-to-txt': 'txt',
-  'html-to-pdf': 'html', 'url-to-pdf': 'url',
-  'pdf-to-html': 'html2pdf', 'flatten-pdf': 'flatten',
-  'pdf-to-powerpoint': 'ppt', 'pdf-to-svg': 'svg',
-  'redact-pdf': 'redact', 'pdf-to-epub': 'epub',
-  'to-pdfa': 'pdfa', 'fill-form': 'fillform',
-  'openoffice-to-pdf': 'openoffice',
-  'pdf-to-openoffice': 'pdf2openoffice',
-  'compare-pdf': 'compare', 'ai-chat': 'aichat',
-  'ai-summary': 'aisummary', 'ai-translate': 'translate',
-};
+import { keyBySlug } from '@/lib/tools';
 
 function tr(texts: Record<string, string>, locale: string): string {
   return texts[locale] || texts.en || '';
@@ -2166,9 +2144,9 @@ const toolSteps: Record<string, StepRef[][]> = {
 
 export default function SchemaHowTo() {
   const pathname = usePathname();
-  const { locale } = useLocale();
+  const locale = useHydrationSafeLocale();
   const segment = pathname.split('/').filter(Boolean)[0];
-  const key = segKey[segment];
+  const key = keyBySlug[segment];
   if (!key || !toolSteps[segment]) return null;
 
   const name = t(`tool.${key}`, locale);

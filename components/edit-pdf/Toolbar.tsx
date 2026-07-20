@@ -1,5 +1,5 @@
 'use client';
-import { useLocale } from '@/lib/locale-context';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 
 interface ToolDef {
@@ -24,7 +24,7 @@ export default function Toolbar({
   activeTool, onToolChange, onUndo, onRedo,
   canUndo, canRedo, onAddImage, onAddSignature,
 }: Props) {
-  const { locale } = useLocale();
+  const locale = useHydrationSafeLocale();
 
   const TOOLS: (ToolDef | 'sep')[] = [
     { id: 'select', label: t('edit.toolbar_select', locale), icon: '🖱️', shortcut: 'V' },

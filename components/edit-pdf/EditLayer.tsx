@@ -1,6 +1,6 @@
 'use client';
 import { useRef, useCallback, useEffect } from 'react';
-import { useLocale } from '@/lib/locale-context';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getFontFamily } from '@/lib/pdf/fonts';
 
@@ -60,7 +60,7 @@ export default function EditLayer({
   onAddElement, onFreehandStart, onFreehandAddPoint, onLineStart, onLineMove,
   textBlocks, onTextBlockClick, hoveredTextBlock, onHoverTextBlock,
 }: Props) {
-  const { locale } = useLocale();
+  const locale = useHydrationSafeLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ id: number; sx: number; sy: number; ox: number; oy: number; ow: number; oh: number; handle: string | null } | null>(null);
   const drawingRef = useRef<{ id: number; type: 'line' | 'arrow' | 'freehand'; pts: { x: number; y: number }[] } | null>(null);

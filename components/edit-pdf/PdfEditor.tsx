@@ -1,6 +1,6 @@
 'use client';
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useLocale } from '@/lib/locale-context';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { initPdfjs, editPdfClient, type PdfEditElement } from '@/lib/client-pdf';
 import { useUndoRedo } from '@/hooks/useUndoRedo';
@@ -23,7 +23,7 @@ const FONTS = ['Arial', 'Arimo', 'Cousine', 'Georgia', 'Lato', 'Noto Sans', 'Ope
 const COLORS = ['#000000','#ff0000','#0000ff','#00aa00','#ff8800','#8800ff','#ff00ff','#00aaaa'];
 
 export default function PdfEditor({ file, onReset }: { file: File; onReset: () => void }) {
-  const { locale } = useLocale();
+  const locale = useHydrationSafeLocale();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageCount, setPageCount] = useState(0);
   const [canvasWidth, setCanvasWidth] = useState(0);

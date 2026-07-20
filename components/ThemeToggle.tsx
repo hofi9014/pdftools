@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useLocale } from '@/lib/locale-context';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 
 export default function ThemeToggle() {
   const [dark, setDark] = useState(false);
-  const { locale } = useLocale();
+  const locale = useHydrationSafeLocale();
 
   useEffect(() => {
     const stored = localStorage.getItem('theme');

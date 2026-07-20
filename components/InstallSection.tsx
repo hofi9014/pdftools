@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useLocale } from '@/lib/locale-context';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -27,7 +27,7 @@ const points = [
 ];
 
 export default function InstallSection() {
-  const { locale } = useLocale();
+  const locale = useHydrationSafeLocale();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(_deferredPrompt);
   const [installed, setInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);

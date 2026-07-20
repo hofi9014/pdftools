@@ -2,10 +2,11 @@
 import { useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { useLocale } from '@/lib/locale-context';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import { getCategoryIcon } from '@/lib/icons';
+import { toolsByCategory, toolPath } from '@/lib/tools';
 
 interface CatTool {
   key: string;
@@ -19,67 +20,29 @@ interface Category {
   tools: CatTool[];
 }
 
+const infoMore: CatTool[] = [
+  { key: 'rules', href: '/nasze-zasady', navKey: 'nav.rules', icon: '📜' },
+  { key: 'support', href: '/wsparcie', navKey: 'nav.support', icon: '💬' },
+];
+
 const categories: Category[] = [
   {
     key: 'edit',
-    tools: [
-      { key: 'merge', href: '/merge' },
-      { key: 'split', href: '/split' },
-      { key: 'compress', href: '/compress' },
-      { key: 'rotate', href: '/rotate-pdf' },
-      { key: 'crop', href: '/crop-pdf' },
-      { key: 'delete', href: '/delete-pages' },
-      { key: 'extract', href: '/extract-pages' },
-      { key: 'reorder', href: '/reorder-pages' },
-      { key: 'addpage', href: '/add-page' },
-      { key: 'edit', href: '/edit-pdf' },
-      { key: 'pagenumbers', href: '/page-numbers' },
-      { key: 'watermark', href: '/watermark-pdf' },
-      { key: 'redact', href: '/redact-pdf' },
-      { key: 'flatten', href: '/flatten-pdf' },
-      { key: 'metadata', href: '/metadata' },
-    ],
+    tools: toolsByCategory('edit').map(t => ({ key: t.key, href: toolPath(t.key) })),
   },
   {
     key: 'convert',
-    tools: [
-      { key: 'word', href: '/pdf-to-word' },
-      { key: 'wordtopdf', href: '/word-to-pdf' },
-      { key: 'jpgTopdf', href: '/jpg-to-pdf' },
-      { key: 'images', href: '/pdf-to-images' },
-      { key: 'excel', href: '/pdf-to-excel' },
-      { key: 'excel2pdf', href: '/excel-to-pdf' },
-      { key: 'ppt', href: '/pdf-to-powerpoint' },
-      { key: 'openoffice', href: '/openoffice-to-pdf' },
-      { key: 'pdf2openoffice', href: '/pdf-to-openoffice' },
-      { key: 'txt', href: '/pdf-to-txt' },
-      { key: 'svg', href: '/pdf-to-svg' },
-      { key: 'epub', href: '/pdf-to-epub' },
-      { key: 'html', href: '/html-to-pdf' },
-      { key: 'html2pdf', href: '/pdf-to-html' },
-      { key: 'url', href: '/url-to-pdf' },
-    ],
+    tools: toolsByCategory('convert').map(t => ({ key: t.key, href: toolPath(t.key) })),
   },
   {
     key: 'secure',
-    tools: [
-      { key: 'protect', href: '/protect-pdf' },
-      { key: 'unlock', href: '/unlock-pdf' },
-      { key: 'sign', href: '/sign-pdf' },
-    ],
+    tools: toolsByCategory('secure').map(t => ({ key: t.key, href: toolPath(t.key) })),
   },
   {
     key: 'more',
     tools: [
-      { key: 'aichat', href: '/ai-chat' },
-      { key: 'aisummary', href: '/ai-summary' },
-      { key: 'translate', href: '/ai-translate' },
-      { key: 'ocr', href: '/ocr-pdf' },
-      { key: 'compare', href: '/compare-pdf' },
-      { key: 'fillform', href: '/fill-form' },
-      { key: 'pdfa', href: '/to-pdfa' },
-      { key: 'rules', href: '/nasze-zasady', navKey: 'nav.rules', icon: '📜' },
-      { key: 'support', href: '/wsparcie', navKey: 'nav.support', icon: '💬' },
+      ...toolsByCategory('more').map(t => ({ key: t.key, href: toolPath(t.key) })),
+      ...infoMore,
     ],
   },
 ];
@@ -87,7 +50,7 @@ const categories: Category[] = [
 export default function MobileMenu() {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const { locale } = useLocale();
+  const locale = useHydrationSafeLocale();
 
   const toggleCategory = useCallback((key: string) => {
     setExpanded(prev => {

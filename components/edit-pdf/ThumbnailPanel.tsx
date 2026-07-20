@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { useLocale } from '@/lib/locale-context';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function ThumbnailPanel({ pageCount, currentPage, onPageSelect, renderPageThumbnail }: Props) {
-  const { locale } = useLocale();
+  const locale = useHydrationSafeLocale();
   const [thumbnails, setThumbnails] = useState<Map<number, string>>(new Map());
   const rendering = useRef(new Set<number>());
 

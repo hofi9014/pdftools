@@ -1,59 +1,16 @@
 'use client';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useLocale } from '@/lib/locale-context';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { localeGuidesSlug, localeFromSegment } from '@/lib/guides-slugs';
+import { keyBySlug } from '@/lib/tools';
 
 const guidesLocaleSegments = new Set(Object.values(localeGuidesSlug));
 
-const segmentToKey: Record<string, string> = {
-  'merge': 'merge',
-  'split': 'split',
-  'compress': 'compress',
-  'pdf-to-word': 'word',
-  'word-to-pdf': 'wordtopdf',
-  'pdf-to-jpg': 'jpg',
-  'jpg-to-pdf': 'jpgTopdf',
-  'protect-pdf': 'protect',
-  'unlock-pdf': 'unlock',
-  'rotate-pdf': 'rotate',
-  'page-numbers': 'pagenumbers',
-  'watermark-pdf': 'watermark',
-  'ocr-pdf': 'ocr',
-  'extract-pages': 'extract',
-  'delete-pages': 'delete',
-  'reorder-pages': 'reorder',
-  'crop-pdf': 'crop',
-  'add-page': 'addpage',
-  'metadata': 'metadata',
-  'edit-pdf': 'edit',
-  'sign-pdf': 'sign',
-  'pdf-to-excel': 'excel',
-  'excel-to-pdf': 'excel2pdf',
-  'pdf-to-txt': 'txt',
-  'pdf-to-svg': 'svg',
-  'redact-pdf': 'redact',
-  'pdf-to-epub': 'epub',
-  'ai-chat': 'aichat',
-  'ai-summary': 'aisummary',
-  'ai-translate': 'translate',
-  'pdf-to-powerpoint': 'ppt',
-  'compare-pdf': 'compare',
-  'html-to-pdf': 'html',
-  'url-to-pdf': 'url',
-  'pdf-to-html': 'html2pdf',
-  'flatten-pdf': 'flatten',
-  'openoffice-to-pdf': 'openoffice',
-  'pdf-to-openoffice': 'pdf2openoffice',
-  'fill-form': 'fillform',
-  'pdf-to-images': 'images',
-  'to-pdfa': 'pdfa',
-};
-
 export default function Breadcrumbs() {
   const pathname = usePathname();
-  const { locale } = useLocale();
+  const locale = useHydrationSafeLocale();
   const segments = pathname.split('/').filter(Boolean);
 
   if (segments.length === 0) return null;
@@ -67,7 +24,7 @@ export default function Breadcrumbs() {
           <Link href="/" className="hover:text-[var(--coffee-accent)] transition">{homeLabel}</Link>
         </li>
         {segments.map((seg, i) => {
-          const key = segmentToKey[seg];
+          const key = keyBySlug[seg];
           let label: string;
           if (key) {
             label = t(`tool.${key}`, locale);
