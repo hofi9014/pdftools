@@ -1,5 +1,5 @@
 'use client';
-import { useLocale } from '@/lib/locale-context';
+import { useLocale, useHydrationSafeLocale } from '@/lib/locale-context';
 import { locales, t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { localeGuidesSlug, localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
@@ -23,7 +23,8 @@ function isGuidesPath(pathname: string): boolean {
 }
 
 export default function LanguageSelector() {
-  const { locale, setLocale } = useLocale();
+  const locale = useHydrationSafeLocale();
+  const { setLocale } = useLocale();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const pathname = usePathname();

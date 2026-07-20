@@ -1,10 +1,10 @@
 'use client';
 import { useEffect } from 'react';
-import { useLocale } from '@/lib/locale-context';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 
 export default function MetaUpdater() {
-  const { locale } = useLocale();
+  const locale = useHydrationSafeLocale();
 
   useEffect(() => {
     const title = t('meta.title', locale);
