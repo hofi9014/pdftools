@@ -1,7 +1,7 @@
 'use client';
 import { usePathname } from 'next/navigation';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
-import { t, type Locale } from '@/lib/i18n';
+import { t, locales, type Locale } from '@/lib/i18n';
 import { keyBySlug } from '@/lib/tools';
 
 function tr(texts: Record<string, string>, locale: string): string {
@@ -2145,13 +2145,15 @@ const toolSteps: Record<string, StepRef[][]> = {
 export default function SchemaHowTo({ locale: forcedLocale }: { locale?: Locale }) {
   const pathname = usePathname();
   const locale = forcedLocale ?? useHydrationSafeLocale();
-  const segment = pathname.split('/').filter(Boolean)[0];
+  const parts = pathname.split('/').filter(Boolean);
+  const hasLocale = parts.length > 0 && (locales as readonly string[]).includes(parts[0]);
+  const segment = hasLocale ? parts[1] : parts[0];
   const key = keyBySlug[segment];
   if (!key || !toolSteps[segment]) return null;
 
   const name = t(`tool.${key}`, locale);
   const description = t(`desc.${key}`, locale);
-  const url = `https://optimapdf.com/${segment}`;
+  const url = hasLocale ? `https://optimapdf.com/${parts[0]}/${segment}` : `https://optimapdf.com/${segment}`;
   const steps = toolSteps[segment];
 
   const jsonLd = {

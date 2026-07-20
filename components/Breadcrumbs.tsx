@@ -2,7 +2,7 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
-import { t, type Locale } from '@/lib/i18n';
+import { t, locales, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug, localeFromSegment } from '@/lib/guides-slugs';
 import { keyBySlug } from '@/lib/tools';
 
@@ -24,6 +24,9 @@ export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale 
           <Link href="/" className="hover:text-[var(--coffee-accent)] transition">{homeLabel}</Link>
         </li>
         {segments.map((seg, i) => {
+          // skip locale segments (e.g. /pl/merge → skip "pl")
+          if ((locales as readonly string[]).includes(seg)) return null;
+
           const key = keyBySlug[seg];
           let label: string;
           if (key) {
