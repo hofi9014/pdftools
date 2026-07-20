@@ -4,25 +4,28 @@ import type { Locale } from '@/lib/i18n';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import guides from '@/content/guides';
 import { buildCanonicalUrl } from '@/lib/guides-canonical';
+import { tools, toolPath } from '@/lib/tools';
+
+const infoPages = ['privacy', 'faq', 'help', 'rodo', 'security'];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://optimapdf.com';
 
   const pages: MetadataRoute.Sitemap = [
-    '', '/merge', '/split', '/compress', '/pdf-to-word', '/word-to-pdf',
-    '/jpg-to-pdf', '/protect-pdf', '/unlock-pdf', '/rotate-pdf',
-    '/page-numbers', '/watermark-pdf', '/ocr-pdf', '/extract-pages', '/delete-pages',
-    '/reorder-pages', '/crop-pdf', '/add-page', '/edit-pdf', '/metadata', '/openoffice-to-pdf', '/sign-pdf',
-    '/pdf-to-openoffice', '/pdf-to-excel', '/ai-chat', '/ai-summary', '/privacy',
-    '/pdf-to-powerpoint', '/compare-pdf', '/excel-to-pdf', '/pdf-to-txt',
-    '/html-to-pdf', '/url-to-pdf', '/pdf-to-html', '/flatten-pdf',
-    '/pdf-to-svg', '/redact-pdf', '/pdf-to-epub', '/ai-translate', '/fill-form', '/pdf-to-images', '/to-pdfa', '/faq', '/help', '/rodo', '/security',
-  ].map(path => ({
-    url: base + path,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: path === '' ? 1.0 : 0.8,
-  }));
+    { url: base, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 1.0 },
+    ...tools.map(t => ({
+      url: base + toolPath(t.key),
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8 as const,
+    })),
+    ...infoPages.map(p => ({
+      url: base + '/' + p,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8 as const,
+    })),
+  ];
 
   // hub pages: /guides/{localeSegment}
   for (const locale of locales) {

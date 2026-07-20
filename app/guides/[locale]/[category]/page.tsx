@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { locales, t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
@@ -69,6 +70,16 @@ const categoryTool: Record<string, import('@/types/guide').ToolSlug> = {
 
 function getCategoryLabel(category: string, locale: Locale): string {
   return categoryLabels[category]?.[locale] || category;
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; category: string }> }): Promise<Metadata> {
+  const { locale: localeSegment, category } = await params;
+  const locale = localeFromSegment(localeSegment) as Locale;
+  const label = getCategoryLabel(category, locale);
+  return {
+    title: label,
+    description: t('guides.hub_subtitle', locale),
+  };
 }
 
 export async function generateStaticParams() {

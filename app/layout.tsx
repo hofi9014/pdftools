@@ -5,12 +5,12 @@ import { LocaleProvider } from "@/lib/locale-context";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PwaRegister from "@/components/PwaRegister";
-import InstallBanner from "@/components/InstallBanner";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import HtmlLang from "@/components/HtmlLang";
 import SchemaHowTo from "@/components/SchemaHowTo";
 import Magnifier from "@/components/Magnifier";
 import CookieConsent from "@/components/CookieConsent";
+import MetaUpdater from "@/components/MetaUpdater";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,27 +25,27 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "OptimaPDF - Darmowe narzędzia PDF online",
+    default: "OptimaPDF - Free online PDF tools",
     template: "%s | OptimaPDF",
   },
-    description: "Scalaj, dziel, kompresuj, konwertuj i edytuj pliki PDF za darmo online. 40 narzędzi PDF, AI Chat, AI Streszczenie, Tłumacz AI, edytor PDF, podpis elektroniczny, OCR, ochrona hasłem. Bez instalacji, bezpiecznie i szybko.",
-    keywords: ["PDF", "łączenie PDF", "dzielenie PDF", "kompresja PDF", "konwersja PDF", "edytor PDF", "OCR PDF", "AI PDF", "darmowe narzędzia PDF", "PDF do PowerPoint", "porównaj PDF", "Excel do PDF", "tłumacz PDF AI"],
+    description: "Merge, split, compress, convert and edit PDF files online for free. 40 PDF tools, AI Chat, AI Summary, AI Translate, PDF editor, electronic signature, OCR, password protection. No installation, secure and fast.",
+    keywords: ["PDF", "merge PDF", "split PDF", "compress PDF", "convert PDF", "PDF editor", "OCR PDF", "AI PDF", "free PDF tools", "PDF to PowerPoint", "compare PDF", "Excel to PDF", "AI PDF translator"],
   robots: { index: true, follow: true },
   openGraph: {
-    title: "OptimaPDF - Darmowe narzędzia PDF online",
-    description: "40 darmowych narzędzi PDF: scalaj, dziel, kompresuj, konwertuj, edytuj PDF, tłumacz AI, podpisz PDF, OCR, AI Chat, AI Streszczenie, porównaj PDF, PowerPoint, HTML. Bez instalacji, za darmo.",
+    title: "OptimaPDF - Free online PDF tools",
+    description: "Merge, split, compress, convert and edit PDFs for free online. 40 PDF tools, AI Chat, AI Summary, AI Translate, PDF editor, electronic signature, OCR, password protection. No installation, secure and fast.",
     url: "https://optimapdf.com",
     siteName: "OptimaPDF",
-    locale: "pl_PL",
+    locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "OptimaPDF - Darmowe narzędzia PDF online",
-    description: "40 darmowych narzędzi PDF: scalaj, dziel, kompresuj, konwertuj, edytuj PDF, tłumacz AI, podpisz PDF, OCR, AI Chat, AI Streszczenie, porównaj PDF, PowerPoint, HTML.",
+    title: "OptimaPDF - Free online PDF tools",
+    description: "Merge, split, compress, convert and edit PDFs for free online. 40 PDF tools, AI Chat, AI Summary, AI Translate, PDF editor, electronic signature, OCR, password protection.",
   },
   icons: {
-    icon: { url: "/icon", sizes: "32x32", type: "image/png" },
+    icon: { url: "/icon?v=2", sizes: "32x32", type: "image/png" },
     apple: { url: "/logo.png", sizes: "180x180" },
   },
   manifest: "/manifest.json",
@@ -84,7 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
           <PwaRegister />
           <Breadcrumbs />
-          <InstallBanner />
+          <MetaUpdater />
           <CookieConsent />
           <Magnifier />
           <main className="flex-1">{children}</main>

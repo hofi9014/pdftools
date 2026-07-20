@@ -6,51 +6,9 @@ import { getToolIcon } from '@/lib/icons';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import guides from '@/content/guides';
 import InstallSection from '@/components/InstallSection';
+import { tools, toolPath, categories } from '@/lib/tools';
 
 const aiTools = new Set(['aichat', 'aisummary', 'translate']);
-
-const toolDefs = [
-  { key: "merge", href: "/merge" },
-  { key: "split", href: "/split" },
-  { key: "compress", href: "/compress" },
-  { key: "word", href: "/pdf-to-word" },
-  { key: "wordtopdf", href: "/word-to-pdf" },
-  { key: "jpgTopdf", href: "/jpg-to-pdf" },
-  { key: "images", href: "/pdf-to-images" },
-  { key: "protect", href: "/protect-pdf" },
-  { key: "unlock", href: "/unlock-pdf" },
-  { key: "rotate", href: "/rotate-pdf" },
-  { key: "pagenumbers", href: "/page-numbers" },
-  { key: "watermark", href: "/watermark-pdf" },
-  { key: "ocr", href: "/ocr-pdf" },
-  { key: "extract", href: "/extract-pages" },
-  { key: "delete", href: "/delete-pages" },
-  { key: "reorder", href: "/reorder-pages" },
-  { key: "crop", href: "/crop-pdf" },
-  { key: "addpage", href: "/add-page" },
-  { key: "edit", href: "/edit-pdf" },
-  { key: "sign", href: "/sign-pdf" },
-  { key: "metadata", href: "/metadata" },
-  { key: "excel", href: "/pdf-to-excel" },
-  { key: "excel2pdf", href: "/excel-to-pdf" },
-  { key: "openoffice", href: "/openoffice-to-pdf" },
-  { key: "pdf2openoffice", href: "/pdf-to-openoffice" },
-  { key: "txt", href: "/pdf-to-txt" },
-  { key: "aichat", href: "/ai-chat" },
-  { key: "aisummary", href: "/ai-summary" },
-  { key: "ppt", href: "/pdf-to-powerpoint" },
-  { key: "compare", href: "/compare-pdf" },
-  { key: "html", href: "/html-to-pdf" },
-  { key: "url", href: "/url-to-pdf" },
-  { key: "html2pdf", href: "/pdf-to-html" },
-  { key: "flatten", href: "/flatten-pdf" },
-  { key: "svg", href: "/pdf-to-svg" },
-  { key: "redact", href: "/redact-pdf" },
-  { key: "epub", href: "/pdf-to-epub" },
-  { key: "translate", href: "/ai-translate" },
-  { key: "fillform", href: "/fill-form" },
-  { key: "pdfa", href: "/to-pdfa" },
-];
 
 export default function Home() {
   const { locale } = useLocale();
@@ -158,9 +116,9 @@ export default function Home() {
         </p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
           {['merge','compress','word','split','edit','sign','wordtopdf','protect'].map((key) => {
-            const tool = toolDefs.find(t => t.key === key);
+            const tool = tools.find(t => t.key === key);
             return tool ? (
-              <a key={tool.href} href={tool.href}
+              <a key={tool.key} href={toolPath(tool.key)}
                 className="coffee-card p-5 sm:p-6 group relative overflow-hidden"
                 style={{ borderColor: 'var(--coffee-accent)', borderWidth: '1.5px' }}>
                 <div className="absolute top-0 left-0 w-full h-1" style={{ background: 'var(--coffee-accent)' }} />
@@ -314,38 +272,19 @@ export default function Home() {
         </p>
 
         {(function() {
-          const toolCategory: Record<string, string> = {
-            merge: 'edit', split: 'edit', compress: 'edit', rotate: 'edit',
-            crop: 'edit', delete: 'edit', extract: 'edit', reorder: 'edit',
-            addpage: 'edit', edit: 'edit', pagenumbers: 'edit', watermark: 'edit',
-            redact: 'edit', flatten: 'edit', metadata: 'edit',
-            word: 'convert', wordtopdf: 'convert', jpgTopdf: 'convert', images: 'convert',
-            excel: 'convert', excel2pdf: 'convert', ppt: 'convert',
-            openoffice: 'convert', pdf2openoffice: 'convert', txt: 'convert',
-            svg: 'convert', epub: 'convert', html: 'convert', html2pdf: 'convert', url: 'convert',
-            protect: 'secure', unlock: 'secure', sign: 'secure',
-            aichat: 'more', aisummary: 'more', translate: 'more',
-            ocr: 'more', compare: 'more', fillform: 'more', pdfa: 'more',
-          };
-          const categories = [
-            { key: 'edit', icon: '✏️' },
-            { key: 'convert', icon: '🔄' },
-            { key: 'secure', icon: '🔒' },
-            { key: 'more', icon: '🧩' },
-          ];
           const catBorder = (k: string) => `var(--cat-${k}-border)`;
           const catBg = (k: string) => `var(--cat-${k}-bg)`;
 
           return categories.map(cat => {
-            let tools = toolDefs.filter(t => toolCategory[t.key] === cat.key);
+            let filtered = tools.filter(t => t.category === cat.key);
             if (search) {
               const q = search.toLowerCase();
-              tools = tools.filter(tt =>
+              filtered = filtered.filter(tt =>
                 t(`tool.${tt.key}`, locale).toLowerCase().includes(q) ||
                 t(`desc.${tt.key}`, locale).toLowerCase().includes(q)
               );
             }
-            if (tools.length === 0) return null;
+            if (filtered.length === 0) return null;
             return (
               <div key={cat.key} className="mb-12 last:mb-0">
                 <h4 className="text-xl font-bold mb-5 flex items-center gap-2"
@@ -354,8 +293,8 @@ export default function Home() {
                   <span>{t(`nav.category.${cat.key === 'more' ? 'more' : cat.key}`, locale)}</span>
                 </h4>
                 <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-                  {tools.map((tool) => (
-                    <a key={tool.href} href={tool.href}
+                  {filtered.map((tool) => (
+                    <a key={tool.key} href={toolPath(tool.key)}
                       className="group"
                       style={{
                         display: 'flex', flexDirection: 'column' as const,
