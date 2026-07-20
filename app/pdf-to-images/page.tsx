@@ -3,13 +3,13 @@ import { useState, useRef } from 'react';
 import { extractImagesFromPdf } from '@/lib/client-pdf';
 import JSZip from 'jszip';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 
-export default function PdfToImages() {
-  const { locale } = useLocale();
+export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [files, setFiles] = useState<File[]>([]);
   const [format, setFormat] = useState<'png' | 'jpeg' | 'webp'>('jpeg');
   const [scale, setScale] = useState('2');

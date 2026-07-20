@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { extractTextFromPDF } from '@/lib/client-pdf';
 import { askAI } from '@/lib/client-ai';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
 
@@ -12,8 +12,8 @@ interface Message {
   content: string;
 }
 
-export default function AIChat() {
-  const { locale } = useLocale();
+export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [file, setFile] = useState<File | null>(null);
   const [extractedText, setExtractedText] = useState('');
   const [loading, setLoading] = useState(false);

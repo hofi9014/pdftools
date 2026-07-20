@@ -4,11 +4,11 @@ import { addPageNumbers, downloadPdf } from '@/lib/client-pdf';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 
-export default function PageNumbers() {
-  const { locale } = useLocale();
+export default function PageNumbers({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [file, setFile] = useState<File | null>(null);
   const [position, setPosition] = useState('bottom-center');
   const [startNumber, setStartNumber] = useState('1');

@@ -5,12 +5,12 @@ import { compressPDFClient } from '@/lib/client-pdf';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import { RecommendedSize } from '@/components/UploadInfo';
 
-export default function CompressPDF() {
-  const { locale } = useLocale();
+export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [files, setFiles] = useState<File[]>([]);
   const [level, setLevel] = useState('recommended');
   const [loading, setLoading] = useState(false);

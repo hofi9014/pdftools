@@ -4,11 +4,11 @@ import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { imagesToPdf } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 
-export default function JPGToPDF() {
-  const { locale } = useLocale();
+export default function JPGToPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [files, setFiles] = useState<File[]>([]);
   const [margin, setMargin] = useState('0');
   const [loading, setLoading] = useState(false);

@@ -2,7 +2,7 @@
 import { useState, useRef } from 'react';
 import { pdfToSvgPages } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
@@ -23,8 +23,8 @@ async function downloadZip(items: { svg: string; name: string }[]) {
   return blob;
 }
 
-export default function PdfToSvg() {
-  const { locale } = useLocale();
+export default function PdfToSvg({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

@@ -2,7 +2,7 @@
 import { useState, useRef } from 'react';
 import JSZip from 'jszip';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
@@ -52,8 +52,8 @@ async function downloadBlob(blob: Blob, name: string) {
   URL.revokeObjectURL(url);
 }
 
-export default function OCRPDF() {
-  const { locale } = useLocale();
+export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);

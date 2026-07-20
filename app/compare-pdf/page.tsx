@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { comparePdfTextClient, comparePdfVisual, type PageDiff } from '@/lib/client-pdf';
 import { getToolIcon } from '@/lib/icons';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import CloudFilePicker from '@/components/CloudFilePicker';
 
 type Mode = 'text' | 'visual';
@@ -14,8 +14,8 @@ interface DiffItem {
   content: string;
 }
 
-export default function ComparePDF() {
-  const { locale } = useLocale();
+export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [mode, setMode] = useState<Mode>('text');
   const [fileA, setFileA] = useState<File | null>(null);
   const [fileB, setFileB] = useState<File | null>(null);

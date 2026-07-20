@@ -4,7 +4,7 @@ import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { officeToPdf } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 
 const FORMATS = [
@@ -14,8 +14,8 @@ const FORMATS = [
   { id: 'openoffice', icon: '📄', label: 'OpenOffice', formats: 'ODT, ODS, ODP', exts: ['.odt', '.ods', '.odp'], mimes: [] },
 ];
 
-export default function WordToPDF() {
-  const { locale } = useLocale();
+export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [file, setFile] = useState<File | null>(null);
   const [format, setFormat] = useState('word');
   const [loading, setLoading] = useState(false);

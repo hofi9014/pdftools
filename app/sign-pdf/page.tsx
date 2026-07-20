@@ -6,13 +6,13 @@ import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { signPdfClient } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 
 
 
-export default function SignPdf() {
-  const { locale } = useLocale();
+export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
 
   const presets = [
     { id: 'top-left', label: t('page.sign.preset_top_left', locale) },

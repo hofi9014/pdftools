@@ -1,13 +1,13 @@
 'use client';
 import { useState, useCallback } from 'react';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import PdfEditor from '@/components/edit-pdf/PdfEditor';
 
-export default function EditPdfPage() {
-  const { locale } = useLocale();
+export default function EditPdfPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
 

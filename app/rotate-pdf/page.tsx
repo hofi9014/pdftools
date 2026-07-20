@@ -5,11 +5,11 @@ import CloudFilePicker from '@/components/CloudFilePicker';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import JSZip from 'jszip';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 
-export default function RotatePDF() {
-  const { locale } = useLocale();
+export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [files, setFiles] = useState<File[]>([]);
   const [rotation, setRotation] = useState<'90' | '180' | '270'>('90');
   const [loading, setLoading] = useState(false);

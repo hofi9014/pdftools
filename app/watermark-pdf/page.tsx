@@ -4,11 +4,11 @@ import { addWatermark, downloadPdf } from '@/lib/client-pdf';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 
-export default function WatermarkPDF() {
-  const { locale } = useLocale();
+export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState('POUFNE');
   const [opacity, setOpacity] = useState('50');

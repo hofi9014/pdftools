@@ -4,11 +4,11 @@ import DOMPurify from 'dompurify';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import { htmlToPdf } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 
-export default function HtmlToPdf() {
-  const { locale } = useLocale();
+export default function HtmlToPdf({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [html, setHtml] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

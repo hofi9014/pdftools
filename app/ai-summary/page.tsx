@@ -3,12 +3,12 @@ import { useState, useCallback } from 'react';
 import { extractTextFromPDF } from '@/lib/client-pdf';
 import { summarizeText } from '@/lib/client-ai';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
 
-export default function AiSummary() {
-  const { locale } = useLocale();
+export default function AiSummary({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useLocale().locale;
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState('');
