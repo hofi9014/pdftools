@@ -3,13 +3,14 @@ import { useState, useRef } from 'react';
 import { splitPDF, splitByRanges, extractPages, downloadZip } from '@/lib/client-pdf';
 import PagePreview from '@/components/PagePreview';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 
-export default function SplitPDF() {
-  const { locale } = useLocale();
+export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const { locale: detectedLocale } = useLocale();
+  const locale = forcedLocale || detectedLocale;
   const [file, setFile] = useState<File | null>(null);
   const [splitMode, setSplitMode] = useState('fixed');
   const [ranges, setRanges] = useState('');

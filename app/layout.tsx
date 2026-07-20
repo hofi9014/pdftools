@@ -2,12 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { LocaleProvider } from "@/lib/locale-context";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import LayoutShell from "@/components/LayoutShell";
 import PwaRegister from "@/components/PwaRegister";
-import Breadcrumbs from "@/components/Breadcrumbs";
-import HtmlLang from "@/components/HtmlLang";
-import SchemaHowTo from "@/components/SchemaHowTo";
 import Magnifier from "@/components/Magnifier";
 import CookieConsent from "@/components/CookieConsent";
 import MetaUpdater from "@/components/MetaUpdater";
@@ -79,16 +75,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="mesh-bg" />
         <div className="grain-overlay" />
         <LocaleProvider defaultLocale="en">
-          <HtmlLang />
-          <SchemaHowTo />
-          <Header />
-          <PwaRegister />
-          <Breadcrumbs />
-          <MetaUpdater />
-          <CookieConsent />
-          <Magnifier />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <LayoutShell>
+            <PwaRegister />
+            <MetaUpdater />
+            <CookieConsent />
+            <Magnifier />
+            <main className="flex-1">{children}</main>
+          </LayoutShell>
         </LocaleProvider>
       </body>
     </html>

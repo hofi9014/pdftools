@@ -2,15 +2,15 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug, localeFromSegment } from '@/lib/guides-slugs';
 import { keyBySlug } from '@/lib/tools';
 
 const guidesLocaleSegments = new Set(Object.values(localeGuidesSlug));
 
-export default function Breadcrumbs() {
+export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale }) {
   const pathname = usePathname();
-  const locale = useHydrationSafeLocale();
+  const locale = forcedLocale ?? useHydrationSafeLocale();
   const segments = pathname.split('/').filter(Boolean);
 
   if (segments.length === 0) return null;

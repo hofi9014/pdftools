@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import guides from '@/content/guides';
@@ -10,8 +10,9 @@ import { tools, toolPath, categories } from '@/lib/tools';
 
 const aiTools = new Set(['aichat', 'aisummary', 'translate']);
 
-export default function Home() {
-  const { locale } = useLocale();
+export default function Home({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const { locale: detectedLocale } = useLocale();
+  const locale = forcedLocale || detectedLocale;
   const [search, setSearch] = useState('');
   const searchPlaceholder: Record<string, string> = {
     pl: 'Szukaj narzędzia...',

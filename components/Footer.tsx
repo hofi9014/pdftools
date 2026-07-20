@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import { toolPath } from '@/lib/tools';
 
@@ -30,8 +30,8 @@ const infoLinks = [
 
 const linkStyle = 'text-[rgba(245,237,228,0.65)] hover:text-[#F5EDE4] transition';
 
-export default function Footer() {
-  const locale = useHydrationSafeLocale();
+export default function Footer({ locale: forcedLocale }: { locale?: Locale }) {
+  const locale = forcedLocale ?? useHydrationSafeLocale();
 
   return (
     <footer className="bg-[#3C2415] dark:bg-[#0A0807] text-gray-400 py-8 mt-12 border-t border-[rgba(255,255,255,0.06)]">

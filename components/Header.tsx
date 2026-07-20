@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import { getCategoryIcon } from '@/lib/icons';
 import { toolsByCategory, toolPath } from '@/lib/tools';
@@ -48,8 +48,8 @@ const categories: Category[] = [
   },
 ];
 
-export default function Header() {
-  const locale = useHydrationSafeLocale();
+export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
+  const locale = forcedLocale ?? useHydrationSafeLocale();
 
   return (
     <header className="border-b border-[var(--coffee-border)] bg-[var(--coffee-surface)] backdrop-blur-md sticky top-0 z-50">

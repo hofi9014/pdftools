@@ -4,11 +4,12 @@ import { mergePDFs, downloadPdf } from '@/lib/client-pdf';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 
-export default function MergePDF() {
-  const { locale } = useLocale();
+export default function MergePDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const { locale: detectedLocale } = useLocale();
+  const locale = forcedLocale || detectedLocale;
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
