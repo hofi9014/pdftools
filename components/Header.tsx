@@ -55,7 +55,7 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
     <header className="border-b border-[var(--coffee-border)] bg-[var(--coffee-surface)] backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <img src="/logo.png" alt="OptimaPDF" className="h-11 w-auto" />
+          <img src="/logo.png?v=3" alt="OptimaPDF" className="h-11 w-auto" />
           <span className="hidden xs:inline text-xl font-bold" style={{ color: 'var(--coffee-text)' }}>OptimaPDF</span>
           <span className="xs:hidden text-xl font-bold" style={{ color: 'var(--coffee-text)' }}>OP</span>
         </Link>
