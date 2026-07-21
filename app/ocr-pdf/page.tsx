@@ -107,12 +107,12 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        setProgressLabel(`Strona ${completedPages + 1}...`);
+        setProgressLabel(t('page.ocr.progress_start', locale).replace('{page}', String(completedPages + 1)));
         const result = await ocrPdfClient(file, language, (page, total) => {
           totalPages = total;
           completedPages = completedPages - (completedPages % Math.max(1, totalPages)) + page - 1;
           setProgress(completedPages + page);
-          setProgressLabel(`Strona ${page}/${total}`);
+          setProgressLabel(t('page.ocr.progress', locale).replace('{page}', String(page)).replace('{total}', String(total)));
         });
         completedPages += totalPages;
         allText.push(result.text);

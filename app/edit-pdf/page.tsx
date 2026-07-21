@@ -88,7 +88,7 @@ export default function EditPdfPage({ locale: forcedLocale }: { locale?: Locale 
       <div className="tool-info-box rounded-2xl p-5 mb-6">
         <h3 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h3>
         <p className="text-sm text-blue-700 dark:text-blue-300">
-          {t('local.desc', locale)} {t('edit.local_saved', locale)}{locale === 'pl' ? ' Obsługuje polskie znaki (ą, ć, ę, ł, ń, ó, ś, ź, ż).' : ''}
+          {t('local.desc', locale)} {t('edit.local_saved', locale)}{locale === 'pl' ? ' ' + t('page.edit.supports_polish', locale) : ''}
         </p>
       </div>
 

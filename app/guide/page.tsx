@@ -481,10 +481,10 @@ export default function GuidePage({ locale: forcedLocale }: { locale?: Locale } 
     <main className="max-w-5xl mx-auto px-4 py-12">
       <div className="text-center mb-12">
         <h1 className="text-3xl sm:text-4xl font-bold tool-heading mb-3">
-          Instrukcja obsługi — jak używać narzędzi PDF
+          {t('page.guide.title', locale)}
         </h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base max-w-2xl mx-auto">
-          Szczegółowe opisy i instrukcje krok po kroku dla każdego narzędzia. Wybierz narzędzie poniżej lub skorzystaj z wyszukiwarki.
+          {t('page.guide.subtitle', locale)}
         </p>
       </div>
 
@@ -493,7 +493,7 @@ export default function GuidePage({ locale: forcedLocale }: { locale?: Locale } 
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Szukaj narzędzia..."
+          placeholder={t('page.guide.search', locale)}
           className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 tool-heading focus:ring-2 focus:ring-blue-400 outline-none"
         />
       </div>
@@ -503,7 +503,7 @@ export default function GuidePage({ locale: forcedLocale }: { locale?: Locale } 
           onClick={() => setActiveCategory(null)}
           className={`px-4 py-2 rounded-full text-sm font-medium transition border ${activeCategory === null ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
         >
-          Wszystkie
+          {t('page.guide.all', locale)}
         </button>
         {categoryOrder.map(cat => (
           <button

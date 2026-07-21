@@ -184,7 +184,7 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
               <button type="button" onClick={saveSignature} className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition">{t('page.sign.confirm', locale)}</button>
               <button type="button" onClick={clearSignature} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs hover:bg-gray-200 dark:hover:bg-gray-600 transition">{t('page.sign.clear', locale)}</button>
             </div>
-            {signPreview && <Image src={signPreview} alt="Podglad" width={200} height={40} className="h-10 w-auto border border-gray-200 rounded" />}
+            {signPreview && <Image src={signPreview} alt={t('page.sign.preview', locale)} width={200} height={40} className="h-10 w-auto border border-gray-200 rounded" />}
           </div>
         </div>
 
