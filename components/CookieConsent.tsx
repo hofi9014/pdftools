@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useHydrationSafeLocale } from "@/lib/locale-context";
+import { t } from "@/lib/i18n";
 
 declare global {
   interface Window {
@@ -10,19 +11,6 @@ declare global {
     dataLayer: unknown[];
   }
 }
-
-const content: Record<string, { text: string; accept: string; decline: string }> = {
-  pl: {
-    text: "Ta strona używa Google Analytics do anonimowej analizy ruchu. Możesz zaakceptować lub odrzucić przetwarzanie danych analitycznych.",
-    accept: "Akceptuję",
-    decline: "Odrzucam",
-  },
-  en: {
-    text: "This site uses Google Analytics for anonymous traffic analysis. You can accept or reject analytics data processing.",
-    accept: "Accept",
-    decline: "Decline",
-  },
-};
 
 function updateConsent(status: string) {
   if (typeof window !== "undefined" && window.gtag) {
@@ -43,7 +31,6 @@ export default function CookieConsent() {
       queueMicrotask(() => setShow(true));
     }
   }, []);
-  const lang = locale === "pl" ? content.pl : content.en;
 
   const accept = useCallback(() => {
     localStorage.setItem("cookie-consent", "accepted");
@@ -63,13 +50,13 @@ export default function CookieConsent() {
     <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--coffee-border)] bg-[var(--coffee-surface-solid)]/95 backdrop-blur-xl p-4 shadow-2xl">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-sm leading-relaxed" style={{ color: "var(--coffee-text-secondary)" }}>
-          {lang.text}{" "}
+          {t('cookie.text', locale)}{" "}
           <Link
             href={`/${locale}/privacy`}
             className="underline hover:no-underline whitespace-nowrap"
             style={{ color: "var(--coffee-accent)" }}
           >
-            {locale === "pl" ? "Polityka prywatności" : "Privacy Policy"}
+            {t('cookie.privacy_link', locale)}
           </Link>
         </p>
         <div className="flex items-center gap-3 shrink-0">
@@ -81,7 +68,7 @@ export default function CookieConsent() {
               borderColor: "var(--coffee-border)",
             }}
           >
-            {lang.decline}
+            {t('cookie.decline', locale)}
           </button>
           <button
             onClick={accept}
@@ -90,7 +77,7 @@ export default function CookieConsent() {
               background: "linear-gradient(135deg, var(--coffee-accent), var(--coffee-gold))",
             }}
           >
-            {lang.accept}
+            {t('cookie.accept', locale)}
           </button>
         </div>
       </div>

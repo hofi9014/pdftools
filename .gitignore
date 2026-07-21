@@ -52,3 +52,6 @@ next-env.d.ts
 *.mjs
 eslint_output.json
 /*.png
+audit-i18n.ps1
+i18n-audit-report.md
+

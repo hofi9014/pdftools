@@ -704,7 +704,7 @@ function ToolGuideCard({ tool, locale }: { tool: GuideEntry; locale: string }) {
           onClick={e => e.stopPropagation()}
           className="shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition"
         >
-          Otwórz →
+          {t('help.open_tool', locale)} →
         </Link>
         <svg
           className={`w-5 h-5 shrink-0 transition-transform duration-200 text-gray-400 ${open ? 'rotate-180' : ''}`}
@@ -722,7 +722,7 @@ function ToolGuideCard({ tool, locale }: { tool: GuideEntry; locale: string }) {
 
           <div>
             <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
-              {locale === 'pl' ? 'Instrukcja krok po kroku:' : 'Step-by-step instructions:'}
+              {t('guide.steps_title', locale)}
             </h4>
             <ol className="list-decimal list-inside space-y-1.5">
               {tool.steps.map((step, i) => (
@@ -734,7 +734,7 @@ function ToolGuideCard({ tool, locale }: { tool: GuideEntry; locale: string }) {
           {tool.tips && (
             <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800 rounded-xl p-3">
               <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-300 mb-0.5">
-                {locale === 'pl' ? '💡 Wskazówka:' : '💡 Tip:'}
+                {t('guide.tip_label', locale)}
               </p>
               <p className="text-xs text-yellow-700 dark:text-yellow-200">{lc(locale, tool.tips)}</p>
             </div>
