@@ -1,11 +1,11 @@
 import PdfToHtml from '../../pdf-to-html/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
-import { generatePageMetadata } from '@/lib/i18n-metadata';
+import { pageMetadata } from '@/lib/metadata';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  return generatePageMetadata(locale, '/pdf-to-html');
+  return pageMetadata(locale, '/pdf-to-html');
 }
 
 export default async function LocalePdfToHtml({ params }: { params: Promise<{ locale: string }> }) {

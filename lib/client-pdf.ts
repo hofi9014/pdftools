@@ -14,6 +14,15 @@ export async function initPdfjs(): Promise<void> {
   return pdfjsInitPromise;
 }
 
+function pdfjsDocOptions(data: Uint8Array): { data: Uint8Array; cMapUrl: string; cMapPacked: boolean; standardFontDataUrl: string } {
+  return {
+    data,
+    cMapUrl: '/pdfjs-dist/cmaps/',
+    cMapPacked: true,
+    standardFontDataUrl: '/pdfjs-dist/standard_fonts/',
+  };
+}
+
 export async function mergePDFs(files: File[]): Promise<Uint8Array> {
   const mergedPdf = await PDFDocument.create();
   for (const file of files) {
@@ -250,7 +259,7 @@ export async function pdfToSvgPages(file: File): Promise<{ svg: string; name: st
   const buf = await file.arrayBuffer();
   const pdfjsLib = await import('pdfjs-dist');
   await initPdfjs();
-  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+  const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
   const results: { svg: string; name: string }[] = [];
 
   for (let i = 1; i <= doc.numPages; i++) {
@@ -296,7 +305,7 @@ export async function pdfToEpub(file: File): Promise<Blob> {
   const buf = await file.arrayBuffer();
   const pdfjsLib = await import('pdfjs-dist');
   await initPdfjs();
-  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+  const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
   const title = file.name.replace(/\.pdf$/i, '');
   const pages: string[] = [];
 
@@ -397,7 +406,7 @@ export async function extractTextFromPDF(file: File): Promise<string> {
   const buf = await file.arrayBuffer();
   const pdfjsLib = await import('pdfjs-dist');
   await initPdfjs();
-  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+  const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
   const texts: string[] = [];
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i);
@@ -645,7 +654,7 @@ export async function pdfToExcel(file: File): Promise<Blob> {
   const buf = await file.arrayBuffer();
   const pdfjsLib = await import('pdfjs-dist');
   await initPdfjs();
-  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+  const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
   const rows: string[][] = [];
 
   for (let i = 1; i <= doc.numPages; i++) {
@@ -1161,7 +1170,7 @@ export async function pdfToJpgClient(file: File, quality = 80): Promise<{ name: 
   const buf = await file.arrayBuffer();
   const pdfjsLib = await import('pdfjs-dist');
   await initPdfjs();
-  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+  const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
   const baseName = file.name.replace(/\.pdf$/i, '');
   const results: { name: string; data: Blob }[] = [];
 
@@ -1454,7 +1463,7 @@ export async function extractImagesFromPdf(
   const pdfjsLib = await import('pdfjs-dist');
   await initPdfjs();
   const buf = await file.arrayBuffer();
-  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+  const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
   const pagesToExtract = opts.pages || Array.from({ length: doc.numPages }, (_, i) => i + 1);
   const results: { page: number; blob: Blob; url: string }[] = [];
 

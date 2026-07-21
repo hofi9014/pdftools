@@ -1,11 +1,11 @@
 import OCRPDF from '../../ocr-pdf/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
-import { generatePageMetadata } from '@/lib/i18n-metadata';
+import { pageMetadata } from '@/lib/metadata';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  return generatePageMetadata(locale, '/ocr-pdf');
+  return pageMetadata(locale, '/ocr-pdf');
 }
 
 export default async function LocaleOCRPDF({ params }: { params: Promise<{ locale: string }> }) {

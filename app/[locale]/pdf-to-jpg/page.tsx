@@ -1,11 +1,11 @@
 import { redirect } from 'next/navigation';
 import { locales } from '@/lib/i18n';
 import type { Metadata } from 'next';
-import { generatePageMetadata } from '@/lib/i18n-metadata';
+import { pageMetadata } from '@/lib/metadata';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  return generatePageMetadata(locale, '/pdf-to-jpg');
+  return pageMetadata(locale, '/pdf-to-jpg');
 }
 
 export default async function LocalePdfToJpgRedirect({ params }: { params: Promise<{ locale: string }> }) {

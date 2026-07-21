@@ -1,11 +1,11 @@
 import SignPdf from '../../sign-pdf/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
-import { generatePageMetadata } from '@/lib/i18n-metadata';
+import { pageMetadata } from '@/lib/metadata';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  return generatePageMetadata(locale, '/sign-pdf');
+  return pageMetadata(locale, '/sign-pdf');
 }
 
 export default async function LocaleSignPdf({ params }: { params: Promise<{ locale: string }> }) {

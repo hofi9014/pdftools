@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/copy-tesseract-assets.mjs && next build",
+    "build": "node scripts/copy-tesseract-assets.mjs && node scripts/copy-pdfjs-assets.mjs && next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "node scripts/copy-tesseract-assets.mjs",
+    "postinstall": "node scripts/copy-tesseract-assets.mjs && node scripts/copy-pdfjs-assets.mjs",
     "validate:guides": "npx --yes tsx scripts/validate-guides.ts"
   },
   "dependencies": {
