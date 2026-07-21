@@ -59,7 +59,7 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
             <a href="#tools" className="btn-accent text-base">
               {t('home.cta', locale)} →
             </a>
-            <a href="/privacy" className="btn-ghost text-base">
+            <a href={toolPath('privacy', locale)} className="btn-ghost text-base">
               {t('hero.privacy', locale)}
             </a>
           </div>
@@ -155,7 +155,7 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
           ))}
         </div>
         <div className="text-center mt-10">
-          <a href="/guide" className="inline-flex items-center gap-1 font-medium text-sm transition-opacity hover:opacity-80"
+          <a href={toolPath('guide', locale)} className="inline-flex items-center gap-1 font-medium text-sm transition-opacity hover:opacity-80"
             style={{ color: 'var(--coffee-accent)' }}>
             {t('home.howto_guide', locale)}
           </a>

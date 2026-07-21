@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 
 const content = {
   pl: {
@@ -158,8 +158,9 @@ const content = {
   },
 };
 
-export default function SecurityPage() {
-  const { locale } = useLocale();
+export default function SecurityPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const { locale: detectedLocale } = useLocale();
+  const locale = forcedLocale || detectedLocale;
   const lang = (content as Record<string, typeof content.pl>)[locale] || content.en;
 
   return (

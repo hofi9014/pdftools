@@ -65,7 +65,7 @@ export default function CookieConsent() {
         <p className="text-sm leading-relaxed" style={{ color: "var(--coffee-text-secondary)" }}>
           {lang.text}{" "}
           <Link
-            href={locale === "pl" ? "/privacy" : "/en/privacy"}
+            href={`/${locale}/privacy`}
             className="underline hover:no-underline whitespace-nowrap"
             style={{ color: "var(--coffee-accent)" }}
           >

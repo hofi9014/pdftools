@@ -8,30 +8,29 @@ import { toolPath } from '@/lib/tools';
 const toolLinkKeys = ['merge', 'compress', 'word', 'ocr', 'aichat', 'aisummary',
   'edit', 'sign', 'fillform', 'images', 'pdfa', 'compare', 'ppt', 'txt', 'html', 'url', 'flatten'];
 
-const toolLinks = toolLinkKeys.map(key => ({ key, href: toolPath(key) }));
-
 const convLinkKeys = ['wordtopdf', 'jpgTopdf', 'openoffice', 'pdf2openoffice',
   'excel', 'excel2pdf', 'html2pdf', 'html', 'url'];
-
-const convLinks = convLinkKeys.map(key => ({ key, href: toolPath(key) }));
-
-const infoLinks = [
-  { key: 'nav.home', href: '/' },
-  { href: '/#tools', labelKey: null },
-  { href: '/faq', labelKey: 'faq.link' },
-  { href: '/help', labelKey: 'help.link' },
-  { href: '/nasze-zasady', labelKey: 'nav.rules' },
-  { href: '/wsparcie', labelKey: 'nav.support' },
-  { href: '/privacy', labelKey: 'nav.privacy' },
-  { href: '/rodo', labelKey: 'rodo.link' },
-  { href: '/security', labelKey: 'security.link' },
-  { href: '/guide', labelKey: 'nav.guide' },
-];
 
 const linkStyle = 'text-[rgba(245,237,228,0.65)] hover:text-[#F5EDE4] transition';
 
 export default function Footer({ locale: forcedLocale }: { locale?: Locale }) {
   const locale = forcedLocale ?? useHydrationSafeLocale();
+
+  const toolLinks = toolLinkKeys.map(key => ({ key, href: toolPath(key, locale) }));
+  const convLinks = convLinkKeys.map(key => ({ key, href: toolPath(key, locale) }));
+
+  const infoLinks = [
+    { labelKey: 'nav.home', href: locale ? `/${locale}` : '/' },
+    { labelKey: 'footer.all_tools', href: locale ? `/${locale}/#tools` : '/#tools' },
+    { labelKey: 'faq.link', href: toolPath('faq', locale) },
+    { labelKey: 'help.link', href: toolPath('help', locale) },
+    { labelKey: 'nav.rules', href: locale ? `/${locale}/nasze-zasady` : '/nasze-zasady' },
+    { labelKey: 'nav.support', href: locale ? `/${locale}/wsparcie` : '/wsparcie' },
+    { labelKey: 'nav.privacy', href: toolPath('privacy', locale) },
+    { labelKey: 'rodo.link', href: toolPath('rodo', locale) },
+    { labelKey: 'security.link', href: toolPath('security', locale) },
+    { labelKey: 'nav.guide', href: toolPath('guide', locale) },
+  ];
 
   return (
     <footer className="bg-[#3C2415] dark:bg-[#0A0807] text-gray-400 py-8 mt-12 border-t border-[rgba(255,255,255,0.06)]">
@@ -64,16 +63,11 @@ export default function Footer({ locale: forcedLocale }: { locale?: Locale }) {
           <div>
             <p className="font-semibold text-[rgba(245,237,228,0.8)] mb-3">{t('footer.info', locale)}</p>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/" className={linkStyle}>{t('nav.home', locale)}</Link></li>
-              <li><Link href="/#tools" className={linkStyle}>{t('footer.all_tools', locale)}</Link></li>
-              <li><Link href="/faq" className={linkStyle}>{t('faq.link', locale)}</Link></li>
-              <li><Link href="/help" className={linkStyle}>{t('help.link', locale)}</Link></li>
-              <li><Link href="/nasze-zasady" className={linkStyle}>{t('nav.rules', locale)}</Link></li>
-              <li><Link href="/wsparcie" className={linkStyle}>{t('nav.support', locale)}</Link></li>
-              <li><Link href="/privacy" className={linkStyle}>{t('nav.privacy', locale)}</Link></li>
-              <li><Link href="/rodo" className={linkStyle}>{t('rodo.link', locale)}</Link></li>
-              <li><Link href="/security" className={linkStyle}>{t('security.link', locale)}</Link></li>
-              <li><Link href="/guide" className={linkStyle}>{t('nav.guide', locale)}</Link></li>
+              {infoLinks.map(link => (
+                <li key={link.href}>
+                  <Link href={link.href} className={linkStyle}>{t(link.labelKey, locale)}</Link>
+                </li>
+              ))}
               <li><Link href={`/guides/${localeGuidesSlug[locale]}`} className={linkStyle}>{t('nav.guides', locale)}</Link></li>
             </ul>
           </div>

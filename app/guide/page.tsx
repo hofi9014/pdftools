@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import { toolPath } from '@/lib/tools';
 
@@ -453,8 +453,9 @@ const categoryOrder: { key: string; label: T; toolKeys: string[] }[] = [
   },
 ];
 
-export default function GuidePage() {
-  const { locale } = useLocale();
+export default function GuidePage({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const { locale: detectedLocale } = useLocale();
+  const locale = forcedLocale || detectedLocale;
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
@@ -699,7 +700,7 @@ function ToolGuideCard({ tool, locale }: { tool: GuideEntry; locale: string }) {
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">{lc(locale, tool.desc)}</p>
         </div>
         <Link
-          href={toolPath(tool.key)}
+          href={toolPath(tool.key, locale)}
           onClick={e => e.stopPropagation()}
           className="shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition"
         >
@@ -740,7 +741,7 @@ function ToolGuideCard({ tool, locale }: { tool: GuideEntry; locale: string }) {
           )}
 
           <Link
-            href={toolPath(tool.key)}
+            href={toolPath(tool.key, locale)}
             className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline"
           >
             {t('help.open_tool', locale)} →

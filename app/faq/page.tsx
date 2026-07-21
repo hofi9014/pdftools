@@ -2,8 +2,9 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon, getCategoryIcon } from '@/lib/icons';
+import { toolPath } from '@/lib/tools';
 
 type LocaleContent = Record<string, string>;
 
@@ -331,8 +332,9 @@ const faqData: FaqCategory[] = [
   },
 ];
 
-export default function FaqPage() {
-  const { locale } = useLocale();
+export default function FaqPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const { locale: detectedLocale } = useLocale();
+  const locale = forcedLocale || detectedLocale;
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
 
@@ -432,7 +434,7 @@ export default function FaqPage() {
                           {lc(locale, item.a)}
                         </div>
                         <Link
-                          href={item.href}
+                          href={toolPath(item.href.replace(/^\//, ''), locale)}
                           className="inline-flex items-center gap-1 text-sm font-medium transition hover:underline"
                           style={{ color: 'var(--coffee-accent)' }}
                         >

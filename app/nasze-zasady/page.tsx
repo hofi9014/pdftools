@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 
 interface Section {
   h: string;
@@ -655,8 +655,9 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
   },
 };
 
-export default function RulesPage() {
-  const { locale } = useLocale();
+export default function RulesPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const { locale: detectedLocale } = useLocale();
+  const locale = forcedLocale || detectedLocale;
   const lang = content[locale] || content.en;
 
   return (
@@ -672,7 +673,7 @@ export default function RulesPage() {
           <section key={i}>
             <h2 className="text-lg sm:text-xl font-bold tool-heading mb-3">{sec.h}</h2>
             {sec.pStart ? (
-              <p>{sec.pStart}<Link href="/wsparcie">{sec.linkLabel}</Link>{sec.pEnd}</p>
+              <p>{sec.pStart}<Link href={`/${locale}/wsparcie`}>{sec.linkLabel}</Link>{sec.pEnd}</p>
             ) : (
               <p>{sec.p}</p>
             )}

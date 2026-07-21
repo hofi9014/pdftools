@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 
 type LocaleContent = Record<string, string>;
 
@@ -166,8 +166,9 @@ const helpData: HelpCategory[] = [
   },
 ];
 
-export default function HelpPage() {
-  const { locale } = useLocale();
+export default function HelpPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const { locale: detectedLocale } = useLocale();
+  const locale = forcedLocale || detectedLocale;
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['general']));
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
 

@@ -21,35 +21,35 @@ interface Category {
   tools: CatTool[];
 }
 
-const infoMore: CatTool[] = [
-  { key: 'rules', href: '/nasze-zasady', navKey: 'nav.rules', icon: '📜' },
-  { key: 'support', href: '/wsparcie', navKey: 'nav.support', icon: '💬' },
-];
-
-const categories: Category[] = [
-  {
-    key: 'edit',
-    tools: toolsByCategory('edit').map(t => ({ key: t.key, href: toolPath(t.key) })),
-  },
-  {
-    key: 'convert',
-    tools: toolsByCategory('convert').map(t => ({ key: t.key, href: toolPath(t.key) })),
-  },
-  {
-    key: 'secure',
-    tools: toolsByCategory('secure').map(t => ({ key: t.key, href: toolPath(t.key) })),
-  },
-  {
-    key: 'more',
-    tools: [
-      ...toolsByCategory('more').map(t => ({ key: t.key, href: toolPath(t.key) })),
-      ...infoMore,
-    ],
-  },
-];
-
 export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
   const locale = forcedLocale ?? useHydrationSafeLocale();
+
+  const infoMore: CatTool[] = [
+    { key: 'rules', href: toolPath('rules', locale), navKey: 'nav.rules', icon: '📜' },
+    { key: 'support', href: toolPath('support', locale), navKey: 'nav.support', icon: '💬' },
+  ];
+
+  const categories: Category[] = [
+    {
+      key: 'edit',
+      tools: toolsByCategory('edit').map(t => ({ key: t.key, href: toolPath(t.key, locale) })),
+    },
+    {
+      key: 'convert',
+      tools: toolsByCategory('convert').map(t => ({ key: t.key, href: toolPath(t.key, locale) })),
+    },
+    {
+      key: 'secure',
+      tools: toolsByCategory('secure').map(t => ({ key: t.key, href: toolPath(t.key, locale) })),
+    },
+    {
+      key: 'more',
+      tools: [
+        ...toolsByCategory('more').map(t => ({ key: t.key, href: toolPath(t.key, locale) })),
+        ...infoMore,
+      ],
+    },
+  ];
 
   return (
     <header className="border-b border-[var(--coffee-border)] bg-[var(--coffee-surface)] backdrop-blur-md sticky top-0 z-50">
@@ -94,7 +94,7 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
               </div>
             </div>
           ))}
-          <Link href="/guide" className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition" style={{ color: 'var(--coffee-text-secondary)' }}>📖 {t('nav.guide', locale)}</Link>
+          <Link href={toolPath('guide', locale)} className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition" style={{ color: 'var(--coffee-text-secondary)' }}>📖 {t('nav.guide', locale)}</Link>
           <Link href={`/guides/${localeGuidesSlug[locale]}`} className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition" style={{ color: 'var(--coffee-text-secondary)' }}>📚 {t('nav.guides', locale)}</Link>
         </nav>
 

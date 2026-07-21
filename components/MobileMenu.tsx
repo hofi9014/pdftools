@@ -20,37 +20,37 @@ interface Category {
   tools: CatTool[];
 }
 
-const infoMore: CatTool[] = [
-  { key: 'rules', href: '/nasze-zasady', navKey: 'nav.rules', icon: '📜' },
-  { key: 'support', href: '/wsparcie', navKey: 'nav.support', icon: '💬' },
-];
-
-const categories: Category[] = [
-  {
-    key: 'edit',
-    tools: toolsByCategory('edit').map(t => ({ key: t.key, href: toolPath(t.key) })),
-  },
-  {
-    key: 'convert',
-    tools: toolsByCategory('convert').map(t => ({ key: t.key, href: toolPath(t.key) })),
-  },
-  {
-    key: 'secure',
-    tools: toolsByCategory('secure').map(t => ({ key: t.key, href: toolPath(t.key) })),
-  },
-  {
-    key: 'more',
-    tools: [
-      ...toolsByCategory('more').map(t => ({ key: t.key, href: toolPath(t.key) })),
-      ...infoMore,
-    ],
-  },
-];
-
 export default function MobileMenu() {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const locale = useHydrationSafeLocale();
+
+  const infoMore: CatTool[] = [
+    { key: 'rules', href: toolPath('rules', locale), navKey: 'nav.rules', icon: '📜' },
+    { key: 'support', href: toolPath('support', locale), navKey: 'nav.support', icon: '💬' },
+  ];
+
+  const categories: Category[] = [
+    {
+      key: 'edit',
+      tools: toolsByCategory('edit').map(t => ({ key: t.key, href: toolPath(t.key, locale) })),
+    },
+    {
+      key: 'convert',
+      tools: toolsByCategory('convert').map(t => ({ key: t.key, href: toolPath(t.key, locale) })),
+    },
+    {
+      key: 'secure',
+      tools: toolsByCategory('secure').map(t => ({ key: t.key, href: toolPath(t.key, locale) })),
+    },
+    {
+      key: 'more',
+      tools: [
+        ...toolsByCategory('more').map(t => ({ key: t.key, href: toolPath(t.key, locale) })),
+        ...infoMore,
+      ],
+    },
+  ];
 
   const toggleCategory = useCallback((key: string) => {
     setExpanded(prev => {
@@ -81,7 +81,7 @@ export default function MobileMenu() {
             <div className="flex-1 overflow-y-auto overscroll-contain">
               <div className="px-4 py-3 space-y-1">
                 <Link href="/" className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>{t('nav.home', locale)}</Link>
-                <Link href="/guide" className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📖 {t('nav.guide', locale)}</Link>
+                <Link href={toolPath('guide', locale)} className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📖 {t('nav.guide', locale)}</Link>
                 <Link href={`/guides/${localeGuidesSlug[locale]}`} className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📚 {t('nav.guides', locale)}</Link>
               </div>
               <div className="px-4 pb-2">

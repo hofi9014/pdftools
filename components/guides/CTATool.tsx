@@ -4,7 +4,7 @@ import { toolPath } from '@/lib/tools';
 import type { ToolSlug } from '@/types/guide';
 
 export default function CTATool({ tool, locale }: { tool: ToolSlug; locale: string }) {
-  const href = toolPath(tool);
+  const href = toolPath(tool, locale);
   const toolName = t(`tool.${tool}`, locale);
 
   return (
