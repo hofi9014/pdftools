@@ -26,8 +26,8 @@ export default function MobileMenu() {
   const locale = useHydrationSafeLocale();
 
   const infoMore: CatTool[] = [
-    { key: 'rules', href: toolPath('rules', locale), navKey: 'nav.rules', icon: '📜' },
-    { key: 'support', href: toolPath('support', locale), navKey: 'nav.support', icon: '💬' },
+    { key: 'rules', href: locale ? `/${locale}/nasze-zasady` : '/nasze-zasady', navKey: 'nav.rules', icon: '📜' },
+    { key: 'support', href: locale ? `/${locale}/wsparcie` : '/wsparcie', navKey: 'nav.support', icon: '💬' },
   ];
 
   const categories: Category[] = [

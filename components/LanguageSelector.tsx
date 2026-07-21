@@ -1,10 +1,11 @@
 'use client';
 import { useLocale, useHydrationSafeLocale } from '@/lib/locale-context';
-import { locales, t } from '@/lib/i18n';
-import type { Locale } from '@/lib/i18n';
+import { locales, t, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug, localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useRef, useEffect, useCallback } from 'react';
+
+const VALID_LOCALES = locales as readonly string[];
 
 const flagMap: Record<string, string> = {
   ar: 'sa', de: 'de', en: 'gb', es: 'es', fa: 'ir', fr: 'fr', hi: 'in',
@@ -20,6 +21,11 @@ const labelMap: Record<string, string> = {
 
 function isGuidesPath(pathname: string): boolean {
   return pathname === '/guides' || pathname.startsWith('/guides/');
+}
+
+function setLocaleCookie(code: string) {
+  if (typeof document === 'undefined') return;
+  document.cookie = `x-detected-locale=${code};path=/;max-age=${365 * 24 * 60 * 60};SameSite=Lax`;
 }
 
 export default function LanguageSelector() {
@@ -40,20 +46,32 @@ export default function LanguageSelector() {
 
   const handleChange = useCallback((code: Locale) => {
     setOpen(false);
+    const segments = pathname.split('/').filter(Boolean);
 
     if (isGuidesPath(pathname)) {
-      const segments = pathname.split('/').filter(Boolean);
       const currentLocaleSeg = segments[1] || '';
       const currentLocale = localeFromSegment(currentLocaleSeg);
       if (currentLocale !== code) {
         localStorage.setItem('locale', code);
+        setLocaleCookie(code);
         segments[1] = getLocaleSegment(code);
         setLocale(code);
         router.push('/' + segments.join('/'));
         return;
       }
     }
+
+    const first = segments[0];
+    if (first && VALID_LOCALES.includes(first)) {
+      if (first === code) return;
+      segments[0] = code;
+    } else {
+      segments.unshift(code);
+    }
+    localStorage.setItem('locale', code);
+    setLocaleCookie(code);
     setLocale(code);
+    router.push('/' + segments.join('/'));
   }, [pathname, setLocale, router]);
 
   return (
