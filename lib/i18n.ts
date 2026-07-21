@@ -3574,7 +3574,7 @@ const fr: Record<string, string> = {
   'help.category.general': 'Problèmes généraux',
   'help.category.secure': 'Sécurité PDF',
   'help.link': 'Aide — Dépannage',
-  'help.open_tool': 'Open tool',
+  'help.open_tool': 'Ouvrir l\'outil',
   'help.subtitle': 'Problèmes courants et comment les résoudre.',
   'help.title': 'Aide et dépannage',
   'hero.ai_badge': '☁️ Nécessite une connexion IA',
