@@ -162,6 +162,85 @@ const content = {
       },
     ],
   },
+  de: {
+    title: 'DSGVO-Informationen',
+    updated: 'Letzte Aktualisierung: 25. Juni 2026',
+    sections: [
+      {
+        h: '1. Wer wir als Verantwortlicher sind',
+        p: 'Der Verantwortliche für Ihre personenbezogenen Daten ist Leszek Hofman, Dąbrówka Nowa, Polen (optimapdf.com). Als Anbieter digitaler Dienste verarbeiten wir Daten nur insoweit, als dies zur Bereitstellung von Online-PDF-Werkzeugen erforderlich ist. Bei allen Fragen zum Datenschutz können Sie uns unter folgender E-Mail-Adresse kontaktieren: kontakt@optimapdf.com.',
+      },
+      {
+        h: '2. Welche personenbezogenen Daten wir verarbeiten und zu welchem Zweck',
+        p: 'OptimaPDF ist darauf ausgelegt, die Datenerhebung zu minimieren. Wir verarbeiten ausschließlich:',
+        items: [
+          'IP-Adresse — zur Gewährleistung der Sicherheit und zur Missbrauchsprävention (berechtigtes Interesse, Art. 6 Abs. 1 lit. f DSGVO). IP-Adressen werden in Serverprotokollen für maximal 7 Tage gespeichert.',
+          'Vom Benutzer hochgeladene Dateien — die meisten Werkzeuge verarbeiten Dateien vollständig im Browser (WebAssembly/JavaScript). Diese Dateien werden nicht an den Server gesendet und verlassen niemals Ihr Gerät. Ausgenommen sind Werkzeuge, die externe Bibliotheken erfordern (Komprimierung, OCR, Formatkonvertierungen), bei denen die Datei vorübergehend im RAM des Servers verarbeitet und unmittelbar nach dem Vorgang gelöscht wird — in der Regel innerhalb weniger Sekunden.',
+          'Design- und Spracheinstellungen — werden ausschließlich im localStorage Ihres Browsers gespeichert. Sie werden nicht an den Server gesendet oder mit Dritten geteilt.',
+        ],
+      },
+      {
+        h: '3. Rechtsgrundlage der Verarbeitung',
+        p: 'Wir verarbeiten Ihre Daten auf Grundlage von:',
+        items: [
+          'Art. 6 Abs. 1 lit. b DSGVO (Erforderlichkeit für die Vertragsdurchführung) — Bereitstellung von PDF-Werkzeugen auf Ihren Wunsch.',
+          'Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse) — Gewährleistung der Dienstsicherheit, Missbrauchsprävention und technische Analyse des Websitebetriebs.',
+          'Art. 6 Abs. 1 lit. a DSGVO (Einwilligung) — für KI-Funktionen, die das Senden von Inhalten an eine externe API (OpenRouter) erfordern. Die Nutzung von KI erfordert eine ausdrückliche Einwilligung durch Akzeptanz der Nutzungsbedingungen.',
+        ],
+      },
+      {
+        h: '4. Wie lange wir Daten aufbewahren',
+        p: 'Wir wenden folgende Aufbewahrungsfristen an:',
+        items: [
+          'IP-Adressen in Serverprotokollen: bis zu 7 Tage.',
+          'An clientseitige Werkzeuge gesendete Dateien: werden nicht gespeichert — sie werden aus dem Speicher entfernt, wenn Sie den Browsertab schließen oder die Seite aktualisieren.',
+          'An serverseitige Werkzeuge gesendete Dateien (Komprimierung, OCR, Konvertierungen): unmittelbar nach der Verarbeitung gelöscht (in der Regel innerhalb weniger Sekunden).',
+          'localStorage-Daten: werden gespeichert, bis sie vom Benutzer manuell gelöscht oder der Browsercache geleert wird.',
+        ],
+      },
+      {
+        h: '5. Mit wem wir Daten teilen',
+        p: 'Wir verkaufen, vermieten oder teilen Ihre personenbezogenen Daten nicht mit Dritten. In begrenztem Umfang können Daten verarbeitet werden durch:',
+        items: [
+          'OpenRouter.ai — bei der Nutzung von KI-Funktionen (AI Chat, AI Zusammenfassung, AI Übersetzer). Wir senden ausschließlich den aus dem PDF extrahierten Text, ohne nutzeridentifizierende Daten. OpenRouter entspricht der DSGVO und verfügt über angemessene Schutzmaßnahmen.',
+          'Hosting-Anbieter — unsere Website wird von einem externen Anbieter gehostet, der anonyme Serverprotokolle (IP-Adresse, Browsertyp) für maximal 7 Tage speichern kann. Der Anbieter verfügt über eine ISO-27001-Zertifizierung und erfüllt die Anforderungen der DSGVO.',
+        ],
+      },
+      {
+        h: '6. Ihre Rechte nach der DSGVO',
+        p: 'Gemäß Art. 15–22 DSGVO stehen Ihnen folgende Rechte zu:',
+        items: [
+          'Auskunftsrecht (Art. 15) — Sie können fragen, ob wir Ihre Daten verarbeiten, und Zugang dazu erhalten.',
+          'Recht auf Berichtigung (Art. 16) — Sie können die Korrektur unrichtiger Daten verlangen.',
+          'Recht auf Löschung (Art. 17) — Recht auf Vergessenwerden.',
+          'Recht auf Einschränkung der Verarbeitung (Art. 18).',
+          'Recht auf Datenübertragbarkeit (Art. 20).',
+          'Widerspruchsrecht (Art. 21).',
+          'Recht auf Widerruf der Einwilligung jederzeit — ohne Auswirkung auf die Rechtmäßigkeit der aufgrund der Einwilligung bis zum Widerruf erfolgten Verarbeitung.',
+        ],
+      },
+      {
+        h: '7. Wie Sie Ihre Rechte ausüben',
+        p: 'Um eines der oben genannten Rechte auszuüben, senden Sie eine E-Mail an: kontakt@optimapdf.com. Wir werden innerhalb von 30 Tagen antworten. Wir erheben keine Gebühren für die Erfüllung von Anfragen, es sei denn, sie sind offensichtlich unbegründet oder unverhältnismäßig (Art. 12 Abs. 5 DSGVO).',
+      },
+      {
+        h: '8. Beschwerderecht',
+        p: 'Wenn Sie der Auffassung sind, dass die Verarbeitung Ihrer Daten gegen die DSGVO verstößt, haben Sie das Recht, bei dem Präsidenten des Büros für den Schutz personenbezogener Daten (PUODO), ul. Stawki 2, 00-193 Warschau, Polen, Beschwerde einzulegen.',
+      },
+      {
+        h: '9. Datenübermittlung in Drittländer',
+        p: 'Bei der Nutzung von KI-Funktionen kann der Text von OpenRouter-Servern in den USA verarbeitet werden. OpenRouter nimmt am Data Privacy Framework (DPF) teil, das ein angemessenes Schutzniveau gemäß dem Beschluss der Europäischen Kommission 2023/1795 gewährleistet.',
+      },
+      {
+        h: '10. Cookies und localStorage',
+        p: 'Wir verwenden keine Werbe-, Tracking- oder Analyse-Cookies Dritter. Wir verwenden ausschließlich das localStorage Ihres Browsers, um Ihre Einstellungen (Design, Sprache) zu speichern. Diese Daten werden lokal auf Ihrem Gerät gespeichert und können jederzeit durch Löschen des localStorage Ihres Browsers gelöscht werden.',
+      },
+      {
+        h: '11. Änderungen an diesem DSGVO-Hinweis',
+        p: 'Wir behalten uns das Recht vor, Änderungen an diesen DSGVO-Informationen vorzunehmen. Änderungen werden durch Aktualisierung des Datums oben auf dieser Seite mitgeteilt. Wir empfehlen, diesen Inhalt regelmäßig zu überprüfen.',
+      },
+    ],
+  },
 };
 
 export default function RodoPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
