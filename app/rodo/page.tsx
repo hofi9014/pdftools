@@ -320,6 +320,85 @@ const content = {
       },
     ],
   },
+  pt: {
+    title: 'Informação sobre o RGPD',
+    updated: 'Última atualização: 25 de junho de 2026',
+    sections: [
+      {
+        h: '1. Quem somos como responsável pelo tratamento',
+        p: 'O responsável pelo tratamento dos seus dados pessoais é Leszek Hofman, Dąbrówka Nowa, Polónia (optimapdf.com). Como prestador de serviços digitais, tratamos dados apenas na medida estritamente necessária para disponibilizar ferramentas PDF online. Para todas as questões relativas à proteção de dados, pode contactar-nos em: kontakt@optimapdf.com.',
+      },
+      {
+        h: '2. Que dados pessoais tratamos e para que finalidade',
+        p: 'OptimaPDF foi concebido para minimizar a recolha de dados. Tratamos exclusivamente:',
+        items: [
+          'Endereço IP — para garantir a segurança e prevenir abusos (interesse legítimo, art. 6.º n.º 1 alínea f RGPD). Os endereços IP são armazenados nos registos do servidor por um máximo de 7 dias.',
+          'Ficheiros carregados pelo utilizador — a maioria das ferramentas processa ficheiros integralmente no navegador (WebAssembly/JavaScript). Estes ficheiros não são enviados para o servidor e nunca saem do seu dispositivo. A exceção são ferramentas que requerem bibliotecas externas (compressão, OCR, conversões de formato), em que o ficheiro é processado temporariamente na RAM do servidor e eliminado imediatamente após a operação — normalmente em poucos segundos.',
+          'Preferências de tema e idioma — armazenadas exclusivamente no localStorage do seu navegador. Não são enviadas para o servidor nem partilhadas com terceiros.',
+        ],
+      },
+      {
+        h: '3. Base jurídica do tratamento',
+        p: 'Tratamos os seus dados com base em:',
+        items: [
+          'Art. 6.º n.º 1 alínea b RGPD (necessidade para a execução do contrato) — disponibilizar ferramentas PDF ao seu pedido.',
+          'Art. 6.º n.º 1 alínea f RGPD (interesse legítimo) — garantir a segurança do serviço, prevenir abusos e análise técnica do funcionamento do site.',
+          'Art. 6.º n.º 1 alínea a RGPD (consentimento) — para funções de IA que requerem o envio de conteúdo para uma API externa (OpenRouter). A utilização de IA requer um consentimento explícito mediante a aceitação dos termos.',
+        ],
+      },
+      {
+        h: '4. Quanto tempo conservamos os dados',
+        p: 'Aplicamos os seguintes prazos de conservação:',
+        items: [
+          'Endereços IP nos registos do servidor: até 7 dias.',
+          'Ficheiros enviados para ferramentas do lado do cliente: não são armazenados — são eliminados da memória quando fecha o separador do navegador ou atualiza a página.',
+          'Ficheiros enviados para ferramentas do lado do servidor (compressão, OCR, conversões): eliminados imediatamente após o processamento (normalmente em poucos segundos).',
+          'Dados no localStorage: armazenados até serem eliminados manualmente pelo utilizador ou até a cache do navegador ser limpa.',
+        ],
+      },
+      {
+        h: '5. Com quem partilhamos os dados',
+        p: 'Não vendemos, alugamos nem partilhamos os seus dados pessoais com terceiros. Em medida limitada, os dados podem ser tratados por:',
+        items: [
+          'OpenRouter.ai — ao utilizar funções de IA (AI Chat, AI Summary, AI Translate). Enviamos apenas o texto extraído do PDF, sem dados identificativos do utilizador. O OpenRouter cumpre o RGPD e dispõe de garantias adequadas.',
+          'Fornecedor de hosting — o nosso site é alojado por um fornecedor externo que pode armazenar registos anónimos do servidor (endereço IP, tipo de navegador) por um máximo de 7 dias. O fornecedor possui certificação ISO 27001 e cumpre os requisitos do RGPD.',
+        ],
+      },
+      {
+        h: '6. Os seus direitos ao abrigo do RGPD',
+        p: 'Em conformidade com os arts. 15.º–22.º do RGPD, tem direito a:',
+        items: [
+          'Direito de acesso (art. 15.º) — pode perguntar se tratamos os seus dados e obter acesso aos mesmos.',
+          'Direito de retificação (art. 16.º) — pode solicitar a correção de dados inexatos.',
+          'Direito de eliminação (art. 17.º) — direito ao esquecimento.',
+          'Direito à limitação do tratamento (art. 18.º).',
+          'Direito à portabilidade dos dados (art. 20.º).',
+          'Direito de oposição (art. 21.º).',
+          'Direito a retirar o consentimento a qualquer momento — sem afetar a licitude do tratamento realizado antes da sua retirada.',
+        ],
+      },
+      {
+        h: '7. Como exercer os seus direitos',
+        p: 'Para exercer qualquer um dos direitos acima referidos, envie um e-mail para: kontakt@optimapdf.com. Responderemos num prazo de 30 dias. Não cobramos taxas pelo cumprimento dos pedidos, salvo se forem manifestamente infundados ou excessivos (art. 12.º n.º 5 RGPD).',
+      },
+      {
+        h: '8. Direito de reclamação',
+        p: 'Se considera que o tratamento dos seus dados viola o RGPD, tem o direito de apresentar uma reclamação junto do Presidente do Escritório de Proteção de Dados Pessoais (PUODO), ul. Stawki 2, 00-193 Varsóvia, Polónia.',
+      },
+      {
+        h: '9. Transferências de dados para países terceiros',
+        p: 'Ao utilizar funções de IA, o texto pode ser processado por servidores da OpenRouter localizados nos EUA. Nesses casos, são aplicadas garantias adequadas em conformidade com os requisitos do RGPD, incluindo Cláusulas Contratuais-Tipo quando aplicável, para garantir um nível adequado de proteção de dados.',
+      },
+      {
+        h: '10. Cookies e localStorage',
+        p: 'Não utilizamos cookies publicitários, de rastreamento ou analíticos de terceiros. Utilizamos apenas o localStorage do navegador para recordar as suas preferências (tema, idioma). Estes dados são armazenados localmente no seu dispositivo e podem ser eliminados a qualquer momento ao limpar o localStorage do seu navegador.',
+      },
+      {
+        h: '11. Alterações a este aviso RGPD',
+        p: 'Reservamo-nos o direito de efetuar alterações a esta informação RGPD. Quaisquer alterações serão comunicadas mediante atualização da data no topo desta página. Recomendamos a revisão periódica deste conteúdo.',
+      },
+    ],
+  },
 };
 
 export default function RodoPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
