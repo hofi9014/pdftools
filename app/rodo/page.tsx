@@ -150,7 +150,7 @@ const content = {
       },
       {
         h: '9. Data transfers to third countries',
-        p: 'When using AI features, text may be processed by OpenRouter servers located in the US. OpenRouter participates in the Data Privacy Framework (DPF) program, ensuring an adequate level of data protection in accordance with European Commission Decision 2023/1795.',
+        p: 'When using AI features, text may be processed by OpenRouter servers located in the US. In such cases, appropriate safeguards are applied in accordance with GDPR requirements, including Standard Contractual Clauses where applicable, to ensure an adequate level of data protection.',
       },
       {
         h: '10. Cookies and localStorage',
@@ -229,7 +229,7 @@ const content = {
       },
       {
         h: '9. Datenübermittlung in Drittländer',
-        p: 'Bei der Nutzung von KI-Funktionen kann der Text von OpenRouter-Servern in den USA verarbeitet werden. OpenRouter nimmt am Data Privacy Framework (DPF) teil, das ein angemessenes Schutzniveau gemäß dem Beschluss der Europäischen Kommission 2023/1795 gewährleistet.',
+        p: 'Bei der Nutzung von KI-Funktionen kann der Text von OpenRouter-Servern in den USA verarbeitet werden. In solchen Fällen werden entsprechende Garantien gemäß den Anforderungen der DSGVO angewandt, einschließlich Standardvertragsklauseln, wo anwendbar, um ein angemessenes Schutzniveau der Daten zu gewährleisten.',
       },
       {
         h: '10. Cookies und localStorage',
@@ -308,7 +308,7 @@ const content = {
       },
       {
         h: '9. Transferencias de datos a terceros países',
-        p: 'Al utilizar funciones de IA, el texto puede ser procesado por servidores de OpenRouter ubicados en EE. UU. OpenRouter participa en el programa Data Privacy Framework (DPF), que garantiza un nivel adecuado de protección de datos de conformidad con la Decisión de la Comisión Europea 2023/1795.',
+        p: 'Al utilizar funciones de IA, el texto puede ser procesado por servidores de OpenRouter ubicados en EE. UU. En tales casos, se aplican garantías adecuadas de conformidad con los requisitos del RGPD, incluyendo Cláusulas Contractuales Estándar cuando corresponda, para garantizar un nivel adecuado de protección de datos.',
       },
       {
         h: '10. Cookies y localStorage',
