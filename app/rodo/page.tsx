@@ -399,6 +399,85 @@ const content = {
       },
     ],
   },
+  no: {
+    title: 'Informasjon om personvernforordningen (GDPR)',
+    updated: 'Sist oppdatert: 25. juni 2026',
+    sections: [
+      {
+        h: '1. Hvem vi er som behandlingsansvarlig',
+        p: 'Behandlingsansvarlig for dine personopplysninger er Leszek Hofman, Dąbrówka Nowa, Polen (optimapdf.com). Som digital tjenesteleverandør behandler vi data kun i den utstrekning det er nødvendig for å tilby PDF-verktøy på nett. Ved alle spørsmål om databeskyttelse kan du kontakte oss på: kontakt@optimapdf.com.',
+      },
+      {
+        h: '2. Hvilke personopplysninger vi behandler og til hvilket formål',
+        p: 'OptimaPDF er designet for å minimere innsamling av data. Vi behandler utelukkende:',
+        items: [
+          'IP-adresse — for å sikre beskyttelse og forhindre misbruk (berettiget interesse, art. 6 nr. 1 bokstav f GDPR). IP-adresser lagres i serverlogger i maksimalt 7 dager.',
+          'Filer lastet opp av brukeren — de fleste verktøyene behandler filer fullstendig i nettleseren (WebAssembly/JavaScript). Disse filene sendes ikke til serveren og forlater aldri enheten din. Unntak er verktøy som krever eksterne bibliotek (komprimering, OCR, formatkonverteringer), der filen midlertidig behandles i serverens RAM og slettes umiddelbart etter operasjonen — vanligvis innen sekunder.',
+          'Temapreferanser og språkpreferanser — lagres utelukkende i nettleserens local storage. De sendes ikke til serveren eller deles med tredjeparter.',
+        ],
+      },
+      {
+        h: '3. Rettslig grunnlag for behandlingen',
+        p: 'Vi behandler dine data basert på:',
+        items: [
+          'Art. 6 nr. 1 bokstav b GDPR (nødvendighet for oppfyllelse av kontrakt) — tilby PDF-verktøy etter ditt forespørsel.',
+          'Art. 6 nr. 1 bokstav f GDPR (berettiget interesse) — sikre tjenestesikkerhet, forhindre misbruk og teknisk analyse av nettstedets funksjon.',
+          'Art. 6 nr. 1 bokstav a GDPR (samtykke) — for AI-funksjoner som krever sending av innhold til et eksternt API (OpenRouter). Bruk av AI krever eksplisitt samtykke ved å akseptere vilkårene.',
+        ],
+      },
+      {
+        h: '4. Hvor lenge vi oppbevarer data',
+        p: 'Vi benytter følgende oppbevaringsperioder:',
+        items: [
+          'IP-adresser i serverlogger: opptil 7 dager.',
+          'Filer sendt til klientbaserte verktøy: lagres ikke — de fjernes fra minnet når du lukker nettleserfanen eller oppdaterer siden.',
+          'Filer sendt til serverbaserte verktøy (komprimering, OCR, konverteringer): slettes umiddelbart etter behandling (vanligvis innen sekunder).',
+          'Local storage-data: lagres til de slettes manuelt av brukeren, eller til nettleserens buffer tømmes.',
+        ],
+      },
+      {
+        h: '5. Hvem vi deler data med',
+        p: 'Vi selger, leier ut eller deler ikke dine personopplysninger med tredjeparter. I begrenset omfang kan data bli behandlet av:',
+        items: [
+          'OpenRouter.ai — ved bruk av AI-funksjoner (AI Chat, AI Summary, AI Translate). Vi sender kun tekst utvunnet fra PDF-en, uten data som identifiserer brukeren. OpenRouter overholder GDPR og har tilstrekkelige garantier.',
+          'Vertstjenesteleverandør — nettstedet vårt driftes av en ekstern leverandør som kan lagre anonyme serverlogger (IP-adresse, nettlesertype) i maksimalt 7 dager. Leverandøren har ISO 27001-sertifisering og oppfyller GDPR-kravene.',
+        ],
+      },
+      {
+        h: '6. Dine rettigheter i henhold til GDPR',
+        p: 'I henhold til artikkel 15–22 i GDPR har du:',
+        items: [
+          'Innsynsrett (art. 15) — du kan spørre om vi behandler dine data og få tilgang til dem.',
+          'Rettingsrett (art. 16) — du kan be om korrigering av uriktige data.',
+          'Retten til sletting (art. 17) — retten til å bli glemt.',
+          'Retten til begrensning av behandling (art. 18).',
+          'Retten til dataportabilitet (art. 20).',
+          'Retten til å protestere (art. 21).',
+          'Retten til å trekke tilbake samtykke når som helst — uten å påvirke lovligheten av behandlingen som ble foretatt før tilbaketrekkelsen.',
+        ],
+      },
+      {
+        h: '7. Hvordan utøve dine rettigheter',
+        p: 'For å utøve noen av rettighetene ovenfor, send en e-post til: kontakt@optimapdf.com. Vi vil svare innen 30 dager. Vi krever ingen gebyr for å oppfylle forespørsler med mindre de er åpenbart grunnløse eller overdrevne (art. 12 nr. 5 GDPR).',
+      },
+      {
+        h: '8. Retten til å klage',
+        p: 'Dersom du mener at vår behandling av dine personopplysninger strider mot GDPR, har du rett til å klage til det polske datatilsynet (PUODO — Urząd Ochrony Danych Osobowych), ul. Stawki 2, 00-193 Warszawa, Polen.',
+      },
+      {
+        h: '9. Overføring av data til tredjeland',
+        p: 'Ved bruk av AI-funksjoner kan tekst bli behandlet av OpenRouter-servere lokalisert i USA. I slike tilfeller brukes tilstrekkelige garantier i samsvar med GDPR-kravene, herunder standardkontraktsklausuler der det er aktuelt, for å sikre et tilstrekkelig nivå av databeskyttelse.',
+      },
+      {
+        h: '10. Informasjonskapsler og local storage',
+        p: 'Vi bruker ikke annonserings-, sporings- eller analytiske informasjonskapsler fra tredjeparter. Vi benytter utelukkende nettleserens local storage til å huske dine preferanser (tema, språk). Disse dataene lagres lokalt på enheten din og kan slettes når som helst ved å tømme nettleserens local storage.',
+      },
+      {
+        h: '11. Endringer i denne personvernerklæringen',
+        p: 'Vi forbeholder oss retten til å gjøre endringer i denne GDPR-informasjonen. Eventuelle endringer vil bli kunngjort ved å oppdatere datoen øverst på denne siden. Vi anbefaler å gjennomgå innholdet jevnlig.',
+      },
+    ],
+  },
 };
 
 export default function RodoPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
