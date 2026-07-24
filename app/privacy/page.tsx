@@ -564,6 +564,118 @@ const content = {
       },
     ],
   },
+  no: {
+    title: 'Personvernerklæring',
+    updated: 'Sist oppdatert: 30. juni 2026',
+    sections: [
+      {
+        h: '1. Generelle bestemmelser',
+        p: 'Denne personvernerklæringen fastsetter prinsippene for behandling og beskyttelse av personopplysninger for brukere av OptimaPDF-nettstedet (optimapdf.com). OptimaPDF legger størst vekt på personvern og datasikkerhet. Alle verktøy er utviklet i henhold til prinsippet om personvern som utgangspunkt — som standard behandles filene dine lokalt i nettleseren.',
+      },
+      {
+        h: '2. Behandlingsansvarlig',
+        p: 'Den behandlingsansvarlige for personopplysninger er Leszek Hofman, Dąbrówka Nowa, Polen. Kontakt: kontakt@optimapdf.com. Det er ikke utnevnt en personvernombud — for alle spørsmål knyttet til beskyttelse av personopplysninger, kontakt oss direkte via e-postadressen ovenfor.',
+      },
+      {
+        h: '3. Omfang og formål med datainnsamling',
+        sub: [
+          {
+            h: '3.1 Tekniske data',
+            p: 'Når du bruker nettstedet, samles følgende tekniske data automatisk inn: IP-adresse, nettlesertype og -versjon, operativsystem, skjermoppløsning, omtrentlig geografisk plassering (landnivå), besøkstid og tid brukt på siden. Disse dataene anonymiseres og brukes utelukkende til statistiske formål og sikkerhetssikring.',
+          },
+          {
+            h: '3.2 Filer lastet opp av brukeren',
+            p: 'PDF-filer som lastes opp til verktøyene, behandles på følgende måte:',
+            items: [
+              'Klientsideverktøy (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf) — filen behandles fullstendig i nettleseren ved bruk av WebAssembly og JavaScript. Filen forlater aldri enheten din.',
+              'Serversideverktøy (compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf, url-to-pdf) — filen sendes midlertidig til serveren, behandles utelukkende i RAM og slettes umiddelbart etter operasjonen. Maksimal lagringstid: noen få sekunder.',
+              'AI-funksjoner (AI Chat, AI Summary, AI Translate) — tekst utvunnet fra PDFen sendes til den eksterne OpenRouter APIen. Vi sender ikke brukeridentifiserende data. Innholdet lagres ikke eller brukes til modelltrening.',
+            ],
+          },
+          {
+            h: '3.3 Brukerinnstillinger',
+            p: 'Informasjon om det valgte temaet (mørk/lys) og ditt språkval lagres i nettleserens localStorage. Det sendes ikke til serveren eller deles med tredjeparter.',
+          },
+        ],
+      },
+      {
+        h: '4. Rettslig grunnlag for behandling',
+        items: [
+          'Art. 6(1)(b) GDPR — oppfyllelse av en kontrakt om elektronisk tjenesteytelse (stilling av PDF-verktøy).',
+          'Art. 6(1)(f) GDPR — berettiget interesse for den behandlingsansvarlige (sikkerhetssikring, forebygging av misbruk, teknisk analyse).',
+          'Art. 6(1)(a) GDPR — brukerens samtykke (for AI-funksjoner). Samtykke kan trekkes tilbake når som helst.',
+        ],
+      },
+      {
+        h: '5. Datamottakere',
+        p: 'Data kan overføres til følgende kategorier av mottakere:',
+        items: [
+          'Google LLC (Google Analytics) — anonymisert trafikkstatistikk, basert på ditt samtykke.',
+          'Behandlere som opptrer på våre vegne (hosting, OpenRouter.ai) — basert på databehandlingsavtaler.',
+          'Myndigheter med hjemmel i lovbestemmelser — kun i tilfeller fastsatt i lov.',
+        ],
+      },
+      {
+        h: '6. Dataoverføring utenfor EØS',
+        p: 'Ved bruk av AI-funksjoner kan tekst behandles på OpenRouter-servere i USA. I slike tilfeller treffes passende tiltak i samsvar med GDPR-krav, herunder standardkontraktsklausuler der det er aktuelt, for å sikre et tilstrekkelig beskyttelsesnivå for dataene. I andre tilfeller overføres ikke data til tredjestater.',
+      },
+      {
+        h: '7. Lagringstid for data',
+        p: 'Data lagres i følgende perioder:',
+        items: [
+          'Serverlogger (IP-adresse, User-Agent): opptil 7 dager.',
+          'Filer lastet opp til klientsideverktøy: lagres ikke — fjernes fra minnet ved oppdatering av siden.',
+          'Filer lastet opp til serversideverktøy: slettes umiddelbart etter behandling.',
+          'localStorage-data: inntil de slettes manuelt av brukeren.',
+        ],
+      },
+      {
+        h: '8. Den registrertes rettigheter',
+        p: 'Du har rett til:',
+        items: [
+          'Innsyn i dine data (art. 15 GDPR).',
+          'Retting av data (art. 16 GDPR).',
+          'Sletting av data (art. 17 GDPR) — retten til å bli glemt.',
+          'Begrensning av behandling (art. 18 GDPR).',
+          'Dataportabilitet (art. 20 GDPR).',
+          'Innsigelse mot behandling (art. 21 GDPR).',
+          'Trekke tilbake samtykke når som helst uten at det berører lovligheten av behandlingen basert på samtykke før tilbakekallingen.',
+          'Klage til Datatilsynets president (PUODO — Urząd Ochrony Danych Osobowych, ul. Stawki 2, 00-193 Warszawa, Polen).',
+        ],
+      },
+      {
+        h: '9. Datasikkerhet',
+        p: 'Vi bruker følgende sikkerhetstiltak:',
+        items: [
+          'TLS/SSL-kryptering — all kommunikasjon mellom nettleser og server er kryptert.',
+          'Content Security Policy (CSP) — begrenser muligheten til å kjøre upålitelige skripter.',
+          'Behandling utelukkende i RAM — filer skrives ikke til serverens disk.',
+          'Automatisk sletting — filer slettes umiddelbart etter at operasjonen er fullført.',
+          'Filstørrelsesgrense — maksimalt 100 MB.',
+          'Filtyperverifisering — vi kontrollerer filsignaturen (magic bytes) før behandling.',
+          'Ingen pålogging kreves — vi krever ikke registrering eller pålogging.',
+        ],
+      },
+      {
+        h: '10. Google Analytics og samtykke til analyse',
+        p: 'Dette nettstedet bruker Google Analytics (Google LLC, USA) for anonymisert trafikanalyse. Google Analytics samler inn aggregerte statistiske data som: antall besøk, tid brukt på siden, nettlesertype, omtrentlig plassering (landnivå), trafikkilde. Dataene anonymiseres (anonymize_ip: true).',
+        items: [
+          'Ved første besøk vises et samtykkebanner — Google Analytics aktiveres først etter klikk på «Godta».',
+          'Du kan trekke tilbake samtykke når som helst ved å fjerne oppføringen «cookie-consent» fra nettleserens localStorage.',
+          'Google Analytics brukes ikke til målrettet annonsering eller atferdsbasert profilering.',
+          'Data i localStorage (tema, språk, samtykkeinnstillinger) er fullt kontrollert av brukeren og kan slettes når som helst.',
+        ],
+      },
+      {
+        h: '11. AI-funksjoner og OpenRouter',
+        p: 'Bruk av AI-funksjoner (AI Chat, AI Summary, AI Translate) krever din egen OpenRouter API-nøkkel, som lagres utelukkende i nettleserens localStorage og ikke deles med nettstedets administrator. API-nøkkelen brukes utelukkende til kommunikasjon med OpenRouter APIen. Vi har ikke tilgang til din API-nøkkel eller innholdet i forespørsler sendt til OpenRouter.',
+      },
+      {
+        h: '12. Sluttbestemmelser',
+        p: 'Vi forbeholder oss retten til å gjøre endringer i denne personvernerklæringen. Endringer vil bli kunngjort ved å oppdatere datoen øverst på denne siden. Spørsmål om personvernerklæringen kan rettes til: kontakt@optimapdf.com.',
+      },
+    ],
+  },
 };
 
 export default function PrivacyPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
