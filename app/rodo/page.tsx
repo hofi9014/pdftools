@@ -1110,6 +1110,85 @@ const content = {
       },
     ],
   },
+  tr: {
+    title: 'GDPR Bilgilendirmesi',
+    updated: 'Son güncelleme: 25 Haziran 2026',
+    sections: [
+      {
+        h: '1. Veri sorumlusu olarak biz kimiz',
+        p: 'Kişisel verilerinizin sorumlusu Leszek Hofman, Dąbrówka Nowa, Polonya (optimapdf.com)\'dur. Dijital hizmet sağlayıcı olarak, verileri yalnızca çevrimiçi PDF araçlarını sağlamak için gerekli ölçüde işliyoruz. Tüm veri koruma konularında bize e-posta yoluyla ulaşabilirsiniz: kontakt@optimapdf.com.',
+      },
+      {
+        h: '2. Hangi kişisel verileri işliyoruz ve hangi amaçla',
+        p: 'OptimaPDF, veri toplamayı en aza indirecek şekilde tasarlanmıştır. Yalnızca şunları işliyoruz:',
+        items: [
+          'IP adresi — güvenliği sağlamak ve istismarı önlemek için (meşru menfaat, GDPR Madde 6/1/f). IP adresleri sunucu günlüklerinde en fazla 7 gün saklanır.',
+          'Kullanıcı tarafından yüklenen dosyalar — çoğu araç dosyaları tarayıcıda tamamen işler (WebAssembly/JavaScript). Bu dosyalar sunucuya gönderilmez ve cihazınızdan asla çıkmaz. Dış kütüphanelere ihtiyaç duyan araçlar (sıkıştırma, OCR, biçim dönüştürme) istisnadır; bu araçlarda dosya sunucunun RAM\'inde geçici olarak işlenir ve işlem tamamlandıktan hemen sonra silinir — genellikle birkaç saniye içinde.',
+          'Tema ve dil tercihleri — yalnızca tarayıcınızın localStorage\'ında saklanır. Sunucuya gönderilmez veya üçüncü taraflarla paylaşılmaz.',
+        ],
+      },
+      {
+        h: '3. İşlemenin hukuki dayanağı',
+        p: 'Verilerinizi şu dayanaklara göre işliyoruz:',
+        items: [
+          'GDPR Madde 6/1/b (sözleşmenin ifası için zorunluluk) — talebiniz üzerine PDF araçlarını sağlamak.',
+          'GDPR Madde 6/1/f (meşru menfaat) — hizmet güvenliğini sağlamak, istismarı önlemek ve web sitesinin teknik analizini yapmak.',
+          'GDPR Madde 6/1/a (açık rıza) — harici bir API\'ye (OpenRouter) içerik gönderilmesini gerektiren yapay zeka özellikleri için. Yapay zeka kullanım açık rıza gerektirir ve koşulların kabulü ile onaylanır.',
+        ],
+      },
+      {
+        h: '4. Verileri ne kadar süre saklıyoruz',
+        p: 'Aşağıdaki saklama sürelerini uyguluyoruz:',
+        items: [
+          'Sunucu günlüklerindeki IP adresleri: en fazla 7 gün.',
+          'İstemci tarafı araçlara gönderilen dosyalar: saklanmaz — tarayıcı sekmesini kapatmanız veya sayfayı yenilemenizle birlikte bellekten silinir.',
+          'Sunucu tarafı araçlara gönderilen dosyalar (sıkıştırma, OCR, dönüştürme): işleme hemen ardından silinir (genellikle birkaç saniye içinde).',
+          'localStorage verileri: kullanıcı tarafından manuel olarak silinene veya tarayıcı önbelleği temizlenene kadar saklanır.',
+        ],
+      },
+      {
+        h: '5. Verileri kiminle paylaşıyoruz',
+        p: 'Kişisel verilerinizi satmıyor, kiralamıyor veya üçüncü taraflarla paylaşmıyoruz. Kapsamlı olarak veriler aşağıdakiler tarafından işlenebilir:',
+        items: [
+          'OpenRouter.ai — yapay zeka özellikleri (AI Chat, AI Summary, AI Translate) kullanıldığında. Yalnızca PDF\'den çıkarılan metni, kullanıcı tanımlayıcı veri olmadan gönderiyoruz. OpenRouter GDPR\'a uygun güvenlik önlemlerine sahiptir.',
+          'Hosting sağlayıcısı — web sitemiz, sunucu günlüklerini (IP adresi, tarayıcı türü) en fazla 7 gün saklayabilen harici bir sağlayıcı tarafından barındırılmaktadır. Sağlayıcı ISO 27001 sertifikasına sahip olup GDPR gerekliliklerini karşılamaktadır.',
+        ],
+      },
+      {
+        h: '6. GDPR kapsamında sahip olduğunuz haklar',
+        p: 'GDPR\'nın 15–22. maddeleri kapsamında şunlara sahipsiniz:',
+        items: [
+          'Bilgi edinme hakkı (Madde 15) — verilerinizi işleyip işlemediğimizi sorabilir ve bunlara erişebilirsiniz.',
+          'Düzeltme hakkı (Madde 16) — hatalı verilerin düzeltilmesini talep edebilirsiniz.',
+          'Silme hakkı (Madde 17) — unutulma hakkı.',
+          'İşleme kısıtlama hakkı (Madde 18).',
+          'Veri taşınabilirliği hakkı (Madde 20).',
+          'İtiraz hakkı (Madde 21).',
+          'Rızanızı her zaman geri çekme hakkı — rıza geri çekilmeden önce işlemenin hukukiliğini etkilemez.',
+        ],
+      },
+      {
+        h: '7. Haklarınızı nasıl kullanabilirsiniz',
+        p: 'Yukarıdaki haklardan herhangi birini kullanmak için bize e-posta gönderin: kontakt@optimapdf.com. 30 gün içinde yanıt vereceğiz. Talepleri yerine getirmek için ücret almıyoruz, ancak taleplerin açıkça temelsiz veya aşırı olması durumunda ücret talep etme hakkımız saklıdır (GDPR Madde 12/5).',
+      },
+      {
+        h: '8. Şikayette bulunma hakkı',
+        p: 'Verilerinizin işlenmesinin GDPR\'a aykırı olduğunu düşünüyorsanız, Polonya Kişisel Verileri Koruma Kurumu Başkanı\'na (PUODO — Urząd Ochrony Danych Osobowych, ul. Stawki 2, 00-193 Varşova, Polonya) şikayette bulunma hakkınız vardır.',
+      },
+      {
+        h: '9. Üçüncü ülkelerden aktarımlar',
+        p: 'Yapay zeka özelliklerini kullandığınızda, metin ABD\'deki OpenRouter sunucuları tarafından işlenebilir. Bu durumlarda, verilerin yeterli düzeyde korunmasını sağlamak üzere GDPR gerekliliklerine uygun olarak, uygun olduğunda Standart Sözleşme Hükümleri dahil uygun garantiler uygulanır.',
+      },
+      {
+        h: '10. Çerezler ve yerel depolama',
+        p: 'Reklam, izleme veya üçüncü taraf analiz çerezleri kullanmıyoruz. Tercihlerinizi hatırlamak için yalnızca tarayıcınızın localStorage\'ını kullanıyoruz. Bu veriler cihazınızda yerel olarak saklanır ve tarayıcınızın yerel depolamasını temizleyerek istediğiniz zaman silebilirsiniz.',
+      },
+      {
+        h: '11. Bu GDPR bildirimindeki değişiklikler',
+        p: 'Bu GDPR bilgilendirmesinde değişiklik yapma hakkımızı saklı tutuyoruz. Herhangi bir değişiklik bu sayfanın üst kısmındaki tarihin güncellenmesiyle duyurulacaktır. Bu içeriği düzenli olarak gözden geçirmenizi tavsiye ederiz.',
+      },
+    ],
+  },
 };
 
 export default function RodoPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
