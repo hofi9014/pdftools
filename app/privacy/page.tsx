@@ -57,7 +57,7 @@ const content = {
       },
       {
         h: '6. Przekazywanie danych poza EOG',
-        p: 'W przypadku korzystania z funkcji AI, tekst może być przetwarzany na serwerach OpenRouter w USA. OpenRouter uczestniczy w Data Privacy Framework (DPF), co zapewnia odpowiedni stopień ochrony danych (decyzja Komisji Europejskiej 2023/1795). W pozostałych przypadkach dane nie są przekazywane do państw trzecich.',
+        p: 'W przypadku korzystania z funkcji AI, tekst może być przetwarzany na serwerach OpenRouter w USA. W takich przypadkach stosuje się odpowiednie zabezpieczenia zgodnie z wymogami RODO, w tym w stosownych przypadkach Standardowe Klauzule Umowne, aby zapewnić odpowiedni poziom ochrony danych. W pozostałych przypadkach dane nie są przekazywane do państw trzecich.',
       },
       {
         h: '7. Okres przechowywania danych',
@@ -169,7 +169,7 @@ const content = {
       },
       {
         h: '6. Data transfers outside the EEA',
-        p: 'When using AI features, text may be processed on OpenRouter servers in the US. OpenRouter participates in the Data Privacy Framework (DPF), ensuring an adequate level of data protection (European Commission Decision 2023/1795). In other cases, data is not transferred to third countries.',
+        p: 'When using AI features, text may be processed on OpenRouter servers in the US. In such cases, appropriate safeguards are applied in accordance with GDPR requirements, including Standard Contractual Clauses where applicable, to ensure an adequate level of data protection. In other cases, data is not transferred to third countries.',
       },
       {
         h: '7. Data retention period',
