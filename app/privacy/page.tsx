@@ -34,7 +34,7 @@ const content = {
           },
           {
             h: '3.3 Preferencje użytkownika',
-            p: 'Informacje o wybranym motywie (ciemny/jasny) i języku (polski/angielski) są przechowywane w localStorage przeglądarki. Nie są one wysyłane na serwer ani udostępniane stronom trzecim.',
+            p: 'Informacje o wybranym motywie (ciemny/jasny) i preferowanym języku są przechowywane w localStorage przeglądarki. Nie są one wysyłane na serwer ani udostępniane stronom trzecim.',
           },
         ],
       },
@@ -146,7 +146,7 @@ const content = {
           },
           {
             h: '3.3 User preferences',
-            p: 'Information about the selected theme (dark/light) and language (Polish/English) is stored in the browser\'s localStorage. It is not sent to the server or shared with third parties.',
+            p: 'Information about the selected theme (dark/light) and your language preference is stored in the browser\'s localStorage. It is not sent to the server or shared with third parties.',
           },
         ],
       },
@@ -225,6 +225,118 @@ const content = {
       {
         h: '12. Final provisions',
         p: 'We reserve the right to make changes to this Privacy Policy. Changes will be communicated by updating the date at the top of this page. Any questions regarding the privacy policy should be directed to: kontakt@optimapdf.com.',
+      },
+    ],
+  },
+  de: {
+    title: 'Datenschutzerklärung',
+    updated: 'Letzte Aktualisierung: 30. Juni 2026',
+    sections: [
+      {
+        h: '1. Allgemeine Bestimmungen',
+        p: 'Diese Datenschutzerklärung legt die Grundsätze für die Verarbeitung und den Schutz personenbezogener Daten der Nutzer der OptimaPDF-Website (optimapdf.com) fest. OptimaPDF legt größten Wert auf den Schutz der Privatsphäre und die Datensicherheit. Alle Werkzeuge wurden nach dem Prinzip Privacy by Design entwickelt — standardmäßig werden Ihre Dateien lokal in Ihrem Browser verarbeitet.',
+      },
+      {
+        h: '2. Verantwortlicher',
+        p: 'Verantwortlicher für die Verarbeitung personenbezogener Daten ist Leszek Hofman, Dąbrówka Nowa, Polen. Kontakt: kontakt@optimapdf.com. Es wurde kein Datenschutzbeauftragter benannt — bei allen Fragen zum Schutz personenbezogener Daten wenden Sie sich direkt an die oben genannte E-Mail-Adresse.',
+      },
+      {
+        h: '3. Umfang und Zwecke der Datenerhebung',
+        sub: [
+          {
+            h: '3.1 Technische Daten',
+            p: 'Bei Nutzung der Website werden automatisch folgende technische Daten erhoben: IP-Adresse, Browsertyp und -version, Betriebssystem, Bildschirmaufösung, ungefähre geografische Standortbestimmung (Länderebene), Besuchszeit und Verweildauer auf der Seite. Diese Daten werden anonymisiert und ausschließlich zu statistischen Zwecken und zur Gewährleistung der Sicherheit verwendet.',
+          },
+          {
+            h: '3.2 Vom Benutzer hochgeladene Dateien',
+            p: 'PDF-Dateien, die in die Werkzeuge hochgeladen werden, werden wie folgt verarbeitet:',
+            items: [
+              'Clientseitige Werkzeuge (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf) — die Datei wird vollständig im Browser mit WebAssembly und JavaScript verarbeitet. Die Datei verlässt niemals Ihr Gerät.',
+              'Serverseitige Werkzeuge (compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf, url-to-pdf) — die Datei wird vorübergehend an den Server gesendet, ausschließlich im RAM verarbeitet und unmittelbar nach dem Vorgang gelöscht. Maximale Speicherzeit: wenige Sekunden.',
+              'KI-Funktionen (AI Chat, AI Summary, AI Translate) — der aus dem PDF extrahierte Text wird an die externe OpenRouter-API gesendet. Wir senden keine nutzeridentifizierenden Daten. Der Inhalt wird nicht gespeichert oder zum Training von Modellen verwendet.',
+            ],
+          },
+          {
+            h: '3.3 Benutzereinstellungen',
+            p: 'Informationen über das ausgewählte Design (dunkel/hell) und Ihre Spracheinstellung werden im localStorage Ihres Browsers gespeichert. Sie werden nicht an den Server gesendet oder mit Dritten geteilt.',
+          },
+        ],
+      },
+      {
+        h: '4. Rechtsgrundlage der Verarbeitung',
+        items: [
+          'Art. 6 Abs. 1 lit. b DSGVO — Durchführung eines Vertrags über elektronische Dienstleistungsbereitstellung (Bereitstellung von PDF-Werkzeugen).',
+          'Art. 6 Abs. 1 lit. f DSGVO — berechtigtes Interesse des Verantwortlichen (Gewährleistung der Sicherheit, Missbrauchsprävention, technische Analyse).',
+          'Art. 6 Abs. 1 lit. a DSGVO — Einwilligung des Nutzers (bei KI-Funktionen). Die Einwilligung kann jederzeit widerrufen werden.',
+        ],
+      },
+      {
+        h: '5. Empfänger der Daten',
+        p: 'Die Daten können folgenden Kategorien von Empfängern übermittelt werden:',
+        items: [
+          'Google LLC (Google Analytics) — anonymisierte Zugriffsstatistiken, auf Grundlage Ihrer Einwilligung.',
+          'Auftragsverarbeiter (Hosting, OpenRouter.ai) — auf Grundlage von Auftragsverarbeitungsverträgen.',
+          'Behörden auf Grundlage gesetzlicher Bestimmungen — ausschließlich in gesetzlich vorgesehenen Fällen.',
+        ],
+      },
+      {
+        h: '6. Datenübermittlung außerhalb des EWR',
+        p: 'Bei Nutzung von KI-Funktionen kann der Text auf OpenRouter-Servern in den USA verarbeitet werden. In solchen Fällen werden zum Schutz eines angemessenen Datenschutzniveaus Standardvertragsklauseln gemäß den Anforderungen der DSGVO vereinbart. In den übrigen Fällen werden keine Daten in Drittländer übermittelt.',
+      },
+      {
+        h: '7. Speicherdauer der Daten',
+        p: 'Die Daten werden für folgende Zeiträume gespeichert:',
+        items: [
+          'Serverprotokolle (IP-Adresse, User-Agent): bis zu 7 Tage.',
+          'An clientseitige Werkzeuge hochgeladene Dateien: werden nicht gespeichert — werden beim Aktualisieren der Seite aus dem Speicher entfernt.',
+          'An serverseitige Werkzeuge hochgeladene Dateien: werden unmittelbar nach der Verarbeitung gelöscht.',
+          'localStorage-Daten: bis zur manuellen Löschung durch den Benutzer.',
+        ],
+      },
+      {
+        h: '8. Rechte der betroffenen Person',
+        p: 'Sie haben das Recht auf:',
+        items: [
+          'Auskunft über Ihre Daten (Art. 15 DSGVO).',
+          'Berichtigung der Daten (Art. 16 DSGVO).',
+          'Löschung der Daten (Art. 17 DSGVO) — Recht auf Vergessenwerden.',
+          'Einschränkung der Verarbeitung (Art. 18 DSGVO).',
+          'Datenübertragbarkeit (Art. 20 DSGVO).',
+          'Widerspruch gegen die Verarbeitung (Art. 21 DSGVO).',
+          'Widerruf der Einwilligung jederzeit, ohne dass die Rechtmäßigkeit der aufgrund der Einwilligung bis zum Widerruf erfolgten Verarbeitung berührt wird.',
+          'Beschwerde bei dem Präsidenten des Büros für den Schutz personenbezogener Daten (PUODO), ul. Stawki 2, 00-193 Warschau, Polen.',
+        ],
+      },
+      {
+        h: '9. Datensicherheit',
+        p: 'Wir setzen folgende Sicherheitsmaßnahmen ein:',
+        items: [
+          'TLS/SSL-Verschlüsselung — die gesamte Kommunikation zwischen Browser und Server ist verschlüsselt.',
+          'Content Security Policy (CSP) — schränkt die Möglichkeit der Ausführung nicht vertrauenswürdiger Skripte ein.',
+          'Ausschließlich RAM-Verarbeitung — Dateien werden nicht auf die Festplatte des Servers geschrieben.',
+          'Automatische Löschung — Dateien werden unmittelbar nach Abschluss des Vorgangs gelöscht.',
+          'Dateigrößenbeschränkung — maximal 100 MB.',
+          'Dateitypüberprüfung — wir prüfen die Dateisignatur (Magic Bytes) vor der Verarbeitung.',
+          'Keine Anmeldung erforderlich — wir erfordern keine Registrierung oder Anmeldung.',
+        ],
+      },
+      {
+        h: '10. Google Analytics und Einwilligung in die Analyse',
+        p: 'Diese Website nutzt Google Analytics (Google LLC, USA) zur anonymisierten Zugriffsanalyse. Google Analytics erfasst aggregierte statistische Daten wie: Besuchsanzahl, Verweildauer auf der Seite, Browsertyp, ungefähre Standortbestimmung (Länderebene), Zugriffsquelle. Die Daten werden anonymisiert (anonymize_ip: true).',
+        items: [
+          'Beim ersten Besuch wird ein Einwilligungsbanner angezeigt — Google Analytics wird erst nach Klick auf „Akzeptieren" aktiviert.',
+          'Sie können die Einwilligung jederzeit widerrufen, indem Sie den Eintrag „cookie-consent" aus dem localStorage Ihres Browsers entfernen.',
+          'Google Analytics wird nicht für werbliches Targeting oder verhaltensbasiertes Profiling verwendet.',
+          'Daten im localStorage (Design, Sprache, Einwilligungseinstellungen) werden vollständig vom Benutzer kontrolliert und können jederzeit gelöscht werden.',
+        ],
+      },
+      {
+        h: '11. KI-Funktionen und OpenRouter',
+        p: 'Die Nutzung von KI-Funktionen (AI Chat, AI Summary, AI Translate) erfordert einen eigenen OpenRouter-API-Schlüssel, der ausschließlich im localStorage Ihres Browsers gespeichert wird und nicht dem Websitebetreiber zur Verfügung gestellt wird. Der API-Schlüssel wird ausschließlich zur Kommunikation mit der OpenRouter-API verwendet. Wir haben keinen Zugang zu Ihrem API-Schlüssel oder zu den Inhalten der Anfragen, die an OpenRouter gesendet werden.',
+      },
+      {
+        h: '12. Schlussbestimmungen',
+        p: 'Wir behalten uns das Recht vor, Änderungen an dieser Datenschutzerklärung vorzunehmen. Änderungen werden durch Aktualisierung des Datums oben auf dieser Seite mitgeteilt. Bei Fragen zur Datenschutzerklärung wenden Sie sich bitte an: kontakt@optimapdf.com.',
       },
     ],
   },
