@@ -873,6 +873,85 @@ const content = {
       },
     ],
   },
+  is: {
+    title: 'Upplýsingar um GDPR',
+    updated: 'Síðast uppfært: 25. júní 2026',
+    sections: [
+      {
+        h: '1. Hver við erum sem ábyrgðaraðili',
+        p: 'Ábyrgðaraðili persónuupplýsinga þinna er Leszek Hofman, Dąbrówka Nowa, Pólland (optimapdf.com). Sem veitandi stafrænnar þjónustu meðhöndlum við gögn aðeins að því marki sem þörf er til að veita PDF-verkfæri á netinu. Varðandi öll persónuverndarmálefni getur þú haft samband við okkur á: kontakt@optimapdf.com.',
+      },
+      {
+        h: '2. Hverjar persónuupplýsingar við meðhöndlum og í hvaða tilgangi',
+        p: 'OptimaPDF er hannað til að lágmarka gagnasöfnun. Við meðhöndlum aðeins:',
+        items: [
+          'IP-tala — til að tryggja öryggi og koma í veg fyrir misnotkun (lögmætir hagsmunir, 6. gr. 1. mgr. f-liður GDPR). IP-tölur eru geymdar í loggum vefþjóns í hámark 7 daga.',
+          'Skrár sem notandinn hleður upp — flest verkfæri vinna með skrár alveg í vafra (WebAssembly/JavaScript). Þessar skrár eru ekki sendar til vefþjónsins og fara aldrei af tækinu þínu. Undantekningin eru verkfæri sem þurfa ytri söfn (þjöppun, OCR, sniðumbreytingar), þar sem skráin er tímabundið meðhöndluð í vinnsluminni vefþjónsins og strax eytt eftir aðgerðina — yfirleitt innan sekúndna.',
+          'Tema- og tungumálastillingar — geymdar eingöngu í localStorage vafrans þíns. Þær eru ekki sendar til vefþjónsins né deilt með þriðjuaðilum.',
+        ],
+      },
+      {
+        h: '3. Lagagrundvöllur meðferðar',
+        p: 'Við meðhöndlum gögn þín á grundvelli:',
+        items: [
+          '6. gr. 1. mgr. b-liður GDPR (nauðsyn til að efna samning) — veiting PDF-verkfæra að beiðni þinni.',
+          '6. gr. 1. mgr. f-liður GDPR (lögmætir hagsmunir) — að tryggja öryggi þjónustunnar, koma í veg fyrir misnotkun og tæknilega greiningu á rekstri vefsins.',
+          '6. gr. 1. mgr. a-liður GDPR (samþykki) — fyrir AI-eiginleika sem krefjast þess að efni sé sent til ytri viðmótsgrunns (OpenRouter). Notkun AI krefst skýrs samþykkis með því að samþykkja skilmálana.',
+        ],
+      },
+      {
+        h: '4. Hversu lengi við geymum gögn',
+        p: 'Við beitum eftirfarandi geymslutíma:',
+        items: [
+          'IP-tölur í loggum vefþjóns: allt að 7 dögum.',
+          'Skrár sem sendar eru til verkfæra á biðlara: ekki geymdar — þær eru fjarlægðar úr minni þegar þú lokar flipa vafrans eða endurlestrar síðuna.',
+          'Skrár sem sendar eru til verkfæra á vefþjón (þjöppun, OCR, umbreytingar): eytt strax eftir meðferð (yfirleitt innan sekúndna).',
+          'Gögn í localStorage: geymd þar til notandinn eyðir þeim handvirkt eða þar til skyndiminni vafrans er hreinsað.',
+        ],
+      },
+      {
+        h: '5. Með hverjum við deilum gögnum',
+        p: 'Við seljum, leigjum eða deilum ekki persónuupplýsingum þínum með þriðjuaðilum. Takmarkað getur verið að gögn séu meðhöndluð af:',
+        items: [
+          'OpenRouter.ai — við notkun AI-eiginleika (AI Chat, AI Summary, AI Translate). Við sendum aðeins texta sem úr PDF er dreginn, án gagna sem greina notanda. OpenRouter uppfyllir GDPR og hefur viðeigandi tryggðarráðstafanir.',
+          'Hýsingaraðili — vefsíðan okkar er höstuð af ytri aðila sem getur geymt nafnlaus logg vefþjóns (IP-tala, tegund vafrans) í hámark 7 daga. Aðilinn hefur ISO 27001 vottun og uppfyllir kröfur GDPR.',
+        ],
+      },
+      {
+        h: '6. Réttindi þín samkvæmt GDPR',
+        p: 'Samkvæmt 15.–22. gr. GDPR hefur þú:',
+        items: [
+          'Aðgangsréttur (15. gr.) — þú getur spurt hvort við meðhöndlum gögn þín og fengið aðgang að þeim.',
+          'Leiðréttingarréttur (16. gr.) — þú getur óskað eftir leiðréttingu rangra gagna.',
+          'Eyðingarréttur (17. gr.) — réttur til að verða gleymdur.',
+          'Réttur til takmörkunar á meðferð (18. gr.).',
+          'Réttur til gagnahæfni (20. gr.).',
+          'Andmælaréttur (21. gr.).',
+          'Réttur til að afturkalla samþykki hvenær sem er — án þess að hafa áhrif á lögmæti meðferðar fyrir afturköllunina.',
+        ],
+      },
+      {
+        h: '7. Hvernig á að nýta réttindi þín',
+        p: 'Til að nýta réttindi þín skaltu senda tölvupóst á: kontakt@optimapdf.com. Við munum svara innan 30 daga. Við innheimtum ekki gjöld fyrir að uppfylla beiðnir nema þær séu augljóslega tilhæfulausar eða óhófar (12. gr. 5. mgr. GDPR).',
+      },
+      {
+        h: '8. Réttur til að leggja fram kvörtun',
+        p: 'Ef þú telur að meðferð okkar á gögnum þínum brjóti gegn GDPR hefur þú rétt á að leggja fram kvörtun hjá forseta Persónuverndar (PUODO — Urząd Ochrony Danych Osobowych), ul. Stawki 2, 00-193 Varsjá, Pólland.',
+      },
+      {
+        h: '9. Flutningur gagna til þriðja landa',
+        p: 'Við notkun AI-eiginleika getur texti verið meðhöndluð af netþjónum OpenRouter staðsettum í Bandaríkjunum. Í slíkum tilvikum eru viðeigandi tryggðarráðstafanir gerðar í samræmi við kröfur GDPR, þar á meðal staðal samningsskilmála þar sem við á, til að tryggja fullnægjandi stig persónuverndar.',
+      },
+      {
+        h: '10. Vefkökur og localStorage',
+        p: 'Við notum ekki vefkökur í auglýsingum, rekstri eða greiningum þriðjuaðila. Við notum eingöngu localStorage vafrans til að muna stillingar þínar (þema, tungumál). Þessi gögn eru geymd staðbundið á tækinu þínu og er hægt að eyða þeim hvenær sem er með því að hreinsa localStorage vafrans þíns.',
+      },
+      {
+        h: '11. Breytingar á þessari GDPR-upplýsingu',
+        p: 'Við áskiljum okkur rétt til að gera breytingar á þessum upplýsingum um GDPR. Allar breytingar verða tilkynntar með því að uppfæra dagsetningu efst á þessari síðu. Við hvetjum þig til að fara reglulega yfir þetta efni.',
+      },
+    ],
+  },
 };
 
 export default function RodoPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
