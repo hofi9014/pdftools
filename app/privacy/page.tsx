@@ -1572,6 +1572,118 @@ const content = {
       },
     ],
   },
+  tr: {
+    title: 'Gizlilik Politikası',
+    updated: 'Son güncelleme: 30 Haziran 2026',
+    sections: [
+      {
+        h: '1. Genel hükümler',
+        p: 'Bu Gizlilik Politikası, OptimaPDF web sitesinin (optimapdf.com) kullanıcılarının kişisel verilerinin işlenmesi ve korunmasına ilişkin ilkeleri belirler. OptimaPDF, gizlilik ve veri güvenliğine en büyük önem vermektedir. Tüm araçlar, gizlilik tasarım ilkesine uygun olarak tasarlanmıştır — varsayılan olarak dosyalarınız tarayıcınızda yerel olarak işlenir.',
+      },
+      {
+        h: '2. Veri sorumlusu',
+        p: 'Kişisel verilerinizin veri sorumlusu Leszek Hofman, Dąbrówka Nowa, Polonya\'dır. İletişim: kontakt@optimapdf.com. Veri sorumlusu bir Veri Koruma Görevlisi atamamıştır — kişisel veri korumasına ilişkin tüm konularda yukarıdaki e-posta adresi üzerinden bizimle doğrudan iletişime geçiniz.',
+      },
+      {
+        h: '3. Veri toplamanın kapsamı ve amaçları',
+        sub: [
+          {
+            h: '3.1 Teknik veriler',
+            p: 'Web sitesini kullanırken, aşağıdaki teknik veriler otomatik olarak toplanır: IP adresi, tarayıcı türü ve sürümü, işletim sistemi, ekran çözünürlüğü, yaklaşık coğrafi konum (ülke düzeyi), ziyaret zamanı ve sitede geçirilen süre. Bu veriler anonimleştirilir ve yalnızca istatistiksel amaçlar ve güvenlik sağlama için kullanılır.',
+          },
+          {
+            h: '3.2 Kullanıcı tarafından yüklenen dosyalar',
+            p: 'Araçlara yüklenen PDF dosyaları şu şekilde işlenir:',
+            items: [
+              'İstemci tarafı araçlar (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf) — dosya WebAssembly ve JavaScript kullanılarak tarayıcıda tamamen işlenir. Dosya cihazınızdan asla çıkmaz.',
+              'Sunucu tarafı araçlar (compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf, url-to-pdf) — dosya geçici olarak sunucuya gönderilir, yalnızca RAM\'de işlenir ve işlemden hemen sonra silinir. Maksimum saklama süresi: birkaç saniye.',
+              'Yapay zeka fonksiyonları (AI Chat, AI Summary, AI Translate) — PDF\'den çıkarılan metin harici OpenRouter API\'ye gönderilir. Kullanıcı tanımlayıcı veri gönderilmez. İçerik depolanmaz veya model eğitimi için kullanılmaz.',
+            ],
+          },
+          {
+            h: '3.3 Kullanıcı tercihleri',
+            p: 'Seçilen tema (karanlık/aydınlık) ve dil tercihiniz hakkındaki bilgiler tarayıcınızın localStorage\'ında saklanır. Sunucuya gönderilmez veya üçüncü taraflarla paylaşılmaz.',
+          },
+        ],
+      },
+      {
+        h: '4. İşlemenin hukuki dayanağı',
+        items: [
+          'Madde 6(1)(b) GDPR — elektronik hizmet sözleşmesinin ifası (PDF araçlarının sağlanması).',
+          'Madde 6(1)(f) GDPR — veri sorumlusunun meşru menfaati (güvenliğin sağlanması, istismarın önlenmesi, teknik analiz).',
+          'Madde 6(1)(a) GDPR — kullanıcının açık rızası (yapay zeka fonksiyonları için). Açık rıza her zaman geri çekilebilir.',
+        ],
+      },
+      {
+        h: '5. Veri alıcıları',
+        p: 'Veriler aşağıdaki alıcı kategorilerine aktarılabilir:',
+        items: [
+          'Google LLC (Google Analytics) — açık rızanıza dayalı anonimleştirilmiş trafik istatistikleri.',
+          'Adımıza işlem yapan işleyiciler (barındırma, OpenRouter.ai) — veri işleme sözleşmelerine dayalı olarak.',
+          'Yasal hükümler kapsamında yetkili makamlar — yalnızca yasada öngörülen durumlarda.',
+        ],
+      },
+      {
+        h: '6. AEA dışına veri aktarımları',
+        p: 'Yapay zeka özelliklerini kullanırken metin, ABD\'deki OpenRouter sunucularında işlenebilir. Bu durumlarda, uygun olduğunda Standart Sözleşme Hükümleri dahil olmak üzere GDPR gerekliliklerine uygun garantiler uygulanarak veri korumasının yeterli düzeyi sağlanır. Diğer durumlarda veriler üçüncü ülkelere aktarılmaz.',
+      },
+      {
+        h: '7. Veri saklama süresi',
+        p: 'Veriler aşağıdaki süreler boyunca saklanır:',
+        items: [
+          'Sunucu günlükleri (IP adresi, User-Agent): en fazla 7 gün.',
+          'İstemci tarafı araçlara yüklenen dosyalar: saklanmaz — sayfa yenilendiğinde bellekten kaldırılır.',
+          'Sunucu tarafı araçlara yüklenen dosyalar: işlemden hemen sonra silinir.',
+          'localStorage verileri: kullanıcı tarafından manuel olarak silinene kadar.',
+        ],
+      },
+      {
+        h: '8. İlgili kişinin hakları',
+        p: 'Aşağıdaki haklara sahipsiniz:',
+        items: [
+          'Verilerinize erişim (Madde 15 GDPR).',
+          'Verilerin düzeltilmesi (Madde 16 GDPR).',
+          'Verilerin silinmesi (Madde 17 GDPR) — unutulma hakkı.',
+          'İşlemin kısıtlanması (Madde 18 GDPR).',
+          'Veri taşınabilirliği (Madde 20 GDPR).',
+          'İşlemeye itiraz (Madde 21 GDPR).',
+          'Her zaman açık rızanızı geri çekebilirsiniz. Geri çekme öncesindeki rızaya dayalı işlemenin hukukiliğini etkilemez.',
+          'PUODO — Urząd Ochrony Danych Osobowych, ul. Stawki 2, 00-193 Varşova, Polonya\'ya şikayette bulunma hakkı.',
+        ],
+      },
+      {
+        h: '9. Veri güvenliği',
+        p: 'Aşağıdaki güvenlik önlemlerini uyguluyoruz:',
+        items: [
+          'TLS/SSL şifreleme — tarayıcı ve sunucu arasındaki tüm iletişim şifrelenir.',
+          'Content Security Policy (CSP) — güvenilmeyen betiklerin çalıştırma yeteneğini kısıtlar.',
+          'Yalnızca RAM\'de işleme — dosyalar sunucunun diskine yazılmaz.',
+          'Otomatik silme — dosyalar işlem tamamlandıktan hemen sonra silinir.',
+          'Dosya boyutu sınırı — maksimum 100 MB.',
+          'Dosya türü doğrulaması — işlemden önce dosya imzasını (magic bytes) kontrol ederiz.',
+          'Giriş gerekmez — kayıt veya giriş gerektirmiyoruz.',
+        ],
+      },
+      {
+        h: '10. Google Analytics ve analiz onayı',
+        p: 'Bu web sitesi, anonim trafik analizi için Google Analytics (Google LLC, USA) kullanmaktadır. Google Analytics, ziyaret sayısı, sitede geçirilen süre, tarayıcı türü, yaklaşık konum (ülke düzeyi), trafik kaynağı gibi toplanmış istatistiksel veriler toplar. Veriler anonimleştirilmiştir (anonymize_ip: true).',
+        items: [
+          'İlk ziyarette bir onay bannerı gösterilir — Google Analytics yalnızca "Kabul Et" tıkladıktan sonra etkinleşir.',
+          'Tarayıcınızın localStorage\'ından "cookie-consent" girişini kaldırarak her zaman onayınızı geri çekebilirsiniz.',
+          'Google Analytics, reklam hedefleme veya davranışsal profil oluşturma için kullanılmaz.',
+          'localStorage\'daki veriler (tema, dil, onay tercihleri) tamamen kullanıcının kontrolündedir ve her zaman silinebilir.',
+        ],
+      },
+      {
+        h: '11. Yapay zeka fonksiyonları ve OpenRouter',
+        p: 'Yapay zeka fonksiyonlarını (AI Chat, AI Summary, AI Translate) kullanmak için kendi OpenRouter API anahtarınız gereklidir; bu anahtar yalnızca tarayıcınızın localStorage\'ında saklanır ve web sitesi yöneticisiyle paylaşılmaz. API anahtarı yalnızca OpenRouter API ile iletişim için kullanılır. API anahtarınıza veya OpenRouter\'a gönderilen sorguların içeriğine erişimimiz yoktur.',
+      },
+      {
+        h: '12. Son hükümler',
+        p: 'Bu Gizlilik Politikasında değişiklik yapma hakkımızı saklı tutuyoruz. Değişiklikler bu sayfanın üst kısmındaki tarih güncellenerek bildirilir. Gizlilik politikasıyla ilgili tüm sorularınız için lütfen kontakt@optimapdf.com adresine yazınız.',
+      },
+    ],
+  },
 };
 
 export default function PrivacyPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
