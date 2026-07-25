@@ -1236,6 +1236,118 @@ const content = {
       },
     ],
   },
+  is: {
+    title: 'Persónuverndarstefna',
+    updated: 'Síðast uppfært: 30. júní 2026',
+    sections: [
+      {
+        h: '1. Almenn ákvæði',
+        p: 'Þessi persónuverndarstefna skilgreinir meðferðarreglur og vernd persónuupplýsinga notenda OptimaPDF vefsins (optimapdf.com). OptimaPDF leggur mestu áherslu á persónuvernd og gagnöryggi. Öll tæki eru hönnuð samkvæmt persónuverndarhönnunarreglunni — sjálfgefið eru skrár þínar meðhöndlaðar staðbundið í vafraranum þínum.',
+      },
+      {
+        h: '2. Ábyrgðaraðili',
+        p: 'Ábyrgðaraðili fyrir persónuupplýsingar þínar er Leszek Hofman, Dąbrówka Nowa, Pólland. Tengiliður: kontakt@optimapdf.com. Ábyrgðaraðili hefur ekki skipað persónuverndarfulltrúa — í öllum málum er lúta að vernd persónuupplýsinga skaltu hafa samband beint í gegnum netfangið hér að ofan.',
+      },
+      {
+        h: '3. Umfang og tilgangur gagnasöfnunar',
+        sub: [
+          {
+            h: '3.1 Tæknileg gögn',
+            p: 'Þegar notuð er vefsíðan eru eftirfarandi tæknileg gögn safnað sjálfkrafa: IP-tala, tegund og útgáfa vafrara, stýrikerfi, upplausn skjás, áætluð landfræðileg staðsetning (landsstig), heimsóknartími og tími sem varið er á síðunni. Þessi gögn eru nafnlaus og eingöngu notuð í tölfræðilegum tilgangi og til að tryggja öryggi.',
+          },
+          {
+            h: '3.2 Skrár hlaðnar upp af notanda',
+            p: 'PDF-skrár sem hlaðið er upp í tækin eru meðhöndlaðar á eftirfarandi hátt:',
+            items: [
+              'Biðlaraþættir (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf) — skráin er fullkomlega meðhöndluð í vafraranum með WebAssembly og JavaScript. Skráin yfirgæfir aldrei tækið þitt.',
+              'Þjónustuþættir (compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf, url-to-pdf) — skráin er tímabundið send til þjónsins, meðhöndluð eingöngu í RAM-minni og strax eytt eftir aðgerðina. Hámarks geymslutími: nokkrar sekúndur.',
+              'AI aðgerðir (AI Chat, AI Summary, AI Translate) — texti dreginn úr PDF er sendur til ytri OpenRouter API. Við sendum ekki gögn sem auðkenna notanda. Efnið er ekki geymt né notað til þjálfunar líkana.',
+            ],
+          },
+          {
+            h: '3.3 Óskir notanda',
+            p: 'Upplýsingar um valið þema (dökkt/ljóst) og tungumálaósk þín er geymt í localStorage vafrarans. Þær eru ekki sendar til þjónsins né deilt með þriðja aðila.',
+          },
+        ],
+      },
+      {
+        h: '4. Lagagrundvöllur meðferðar',
+        items: [
+          'Grein 6(1)(b) GDPR — frammistöðu samnings um rafræna þjónustu (veitu PDF-tækja).',
+          'Grein 6(1)(f) GDPR — lögmætum hagsmunum ábyrgðaraðila (tryggja öryggi, koma í veg fyrir misnotkun, tæknilega greiningu).',
+          'Grein 6(1)(a) GDPR — samþykki notanda (fyrir AI aðgerðir). Hægt er að afturkalla samþykki hvenær sem er.',
+        ],
+      },
+      {
+        h: '5. Viðtakendur gagna',
+        p: 'Gögnum má flytja til eftirfarandi flokka viðtakenda:',
+        items: [
+          'Google LLC (Google Analytics) — nafnlaus umferðarstölfræði, byggð á samþykki þínu.',
+          'Vinnsluaðilar á vegum okkar (hýsing, OpenRouter.ai) — á grundvelli samninga um gagnameðferð.',
+          'Yfirvöld skv. lagaákvæðum — eingöngu í tilvikum sem lög kveða á um.',
+        ],
+      },
+      {
+        h: '6. Flutningur gagna utan EES',
+        p: 'Við notkun AI aðgerða má meðhöndla texta á OpenRouter þjónum í Bandaríkjunum. Slíkum tilfellum eru viðeigandi tryggingar veittar í samræmi við kröfur GDPR, þar á meðal staðal samningsskilmála þar sem við á, til að tryggja fullnægjandi stig gagnaverndar. Í öðrum tilfellum eru gögn ekki flutt til þriðja landa.',
+      },
+      {
+        h: '7. Geymslutími gagna',
+        p: 'Gögn eru geymd í eftirfarandi tímabil:',
+        items: [
+          'Þjónslogs (IP-tala, User-Agent): allt að 7 daga.',
+          'Skrár hlaðnar upp í biðlaraþætti — ekki geymdar — fjarlægðar úr minni við endurhleðslu síðu.',
+          'Skrár hlaðnar upp í þjónustuþætti — eytt strax eftir meðferð.',
+          'localStorage gögn — þar til notandi eyðir þeim handvirkt.',
+        ],
+      },
+      {
+        h: '8. Réttindi skráðs einstaklings',
+        p: 'Þú átt rétt á eftirfarandi:',
+        items: [
+          'Aðgang að gögnum þínum (grein 15 GDPR).',
+          'Leiðréttingu gagna (grein 16 GDPR).',
+          'Eyðingu gagna (grein 17 GDPR) — réttur til að gleymast.',
+          'Takmörkun meðferðar (grein 18 GDPR).',
+          'Gagnaflutning (grein 20 GDPR).',
+          'Andmæli gegn meðferð (grein 21 GDPR).',
+          'Að afturkalla samþykki hvenær sem er án þess að hafa áhrif á lögmæti meðferðar sem byggð er á samþykki fyrir afturköllunina.',
+          'Leggja fram kvörtun hjá forseta Persónuverndar (PUODO — Urząd Ochrony Danych Osobowych), ul. Stawki 2, 00-193 Varsjá, Pólland.',
+        ],
+      },
+      {
+        h: '9. Gagnöryggi',
+        p: 'Við beitum eftirfarandi öryggisráðstöfunum:',
+        items: [
+          'TLS/SSL dulkóðun — öll samskipti á milli vafrara og þjóns eru dulkóðuð.',
+          'Efnisöryggisstefna (CSP) — takmarkar getu til að keyra ótraustar skriptur.',
+          'Meðferð eingöngu í RAM-minni — skrár eru ekki skrifaðar á disk þjónsins.',
+          'Sjálfvirk eyðing — skrár eru eytt strax eftir aðgerðina.',
+          'Skráarstærðarmörk — hámark 100 MB.',
+          'Skráargerðaryfirferð — við athugum undirskrift skráar (magic bytes) áður en meðferð hefst.',
+          'Engin innskráning nauðsynleg — við krefjum ekki skráningar eða innskráningar.',
+        ],
+      },
+      {
+        h: '10. Google Analytics og samþykki greiningar',
+        p: 'Þessi vefsíða notar Google Analytics (Google LLC, Bandaríkin) til nafnlausrar umferðargreiningar. Google Analytics safnar saman tölfræðigögnum eins og: heimsóknafjöldi, tími á síðunni, tegund vafrara, áætluð staðsetning (landsstig), umferðaruppspretta. Gögn eru nafnlaus (anonymize_ip: true).',
+        items: [
+          'Við fyrstu heimsókn birtist samþykkisbori — Google Analytics er aðeins virkjað eftir að smellt er á „Samþykkja".',
+          'Þú getur afturkallað samþykki hvenær sem er með því að fjarlægja „cookie-consent" færsluna úr localStorage vafrarans þíns.',
+          'Google Analytics er ekki notað til markaðssetningar eða hegðunarprófíleringar.',
+          'Gögn í localStorage (þemu, tungumál, samþykkisóskir) eru fullkomlega undir stjórn notanda og má eyða hvenær sem er.',
+        ],
+      },
+      {
+        h: '11. AI aðgerðir og OpenRouter',
+        p: 'Til að nota AI aðgerðir (AI Chat, AI Summary, AI Translate) þarft þú þinn eigin OpenRouter API-lykil, sem er eingöngu geymdur í localStorage vafrarans þíns og ekki deilt með vefstjóra. API-lykilinn er eingöngu notaður til samskipta við OpenRouter API. Við höfum ekki aðgang að API-lyklinum þínum né efni fyrirspurna sem sendar eru til OpenRouter.',
+      },
+      {
+        h: '12. Lokákvæði',
+        p: 'Við áskiljum okkur rétt til að gera breytingar á þessari persónuverndarstefnu. Breytingar verða tilkynntar með uppfærslu dagsetningar efst á þessari síðu. Allar spurningar varðandi persónuverndarstefnuna skal senda á: kontakt@optimapdf.com.',
+      },
+    ],
+  },
 };
 
 export default function PrivacyPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
