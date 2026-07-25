@@ -900,6 +900,118 @@ const content = {
       },
     ],
   },
+  ar: {
+    title: 'سياسة الخصوصية',
+    updated: 'آخر تحديث: 30 يونيو 2026',
+    sections: [
+      {
+        h: '1. أحكام عامة',
+        p: 'تحدد سياسة الخصوصية هذه مبادئ معالجة وحماية البيانات الشخصية لمستخدمي موقع OptimaPDF (optimapdf.com). تضع OptimaPDF أعلى أهمية للخصوصية وأمن البيانات. صُمّمت جميع الأدوات وفقاً لمبدأ الخصوصية بالتصميم — افتراضياً، تتم معالجة ملفاتك محلياً في متصفحك.',
+      },
+      {
+        h: '2. متحكّم بالبيانات',
+        p: 'متحكّم بالبيانات الشخصية هو Leszek Hofman، Dąbrówka Nowa، بولندا. التواصل: kontakt@optimapdf.com. لم يتم تعيين مسؤول عن حماية البيانات — لجميع المسائل المتعلقة بحماية البيانات الشخصية، تواصل معنا مباشرة عبر عنوان البريد الإلكتروني أعلاه.',
+      },
+      {
+        h: '3. نطاق وأغراض جمع البيانات',
+        sub: [
+          {
+            h: '3.1 البيانات التقنية',
+            p: 'عند استخدام الموقع، يتم جمع البيانات التقنية التالية تلقائياً: عنوان IP، نوع المتصفح وإصداره، نظام التشغيل، دقة الشاشة، الموقع الجغرافي التقريبي (مستوى البلد)، وقت الزيارة والوقت المقضي على الصفحة. يتم إخفاء هوية هذه البيانات واستخدامها حصرياً لأغراض إحصائية وضمان الأمان.',
+          },
+          {
+            h: '3.2 الملفات المرفوعة من قبل المستخدم',
+            p: 'تتم معالجة ملفات PDF المرفوعة إلى الأدوات كالتالي:',
+            items: [
+              'الأدوات الجانبية للعميل (merge، split، rotate، watermark، page-numbers، crop-pdf، edit-pdf، sign-pdf، redact-pdf، flatten-pdf، delete-pages، extract-pages، reorder-pages، add-page، metadata، pdf-to-svg، pdf-to-epub، pdf-to-txt، fill-form، pdf-to-images، to-pdfa، compare-pdf، unlock-pdf، protect-pdf) — تتم معالجة الملف بالكامل في المتصفح باستخدام WebAssembly و JavaScript. لا يترك الملف جهازك أبداً.',
+              'الأدوات الجانبية للخادم (compress-pdf، ocr-pdf، pdf-to-word، word-to-pdf، jpg-to-pdf، pdf-to-excel، excel-to-pdf، pdf-to-powerpoint، openoffice-to-pdf، pdf-to-openoffice، pdf-to-html، html-to-pdf، url-to-pdf) — يتم إرسال الملف مؤقتاً إلى الخادم، ومعالجته حصرياً في ذاكرة RAM، وحذفه فوراً بعد العملية. أقصى مدة تخزين: ثوانٍ قليلة.',
+              'وظائف الذكاء الاصطناعي (AI Chat، AI Summary، AI Translate) — يتم إرسال النص المستخرج من ملف PDF إلى واجهة برمجة OpenRouter الخارجية. لا نرسل بيانات تحدد هوية المستخدم. لا يتم تخزين المحتوى أو استخدامه لتدريب النماذج.',
+            ],
+          },
+          {
+            h: '3.3 تفضيلات المستخدم',
+            p: 'يتم تخزين معلومات المظهر المختار (الداكن/الفاتح) وتفضيلاتك اللغوية في التخزين المحلي لمتصفحك. لا يتم إرسالها إلى الخادم أو مشاركتها مع أطراف ثالثة.',
+          },
+        ],
+      },
+      {
+        h: '4. الأساس القانوني للمعالجة',
+        items: [
+          'المادة 6(1)(ب) GDPR — تنفيذ عقد لتقديم خدمات إلكترونية (توفير أدوات PDF).',
+          'المادة 6(1)(ف) GDPR — المصلحة المشروعة لمتحكّم بالبيانات (ضمان الأمان، ومنع سوء الاستخدام، والتحليل الفني).',
+          'المادة 6(1)(أ) GDPR — موافقة المستخدم (لوظائف الذكاء الاصطناعي). يمكن سحب الموافقة في أي وقت.',
+        ],
+      },
+      {
+        h: '5. متلقّيات البيانات',
+        p: 'قد تتم نقل البيانات إلى فئات المتلقّيات التالية:',
+        items: [
+          'Google LLC (Google Analytics) — إحصائيات مرور مجهولة الهوية، بناءً على موافقتك.',
+          'المعالجون الذين يعملون نيابةً عنّا (الاستضافة، OpenRouter.ai) — بناءً على اتفاقيات معالجة البيانات.',
+          'الجهات المخولة بموجب الأحكام القانونية — فقط في الحالات المنصوص عليها قانوناً.',
+        ],
+      },
+      {
+        h: '6. نقل البيانات خارج المنطقة الاقتصادية الأوروبية',
+        p: 'عند استخدام وظائف الذكاء الاصطناعي، قد تتم معالجة النص بواسطة خوادم OpenRouter الموجودة في الولايات المتحدة. في مثل هذه الحالات، يتم تطبيق ضمانات مناسبة وفقاً لمتطلبات GDPR، بما في ذلك البنود التعاقدية القياسية حيثما كان ذلك مناسباً، لضمان مستوى كافٍ من حماية البيانات. في الحالات الأخرى، لا تتم نقل البيانات إلى دول ثالثة.',
+      },
+      {
+        h: '7. مدة الاحتفاظ بالبيانات',
+        p: 'يتم الاحتفاظ بالبيانات للفترات التالية:',
+        items: [
+          'سجلات الخادم (عنوان IP، User-Agent): حتى 7 أيام.',
+          'الملفات المرفوعة إلى الأدوات الجانبية للعميل: لا يتم تخزينها — تُزال من الذاكرة عند تحديث الصفحة.',
+          'الملفات المرفوعة إلى الأدوات الجانبية للخادم: تُحذف فوراً بعد المعالجة.',
+          'بيانات التخزين المحلي: حتى يتم حذفها يدوياً من قبل المستخدم.',
+        ],
+      },
+      {
+        h: '8. حقوق الشخص المعني',
+        p: 'يحق لكم:',
+        items: [
+          'الوصول إلى بياناتكم (المادة 15 GDPR).',
+          'تصحيح البيانات (المادة 16 GDPR).',
+          'حذف البيانات (المادة 17 GDPR) — الحق في النسيان.',
+          'تقييد المعالجة (المادة 18 GDPR).',
+          'نقل البيانات (المادة 20 GDPR).',
+          'الاعتراض على المعالجة (المادة 21 GDPR).',
+          'سحب الموافقة في أي وقت دون المساس بقانونية المعالجة التي تمت قبل سحب الموافقة.',
+          'تقديم شكوى لدى رئيس مكتب حماية البيانات الشخصية البولندي (PUODO — Urząd Ochrony Danych Osobowych)، ul. Stawki 2، 00-193 وارسو، بولندا.',
+        ],
+      },
+      {
+        h: '9. أمن البيانات',
+        p: 'نطبق تدابير الأمان التالية:',
+        items: [
+          'تشفير TLS/SSL — تشفير جميع الاتصالات بين المتصفح والخادم.',
+          'سياسة أمان المحتوى (CSP) — تقييد القدرة على تنفيذ السكريبتات غير الموثوقة.',
+          'المعالجة حصرياً في RAM — لا يتم كتابة الملفات على قرص الخادم.',
+          'الحذف التلقائي — تُحذف الملفات فوراً بعد اكتمال العملية.',
+          'حد حجم الملف — أقصى حجم 100 ميغابايت.',
+          'التحقق من نوع الملف — نتحقق من توقيع الملف (magic bytes) قبل المعالجة.',
+          'لا حاجة لتسجيل الدخول — لا نطلب التسجيل أو تسجيل الدخول.',
+        ],
+      },
+      {
+        h: '10. Google Analytics والموافقة على التحليل',
+        p: 'يستخدم هذا الموقع Google Analytics (Google LLC، الولايات المتحدة) لتحليل المرور بشكل مجهول. يجمع Google Analytics بيانات إحصائية مجمّعة مثل: عدد الزيارات، الوقت المقضي على الموقع، نوع المتصفح، الموقع التقريبي (مستوى البلد)، مصدر المرور. يتم إخفاء هوية البيانات (anonymize_ip: true).',
+        items: [
+          'عند الزيارة الأولى، يظهر بانر الموافقة — لا يتم تنشيط Google Analytics إلا بعد النقر على "قبول".',
+          'يمكنكم سحب الموافقة في أي وقت عن طريق حذف إدخال "cookie-consent" من التخزين المحلي لمتصفحكم.',
+          'لا يُستخدم Google Analytics لاستهداف الإعلانات أو إنشاء ملفات تعريف سلوكية.',
+          'البيانات في التخزين المحلي (المظهر، اللغة، تفضيلات الموافقة) تخضع لتحكم المستخدم بالكامل ويمكن حذفها في أي وقت.',
+        ],
+      },
+      {
+        h: '11. وظائف الذكاء الاصطناعي وOpenRouter',
+        p: 'يتطلب استخدام وظائف الذكاء الاصطناعي (AI Chat، AI Summary، AI Translate) مفتاح API خاص بك من OpenRouter، والذي يتم تخزينه حصرياً في التخزين المحلي لمتصفحك ولا يُشارك مع مسؤول الموقع. يُستخدم مفتاح API حصرياً للاتصال بـ OpenRouter API. ليس لدينا الوصول إلى مفتاح API الخاص بك أو محتوى الطلبات المرسلة إلى OpenRouter.',
+      },
+      {
+        h: '12. أحكام ختامية',
+        p: 'نحتفظ بالحق في إجراء تغييرات على سياسة الخصوصية هذه. سيتم الإعلان عن أي تغييرات من خلال تحديث التاريخ في أعلى هذه الصفحة. أي أسئلة بشأن سياسة الخصوصية يمكن توجيهها إلى: kontakt@optimapdf.com.',
+      },
+    ],
+  },
 };
 
 export default function PrivacyPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
@@ -907,21 +1019,30 @@ export default function PrivacyPage({ locale: forcedLocale }: { locale?: Locale 
   const locale = forcedLocale || detectedLocale;
   const lang = (content as Record<string, typeof content.pl>)[locale] || content.en;
 
+  const isRtl = locale === 'ar' || locale === 'fa';
+
   return (
-    <main className="max-w-3xl mx-auto px-4 py-12">
+    <main className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
+      {isRtl && (
+        <style>{`
+          .privacy-rtl ul { padding-right: 1.25rem; padding-left: 0; }
+          .privacy-rtl ol { padding-right: 1.25rem; padding-left: 0; }
+          .privacy-rtl { text-align: right; }
+        `}</style>
+      )}
       <div className="text-center mb-10">
         <div className="text-5xl mb-4">🔒</div>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tool-heading mb-3">{lang.title}</h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">{lang.updated}</p>
       </div>
 
-      <div className="tool-card rounded-2xl border p-8 space-y-8 text-sm leading-relaxed" style={{ color: 'var(--coffee-text-secondary)' }}>
+      <div className={`tool-card rounded-2xl border p-8 space-y-8 text-sm leading-relaxed ${isRtl ? 'privacy-rtl' : ''}`} style={{ color: 'var(--coffee-text-secondary)' }}>
         {lang.sections.map((sec, i) => (
           <section key={i}>
             <h2 className="text-lg sm:text-xl font-bold tool-heading mb-3">{sec.h}</h2>
             {'p' in sec && <p className="mb-2">{sec.p}</p>}
             {'items' in sec && sec.items && (
-              <ul className="list-disc pl-5 space-y-1.5">
+              <ul className={`list-disc space-y-1.5 ${isRtl ? 'pr-5' : 'pl-5'}`}>
                 {sec.items.map((item, j) => (
                   <li key={j}>{item}</li>
                 ))}
@@ -934,7 +1055,7 @@ export default function PrivacyPage({ locale: forcedLocale }: { locale?: Locale 
                     <h3 className="text-base font-bold tool-heading mb-2">{sub.h}</h3>
                     <p className="mb-2">{sub.p}</p>
                     {'items' in sub && sub.items && (
-                      <ul className="list-disc pl-5 space-y-1.5">
+                      <ul className={`list-disc space-y-1.5 ${isRtl ? 'pr-5' : 'pl-5'}`}>
                         {sub.items.map((item, l) => (
                           <li key={l}>{item}</li>
                         ))}
