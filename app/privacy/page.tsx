@@ -788,6 +788,118 @@ const content = {
       },
     ],
   },
+  fr: {
+    title: 'Politique de confidentialité',
+    updated: 'Dernière mise à jour : 30 juin 2026',
+    sections: [
+      {
+        h: '1. Dispositions générales',
+        p: 'La présente Politique de confidentialité définit les principes de traitement et de protection des données personnelles des utilisateurs du site OptimaPDF (optimapdf.com). OptimaPDF accorde la plus grande importance à la confidentialité et à la sécurité des données. Tous les outils ont été conçus selon le principe de privacy by design — par défaut, vos fichiers sont traités localement dans votre navigateur.',
+      },
+      {
+        h: '2. Responsable du traitement',
+        p: 'Le responsable du traitement des données personnelles est Leszek Hofman, Dąbrówka Nowa, Pologne. Contact : kontakt@optimapdf.com. Aucun délégué à la protection des données n\'a été désigné — pour toute question relative à la protection des données personnelles, contactez-nous directement à l\'adresse e-mail indiquée ci-dessus.',
+      },
+      {
+        h: '3. Portée et finalités de la collecte de données',
+        sub: [
+          {
+            h: '3.1 Données techniques',
+            p: 'Lors de l\'utilisation du site, les données techniques suivantes sont automatiquement collectées : adresse IP, type et version du navigateur, système d\'exploitation, résolution d\'écran, localisation géographique approximative (niveau pays), heure de visite et temps passé sur la page. Ces données sont anonymisées et utilisées uniquement à des fins statistiques et pour garantir la sécurité.',
+          },
+          {
+            h: '3.2 Fichiers téléversés par l\'utilisateur',
+            p: 'Les fichiers PDF téléversés vers les outils sont traités comme suit :',
+            items: [
+              'Outils côté client (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf) — le fichier est traité entièrement dans le navigateur à l\'aide de WebAssembly et JavaScript. Le fichier ne quitte jamais votre appareil.',
+              'Outils côté serveur (compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf, url-to-pdf) — le fichier est temporairement envoyé au serveur, traité exclusivement en mémoire RAM et immédiatement supprimé après l\'opération. Durée de conservation maximale : quelques secondes.',
+              'Fonctionnalités IA (AI Chat, AI Summary, AI Translate) — le texte extrait du PDF est envoyé à l\'API externe OpenRouter. Nous n\'envoyons pas de données identifiant l\'utilisateur. Le contenu n\'est pas stocké ni utilisé pour l\'entraînement de modèles.',
+            ],
+          },
+          {
+            h: '3.3 Préférences utilisateur',
+            p: 'Les informations sur le thème sélectionné (sombre/clair) et votre préférence de langue sont stockées dans le local storage du navigateur. Elles ne sont pas envoyées au serveur ni partagées avec des tiers.',
+          },
+        ],
+      },
+      {
+        h: '4. Base juridique du traitement',
+        items: [
+          'Art. 6, par. 1, point b RGPD — exécution d\'un contrat de prestation de services électroniques (mise à disposition d\'outils PDF).',
+          'Art. 6, par. 1, point f RGPD — intérêt légitime du responsable du traitement (garantie de la sécurité, prévention des abus, analyse technique).',
+          'Art. 6, par. 1, point a RGPD — consentement de l\'utilisateur (pour les fonctionnalités IA). Le consentement peut être retiré à tout moment.',
+        ],
+      },
+      {
+        h: '5. Destinataires des données',
+        p: 'Les données peuvent être transférées aux catégories de destinataires suivantes :',
+        items: [
+          'Google LLC (Google Analytics) — statistiques de trafic anonymisées, fondées sur votre consentement.',
+          'Sous-traitants agissant pour notre compte (hébergement, OpenRouter.ai) — sur la base de contrats de traitement de données.',
+          'Autorités habilitées par des dispositions légales — uniquement dans les cas prévus par la loi.',
+        ],
+      },
+      {
+        h: '6. Transferts de données hors de l\'EEE',
+        p: 'Lors de l\'utilisation des fonctionnalités IA, le texte peut être traité par des serveurs OpenRouter situés aux États-Unis. Dans de tels cas, des garanties appropriées sont mises en œuvre conformément aux exigences du RGPD, y compris des clauses contractuelles types le cas échéant, afin de garantir un niveau adéquat de protection des données. Dans les autres cas, les données ne sont pas transférées vers des pays tiers.',
+      },
+      {
+        h: '7. Durée de conservation des données',
+        p: 'Les données sont conservées pour les durées suivantes :',
+        items: [
+          'Journaux serveur (adresse IP, User-Agent) : jusqu\'à 7 jours.',
+          'Fichiers téléversés vers des outils côté client : non stockés — supprimés de la mémoire lors du rafraîchissement de la page.',
+          'Fichiers téléversés vers des outils côté serveur : supprimés immédiatement après le traitement.',
+          'Données du local storage : jusqu\'à leur suppression manuelle par l\'utilisateur.',
+        ],
+      },
+      {
+        h: '8. Droits de la personne concernée',
+        p: 'Vous disposez des droits suivants :',
+        items: [
+          'Droit d\'accès à vos données (art. 15 RGPD).',
+          'Droit de rectification des données (art. 16 RGPD).',
+          'Droit à l\'effacement des données (art. 17 RGPD) — droit à l\'oubli.',
+          'Droit à la limitation du traitement (art. 18 RGPD).',
+          'Droit à la portabilité des données (art. 20 RGPD).',
+          'Droit d\'opposition au traitement (art. 21 RGPD).',
+          'Retirer votre consentement à tout moment sans affecter la licéité du traitement effectué avant le retrait du consentement.',
+          'Déposer une plainte auprès du Président de l\'Autorité polonaise de protection des données (PUODO — Urząd Ochrony Danych Osobowych, ul. Stawki 2, 00-193 Varsovie, Pologne).',
+        ],
+      },
+      {
+        h: '9. Sécurité des données',
+        p: 'Nous appliquons les mesures de sécurité suivantes :',
+        items: [
+          'Chiffrement TLS/SSL — toute la communication entre le navigateur et le serveur est chiffrée.',
+          'Content Security Policy (CSP) — limite la possibilité d\'exécuter des scripts non fiables.',
+          'Traitement exclusivement en RAM — les fichiers ne sont pas écrits sur le disque du serveur.',
+          'Suppression automatique — les fichiers sont supprimés immédiatement après l\'exécution de l\'opération.',
+          'Taille maximale du fichier — 100 Mo.',
+          'Vérification du type de fichier — nous contrôlons la signature du fichier (magic bytes) avant le traitement.',
+          'Aucune connexion requise — nous n\'exigeons ni inscription ni connexion.',
+        ],
+      },
+      {
+        h: '10. Google Analytics et consentement à l\'analyse',
+        p: 'Ce site utilise Google Analytics (Google LLC, États-Unis) pour l\'analyse anonyme du trafic. Google Analytics collecte des données statistiques agrégées telles que : nombre de visites, temps passé sur le site, type de navigateur, localisation approximative (niveau pays), source du trafic. Les données sont anonymisées (anonymize_ip: true).',
+        items: [
+          'Lors de la première visite, une bannière de consentement s\'affiche — Google Analytics n\'est activé qu\'après avoir cliqué sur « Accepter ».',
+          'Vous pouvez retirer votre consentement à tout moment en supprimant l\'entrée « cookie-consent » du local storage de votre navigateur.',
+          'Google Analytics n\'est pas utilisé pour le ciblage publicitaire ni le profilage comportemental.',
+          'Les données du local storage (thème, langue, préférences de consentement) sont entièrement contrôlées par l\'utilisateur et peuvent être supprimées à tout moment.',
+        ],
+      },
+      {
+        h: '11. Fonctionnalités IA et OpenRouter',
+        p: 'L\'utilisation des fonctionnalités IA (AI Chat, AI Summary, AI Translate) nécessite votre propre clé API OpenRouter, qui est stockée exclusivement dans le local storage de votre navigateur et n\'est pas partagée avec l\'administrateur du site. La clé API est utilisée uniquement pour la communication avec l\'API OpenRouter. Nous n\'avons pas accès à votre clé API ni au contenu des requêtes envoyées à OpenRouter.',
+      },
+      {
+        h: '12. Dispositions finales',
+        p: 'Nous nous réservons le droit d\'apporter des modifications à la présente Politique de confidentialité. Les modifications seront communiquées en mettant à jour la date en haut de cette page. Toute question relative à la politique de confidentialité peut être adressée à : kontakt@optimapdf.com.',
+      },
+    ],
+  },
 };
 
 export default function PrivacyPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
