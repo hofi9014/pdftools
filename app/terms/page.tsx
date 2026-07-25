@@ -34,6 +34,18 @@ const content = {
       },
     ],
   },
+  de: {
+    title: 'Nutzungsbedingungen',
+    updated: 'Letzte Aktualisierung: 29. Juni 2026',
+    sections: [
+      { h: '1. Allgemeine Bestimmungen', p: 'Diese Nutzungsbedingungen regeln die Nutzung von OptimaPDF (optimapdf.com), betrieben von Leszek Hofman, Dąbrówka Nowa, Polen. Durch die Nutzung des Dienstes akzeptieren Sie diese Bedingungen.' },
+      { h: '2. Dienstleistungsbeschreibung', p: 'OptimaPDF bietet kostenlose Online-PDF-Bearbeitungs-, Konvertierungs- und Verwaltungswerkzeuge. Alle Werkzeuge sind ohne Registrierung verfügbar. Die Dateiverarbeitung erfolgt lokal in Ihrem Browser — Dateien werden nicht an unseren Server gesendet (außer URL-to-PDF).' },
+      { h: '3. Haftung', p: 'OptimaPDF bemüht sich um Genauigkeit, garantiert jedoch keine unterbrechungsfreie Nutzung. Benutzern wird empfohlen, Sicherungskopien ihrer Dateien zu erstellen.' },
+      { h: '4. Urheberrecht', p: 'Der Name und das Logo von OptimaPDF sind Eigentum des Dienstes. Das Kopieren oder Verteilen des Codes ohne Genehmigung ist verboten.' },
+      { h: '5. Datenschutz', p: 'Einzelheiten zur Datenverarbeitung finden Sie in unserer Datenschutzerklärung.' },
+      { h: '6. Kontakt', p: 'Für Anfragen: kontakt@optimapdf.com.' },
+    ],
+  },
   en: {
     title: 'Terms of Service',
     updated: 'Last updated: June 29, 2026',
