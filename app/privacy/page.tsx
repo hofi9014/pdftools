@@ -1684,6 +1684,118 @@ const content = {
       },
     ],
   },
+  zh: {
+    title: '隐私政策',
+    updated: '最后更新：2026年6月30日',
+    sections: [
+      {
+        h: '1. 总则',
+        p: '本隐私政策规定了OptimaPDF网站（optimapdf.com）用户个人数据的处理和保护原则。OptimaPDF高度重视隐私和数据安全。所有工具均按照隐私设计原则设计——默认情况下，您的文件在浏览器中本地处理。',
+      },
+      {
+        h: '2. 数据控制者',
+        p: '个人数据的控制者为Leszek Hofman，Dąbrówka Nowa，波兰。联系方式：kontakt@optimapdf.com。控制者未指定数据保护官——有关个人数据保护的所有事宜，请通过上述电子邮件地址直接联系我们。',
+      },
+      {
+        h: '3. 数据收集的范围和目的',
+        sub: [
+          {
+            h: '3.1 技术数据',
+            p: '使用网站时，以下技术数据会自动收集：IP地址、浏览器类型和版本、操作系统、屏幕分辨率、大致地理位置（国家级别）、访问时间和在网站上停留的时间。这些数据经过匿名化处理，仅用于统计目的和安全保证。',
+          },
+          {
+            h: '3.2 用户上传的文件',
+            p: '上传到工具的PDF文件按以下方式处理：',
+            items: [
+              '客户端工具（merge、split、rotate、watermark、page-numbers、crop-pdf、edit-pdf、sign-pdf、redact-pdf、flatten-pdf、delete-pages、extract-pages、reorder-pages、add-page、metadata、pdf-to-svg、pdf-to-epub、pdf-to-txt、fill-form、pdf-to-images、to-pdfa、compare-pdf、unlock-pdf、protect-pdf）——文件完全在浏览器中通过WebAssembly和JavaScript处理。文件永远不会离开您的设备。',
+              '服务器端工具（compress-pdf、ocr-pdf、pdf-to-word、word-to-pdf、jpg-to-pdf、pdf-to-excel、excel-to-pdf、pdf-to-powerpoint、openoffice-to-pdf、pdf-to-openoffice、pdf-to-html、html-to-pdf、url-to-pdf）——文件临时发送到服务器，仅在RAM中处理，操作完成后立即删除。最长保留时间：几秒钟。',
+              'AI功能（AI Chat、AI Summary、AI Translate）——从PDF中提取的文本会发送到外部OpenRouter API。我们不发送用户识别数据。内容不会被存储或用于模型训练。',
+            ],
+          },
+          {
+            h: '3.3 用户偏好',
+            p: '关于所选主题（深色/浅色）和语言偏好的信息存储在浏览器的localStorage中。这些信息不会发送到服务器或与第三方共享。',
+          },
+        ],
+      },
+      {
+        h: '4. 处理的法律依据',
+        items: [
+          'GDPR第6条第1款(b)项——履行电子服务合同（提供PDF工具）。',
+          'GDPR第6条第1款(f)项——控制者的正当利益（确保安全、防止滥用、技术分析）。',
+          'GDPR第6条第1款(a)项——用户同意（用于AI功能）。同意可以随时撤回。',
+        ],
+      },
+      {
+        h: '5. 数据接收者',
+        p: '数据可能会传输给以下类别的接收者：',
+        items: [
+          'Google LLC（Google Analytics）——基于您的同意的匿名化流量统计数据。',
+          '代表我们行事的处理者（托管、OpenRouter.ai）——基于数据处理协议。',
+          '依法有权的机关——仅在法律规定的情况下。',
+        ],
+      },
+      {
+        h: '6. 向欧洲经济区以外的数据传输',
+        p: '使用AI功能时，文本可能会在美国的OpenRouter服务器上处理。在此情况下，将根据GDPR要求适用适当的保障措施，包括酌情适用标准合同条款，以确保充分的数据保护水平。在其他情况下，数据不会传输到第三国。',
+      },
+      {
+        h: '7. 数据保留期限',
+        p: '数据在以下期限内保存：',
+        items: [
+          '服务器日志（IP地址、User-Agent）：最多7天。',
+          '上传到客户端工具的文件：不存储——页面刷新时从内存中移除。',
+          '上传到服务器端工具的文件：处理完成后立即删除。',
+          'localStorage数据：保留至用户手动删除。',
+        ],
+      },
+      {
+        h: '8. 用户权利',
+        p: '您享有以下权利：',
+        items: [
+          '访问您的数据（GDPR第15条）。',
+          '更正数据（GDPR第16条）。',
+          '删除数据（GDPR第17条）——被遗忘权。',
+          '限制处理（GDPR第18条）。',
+          '数据可携（GDPR第20条）。',
+          '反对处理（GDPR第21条）。',
+          '随时撤回同意，不影响撤回同意前基于同意所进行的处理的合法性。',
+          '向波兰数据保护局局长（PUODO——Urząd Ochrony Danych Osobowych，ul. Stawki 2，00-193华沙，波兰）提出投诉。',
+        ],
+      },
+      {
+        h: '9. 数据安全',
+        p: '我们采取以下安全措施：',
+        items: [
+          'TLS/SSL加密——浏览器和服务器之间的所有通信均经过加密。',
+          '内容安全策略（CSP）——限制执行不受信任脚本的能力。',
+          '仅RAM处理——文件不会写入服务器磁盘。',
+          '自动删除——文件在操作完成后立即删除。',
+          '文件大小限制——最大100 MB。',
+          '文件类型验证——我们在处理前检查文件签名（magic bytes）。',
+          '无需登录——我们不要求注册或登录。',
+        ],
+      },
+      {
+        h: '10. Google Analytics和分析同意',
+        p: '本网站使用Google Analytics（Google LLC，美国）进行匿名流量分析。Google Analytics收集汇总的统计数据，如：访问次数、在网站上停留的时间、浏览器类型、大致位置（国家级别）、流量来源。数据经过匿名化处理（anonymize_ip: true）。',
+        items: [
+          '首次访问时会显示同意横幅——Google Analytics仅在点击"接受"后激活。',
+          '您可以随时通过从浏览器的localStorage中删除"cookie-consent"条目来撤回同意。',
+          'Google Analytics不用于广告定向或行为分析。',
+          'localStorage中的数据（主题、语言、同意偏好）完全由用户控制，可以随时删除。',
+        ],
+      },
+      {
+        h: '11. AI功能和OpenRouter',
+        p: '使用AI功能（AI Chat、AI Summary、AI Translate）需要您自己的OpenRouter API密钥，该密钥仅存储在您浏览器的localStorage中，不会与网站管理员共享。API密钥仅用于与OpenRouter API通信。我们无法访问您的API密钥或发送到OpenRouter的查询内容。',
+      },
+      {
+        h: '12. 最终条款',
+        p: '我们保留修改本隐私政策的权利。变更将通过更新本页顶部的日期来通知。有关隐私政策的任何问题，请发送至：kontakt@optimapdf.com。',
+      },
+    ],
+  },
 };
 
 export default function PrivacyPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
