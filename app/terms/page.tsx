@@ -58,6 +58,18 @@ const content = {
       { h: '6. Contacto', p: 'Para consultas: kontakt@optimapdf.com.' },
     ],
   },
+  pt: {
+    title: 'Termos de Utilização',
+    updated: 'Última atualização: 29 de junho de 2026',
+    sections: [
+      { h: '1. Disposições Gerais', p: 'Estes Termos de Utilização regulam a utilização do OptimaPDF (optimapdf.com), operado por Leszek Hofman, Dąbrówka Nowa, Polónia. Ao utilizar o serviço, o utilizador aceita estes termos.' },
+      { h: '2. Descrição do Serviço', p: 'O OptimaPDF oferece ferramentas gratuitas de edição, conversão e gestão de PDF em linha. Todas as ferramentas estão disponíveis sem registo. O processamento de ficheiros é feito localmente no navegador do utilizador — os ficheiros não são enviados para o nosso servidor (exceto URL-to-PDF).' },
+      { h: '3. Responsabilidade', p: 'O OptimaPDF esforça-se pela precisão mas não garante um serviço ininterrupto. Aconselha-se os utilizadores a manterem cópias de segurança dos seus ficheiros.' },
+      { h: '4. Direitos de Autor', p: 'O nome e o logótipo do OptimaPDF são propriedade do serviço. É proibido copiar ou distribuir o código sem autorização.' },
+      { h: '5. Privacidade', p: 'Consulte a nossa Política de Privacidade para detalhes sobre o processamento de dados.' },
+      { h: '6. Contacto', p: 'Para esclarecimentos: kontakt@optimapdf.com.' },
+    ],
+  },
   en: {
     title: 'Terms of Service',
     updated: 'Last updated: June 29, 2026',
