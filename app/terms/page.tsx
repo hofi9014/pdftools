@@ -142,6 +142,18 @@ const content = {
       { h: '6. संपर्क', p: 'पूछताछ के लिए: kontakt@optimapdf.com.' },
     ],
   },
+  is: {
+    title: 'Þjónustuskilmálar',
+    updated: 'Síðast uppfært: 29. júní 2026',
+    sections: [
+      { h: '1. Almenn ákvæði', p: 'Þessi þjónustuskilmálar stjórna notkun þinni á OptimaPDF (optimapdf.com), sem Leszek Hofman, Dąbrówka Nowa, Pólland rekur. Með því að nota þjónustuna samþykkir þú þessa skilmála.' },
+      { h: '2. Lýsing á þjónustu', p: 'OptimaPDF býður upp á ókeypis PDF-breytingar, umbreytingar og stjórntæki á netinu. Öll tæki eru tiltæk án skráningar. Vinnsla skráa fer fram staðbundið í vafraranum þínum — skrár eru ekki sendar til vefþjónsins (nema URL-to-PDF).' },
+      { h: '3. Ábyrgð', p: 'OptimaPDF reynir að vera nákvæmt en tryggir ekki óslitna þjónustu. Notendum er ráðlagt að geyma afrit af skráum sínum.' },
+      { h: '4. Höfundarréttur', p: 'Nafn og merki OptimaPDF eru eign þjónustunnar. Óheimilt er að afrita eða dreifa kóða án leyfis.' },
+      { h: '5. Persónuvernd', p: 'Sjáðu persónuverndarstefnu okkar fyrir upplýsingar um meðferð gagna.' },
+      { h: '6. Samband', p: 'Fyrir fyrirspurnir: kontakt@optimapdf.com.' },
+    ],
+  },
   en: {
     title: 'Terms of Service',
     updated: 'Last updated: June 29, 2026',
