@@ -154,6 +154,18 @@ const content = {
       { h: '6. Samband', p: 'Fyrir fyrirspurnir: kontakt@optimapdf.com.' },
     ],
   },
+  it: {
+    title: 'Condizioni d\'Uso',
+    updated: 'Ultimo aggiornamento: 29 giugno 2026',
+    sections: [
+      { h: '1. Disposizioni generali', p: 'Le presenti Condizioni d\'Uso regolano l\'utilizzo di OptimaPDF (optimapdf.com), gestito da Leszek Hofman, Dąbrówka Nowa, Polonia. Utilizzando il servizio, accettate queste condizioni.' },
+      { h: '2. Descrizione del servizio', p: 'OptimaPDF offre strumenti gratuiti online per la modifica, la conversione e la gestione di file PDF. Tutti gli strumenti sono disponibili senza registrazione. L\'elaborazione dei file avviene localmente nel vostro browser — i file non vengono inviati al nostro server (ad eccezione di URL-to-PDF).' },
+      { h: '3. Responsabilità', p: 'OptimaPDF si impegna per l\'accuratezza ma non garantisce un servizio ininterrotto. Si consiglia agli utenti di conservare copie di sicurezza dei propri file.' },
+      { h: '4. Copyright', p: 'Il nome e il logo di OptimaPDF sono proprietà del servizio. È vietato copiare o distribuire il codice senza autorizzazione.' },
+      { h: '5. Privacy', p: 'Consultate la nostra Informativa sulla Privacy per i dettagli sul trattamento dei dati.' },
+      { h: '6. Contatto', p: 'Per domande: kontakt@optimapdf.com.' },
+    ],
+  },
   en: {
     title: 'Terms of Service',
     updated: 'Last updated: June 29, 2026',
