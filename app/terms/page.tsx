@@ -70,6 +70,18 @@ const content = {
       { h: '6. Contacto', p: 'Para esclarecimentos: kontakt@optimapdf.com.' },
     ],
   },
+  no: {
+    title: 'Bruksvilkår',
+    updated: 'Sist oppdatert: 29. juni 2026',
+    sections: [
+      { h: '1. Generelle vilkår', p: 'Disse bruksvilkårene regulerer bruken av OptimaPDF (optimapdf.com), driftet av Leszek Hofman, Dąbrówka Nowa, Polen. Ved å bruke tjenesten aksepterer du disse vilkårene.' },
+      { h: '2. Tjenestebeskrivelse', p: 'OptimaPDF tilbyr gratis nettbaserte PDF-redigerings-, konverterings- og administrasjonsverktøy. Alle verktøy er tilgjengelige uten registrering. Filbehandling skjer lokalt i nettleseren din — filer sendes ikke til vår server (unntatt URL-to-PDF).' },
+      { h: '3. Ansvar', p: 'OptimaPDF streber etter nøyaktighet, men garanterer ikke uavbrutt tjeneste. Brukere anbefales å sikkerhetskopiere filene sine.' },
+      { h: '4. Opphavsrett', p: 'OptimaPDF-navnet og -logoen er eiendom til tjenesten. Kopiering eller distribusjon av koden uten tillatelse er forbudt.' },
+      { h: '5. Personvern', p: 'Se vår personvernpolicy for detaljer om databehandling.' },
+      { h: '6. Kontakt', p: 'For henvendelser: kontakt@optimapdf.com.' },
+    ],
+  },
   en: {
     title: 'Terms of Service',
     updated: 'Last updated: June 29, 2026',
