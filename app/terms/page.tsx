@@ -190,6 +190,18 @@ const content = {
       { h: '6. İletişim', p: 'Sorularınız için: kontakt@optimapdf.com.' },
     ],
   },
+  zh: {
+    title: '使用条款',
+    updated: '最后更新：2026年6月29日',
+    sections: [
+      { h: '1. 总则', p: '本使用条款规定了您对OptimaPDF（optimapdf.com）的使用条件，该服务由Leszek Hofman、Dąbrówka Nowa、波兰运营。使用本服务即表示您同意这些条款。' },
+      { h: '2. 服务说明', p: 'OptimaPDF提供免费的在线PDF编辑、转换和管理工具。所有工具无需注册即可使用。文件处理在您的浏览器中本地进行——文件不会发送到我们的服务器（URL-to-PDF除外）。' },
+      { h: '3. 责任', p: 'OptimaPDF致力于提供准确的信息，但不保证服务不中断。建议用户保留文件的备份。' },
+      { h: '4. 版权', p: 'OptimaPDF的名称和标志是服务的所有物。未经许可复制或分发代码是禁止的。' },
+      { h: '5. 隐私', p: '有关数据处理的详细信息，请参阅我们的隐私政策。' },
+      { h: '6. 联系方式', p: '如有疑问，请联系：kontakt@optimapdf.com。' },
+    ],
+  },
   en: {
     title: 'Terms of Service',
     updated: 'Last updated: June 29, 2026',
