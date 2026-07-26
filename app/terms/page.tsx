@@ -178,6 +178,18 @@ const content = {
       { h: '6. お問い合わせ', p: 'お問い合わせ：kontakt@optimapdf.com。' },
     ],
   },
+  tr: {
+    title: 'Kullanım Koşulları',
+    updated: 'Son güncelleme: 29 Haziran 2026',
+    sections: [
+      { h: '1. Genel hükümler', p: 'Bu Kullanım Koşulları, OptimaPDF\u2019yi (optimapdf.com) Leszek Hofman, Dąbrówka Nowa, Polonya\u2019nın işlettiği hizmeti kullanımınızı düzenler. Hizmeti kullanarak bu koşulları kabul etmiş olursunuz.' },
+      { h: '2. Hizmet açıklaması', p: 'OptimaPDF, PDF düzenleme, dönüştürme ve yönetimi için ücretsiz çevrimiçi araçlar sunar. Tüm araçlar kayıt olmadan kullanılabilir. Dosya işleme tarayıcınızda yerel olarak gerçekleşir \u2014 dosyalar sunucumuza gönderilmez (URL-to-PDF hariç).' },
+      { h: '3. Sorumluluk', p: 'OptimaPDF doğruluk için çaba gösterir ancak kesintisiz hizmet garanti etmez. Kullanıcıların dosyalarının yedeklerini saklamaları tavsiye edilir.' },
+      { h: '4. Telif hakkı', p: 'OptimaPDF adı ve logosu hizmetin malıdır. İzinsiz kodu kopyalamak veya dağıtmak yasaktır.' },
+      { h: '5. Gizlilik', p: 'Veri işleme hakkında ayrıntılı bilgi için Gizlilik Politikamıza bakınız.' },
+      { h: '6. İletişim', p: 'Sorularınız için: kontakt@optimapdf.com.' },
+    ],
+  },
   en: {
     title: 'Terms of Service',
     updated: 'Last updated: June 29, 2026',
