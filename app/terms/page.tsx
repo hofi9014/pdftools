@@ -106,6 +106,18 @@ const content = {
       { h: '6. Contact', p: 'Pour toute demande : kontakt@optimapdf.com.' },
     ],
   },
+  ar: {
+    title: 'شروط الخدمة',
+    updated: 'آخر تحديث: 29 يونيو 2026',
+    sections: [
+      { h: '1. الأحكام العامة', p: 'تحكم شروط الخدمة هذه استخدامك لموقع OptimaPDF (optimapdf.com)، الذي يُشغّله Leszek Hofman، Dąbrówka Nowa، بولندا. باستخدامك للخدمة، أنت تقبل هذه الشروط.' },
+      { h: '2. وصف الخدمة', p: 'يوفر OptimaPDF أدوات مجانية عبر الإنترنت لتحرير ملفات PDF وتحويلها وإدارتها. جميع الأدوات متاحة بدون تسجيل. تتم معالجة الملفات محلياً في متصفحك — لا يتم إرسال الملفات إلى خادمنا (باستثناء URL-to-PDF).' },
+      { h: '3. المسؤولية', p: 'بذل OptimaPDF جهوداً لضمان دقة المعلومات ولكنه لا يضمن خدمة دون انقطاع. يُنصح المستخدمون بالاحتفاظ بنسخ احتياطية من ملفاتهم.' },
+      { h: '4. حقوق النشر', p: 'اسم OptimaPDF وشعاره هما ملك للخدمة. يُحظر نسخ الكود أو توزيعه دون إذن.' },
+      { h: '5. الخصوصية', p: 'راجع سياسة الخصوصية الخاصة بنا لمزيد من التفاصيل حول معالجة البيانات.' },
+      { h: '6. للتواصل', p: 'للاستفسارات: kontakt@optimapdf.com.' },
+    ],
+  },
   en: {
     title: 'Terms of Service',
     updated: 'Last updated: June 29, 2026',
@@ -125,9 +137,10 @@ export default function TermsPage({ locale: forcedLocale }: { locale?: Locale } 
   const locale = forcedLocale || detectedLocale;
   const lang = (locale === 'en' || !(locale in content)) ? 'en' : (locale as keyof typeof content);
   const data = content[lang] || content.en;
+  const isRtl = locale === 'ar' || locale === 'fa';
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-12">
+    <main className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
       <Link href="/" className="text-sm text-[var(--coffee-accent)] hover:underline mb-4 inline-block">&larr; {t('back.to_home', locale)}</Link>
       <h1 className="text-3xl font-bold mb-2">{data.title}</h1>
       <p className="text-sm text-gray-500 mb-8">{data.updated}</p>
