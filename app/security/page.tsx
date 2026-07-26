@@ -156,6 +156,82 @@ const content = {
       },
     ],
   },
+  es: {
+    title: 'Seguridad',
+    updated: 'Última actualización: 25 de junio de 2026',
+    intro: 'OptimaPDF otorga la máxima importancia a la seguridad de los datos. A continuación se presenta una descripción detallada de las medidas de seguridad que empleamos para proteger sus archivos y datos al utilizar nuestras herramientas.',
+    sections: [
+      {
+        h: '1. Procesamiento del lado del cliente en el navegador',
+        p: 'La mayoría de las herramientas de OptimaPDF funcionan con una arquitectura zero-trust — su archivo nunca abandona su dispositivo. Utilizamos WebAssembly y JavaScript para procesar archivos PDF directamente en su navegador. Esto significa que incluso nosotros, como operadores del servicio, no tenemos acceso a sus archivos. Esto se aplica a: fusionar, dividir, rotar, marca de agua, numeración de páginas, recortar, editar, firmar, redactar, aplanar, eliminar páginas, extraer páginas, reordenar páginas, añadir página, metadatos, PDF→SVG, PDF→EPUB, PDF→TXT, rellenar formularios, PDF→imágenes, PDF/A, comparar PDF, desbloquear y proteger con contraseña.',
+      },
+      {
+        h: '2. Cifrado TLS/SSL',
+        p: 'Toda la comunicación entre su navegador y nuestro servidor está cifrada utilizando TLS 1.3 (Transport Layer Security). Utilizamos un certificado SSL emitido por una autoridad de certificación de confianza. Esto significa que los datos transmitidos a través de internet son ilegibles para terceros. Puede verificar la validez del certificado haciendo clic en el icono del candado en la barra de direcciones de su navegador.',
+      },
+      {
+        h: '3. Content Security Policy (CSP)',
+        p: 'Aplicamos una estricta Content Security Policy (CSP) que restringe la ejecución de scripts de fuentes no confiables. CSP previene ataques de Cross-Site Scripting (XSS), inyección de código y robo de datos. Nuestra política CSP se audita y actualiza regularmente.',
+      },
+      {
+        h: '4. Procesamiento exclusivo en RAM',
+        p: 'Para herramientas que requieren procesamiento del lado del servidor (compresión, OCR, conversiones de formato), los archivos se procesan exclusivamente en la RAM del servidor. Los archivos no se escriben en el disco duro, no se copian en backups ni se replican. Una vez completada la operación, el archivo se elimina inmediatamente de la memoria. Tiempo máximo de retención en el servidor: unos segundos.',
+      },
+      {
+        h: '5. Verificación de archivos',
+        items: [
+          'Verificación de magic bytes — antes del procesamiento, verificamos que el archivo subido sea realmente un PDF analizando su cabecera (%PDF). Esto previene ataques de suplantación de tipo de archivo.',
+          'Límite de tamaño de archivo — el tamaño máximo de subida es de 100 MB. Esto protege tanto contra la sobrecarga del servidor como contra posibles ataques DoS.',
+          'Verificación de integridad — verificamos que el archivo no esté dañado antes de iniciar el procesamiento.',
+        ],
+      },
+      {
+        h: '6. Protección contra ataques',
+        items: [
+          'Protección CSRF — utilizamos tokens anti-CSRF y verificación de cabeceras Origin/Referer para prevenir ataques Cross-Site Request Forgery.',
+          'Rate limiting — limitamos las solicitudes desde una sola dirección IP, protegiendo contra ataques de fuerza bruta y DoS.',
+          'HTTP Security Headers — aplicamos las cabeceras X-Content-Type-Options (nosniff), X-Frame-Options (DENY), Strict-Transport-Security (HSTS) y Referrer-Policy.',
+          'Validación de entrada — todos los datos de entrada se validan tanto en el lado del cliente como del servidor, previniendo ataques de inyección.',
+        ],
+      },
+      {
+        h: '7. Almacenamiento cero de datos',
+        p: 'No almacenamos sus archivos ni datos personales en el servidor. No requerimos registro, inicio de sesión ni dirección de correo electrónico para utilizar las herramientas. No creamos perfiles de usuario ni rastreamos su actividad entre visitas.',
+      },
+      {
+        h: '8. Seguridad de funciones de IA',
+        p: 'Las funciones de IA utilizan la API externa de OpenRouter. Su clave de API se almacena exclusivamente en el localStorage de su navegador — nosotros no tenemos acceso a ella. El texto enviado a OpenRouter se limita al contenido extraído del PDF. No enviamos datos de identificación del usuario, dirección IP ni información del navegador. OpenRouter utiliza cifrado TLS y no utiliza el contenido enviado para el entrenamiento de modelos de IA.',
+      },
+      {
+        h: '9. Seguridad de dependencias',
+        p: 'Actualizamos regularmente todas las bibliotecas y dependencias utilizadas en el proyecto. Utilizamos herramientas de escaneo automático de vulnerabilidades (npm audit, Snyk). Todas las vulnerabilidades críticas se corrigen dentro de las 48 horas de la publicación del CVE.',
+      },
+      {
+        h: '10. Divulgación de vulnerabilidades',
+        p: 'Si descubre una vulnerabilidad de seguridad en OptimaPDF, por favor divulgue responsablemente enviando un correo electrónico a kontakt@optimapdf.com. Nos comprometemos a:',
+        items: [
+          'Confirmar la recepción dentro de 24 horas.',
+          'Realizar un análisis y tomar medidas correctivas dentro de 14 días (dependiendo de la gravedad).',
+          'Informar al reportero sobre las acciones tomadas.',
+          'No emprender acciones legales contra quienes divulgan responsablemente vulnerabilidades.',
+        ],
+      },
+      {
+        h: '11. Seguridad de transmisión de archivos',
+        p: 'En los casos poco comunes en que un archivo debe enviarse al servidor (herramientas del lado del servidor), la transmisión se realiza a través de una conexión HTTPS cifrada usando TLS 1.3. El archivo se transmite en memoria (streaming) sin almacenamiento temporal en disco. Después de recibir la respuesta, el archivo se elimina inmediatamente de la memoria del servidor. No mantenemos registros de operaciones con archivos.',
+      },
+      {
+        h: '12. Cumplimiento de estándares',
+        p: 'Nos adherimos a los siguientes estándares y recomendaciones de seguridad:',
+        items: [
+          'OWASP Top 10 — protección contra las vulnerabilidades más comunes de aplicaciones web.',
+          'RGPD — protección de datos personales de acuerdo con el Reglamento UE 2016/679.',
+          'Directrices de CERT Polska — seguimiento de las recomendaciones del equipo CERT polaco.',
+          'Mozilla Observatory — aspiramos a una calificación A+ en la prueba de seguridad de cabeceras HTTP.',
+        ],
+      },
+    ],
+  },
   en: {
     title: 'Security',
     updated: 'Last updated: June 25, 2026',
