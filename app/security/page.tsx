@@ -460,6 +460,82 @@ const content = {
       },
     ],
   },
+  fr: {
+    title: 'Sécurité',
+    updated: 'Dernière mise à jour : 25 juin 2026',
+    intro: 'OptimaPDF accorde la plus grande importance à la sécurité des données. Vous trouverez ci-dessous une description détaillée des mesures de sécurité que nous mettons en œuvre pour protéger vos fichiers et vos données lors de l\'utilisation de nos outils.',
+    sections: [
+      {
+        h: '1. Traitement côté client dans le navigateur',
+        p: 'La plupart des outils OptimaPDF fonctionnent avec une architecture zero-trust — votre fichier ne quitte jamais votre appareil. Nous utilisons WebAssembly et JavaScript pour traiter les fichiers PDF directement dans votre navigateur. Cela signifie que même nous, en tant qu\'opérateurs du service, n\'avons pas accès à vos fichiers. Cela s\'applique à : fusionner, diviser, tourner, filigrane, numérotation des pages, recadrer, modifier, signer, flouter, aplatir, supprimer des pages, extraire des pages, réorganiser des pages, ajouter une page, métadonnées, PDF→SVG, PDF→EPUB, PDF→TXT, remplir des formulaires, PDF→images, PDF/A, comparer PDF, déverrouiller et protéger par mot de passe.',
+      },
+      {
+        h: '2. Chiffrement TLS/SSL',
+        p: 'Toute la communication entre votre navigateur et notre serveur est chiffrée à l\'aide de TLS 1.3 (Transport Layer Security). Nous utilisons un certificat SSL émis par une autorité de certification de confiance. Cela signifie que les données transmises sur Internet sont illisibles par des tiers. Vous pouvez vérifier la validité du certificat en cliquant sur l\'icône de cadenas dans la barre d\'adresse de votre navigateur.',
+      },
+      {
+        h: '3. Content Security Policy (CSP)',
+        p: 'Nous appliquons une Content Security Policy (CSP) stricte qui restreint l\'exécution de scripts provenant de sources non fiables. Le CSP prévient les attaques de type Cross-Site Scripting (XSS), l\'injection de code et le vol de données. Notre politique CSP est régulièrement auditée et mise à jour.',
+      },
+      {
+        h: '4. Traitement exclusif en RAM',
+        p: 'Pour les outils nécessitant un traitement côté serveur (compression, OCR, conversions de formats), les fichiers sont traités exclusivement en RAM du serveur. Les fichiers ne sont pas écrits sur le disque dur, pas copiés dans des sauvegardes et pas répliqués. Une fois l\'opération terminée, le fichier est immédiatement supprimé de la mémoire. Durée de rétention maximale sur le serveur : quelques secondes.',
+      },
+      {
+        h: '5. Vérification des fichiers',
+        items: [
+          'Vérification des magic bytes — avant le traitement, nous vérifions que le fichier téléchargé est bien un PDF en analysant son en-tête (%PDF). Cela prévient les attaques de falsification de type de fichier.',
+          'Limite de taille de fichier — la taille maximale de téléchargement est de 100 Mo. Cela protège à la fois contre la surcharge du serveur et les attaques DoS potentielles.',
+          'Vérification d\'intégrité — nous vérifions que le fichier n\'est pas endommagé avant de commencer le traitement.',
+        ],
+      },
+      {
+        h: '6. Protection contre les attaques',
+        items: [
+          'Protection CSRF — nous utilisons des jetons anti-CSRF et la vérification des en-têtes Origin/Referer pour prévenir les attaques Cross-Site Request Forgery.',
+          'Rate limiting — nous limitons les requêtes depuis une seule adresse IP, protégeant contre les attaques par force brute et les attaques DoS.',
+          'En-têtes de sécurité HTTP — nous appliquons les en-têtes X-Content-Type-Options (nosniff), X-Frame-Options (DENY), Strict-Transport-Security (HSTS) et Referrer-Policy.',
+          'Validation des entrées — toutes les données d\'entrée sont validées tant côté client que côté serveur, prévenant les attaques par injection.',
+        ],
+      },
+      {
+        h: '7. Stockage zéro de données',
+        p: 'Nous ne stockons pas vos fichiers ni vos données personnelles sur le serveur. Nous n\'exigeons pas d\'inscription, de connexion ni d\'adresse e-mail pour utiliser les outils. Nous ne créons pas de profils utilisateurs et ne suivons pas votre activité entre les visites.',
+      },
+      {
+        h: '8. Sécurité des fonctions IA',
+        p: 'Les fonctions IA utilisent l\'API externe OpenRouter. Votre clé API est stockée exclusivement dans le localStorage de votre navigateur — nous n\'y avons pas accès. Le texte envoyé à OpenRouter est limité au contenu extrait du PDF. Nous n\'envoyons pas de données d\'identification utilisateur, d\'adresse IP ni d\'informations sur le navigateur. OpenRouter utilise le chiffrement TLS et n\'utilise pas le contenu soumis pour l\'entraînement de modèles IA.',
+      },
+      {
+        h: '9. Sécurité des dépendances',
+        p: 'Nous mettons régulièrement à jour toutes les bibliothèques et dépendances utilisées dans le projet. Nous utilisons des outils de scan automatique des vulnérabilités (npm audit, Snyk). Toutes les vulnérabilités critiques sont corrigées dans les 48 heures suivant la publication du CVE.',
+      },
+      {
+        h: '10. Divulgation des vulnérabilités',
+        p: 'Si vous découvrez une vulnérabilité de sécurité dans OptimaPDF, veuillez la divulguer de manière responsable en envoyant un e-mail à kontakt@optimapdf.com. Nous nous engageons à :',
+        items: [
+          'Accuser réception dans les 24 heures.',
+          'Effectuer une analyse et prendre des mesures correctives dans les 14 jours (selon la gravité).',
+          'Informer le déclarant des mesures prises.',
+          'Ne pas engager de poursuites judiciaires contre les personnes qui divulguent les vulnérabilités de manière responsable.',
+        ],
+      },
+      {
+        h: '11. Sécurité de la transmission des fichiers',
+        p: 'Dans les rares cas où un fichier doit être envoyé au serveur (outils côté serveur), la transmission se fait via une connexion HTTPS chiffrée utilisant TLS 1.3. Le fichier est transmis en mémoire (streaming) sans stockage temporaire sur disque. Après réception de la réponse, le fichier est immédiatement supprimé de la mémoire du serveur. Nous ne conservons pas de journaux des opérations sur les fichiers.',
+      },
+      {
+        h: '12. Conformité aux normes',
+        p: 'Nous respectons les normes et recommandations de sécurité suivantes :',
+        items: [
+          'OWASP Top 10 — protection contre les vulnérabilités les plus courantes des applications web.',
+          'RGPD — protection des données personnelles conformément au règlement UE 2016/679.',
+          'Directives de CERT Polska — suivi des recommandations de l\'équipe CERT polonaise.',
+          'Mozilla Observatory — nous visons une note A+ au test de sécurité des en-têtes HTTP.',
+        ],
+      },
+    ],
+  },
   en: {
     title: 'Security',
     updated: 'Last updated: June 25, 2026',
