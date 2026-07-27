@@ -384,6 +384,82 @@ const content = {
       },
     ],
   },
+  sv: {
+    title: 'Säkerhet',
+    updated: 'Senast uppdaterad: 25 juni 2026',
+    intro: 'OptimaPDF lägger störst vikt vid dataskydd. Nedan presenterar vi en detaljerad beskrivning av de säkerhetsåtgärder vi använder för att skydda dina filer och data när du använder våra verktyg.',
+    sections: [
+      {
+        h: '1. Client-side behandling i webbläsaren',
+        p: 'De flesta OptimaPDF-verktygen använder en zero-trust-arkitektur — din fil lämnar aldrig din enhet. Vi använder WebAssembly och JavaScript för att behandla PDF-filer direkt i din webbläsare. Detta betyder att även vi, som tjänsteoperatörer, inte har tillgång till dina filer. Detta gäller: slå ihop, dela, rotera, vattenstämpling, sidnummering, beskära, redigera, signera, sudda ut, platta ut, ta bort sidor, extrahera sidor, ordna om sidor, lägga till sida, metadata, PDF→SVG, PDF→EPUB, PDF→TXT, fylla i formulär, PDF→bilder, PDF/A, jämföra PDF, låsa upp och skydda med lösenord.',
+      },
+      {
+        h: '2. TLS/SSL-kryptering',
+        p: 'All kommunikation mellan din webbläsare och vår server är krypterad med TLS 1.3 (Transport Layer Security). Vi använder ett SSL-certifikat utfärdat av en betrodd certifieringsmyndighet. Detta betyder att data som överförs över internet är oläsbar för tredje part. Du kan verifiera certifikatets giltighet genom att klicka på hänglåsikonen i din webbläsares adressfält.',
+      },
+      {
+        h: '3. Content Security Policy (CSP)',
+        p: 'Vi tillämpar en strikt Content Security Policy (CSP) som begränsar körning av skripter från obetrodda källor. CSP förhindrar Cross-Site Scripting (XSS)-attacker, kodinjektion och datastöld. Vår CSP-policy revideras och uppdateras regelbundet.',
+      },
+      {
+        h: '4. Enbart RAM-behandling',
+        p: 'För verktyg som kräver serverbehandling (komprimering, OCR, formatkonverteringar), behandlas filerna uteslutande i serverns RAM. Filerna skrivs inte till hårddisken, kopieras inte till säkerhetskopieringar och replikeras inte. När operationen är klar tas filen omedelbart bort från minnet. Maximal lagringstid på servern: några få sekunder.',
+      },
+      {
+        h: '5. Filverifiering',
+        items: [
+          'Magic bytes-verifiering — före behandling verifierar vi att den uppladdade filen faktiskt är en PDF genom att analysera filens huvud (%PDF). Detta förhindrar attacker av typen filtypsförfalskning.',
+          'Filstorleksgräns — maximal uppladdningsstorlek är 100 MB. Detta skyddar både mot serveröverbelastning och potentiella DoS-attacker.',
+          'Integritetskontroll — vi verifierar att filen inte är skadad före behandlingens start.',
+        ],
+      },
+      {
+        h: '6. Skydd mot attacker',
+        items: [
+          'CSRF-skydd — vi använder anti-CSRF-token och Origin/Referer-huvudverifiering för att förhindra Cross-Site Request Forgery-attacker.',
+          'Rate limiting — vi begränsar förfrågningar från en enda IP-adress, vilket skyddar mot brute-force- och DoS-attacker.',
+          'HTTP-säkerhetshuvuden — vi tillämpar X-Content-Type-Options (nosniff), X-Frame-Options (DENY), Strict-Transport-Security (HSTS) och Referrer-Policy-huvuden.',
+          'Inmatningsvalidering — all inmatningsdata valideras både på klientsidan och serversidan, vilket förhindrar injektionsattacker.',
+        ],
+      },
+      {
+        h: '7. Noll datalagring',
+        p: 'Vi lagrar inte dina filer eller personuppgifter på servern. Vi kräver inte registrering, inloggning eller e-postadress för att använda verktygen. Vi skapar inte användarprofiler och spårar inte din aktivitet mellan besök.',
+      },
+      {
+        h: '8. Säkerhet för AI-funktioner',
+        p: 'AI-funktionerna använder det externa OpenRouter API:et. Din API-nyckel lagras uteslutande i webbläsarens localStorage — vi har inte tillgång till den. Text som skickas till OpenRouter är begränsat till innehåll extraherat från PDF:en. Vi skickar inte användaridentifierande data, IP-adress eller webbläsarinformation. OpenRouter använder TLS-kryptering och använder inte innehåll som skickats in för träning av AI-modeller.',
+      },
+      {
+        h: '9. Beroendesäkerhet',
+        p: 'Vi uppdaterar regelbundet alla bibliotek och beroenden som används i projektet. Vi använder automatiska sårbarhetsskannerverktyg (npm audit, Snyk). Alla kritiska sårbarheter åtgärdas inom 48 timmar efter CVE-publicering.',
+      },
+      {
+        h: '10. Sårbarhetsrapportering',
+        p: 'Om du upptäcker en säkerhetssårbarhet i OptimaPDF, vänligen rapportera den ansvarsfullt genom att skicka e-post till kontakt@optimapdf.com. Vi åtar oss att:',
+        items: [
+          'Bekräfta mottagandet inom 24 timmar.',
+          'Genomföra analys och vidta åtgärdande åtgärder inom 14 dagar (beroende på allvarlighetsgrad).',
+          'Informera anmälaren om vidtagna åtgärder.',
+          'Inte vidta rättsliga åtgärder mot de som rapporterar sårbarheter ansvarsfullt.',
+        ],
+      },
+      {
+        h: '11. Säkerhet för filöverföring',
+        p: 'I de sällsynta fallen där en fil måste skickas till servern (server-side verktyg), sker överföringen över en krypterad HTTPS-anslutning med TLS 1.3. Filen överförs i minnet (streaming) utan tillfällig disklagring. Efter att ha mottagit svaret tas filen omedelbart bort från serverminnet. Vi för inte loggar över filoperationer.',
+      },
+      {
+        h: '12. Efterlevnad av standarder',
+        p: 'Vi följer följande säkerhetsstandarder och rekommendationer:',
+        items: [
+          'OWASP Top 10 — skydd mot de vanligaste sårbarheterna i webapplikationer.',
+          'GDPR — personuppgiftsskydd i enlighet med EU-förordning 2016/679.',
+          'CERT Polska-riktlinjer — efterlevnad av rekommendationerna från det polska CERT-teamet.',
+          'Mozilla Observatory — vi strävar efter ett A+-betyg i HTTP-huvuden:säkerhetstest.',
+        ],
+      },
+    ],
+  },
   en: {
     title: 'Security',
     updated: 'Last updated: June 25, 2026',
