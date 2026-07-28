@@ -1068,6 +1068,82 @@ const content = {
       },
     ],
   },
+  zh: {
+    title: '安全',
+    updated: '最后更新：2026年6月25日',
+    intro: 'OptimaPDF高度重视数据安全。以下是我们为保护您在使用我们的工具时的文件和数据所采取的安全措施的详细描述。',
+    sections: [
+      {
+        h: '1. 客户端浏览器处理',
+        p: '大多数OptimaPDF工具采用零信任架构运行——您的文件永远不会离开您的设备。我们使用WebAssembly和JavaScript直接在您的浏览器中处理PDF文件。这意味着即使作为服务运营者，我们也无法访问您的文件。这适用于：merge、split、rotate、watermark、page-numbers、crop-pdf、edit-pdf、sign-pdf、redact-pdf、flatten-pdf、delete-pages、extract-pages、reorder-pages、add-page、metadata、pdf-to-svg、pdf-to-epub、pdf-to-txt、fill-form、pdf-to-images、to-pdfa、compare-pdf、unlock-pdf和protect-pdf。',
+      },
+      {
+        h: '2. TLS/SSL加密',
+        p: '您的浏览器与我们的服务器之间的所有通信均使用TLS 1.3（传输层安全协议）进行加密。我们使用由受信任的证书颁发机构签发的SSL证书。这意味着通过互联网传输的数据对第三方来说是不可读的。您可以通过单击浏览器地址栏中的挂锁图标来验证证书的有效性。',
+      },
+      {
+        h: '3. Content Security Policy（CSP）',
+        p: '我们实行严格的内容安全策略（CSP），限制来自不受信任来源的脚本执行。CSP可防止跨站脚本（XSS）攻击、代码注入和数据盗窃。我们的CSP策略会定期审计和更新。',
+      },
+      {
+        h: '4. 仅RAM处理',
+        p: '对于需要服务器端处理的工具（压缩、OCR、格式转换），文件仅在服务器的RAM中处理。文件不会写入硬盘、不会备份到副本、也不会被复制。操作完成后，文件会立即从内存中删除。服务器最大保留时间：几秒钟。',
+      },
+      {
+        h: '5. 文件验证',
+        items: [
+          '幻数（magic bytes）验证——在处理之前，我们通过分析文件的头部（%PDF）来验证上传的文件是否真的是PDF文件。这可以防止文件类型欺骗攻击。',
+          '文件大小限制——最大上传大小为100 MB。这既防止了服务器过载，也防止了潜在的DoS攻击。',
+          '完整性检查——我们会在开始处理之前验证文件是否损坏。',
+        ],
+      },
+      {
+        h: '6. 攻击防护',
+        items: [
+          'CSRF防护——我们使用CSRF令牌和Origin/Referer标头验证来防止跨站请求伪造攻击。',
+          '速率限制——我们限制来自单个IP地址的请求数量，防止暴力破解和DoS攻击。',
+          'HTTP安全标头——我们应用X-Content-Type-Options（nosniff）、X-Frame-Options（DENY）、Strict-Transport-Security（HSTS）和Referrer-Policy标头。',
+          '输入验证——所有输入数据均在客户端和服务器端进行验证，防止注入攻击。',
+        ],
+      },
+      {
+        h: '7. 零数据存储',
+        p: '我们不会将您的文件或个人数据存储在服务器上。我们不需要注册、登录或电子邮件地址即可使用工具。我们不会创建用户资料，也不会跟踪您在不同访问之间的活动。',
+      },
+      {
+        h: '8. AI功能安全',
+        p: 'AI功能使用外部OpenRouter API。您的API密钥仅存储在浏览器的localStorage中——我们无法访问它。发送到OpenRouter的文本仅限于从PDF中提取的内容。我们不发送用户识别数据、IP地址或浏览器信息。OpenRouter使用TLS加密，并且不会将提交的内容用于AI模型训练。',
+      },
+      {
+        h: '9. 依赖项安全',
+        p: '我们定期更新项目中使用的所有库和依赖项。我们使用自动漏洞扫描工具（npm audit、Snyk）。所有关键漏洞在CVE发布后48小时内修补。',
+      },
+      {
+        h: '10. 漏洞披露',
+        p: '如果您在OptimaPDF中发现安全漏洞，请通过发送电子邮件至kontakt@optimapdf.com负责任地进行披露。我们承诺：',
+        items: [
+          '在24小时内确认收到。',
+          '在14天内进行分析并采取纠正措施（取决于严重程度）。',
+          '告知报告者所采取的措施。',
+          '不会对负责任披露漏洞的人采取法律行动。',
+        ],
+      },
+      {
+        h: '11. 文件传输安全',
+        p: '在极少数需要将文件发送到服务器的情况下（服务器端工具），传输通过使用TLS 1.3加密的HTTPS进行。文件在内存中传输（流式传输），无需临时磁盘存储。收到响应后，文件会立即从服务器内存中删除。我们不保留文件操作日志。',
+      },
+      {
+        h: '12. 标准合规',
+        p: '我们遵守以下安全标准和建议：',
+        items: [
+          'OWASP Top 10——针对最常见的Web应用程序漏洞进行防护。',
+          'GDPR——根据欧盟法规2016/679保护个人数据。',
+          'CERT Polska指南——遵循波兰CERT团队的建议。',
+          'Mozilla Observatory——我们旨在HTTP标头安全测试中获得A+评级。',
+        ],
+      },
+    ],
+  },
   en: {
     title: 'Security',
     updated: 'Last updated: June 25, 2026',
