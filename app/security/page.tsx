@@ -688,6 +688,158 @@ const content = {
       },
     ],
   },
+  hi: {
+    title: 'सुरक्षा',
+    updated: 'अंतिम अपडेट: 25 जून 2026',
+    intro: 'OptimaPDF डेटा सुरक्षा को सर्वोच्च महत्व देता है। नीचे हमारे उपकरणों का उपयोग करते समय आपकी फ़ाइलों और डेटा की रक्षा के लिए अपनाई गई सुरक्षा उपायों का विस्तृत विवरण दिया गया है।',
+    sections: [
+      {
+        h: '1. ब्राउज़र में क्लाइंट-साइड संचालन',
+        p: 'OptimaPDF के अधिकांश उपकरण ज़ीरो-ट्रस्ट आर्किटेक्चर पर काम करते हैं — आपकी फ़ाइल कभी भी आपका डिवाइस नहीं छोड़ती। हम आपके ब्राउज़र में सीधे PDF फ़ाइलों को संचालित करने के लिए WebAssembly और JavaScript का उपयोग करते हैं। इसका मतलब है कि हम सेवा संचालक के रूप में भी आपकी फ़ाइलों तक पहुँच नहीं रखते। यह निम्नलिखित पर लागू होता है: विलय, विभाजन, घुमाव, वॉटरमार्क, पेज नंबरिंग, क्रॉप, संपादन, हस्ताक्षर, रेडैक्ट, फ़्लैटेन, पेज हटाना, पेज निकालना, पेज पुनर्क्रम, पेज जोड़ना, मेटाडेटा, PDF→SVG, PDF→EPUB, PDF→TXT, फ़ॉर्म भरना, PDF→छवियाँ, PDF/A, PDF की तुलना, अनलॉक और पासवर्ड से सुरक्षित करना।',
+      },
+      {
+        h: '2. TLS/SSL एन्क्रिप्शन',
+        p: 'आपके ब्राउज़र और हमारे सर्वर के बीच सभी संचार TLS 1.3 (Transport Layer Security) का उपयोग करके एन्क्रिप्ट किया गया है। हम एक विश्वसनीय प्रमाणपत्र प्राधिकरण द्वारा जारी SSL प्रमाणपत्र का उपयोग करते हैं। इसका मतलब है कि इंटरनेट पर प्रसारित डेटा तृतीय पक्षों के लिए अपठनीय है। आप अपने ब्राउज़र के पता बार में ताला आइकन पर क्लिक करके प्रमाणपत्र की वैधता की जाँच कर सकते हैं।',
+      },
+      {
+        h: '3. Content Security Policy (CSP)',
+        p: 'हम एक सख्त Content Security Policy (CSP) लागू करते हैं जो अविश्वसनीय स्रोतों से स्क्रिप्ट के निष्पादन को प्रतिबंधित करती है। CSP Cross-Site Scripting (XSS) हमलों, कोड इंजेक्शन और डेटा चोरी को रोकता है। हमारी CSP नीति का नियमित रूप से ऑडिट और अपडेट किया जाता है।',
+      },
+      {
+        h: '4. केवल RAM में संचालन',
+        p: 'सर्वर-साइड संचालन की आवश्यकता वाले उपकरणों (संपीड़न, OCR, प्रारूप रूपांतरण) के लिए, फ़ाइलें विशेष रूप से सर्वर की RAM में संचालित की जाती हैं। फ़ाइलें हार्ड ड्राइव पर नहीं लिखी जातीं, बैकअप में कॉपी नहीं की जातीं और न ही रिप्लिकेट की जाती हैं। ऑपरेशन पूरा होने के बाद, फ़ाइल तुरंत मेमोरी से हटा दी जाती है। सर्वर पर अधिकतम प्रतिधारण समय: कुछ सेकंड।',
+      },
+      {
+        h: '5. फ़ाइल सत्यापन',
+        items: [
+          'मैजिक बाइट्स सत्यापन — संचालन से पहले, हम अपलोड की गई फ़ाइल के हेडर (%PDF) का विश्लेषण करके यह सत्यापित करते हैं कि वह वास्तव में एक PDF है। यह फ़ाइल-प्रकार स्पूफिंग हमलों को रोकता है।',
+          'फ़ाइल आकार सीमा — अधिकतम अपलोड आकार 100 MB है। यह सर्वर अतिभार और संभावित DoS हमलों दोनों से बचाता है।',
+          'अखंडता जाँच — हम संचालन शुरू करने से पहले यह सत्यापित करते हैं कि फ़ाइल दूषित नहीं है।',
+        ],
+      },
+      {
+        h: '6. हमलों से सुरक्षा',
+        items: [
+          'CSRF सुरक्षा — हम Cross-Site Request Forgery हमलों को रोकने के लिए एंटी-CSRF टोकन और Origin/Referer हेडर सत्यापन का उपयोग करते हैं।',
+          'Rate Limiting — हम एक ही IP पते से अनुरोधों को सीमित करते हैं, ब्रूट-फ़ोर्स और DoS हमलों से बचाते हैं।',
+          'HTTP सुरक्षा हेडर — हम X-Content-Type-Options (nosniff), X-Frame-Options (DENY), Strict-Transport-Security (HSTS) और Referrer-Policy हेडर लागू करते हैं।',
+          'इनपुट सत्यापन — सभी इनपुट डेटा क्लाइंट और सर्वर दोनों पक्षों पर सत्यापित किया जाता है, जो इंजेक्शन हमलों को रोकता है।',
+        ],
+      },
+      {
+        h: '7. शून्य डेटा भंडारण',
+        p: 'हम आपकी फ़ाइलों या व्यक्तिगत डेटा को सर्वर पर संग्रहीत नहीं करते। हम उपकरणों का उपयोग करने के लिए पंजीकरण, लॉगिन या ईमेल पते की आवश्यकता नहीं रखते। हम उपयोगकर्ता प्रोफ़ाइल नहीं बनाते और न ही विज़िट के बीच आपकी गतिविधि को ट्रैक करते हैं।',
+      },
+      {
+        h: '8. AI सुविधा सुरक्षा',
+        p: 'AI सुविधाएँ बाहरी OpenRouter API का उपयोग करती हैं। आपकी API कुंजी विशेष रूप से आपके ब्राउज़र के localStorage में संग्रहीत होती है — हमारी उस तक पहुँच नहीं होती। OpenRouter को भेजा गया पाठ PDF से निकाली गई सामग्री तक सीमित है। हम उपयोगकर्ता-पहचान वाला डेटा, IP पता या ब्राउज़र जानकारी नहीं भेजते। OpenRouter TLS एन्क्रिप्शन का उपयोग करता है और AI मॉडल प्रशिक्षण के लिए प्रस्तुत सामग्री का उपयोग नहीं करता।',
+      },
+      {
+        h: '9. निर्भरता सुरक्षा',
+        p: 'हम नियमित रूप से प्रोजेक्ट में उपयोग की जाने वाली सभी पुस्तकालयों और निर्भरताओं को अपडेट करते हैं। हम स्वचालित भेद्यता स्कैनिंग टूल (npm audit, Snyk) का उपयोग करते हैं। सभी गंभीर भेद्यताओं को CVE प्रकाशन के 48 घंटे के भीतर पैच किया जाता है।',
+      },
+      {
+        h: '10. भेद्यता प्रकटीकरण',
+        p: 'यदि आप OptimaPDF में कोई सुरक्षा भेद्यता खोजते हैं, तो कृपया kontakt@optimapdf.com पर ईमेल भेजकर जिम्मेदारी से इसका खुलासा करें। हम प्रतिबद्ध हैं:',
+        items: [
+          '24 घंटे के भीतर प्राप्ति की पुष्टि।',
+          '14 दिनों के भीतर विश्लेषण और सुधारात्मक कार्रवाई (गंभीरता के अनुसार)।',
+          'रिपोर्टर को की गई कार्रवाई के बारे में सूचित करना।',
+          'जिम्मेदारी से भेद्यताओं का खुलासा करने वालों के खिलाफ कानूनी कार्रवाई न करना।',
+        ],
+      },
+      {
+        h: '11. फ़ाइल प्रसारण सुरक्षा',
+        p: 'दुर्लभ मामलों में जहाँ फ़ाइल को सर्वर को भेजा जाना चाहिए (सर्वर-साइड उपकरण), TLS 1.3 का उपयोग करके एन्क्रिप्टेड HTTPS पर प्रसारण होता है। फ़ाइल मेमोरी में (Streaming) प्रसारित होती है बिना डिस्क पर अस्थायी भंडारण के। प्रतिक्रिया प्राप्त करने के बाद, फ़ाइल तुरंत सर्वर मेमोरी से हटा दी जाती है। हम फ़ाइल ऑपरेशन के लॉग नहीं रखते।',
+      },
+      {
+        h: '12. मानक अनुपालन',
+        p: 'हम निम्नलिखित सुरक्षा मानकों और सिफारिशों का पालन करते हैं:',
+        items: [
+          'OWASP Top 10 — वेब एप्लिकेशन की सबसे सामान्य भेद्यताओं से सुरक्षा।',
+          'GDPR — EU विनियमन 2016/679 के अनुसार व्यक्तिगत डेटा की सुरक्षा।',
+          'CERT Polska दिशानिर्देश — पोलिश CERT टीम की सिफारिशों का पालन करना।',
+          'Mozilla Observatory — हम HTTP हेडर सुरक्षा परीक्षण में A+ रेटिंग का लक्ष्य रखते हैं।',
+        ],
+      },
+    ],
+  },
+  is: {
+    title: 'Öryggi',
+    updated: 'Síðast uppfært: 25. júní 2026',
+    intro: 'OptimaPDF leggur mestu áherslu á gagnöryggi. Hér að neðan er ítarleg lýsing á þeim öryggisráðstöfunum sem við beitum til að vernda skrár þínar og gögn þegar þú notar tækin okkar.',
+    sections: [
+      {
+        h: '1. Vinnsla í vafrara (client-side)',
+        p: 'Flest OptimaPDF tæki starfa á grundvelli zero-trust arkitektúrs — skráin þín yfirgæfir aldrei tækið þitt. Við notum WebAssembly og JavaScript til að meðhöndla PDF-skrár beint í vafraranum þínum. Þetta þýðir að jafnvel sem þjónustuaðilar höfum við engan aðgang að skránum þínum. Þetta á við um: sameiningu, sundursmíði, snúning, vatnsmerki, síðunúmer, skurð, ritstjórn, undirskriftir, afmörkun, flettingu, síðueyðingu, síðuúrtak, síðuendurröðun, síðuviðbót, hugtök, PDF→SVG, PDF→EPUB, PDF→TXT, eyðublöð, PDF→myndir, PDF/A, PDF-samanburð, aflæsingu og lykilorðavernd.',
+      },
+      {
+        h: '2. TLS/SSL dulkóðun',
+        p: 'Allt samskipti á milli vafrarans þins og þjónsins okkar eru dulkóðuð með TLS 1.3 (Transport Layer Security). Við notum SSL-vottorð frá viðurkenndum vottorðsaðila. Þetta þýðir að gögn sem flutt eru yfir internetið eru ólesanleg fyrir þriðja aðila. Þú getur athugað gildi vottorðsins með því að smella á lásatáknið í veffangastiku vafrarans þíns.',
+      },
+      {
+        h: '3. Content Security Policy (CSP)',
+        p: 'Við beitum ströngu Content Security Policy (CSP) sem kemur í veg fyrir keyrslu ótraustra skripta. CSP kemur í veg fyrir Cross-Site Scripting (XSS) árásir, kóðainnskeytingu og gagnastuld. Öryggisstefna okkar er endurskoðuð og uppfærð reglulega.',
+      },
+      {
+        h: '4. Vinnsla eingöngu í vinnsluminni (RAM)',
+        p: 'Fyrir tæki sem þurfa vinnslu á þjóni (þjöppun, OCR, sniðbreyting) eru skrárnar meðhöndlaðar eingöngu í vinnsluminni þjónsins. Skrárnar eru ekki skrifaðar á disk, ekki afritaðar í öryggisafrit og ekki endurhluttengdar. Eftir að aðgerðinni er lokið er skránni eytt úr minni strax. Hámarks geymslutími á þjóni: nokkrar sekúndur.',
+      },
+      {
+        h: '5. Staðfesting á skrám',
+        items: [
+          ' Staðfesting á gagnabótum (magic bytes) — áður en aðgerð hefst greinum við höfuðskrá (%PDF) hlaðinnar skráar til að staðfesta að hún sé raunverulega PDF. Þetta kemur í veg fyrir svikaraðir árásum á skráargerð.',
+          'Stærðarmörk — hámarks upphleðslustærð er 100 MB. Þetta verndar jafnt gegn þjónsálagi og hugsanlegum DoS-árásum.',
+          'Heildarsemi — við staðfestum að skráin sé ekki skemmd áður en aðgerð hefst.',
+        ],
+      },
+      {
+        h: '6. Vernd gegn árásum',
+        items: [
+          'CSRF-vernd — við notum CSRF-varnartegn og tilvísunarstaðfestingu til að koma í veg fyrir Cross-Site Request Forgery árásir.',
+          'Hraðatakmarkanir — við takmarkum beiðnir frá einum IP-tölu, verndum gegn brute-force og DoS-árásum.',
+          'HTTP-öryggisfyrirsagnir — við beitum X-Content-Type-Options (nosniff), X-Frame-Options (DENY), Strict-Transport-Security (HSTS) og Referrer-Policy.',
+          'Inntaksstaðfesting — allt inntaksgögn eru staðfest á bæði biðlara og þjóni, þetta kemur í veg fyrir innskeytingaárásir.',
+        ],
+      },
+      {
+        h: '7. Engin gagnageymsla',
+        p: 'Við geymum ekki skrár þínar né persónuleg gögn á þjóni. Við krefjumst ekki skráningar, innskráningar eða netfangs til að nota tækin. Við búum ekki til notendaupplýsingar og fylgjum ekki með virkni þinni milli heimsókna.',
+      },
+      {
+        h: '8. Öryggi AI aðgerða',
+        p: 'AI aðgerðir nota ytri OpenRouter API. Þín API-lykil er geymdur eingöngu í localStorage vafrarans þíns — við höfum ekki aðgang að honum. Texti sem sendur er til OpenRouter er takmarkaður við efni sem dregið er úr PDF. Við sendum ekki persónugögn, IP-tölu eða upplýsingar um vafrara. OpenRouter notar TLS-dulkóðun og notar ekki efni til þjálfunar gervigreindarlíkana.',
+      },
+      {
+        h: '9. Öryggi hugbúnaðar',
+        p: 'Við uppfærum reglulega allar þær bókasöfn og aðföng sem notuð eru í verkefninu. Við notum sjálfvirk öryggisskönnunaratól (npm audit, Snyk). Öll alvarleg öryggisgögg eru lögð inn innan 48 klukkustunda frá birtingu CVE.',
+      },
+      {
+        h: '10. Skýrsla um öryggisgöng',
+        p: 'Ef þú finnur öryggisgöng í OptimaPDF, vinsamlegast sendu tölvupóst á kontakt@optimapdf.com með ábyrgðarskýrslu. Við skuldbindum okkur:',
+        items: [
+          'Staðfesting á mótttöku innan 24 klukkustunda.',
+          'Greining og úrbætur innan 14 daga (eftir alvarleika).',
+          'Tilkynning til skýrandi um gerðar ráðstafanir.',
+          'Engin lagaleg aðgerð gegn þeim sem skýra á ábyrgan hátt.',
+        ],
+      },
+      {
+        h: '11. Öryggi gagnasendingar',
+        p: 'Í sjaldgæfum tilvikum þar sem skrá þarf að senda til þjónsins (þjónshliðartæki) fer sending yfir dulkóðað HTTPS með TLS 1.3. Skráin flæðir í gegnum minni (streaming) án tímabundinnar geymslu á diski. Eftir að svar hefur borist er skránni eytt úr minni þjónsins strax. Við skrá ekki atburði gagnasendinga.',
+      },
+      {
+        h: '12. Viðmiðunarstaðlar',
+        p: 'Við höfum eftirfarandi öryggisstaðla og ráðleggingar að leiðarljósi:',
+        items: [
+          'OWASP Top 10 — vörn gegn algengustu veikleikum vefumsókna.',
+          'GDPR — gagnavernd samkvæmt reglugerð Evrópusambandsins 2016/679.',
+          'Ráðleggingar CERT Polska — samkvæmt ráðleggingum Pólska CERT-liðsins.',
+          'Mozilla Observatory — við stefnum á einkunn A+ í HTTP-öryggisprófunum.',
+        ],
+      },
+    ],
+  },
   en: {
     title: 'Security',
     updated: 'Last updated: June 25, 2026',
