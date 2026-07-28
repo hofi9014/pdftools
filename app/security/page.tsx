@@ -992,6 +992,82 @@ const content = {
       },
     ],
   },
+  tr: {
+    title: 'Güvenlik',
+    updated: 'Son güncelleme: 25 Haziran 2026',
+    intro: 'OptimaPDF, veri güvenliğine en büyük önemi vermektedir. Aşağıda, araçlarımızı kullanırken dosyalarınızı ve verilerinizi korumak için uyguladığımız güvenlik önlemlerinin ayrıntılı bir açıklaması bulunmaktadır.',
+    sections: [
+      {
+        h: '1. Tarayıcıda istemci tarafı işleme',
+        p: 'OptimaPDF araçlarının çoğu, sıfır güven mimarisiyle çalışır — dosyanız cihazınızdan asla ayrılmaz. PDF dosyalarını doğrudan tarayıcınızda işlemek için WebAssembly ve JavaScript kullanırız. Bu, hizmet operatörleri olarak bizim bile dosyalarınıza erişimimizin olmadığı anlamına gelir. Bu, aşağıdakiler için geçerlidir: merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf ve protect-pdf.',
+      },
+      {
+        h: '2. TLS/SSL şifrelemesi',
+        p: 'Tarayıcınız ile sunucumuz arasındaki tüm iletişim, TLS 1.3 (Transport Layer Security) kullanılarak şifrelenmektedir. Güvenilir bir sertifika yetkilisi tarafından verilen SSL sertifikası kullanıyoruz. Bu, internet üzerinden iletilen verilerin üçüncü taraflarca okunamayacağı anlamına gelir. Tarayıcınızın adres çubuğundaki kilit simgesine tıklayarak sertifikanın geçerliliğini doğrulayabilirsiniz.',
+      },
+      {
+        h: '3. Content Security Policy (CSP)',
+        p: 'Güvenilmeyen kaynaklardan gelen komut dosyalarının yürütülmesini kısıtlayan sıkı bir Content Security Policy (CSP) uyguluyoruz. CSP, Cross-Site Scripting (XSS) saldırılarını, kod enjeksiyonunu ve veri hırsızlığını önler. CSP politikamız düzenli olarak denetlenmekte ve güncellenmektedir.',
+      },
+      {
+        h: '4. Yalnızca RAM\'de işleme',
+        p: 'Sunucu tarafı işleme gerektiren araçlar (sıkıştırma, OCR, biçim dönüşümleri) için dosyalar yalnızca sunucunun RAM\'inde işlenir. Dosyalar sabit sürücüye yazılmaz, yedeklere kopyalanmaz ve çoğaltılmaz. İşlem tamamlandıktan sonra dosya derhal bellekten silinir. Sunucuda maksimum saklama süresi: birkaç saniye.',
+      },
+      {
+        h: '5. Dosya doğrulaması',
+        items: [
+          'Sihirli bayt doğrulaması — işleme başlamadan önce, yüklenen dosyanın başlığını (%PDF) analiz ederek gerçekten bir PDF olup olmadığını doğrularız. Bu, dosya türü sahteciliği saldırılarını önler.',
+          'Dosya boyutu sınırı — maksimum yükleme boyutu 100 MB\'dir. Bu, hem sunucu aşırı yüklenmesine hem de olası DoS saldırılarına karşı korur.',
+          'Bütünlük kontrolü — işleme başlamadan önce dosyanın bozuk olmadığını doğrularız.',
+        ],
+      },
+      {
+        h: '6. Saldırılara karşı koruma',
+        items: [
+          'CSRF koruması — CSRF token\'ları ve Origin/Referer başlık doğrulaması kullanarak Cross-Site Request Forgery saldırılarını önleriz.',
+          'Hız sınırlama — tek bir IP adresinden gelen istekleri sınırlayarak brute-force ve DoS saldırılarına karşı koruruz.',
+          'HTTP Güvenlik Başlıkları — X-Content-Type-Options (nosniff), X-Frame-Options (DENY), Strict-Transport-Security (HSTS) ve Referrer-Policy başlıklarını uygularız.',
+          'Girdi doğrulaması — tüm girdi verileri hem istemci hem de sunucu tarafında doğrulanarak enjeksiyon saldırıları önlenir.',
+        ],
+      },
+      {
+        h: '7. Sıfır veri depolama',
+        p: 'Dosyalarınızı veya kişisel verilerinizi sunucuda depolamıyoruz. Araçları kullanmak için kayıt, giriş veya e-posta adresi talep etmiyoruz. Kullanıcı profilleri oluşturmuyor veya ziyaretler arasında etkinliğinizi takip etmiyoruz.',
+      },
+      {
+        h: '8. Yapay zeka özellik güvenliği',
+        p: 'Yapay zeka özellikleri harici OpenRouter API\'sini kullanır. API anahtarınız yalnızca tarayıcınızın localStorage\'ında saklanır — bizim ona erişimimiz yoktur. OpenRouter\'a gönderilen metin, PDF\'den çıkarılan içerikle sınırlıdır. Kullanıcı tanımlayıcı veri, IP adresi veya tarayıcı bilgisi göndermiyoruz. OpenRouter, TLS şifrelemesi kullanır ve gönderilen içeriği yapay zeka model eğitimi için kullanmaz.',
+      },
+      {
+        h: '9. Bağımlılık güvenliği',
+        p: 'Projede kullanılan tüm kütüphaneleri ve bağımlılıkları düzenli olarak güncelliyoruz. Otomatik zafiyet tarama araçları (npm audit, Snyk) kullanıyoruz. Tüm kritik zafiyetler, CVE yayınlandıktan sonra 48 saat içinde düzeltilir.',
+      },
+      {
+        h: '10. Zafiyet bildirimi',
+        p: 'OptimaPDF\'de bir güvenlik zafiyeti keşfederseniz, lütfen kontakt@optimapdf.com adresine e-posta göndererek sorumlu bir şekilde bildirin. Şunları taahhüt ediyoruz:',
+        items: [
+          '24 saat içinde alındığını onaylamak.',
+          '14 gün içinde analiz yapmak ve düzeltici önlemler almak (ciddiyetine bağlı olarak).',
+          'Bildiriciyi alınan önlemler hakkında bilgilendirmek.',
+          'Zafiyetleri sorumlu bir şekilde bildirenlere karşı yasal işlem başlatmamak.',
+        ],
+      },
+      {
+        h: '11. Dosya iletim güvenliği',
+        p: 'Bir dosyanın sunucuya gönderilmesi gereken nadir durumlarda (sunucu tarafı araçlar), iletim TLS 1.3 kullanılarak şifrelenmiş HTTPS üzerinden gerçekleşir. Dosya, geçici disk depolaması olmadan bellek üzerinden akışlı (streaming) olarak iletilir. Yanıt alındıktan sonra dosya derhal sunucu belleğinden silinir. Dosya işlem günlüklerini tutmuyoruz.',
+      },
+      {
+        h: '12. Standartlara uygunluk',
+        p: 'Aşağıdaki güvenlik standartlarına ve tavsiyelerine uyuyoruz:',
+        items: [
+          'OWASP Top 10 — en yaygın web uygulaması zafiyetlerine karşı koruma.',
+          'GDPR — AB Tüzüğü 2016/679 uyarınca kişisel veri koruması.',
+          'CERT Polska kılavuzları — Polonya CERT ekibinin tavsiyelerine uyarak.',
+          'Mozilla Observatory — HTTP başlık güvenlik testinde A+ derecesi hedefliyoruz.',
+        ],
+      },
+    ],
+  },
   en: {
     title: 'Security',
     updated: 'Last updated: June 25, 2026',
