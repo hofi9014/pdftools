@@ -311,6 +311,55 @@ const content = {
       },
     ],
   },
+  sv: {
+    title: 'Stöd',
+    subtitle: 'Hur du kan hjälpa OptimaPDF att växa.',
+    donateSection: {
+      h: '☕️ Bjud oss på en kaffe',
+      p: 'OptimaPDF är gratis och kommer att förbli gratis. Om du tycker att våra verktyg är användbara kan du stödja utvecklingen av webbplatsen med en frivillig donation. Varje belopp, oavsett hur litet, hjälper till att täcka kostnader för server, API och domän. Det finns inga förpliktelser — detta är rent frivilligt stöd.',
+      button: '☕️ Bjud oss på en kaffe',
+      note: 'Betalningar behandlas säkert via Stripe. Inget konto krävs.',
+      badgeLabel: 'Är du en OptimaPDF-supporter?',
+      badgeDesc: 'Om du har gjort en donation kan du begära ett "Supporter"-märke — skicka oss ett e-postmeddelande med din transaktionsbekräftelse så lägger vi till dig på supporterlistan på webbplatsen.',
+    },
+    sections: [
+      {
+        h: '📧 E-postkontakt',
+        p: 'Skriv till oss på:',
+        link: 'mailto:kontakt@optimapdf.com',
+        linkText: 'kontakt@optimapdf.com',
+      },
+      {
+        h: '❓ Vanliga frågor',
+        p: 'Innan du kontaktar oss, kolla vår FAQ-sida — du hittar svar på vanliga frågor om verktygen, integritet och hur webbplatsen fungerar.',
+        link: '/faq',
+        linkText: 'Gå till FAQ →',
+      },
+      {
+        h: '🐛 Rapportera ett fel',
+        p: 'Om du har hittat ett fel i något av verktygen, vänligen beskriv det så noggrant som möjligt:',
+        items: [
+          'Vilket verktyg och vilken operation orsakar felet?',
+          'Vilken webbläsare och vilket operativsystem använder du?',
+          'Uppstår felet med en specifik fil? (i så fall, vad är dess storlek och antal sidor?)',
+          'Finns det några röda fel i webbläsarkonsolen (F12 → Konsol)?',
+        ],
+      },
+      {
+        h: '💡 Funktionsförslag',
+        p: 'Har du en idé för ett nytt verktyg eller en förbättring av ett befintligt? Vi vill gärna höra om det! Beskriv kort ditt förslag och varför du tror att det skulle vara användbart.',
+      },
+      {
+        h: '🔗 Länkar',
+        items: [
+          'Integritetspolicy — /privacy',
+          'Användarvillkor — /terms',
+          'FAQ — /faq',
+          'Hemsida — /',
+        ],
+      },
+    ],
+  },
 };
 
 export default function SupportPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
