@@ -262,6 +262,55 @@ const content = {
       },
     ],
   },
+  no: {
+    title: 'Støtte',
+    subtitle: 'Hvordan du kan hjelpe OptimaPDF med å vokse.',
+    donateSection: {
+      h: '☕️ Kjøp oss en kaffe',
+      p: 'OptimaPDF er gratis og vil forbli gratis. Hvis du finner verktøyene våre nyttige, kan du støtte utviklingen av nettstedet med en frivillig donasjon. Ethvert beløp, uansett hvor lite, hjelper til med å dekke kostnader til server, API og domene. Det er ingen forpliktelser — dette er rent frivillig støtte.',
+      button: '☕️ Kjøp oss en kaffe',
+      note: 'Betalinger behandles sikkert via Stripe. Ingen konto nødvendig.',
+      badgeLabel: 'Er du en OptimaPDF-støttespiller?',
+      badgeDesc: 'Hvis du har gitt en donasjon, kan du be om et "Supporter"-merke — send oss en e-post med bekreftelse på transaksjonen din, så legger vi deg til på støttespillerlisten på nettstedet.',
+    },
+    sections: [
+      {
+        h: '📧 E-postkontakt',
+        p: 'Skriv til oss på:',
+        link: 'mailto:kontakt@optimapdf.com',
+        linkText: 'kontakt@optimapdf.com',
+      },
+      {
+        h: '❓ Ofte stilte spørsmål',
+        p: 'Før du kontakter oss, sjekk vår FAQ-side — du finner svar på vanlige spørsmål om verktøyene, personvern og hvordan nettstedet fungerer.',
+        link: '/faq',
+        linkText: 'Gå til FAQ →',
+      },
+      {
+        h: '🐛 Rapporter en feil',
+        p: 'Hvis du har funnet en feil i noen av verktøyene, vennligst beskriv den så nøyaktig som mulig:',
+        items: [
+          'Hvilket verktøy og hvilken operasjon forårsaker feilen?',
+          'Hvilken nettleser og operativsystem bruker du?',
+          'Oppstår feilen med en bestemt fil? (i så fall, hva er størrelsen og antall sider?)',
+          'Er det noen røde feil i nettleserkonsollen (F12 → Konsoll)?',
+        ],
+      },
+      {
+        h: '💡 Funksjonsforslag',
+        p: 'Har du en idé til et nytt verktøy eller en forbedring av et eksisterende? Vi vil gjerne høre om det! Beskriv kort forslaget ditt og hvorfor du tror det ville være nyttig.',
+      },
+      {
+        h: '🔗 Lenker',
+        items: [
+          'Personvernerklæring — /privacy',
+          'Bruksvilkår — /terms',
+          'FAQ — /faq',
+          'Hjemmeside — /',
+        ],
+      },
+    ],
+  },
 };
 
 export default function SupportPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
