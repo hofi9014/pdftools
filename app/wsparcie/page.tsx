@@ -703,6 +703,55 @@ const content = {
       },
     ],
   },
+  zh: {
+    title: '支持',
+    subtitle: '您如何帮助OptimaPDF成长。',
+    donateSection: {
+      h: '☕️ 请我们喝杯咖啡',
+      p: 'OptimaPDF是免费的，并将保持免费。如果您觉得我们的工具有用，您可以通过自愿捐款来支持网站的开发。无论金额多小，都有助于支付服务器、API和域名的费用。没有任何义务——这纯粹是自愿支持。',
+      button: '☕️ 请我们喝杯咖啡',
+      note: '付款由Stripe安全处理。无需账户。',
+      badgeLabel: '您是OptimaPDF的支持者吗？',
+      badgeDesc: '如果您已经捐款，您可以申请一个"Supporter"徽章——请将您的交易确认信息通过电子邮件发送给我们，我们会将您添加到网站的支持者列表中。',
+    },
+    sections: [
+      {
+        h: '📧 通过电子邮件联系',
+        p: '请写信至：',
+        link: 'mailto:kontakt@optimapdf.com',
+        linkText: 'kontakt@optimapdf.com',
+      },
+      {
+        h: '❓ 常见问题',
+        p: '在联系我们之前，请查看我们的FAQ页面——您会找到关于工具、隐私以及网站运作方式的常见问题解答。',
+        link: '/faq',
+        linkText: '前往FAQ →',
+      },
+      {
+        h: '🐛 报告错误',
+        p: '如果您在某个工具中发现了错误，请尽可能精确地描述它：',
+        items: [
+          '哪个工具和哪个操作导致了错误？',
+          '您正在使用哪个浏览器和操作系统？',
+          '错误是否发生在特定文件上？（如果是，文件大小和页数是多少？）',
+          '浏览器控制台（F12 → Console）中是否有红色错误？',
+        ],
+      },
+      {
+        h: '💡 功能建议',
+        p: '您对新工具或改进现有工具有什么想法吗？我们非常乐意倾听！请简要描述您的建议以及您认为它会有什么用处。',
+      },
+      {
+        h: '🔗 链接',
+        items: [
+          '隐私政策 — /privacy',
+          '服务条款 — /terms',
+          'FAQ — /faq',
+          '首页 — /',
+        ],
+      },
+    ],
+  },
 };
 
 export default function SupportPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
