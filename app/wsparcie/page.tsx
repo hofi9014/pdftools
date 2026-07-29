@@ -164,6 +164,55 @@ const content = {
       },
     ],
   },
+  es: {
+    title: 'Apoyo',
+    subtitle: 'Cómo puede ayudar a que OptimaPDF crezca.',
+    donateSection: {
+      h: '☕️ Invítenos a un café',
+      p: 'OptimaPDF es gratuito y seguirá siéndolo. Si encuentra útiles nuestras herramientas, puede apoyar el desarrollo del sitio con una donación voluntaria. Cualquier cantidad, por pequeña que sea, ayuda a cubrir los costos del servidor, la API y el dominio. No hay obligaciones — esto es apoyo puramente voluntario.',
+      button: '☕️ Invítenos a un café',
+      note: 'Pagos procesados de forma segura por Stripe. No se requiere cuenta.',
+      badgeLabel: '¿Es usted un colaborador de OptimaPDF?',
+      badgeDesc: 'Si ha realizado una donación, puede solicitar una insignia de "Supporter" — envíenos un correo electrónico con la confirmación de su transacción y lo añadiremos a la lista de colaboradores en el sitio.',
+    },
+    sections: [
+      {
+        h: '📧 Contacto por correo electrónico',
+        p: 'Escríbanos a:',
+        link: 'mailto:kontakt@optimapdf.com',
+        linkText: 'kontakt@optimapdf.com',
+      },
+      {
+        h: '❓ Preguntas frecuentes',
+        p: 'Antes de contactarnos, consulte nuestra página de preguntas frecuentes — allí encontrará respuestas a las preguntas más comunes sobre las herramientas, la privacidad y el funcionamiento del sitio.',
+        link: '/faq',
+        linkText: 'Ir a preguntas frecuentes →',
+      },
+      {
+        h: '🐛 Informar de un error',
+        p: 'Si ha encontrado un error en alguna de las herramientas, descríbalo con la mayor precisión posible:',
+        items: [
+          '¿Qué herramienta y qué operación causa el error?',
+          '¿Qué navegador y sistema operativo está utilizando?',
+          '¿El error ocurre con un archivo específico? (en caso afirmativo, ¿cuál es su tamaño y número de páginas?)',
+          '¿Aparecen errores en rojo en la consola del navegador (F12 → Consola)?',
+        ],
+      },
+      {
+        h: '💡 Sugerencia de función',
+        p: '¿Tiene una idea para una nueva herramienta o una mejora de una existente? ¡Nos encantaría conocerla! Describa brevemente su sugerencia y por qué cree que sería útil.',
+      },
+      {
+        h: '🔗 Enlaces',
+        items: [
+          'Política de privacidad — /privacy',
+          'Términos de servicio — /terms',
+          'Preguntas frecuentes — /faq',
+          'Página de inicio — /',
+        ],
+      },
+    ],
+  },
 };
 
 export default function SupportPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
