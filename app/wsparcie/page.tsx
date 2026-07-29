@@ -464,16 +464,24 @@ export default function SupportPage({ locale: forcedLocale }: { locale?: Locale 
   const { locale: detectedLocale } = useLocale();
   const locale = forcedLocale || detectedLocale;
   const lang = (content as Record<string, typeof content.pl>)[locale] || content.en;
+  const isRtl = locale === 'ar' || locale === 'fa';
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-12">
+    <main className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
+      {isRtl && (
+        <style>{`
+          .wsparcie-rtl ul { padding-right: 1.25rem; padding-left: 0; }
+          .wsparcie-rtl ol { padding-right: 1.25rem; padding-left: 0; }
+          .wsparcie-rtl { text-align: right; }
+        `}</style>
+      )}
       <div className="text-center mb-10">
         <div className="text-5xl mb-4">💬</div>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tool-heading mb-3">{lang.title}</h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">{lang.subtitle}</p>
       </div>
 
-      <div className="tool-card rounded-2xl border p-8 space-y-8 text-sm leading-relaxed" style={{ color: 'var(--coffee-text-secondary)' }}>
+      <div className={`tool-card rounded-2xl border p-8 space-y-8 text-sm leading-relaxed ${isRtl ? 'wsparcie-rtl' : ''}`} style={{ color: 'var(--coffee-text-secondary)' }}>
         {/* Donation section — prominent, at the top */}
         <section className="text-center pb-6 border-b" style={{ borderColor: 'var(--coffee-border)' }}>
           <h2 className="text-xl font-bold tool-heading mb-3">{lang.donateSection.h}</h2>
@@ -522,7 +530,7 @@ export default function SupportPage({ locale: forcedLocale }: { locale?: Locale 
               </p>
             )}
             {sec.items && (
-              <ul className="list-disc pl-5 space-y-1.5 mt-2">
+              <ul className={`list-disc space-y-1.5 mt-2 ${isRtl ? 'pr-5' : 'pl-5'}`}>
                 {sec.items.map((item, j) => (
                   <li key={j}>{item}</li>
                 ))}
