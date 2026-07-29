@@ -605,6 +605,55 @@ const content = {
       },
     ],
   },
+  it: {
+    title: 'Supporto',
+    subtitle: 'Come può aiutare OptimaPDF a crescere.',
+    donateSection: {
+      h: '☕️ Ci offra un caffè',
+      p: 'OptimaPDF è gratuito e rimarrà gratuito. Se trova utili i nostri strumenti, può sostenere lo sviluppo del sito con una donazione volontaria. Ogni importo, per quanto piccolo, aiuta a coprire i costi del server, delle API e del dominio. Non c’è alcun obbligo — si tratta di un supporto puramente volontario.',
+      button: '☕️ Ci offra un caffè',
+      note: 'I pagamenti vengono elaborati in modo sicuro da Stripe. Non è richiesto alcun account.',
+      badgeLabel: 'È un sostenitore di OptimaPDF?',
+      badgeDesc: 'Se ha effettuato una donazione, può richiedere un badge "Supporter" — ci invii un’email con la conferma della transazione e la aggiungeremo all’elenco dei sostenitori sul sito.',
+    },
+    sections: [
+      {
+        h: '📧 Contatti via email',
+        p: 'Ci scriva a:',
+        link: 'mailto:kontakt@optimapdf.com',
+        linkText: 'kontakt@optimapdf.com',
+      },
+      {
+        h: '❓ Domande frequenti',
+        p: 'Prima di contattarci, consulti la nostra pagina FAQ — troverà le risposte alle domande comuni sugli strumenti, la privacy e il funzionamento del sito.',
+        link: '/faq',
+        linkText: 'Vai alle FAQ →',
+      },
+      {
+        h: '🐛 Segnali un bug',
+        p: 'Se ha trovato un bug in uno degli strumenti, lo descriva nel modo più preciso possibile:',
+        items: [
+          'Quale strumento e quale operazione causa l’errore?',
+          'Quale browser e sistema operativo sta utilizzando?',
+          'L’errore si verifica con un file specifico? (se sì, quali sono le sue dimensioni e il numero di pagine?)',
+          'Ci sono errori rossi nella console del browser (F12 → Console)?',
+        ],
+      },
+      {
+        h: '💡 Suggerimento di funzionalità',
+        p: 'Ha un’idea per un nuovo strumento o un miglioramento di uno strumento esistente? Ci farebbe molto piacere saperlo! Descriva brevemente il suo suggerimento e perché pensa che potrebbe essere utile.',
+      },
+      {
+        h: '🔗 Link',
+        items: [
+          'Informativa sulla privacy — /privacy',
+          'Termini di servizio — /terms',
+          'FAQ — /faq',
+          'Home page — /',
+        ],
+      },
+    ],
+  },
 };
 
 export default function SupportPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
