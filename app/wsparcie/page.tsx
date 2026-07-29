@@ -703,6 +703,55 @@ const content = {
       },
     ],
   },
+  tr: {
+    title: 'Destek',
+    subtitle: 'OptimaPDF\'nin büyümesine nasıl yardımcı olabilirsiniz.',
+    donateSection: {
+      h: '☕️ Bize bir kahve ısmarlayın',
+      p: 'OptimaPDF ücretsizdir ve ücretsiz kalacaktır. Araçlarımızı kullanışlı buluyorsanız, gönüllü bir bağışla sitenin gelişimini destekleyebilirsiniz. Ne kadar küçük olursa olsun, her tutar sunucu, API ve alan adı maliyetlerini karşılamaya yardımcı olur. Hiçbir zorunluluk yoktur — bu tamamen gönüllü bir destektir.',
+      button: '☕️ Bize bir kahve ısmarlayın',
+      note: 'Ödemeler Stripe tarafından güvenli bir şekilde işlenir. Hesap gerekmez.',
+      badgeLabel: 'Bir OptimaPDF destekçisi misiniz?',
+      badgeDesc: 'Bir bağış yaptıysanız, bir "Supporter" rozeti talep edebilirsiniz — işlem onayınızla birlikte bize bir e-posta gönderin, sizi sitedeki destekçiler listesine ekleyelim.',
+    },
+    sections: [
+      {
+        h: '📧 E-posta ile iletişim',
+        p: 'Bize şu adrese yazın:',
+        link: 'mailto:kontakt@optimapdf.com',
+        linkText: 'kontakt@optimapdf.com',
+      },
+      {
+        h: '❓ Sıkça Sorulan Sorular',
+        p: 'Bizimle iletişime geçmeden önce, SSS sayfamızı kontrol edin — araçlar, gizlilik ve sitenin nasıl çalıştığı hakkında sık sorulan soruların yanıtlarını bulacaksınız.',
+        link: '/faq',
+        linkText: 'SSS sayfasına git →',
+      },
+      {
+        h: '🐛 Hata bildir',
+        p: 'Araçlardan birinde bir hata bulduysanız, lütfen mümkün olduğunca kesin bir şekilde açıklayın:',
+        items: [
+          'Hangi araç ve hangi işlem hataya neden oluyor?',
+          'Hangi tarayıcıyı ve işletim sistemini kullanıyorsunuz?',
+          'Hata belirli bir dosyayla mı oluşuyor? (Evet ise, boyutu ve sayfa sayısı nedir?)',
+          'Tarayıcı konsolunda (F12 → Console) kırmızı hatalar var mı?',
+        ],
+      },
+      {
+        h: '💡 Özellik önerisi',
+        p: 'Yeni bir araç veya mevcut bir araçta iyileştirme için bir fikriniz mi var? Bunu duymayı çok isteriz! Önerinizi kısaca ve neden yararlı olacağını düşündüğünüzü açıklayın.',
+      },
+      {
+        h: '🔗 Bağlantılar',
+        items: [
+          'Gizlilik Politikası — /privacy',
+          'Hizmet Şartları — /terms',
+          'SSS — /faq',
+          'Ana sayfa — /',
+        ],
+      },
+    ],
+  },
   zh: {
     title: '支持',
     subtitle: '您如何帮助OptimaPDF成长。',
