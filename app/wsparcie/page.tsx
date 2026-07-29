@@ -213,6 +213,55 @@ const content = {
       },
     ],
   },
+  pt: {
+    title: 'Apoio',
+    subtitle: 'Como pode ajudar o OptimaPDF a crescer.',
+    donateSection: {
+      h: '☕️ Ofereça-nos um café',
+      p: 'O OptimaPDF é gratuito e continuará a ser gratuito. Se achar as nossas ferramentas úteis, pode apoiar o desenvolvimento do site com um donativo voluntário. Qualquer montante, por mais pequeno que seja, ajuda a cobrir os custos do servidor, da API e do domínio. Não há obrigações — isto é um apoio puramente voluntário.',
+      button: '☕️ Ofereça-nos um café',
+      note: 'Pagamentos processados de forma segura pela Stripe. Não é necessária conta.',
+      badgeLabel: 'É um apoiante do OptimaPDF?',
+      badgeDesc: 'Se fez um donativo, pode solicitar um crachá de "Supporter" — envie-nos um e-mail com a confirmação da sua transação e adicioná-lo-emos à lista de apoiantes no site.',
+    },
+    sections: [
+      {
+        h: '📧 Contacto por e-mail',
+        p: 'Escreva-nos para:',
+        link: 'mailto:kontakt@optimapdf.com',
+        linkText: 'kontakt@optimapdf.com',
+      },
+      {
+        h: '❓ Perguntas frequentes',
+        p: 'Antes de nos contactar, consulte a nossa página de perguntas frequentes — encontrará respostas a perguntas comuns sobre as ferramentas, a privacidade e o funcionamento do site.',
+        link: '/faq',
+        linkText: 'Ir para perguntas frequentes →',
+      },
+      {
+        h: '🐛 Reportar um erro',
+        p: 'Se encontrou um erro numa das ferramentas, por favor descreva-o com a maior precisão possível:',
+        items: [
+          'Qual ferramenta e qual operação causa o erro?',
+          'Qual navegador e sistema operativo está a utilizar?',
+          'O erro ocorre com um ficheiro específico? (em caso afirmativo, qual é o seu tamanho e número de páginas?)',
+          'Aparecem erros a vermelho na consola do navegador (F12 → Consola)?',
+        ],
+      },
+      {
+        h: '💡 Sugestão de funcionalidade',
+        p: 'Tem uma ideia para uma nova ferramenta ou uma melhoria de uma existente? Gostaríamos muito de a conhecer! Descreva brevemente a sua sugestão e por que pensa que seria útil.',
+      },
+      {
+        h: '🔗 Ligações',
+        items: [
+          'Política de privacidade — /privacy',
+          'Termos de serviço — /terms',
+          'Perguntas frequentes — /faq',
+          'Página inicial — /',
+        ],
+      },
+    ],
+  },
 };
 
 export default function SupportPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
