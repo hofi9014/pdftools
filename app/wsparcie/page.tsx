@@ -524,7 +524,7 @@ export default function SupportPage({ locale: forcedLocale }: { locale?: Locale 
             <p className="mb-2">{sec.p}</p>
             {sec.link && (
               <p>
-                <a href={`/${locale}${sec.link}`} className="!text-[var(--coffee-accent)] hover:underline font-medium">
+                <a href={sec.link.startsWith('mailto:') ? sec.link : `/${locale}${sec.link}`} className="!text-[var(--coffee-accent)] hover:underline font-medium">
                   {sec.linkText}
                 </a>
               </p>
