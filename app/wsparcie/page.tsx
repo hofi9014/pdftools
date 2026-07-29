@@ -556,6 +556,55 @@ const content = {
       },
     ],
   },
+  is: {
+    title: 'Stuðningur',
+    subtitle: 'Hvernig þú getur hjálpað OptimaPDF að vaxa.',
+    donateSection: {
+      h: '☕️ Bjóddu okkur kaffi',
+      p: 'OptimaPDF er ókeypis og verður áfram ókeypis. Ef þér finnast tækin okkar gagnleg geturðu stutt þróun síðunnar með frjálsum framlagi. Sérhver upphæð, sama hversu lítil, hjálpar til við að standa straum af kostnaði við netþjón, API og lén. Engin skylda er — þetta er algjörlega frjáls stuðningur.',
+      button: '☕️ Bjóddu okkur kaffi',
+      note: 'Greiðslur eru unnar á öruggan hátt af Stripe. Einskis reiknings er krafist.',
+      badgeLabel: 'Ert þú stuðningsmaður OptimaPDF?',
+      badgeDesc: 'Ef þú hefur lagt fram framlag geturðu beðið um "Supporter" merki — sendu okkur tölvupóst með staðfestingu á viðskiptum þínum og við bætum þér á lista stuðningsmanna á síðunni.',
+    },
+    sections: [
+      {
+        h: '📧 Hafðu samband í tölvupósti',
+        p: 'Skrifaðu okkur á:',
+        link: 'mailto:kontakt@optimapdf.com',
+        linkText: 'kontakt@optimapdf.com',
+      },
+      {
+        h: '❓ Algengar spurningar',
+        p: 'Áður en þú hefur samband við okkur skaltu skoða FAQ síðuna okkar — þú munt finna svör við algengum spurningum um tækin, persónuvernd og hvernig síðan virkar.',
+        link: '/faq',
+        linkText: 'Fara á FAQ síðu →',
+      },
+      {
+        h: '🐛 Tilgreindu villu',
+        p: 'Ef þú fannst villu í einu af tækunum skaltu lýsa henni eins nákvæmlega og mögulegt er:',
+        items: [
+          'Hvaða tæki og hvaða aðgerð veldur villunni?',
+          'Hvaða vafra og stýrikerfi ertu að nota?',
+          'Kemur villan fram með tiltekinni skrá? (ef já, hver er stærð hennar og fjöldi síðna?)',
+          'Eru einhverjar rauðar villur í vafra konsól (F12 → Console)?',
+        ],
+      },
+      {
+        h: '💡 Tillaga að nýrri virkni',
+        p: 'Ertu með hugmynd að nýju tæki eða endurbótum á núverandi tæki? Við myndum mjög gjarnan vilja heyra um það! Lýstu tillögu þinni stuttlega og hvers vegna þú heldur að hún væri gagnleg.',
+      },
+      {
+        h: '🔗 Tenglar',
+        items: [
+          'Persónuverndarstefna — /privacy',
+          'Þjónustuskilmálar — /terms',
+          'FAQ — /faq',
+          'Heimasíða — /',
+        ],
+      },
+    ],
+  },
 };
 
 export default function SupportPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
