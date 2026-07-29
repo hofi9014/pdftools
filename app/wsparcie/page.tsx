@@ -360,6 +360,55 @@ const content = {
       },
     ],
   },
+  fr: {
+    title: 'Soutien',
+    subtitle: 'Comment vous pouvez aider OptimaPDF à se développer.',
+    donateSection: {
+      h: '☕️ Offrez-nous un café',
+      p: 'OptimaPDF est gratuit et le restera. Si vous trouvez nos outils utiles, vous pouvez soutenir le développement du site par un don volontaire. Chaque montant, aussi petit soit-il, aide à couvrir les coûts du serveur, de l’API et du domaine. Il n’y a aucune obligation — il s’agit d’un soutien purement volontaire.',
+      button: '☕️ Offrez-nous un café',
+      note: 'Paiements traités en toute sécurité par Stripe. Aucun compte requis.',
+      badgeLabel: 'Êtes-vous un supporter d’OptimaPDF ?',
+      badgeDesc: 'Si vous avez effectué un don, vous pouvez demander un badge "Supporter" — envoyez-nous un e-mail avec la confirmation de votre transaction et nous vous ajouterons à la liste des supporters sur le site.',
+    },
+    sections: [
+      {
+        h: '📧 Contact par e-mail',
+        p: 'Écrivez-nous à :',
+        link: 'mailto:kontakt@optimapdf.com',
+        linkText: 'kontakt@optimapdf.com',
+      },
+      {
+        h: '❓ Questions fréquentes',
+        p: 'Avant de nous contacter, consultez notre page FAQ — vous y trouverez des réponses aux questions courantes sur les outils, la confidentialité et le fonctionnement du site.',
+        link: '/faq',
+        linkText: 'Aller à la FAQ →',
+      },
+      {
+        h: '🐛 Signaler un bug',
+        p: 'Si vous avez trouvé un bug dans l’un des outils, veuillez le décrire aussi précisément que possible :',
+        items: [
+          'Quel outil et quelle opération provoque l’erreur ?',
+          'Quel navigateur et quel système d’exploitation utilisez-vous ?',
+          'L’erreur se produit-elle avec un fichier spécifique ? (si oui, quelle est sa taille et son nombre de pages ?)',
+          'Y a-t-il des erreurs rouges dans la console du navigateur (F12 → Console) ?',
+        ],
+      },
+      {
+        h: '💡 Suggestion de fonctionnalité',
+        p: 'Vous avez une idée pour un nouvel outil ou une amélioration d’un outil existant ? Nous aimerions beaucoup la connaître ! Décrivez brièvement votre suggestion et pourquoi vous pensez qu’elle serait utile.',
+      },
+      {
+        h: '🔗 Liens',
+        items: [
+          'Politique de confidentialité — /privacy',
+          'Conditions d’utilisation — /terms',
+          'FAQ — /faq',
+          'Page d’accueil — /',
+        ],
+      },
+    ],
+  },
 };
 
 export default function SupportPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
