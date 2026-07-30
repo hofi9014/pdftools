@@ -5,6 +5,7 @@ import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon, getCategoryIcon } from '@/lib/icons';
 import { toolPath } from '@/lib/tools';
+import { safeJsonLd } from '@/lib/safe-json-ld';
 
 type LocaleContent = Record<string, string>;
 
@@ -376,7 +377,7 @@ export default function FaqPage({ locale: forcedLocale }: { locale?: Locale } = 
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />
 
       <div className="text-center mb-12">
         <div className="text-5xl mb-4">❓</div>

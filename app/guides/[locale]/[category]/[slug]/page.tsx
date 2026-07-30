@@ -8,6 +8,7 @@ import { buildCanonicalUrl } from '@/lib/guides-canonical';
 import ContentBlockRenderer from '@/components/guides/ContentBlockRenderer';
 import CTATool from '@/components/guides/CTATool';
 import { validateGuides } from '@/lib/guides-validate';
+import { safeJsonLd } from '@/lib/safe-json-ld';
 
 if (process.env.NODE_ENV === 'production') {
   const { errors } = validateGuides();
@@ -124,7 +125,7 @@ export default async function ArticlePage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
             itemListElement: [
@@ -136,10 +137,10 @@ export default async function ArticlePage({
         }}
       />
       {howToSchema && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(howToSchema) }} />
       )}
       {faqSchema && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />
       )}
 
       <Link

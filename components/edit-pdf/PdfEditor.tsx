@@ -226,25 +226,47 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
   const handleAddSignature = useCallback(() => {
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 z-[300] flex items-center justify-center bg-black/40';
-    modal.innerHTML = `<div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-2xl">
-      <h3 class="font-bold text-lg mb-3">${t('edit.sig_heading', locale)}</h3>
-      <canvas id="sig-canvas" width="400" height="200" style="border:2px dashed #ccc;border-radius:8px;cursor:crosshair;touch-action:none;"></canvas>
-      <div class="flex gap-2 mt-3 justify-end">
-        <button id="sig-clear" class="px-4 py-2 rounded-lg text-sm bg-gray-100 dark:bg-gray-700">${t('edit.sig_clear', locale)}</button>
-        <button id="sig-save" class="px-4 py-2 rounded-lg text-sm bg-[var(--coffee-accent)] text-white">${t('edit.sig_save', locale)}</button>
-        <button id="sig-cancel" class="px-4 py-2 rounded-lg text-sm bg-gray-100 dark:bg-gray-700">${t('edit.btn_cancel', locale)}</button>
-      </div></div>`;
+    const panel = document.createElement('div');
+    panel.className = 'bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-2xl';
+    const headingEl = document.createElement('h3');
+    headingEl.className = 'font-bold text-lg mb-3';
+    headingEl.textContent = t('edit.sig_heading', locale);
+    const canvas = document.createElement('canvas');
+    canvas.id = 'sig-canvas';
+    canvas.width = 400;
+    canvas.height = 200;
+    canvas.style.cssText = 'border:2px dashed #ccc;border-radius:8px;cursor:crosshair;touch-action:none;';
+    const btnRow = document.createElement('div');
+    btnRow.className = 'flex gap-2 mt-3 justify-end';
+    const clearBtn = document.createElement('button');
+    clearBtn.id = 'sig-clear';
+    clearBtn.className = 'px-4 py-2 rounded-lg text-sm bg-gray-100 dark:bg-gray-700';
+    clearBtn.textContent = t('edit.sig_clear', locale);
+    const saveBtn = document.createElement('button');
+    saveBtn.id = 'sig-save';
+    saveBtn.className = 'px-4 py-2 rounded-lg text-sm bg-[var(--coffee-accent)] text-white';
+    saveBtn.textContent = t('edit.sig_save', locale);
+    const cancelBtn = document.createElement('button');
+    cancelBtn.id = 'sig-cancel';
+    cancelBtn.className = 'px-4 py-2 rounded-lg text-sm bg-gray-100 dark:bg-gray-700';
+    cancelBtn.textContent = t('edit.btn_cancel', locale);
+    btnRow.appendChild(clearBtn);
+    btnRow.appendChild(saveBtn);
+    btnRow.appendChild(cancelBtn);
+    panel.appendChild(headingEl);
+    panel.appendChild(canvas);
+    panel.appendChild(btnRow);
+    modal.appendChild(panel);
     document.body.appendChild(modal);
-    const canvas = modal.querySelector('#sig-canvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d')!;
     let drawing = false;
     const getPos = (e: any) => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
     canvas.addEventListener('pointerdown', (e: any) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
     canvas.addEventListener('pointermove', (e: any) => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.stroke(); });
     canvas.addEventListener('pointerup', () => { drawing = false; });
-    modal.querySelector('#sig-clear')!.addEventListener('click', () => ctx.clearRect(0, 0, canvas.width, canvas.height));
-    modal.querySelector('#sig-cancel')!.addEventListener('click', () => document.body.removeChild(modal));
-    modal.querySelector('#sig-save')!.addEventListener('click', () => {
+    clearBtn.addEventListener('click', () => ctx.clearRect(0, 0, canvas.width, canvas.height));
+    cancelBtn.addEventListener('click', () => document.body.removeChild(modal));
+    saveBtn.addEventListener('click', () => {
       const cur = elementsRef.current;
       const dataUrl = canvas.toDataURL('image/png');
       const id = Date.now() + Math.random();

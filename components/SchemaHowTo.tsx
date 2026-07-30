@@ -3,6 +3,7 @@ import { usePathname } from 'next/navigation';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t, locales, type Locale } from '@/lib/i18n';
 import { keyBySlug } from '@/lib/tools';
+import { safeJsonLd } from '@/lib/safe-json-ld';
 
 function tr(texts: Record<string, string>, locale: string): string {
   return texts[locale] || texts.en || '';
@@ -2182,7 +2183,7 @@ export default function SchemaHowTo({ locale: forcedLocale }: { locale?: Locale 
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
     />
   );
 }
