@@ -24,7 +24,7 @@ const content = {
       h: '☕️ Postaw nam kawę',
       p: 'OptimaPDF jest darmowy i pozostanie darmowy. Jeśli nasze narzędzia są dla Ciebie przydatne, możesz wesprzeć rozwój serwisu dobrowolną wpłatą. Każda, nawet najmniejsza kwota, pomaga pokryć koszty utrzymania serwerów, API i domeny. Nie ma żadnych zobowiązań — to czysto dobrowolne wsparcie.',
       button: '☕️ Postaw kawę',
-      note: 'Payments processed securely by Stripe. No account required.',
+      note: 'Płatności obsługiwane bezpiecznie przez Stripe. Konto nie jest wymagane.',
       badgeLabel: 'Jesteś supporterem OptimaPDF?',
       badgeDesc: 'Jeśli dokonałeś wpłaty, możesz poprosić o odznakę "Supporter" — wyślij nam e-mail z potwierdzeniem transakcji, a dodamy Cię do listy supporterów na stronie.',
     },
@@ -60,7 +60,7 @@ const content = {
         items: [
           'Polityka prywatności — /privacy',
           'Regulamin — /terms',
-          'FAQ — /faq',
+          'Najczęściej zadawane pytania — /faq',
           'Strona główna — /',
         ],
       },
@@ -122,7 +122,7 @@ const content = {
       h: '☕️ Spendieren Sie uns einen Kaffee',
       p: 'OptimaPDF ist kostenlos und wird kostenlos bleiben. Wenn Sie unsere Werkzeuge nützlich finden, können Sie die Entwicklung der Seite mit einer freiwilligen Spende unterstützen. Jeder Betrag, egal wie klein, hilft, die Kosten für Server, API und Domain zu decken. Es gibt keine Verpflichtungen — dies ist rein freiwillige Unterstützung.',
       button: '☕️ Spendieren Sie uns einen Kaffee',
-      note: 'Payments processed securely by Stripe. No account required.',
+      note: 'Zahlungen werden sicher über Stripe abgewickelt. Kein Konto erforderlich.',
       badgeLabel: 'Sind Sie ein OptimaPDF-Unterstützer?',
       badgeDesc: 'Wenn Sie eine Spende getätigt haben, können Sie ein "Supporter"-Abzeichen anfordern — senden Sie uns eine E-Mail mit Ihrer Transaktionsbestätigung und wir werden Sie zur Unterstützerliste auf der Seite hinzufügen.',
     },
@@ -158,7 +158,7 @@ const content = {
         items: [
           'Datenschutzerklärung — /privacy',
           'Nutzungsbedingungen — /terms',
-          'FAQ — /faq',
+          'Häufig gestellte Fragen — /faq',
           'Startseite — /',
         ],
       },
@@ -305,7 +305,7 @@ const content = {
         items: [
           'Personvernerklæring — /privacy',
           'Bruksvilkår — /terms',
-          'FAQ — /faq',
+          'Ofte stilte spørsmål — /faq',
           'Hjemmeside — /',
         ],
       },
@@ -354,7 +354,7 @@ const content = {
         items: [
           'Integritetspolicy — /privacy',
           'Användarvillkor — /terms',
-          'FAQ — /faq',
+          'Vanliga frågor — /faq',
           'Hemsida — /',
         ],
       },
@@ -403,7 +403,7 @@ const content = {
         items: [
           'Politique de confidentialité — /privacy',
           'Conditions d’utilisation — /terms',
-          'FAQ — /faq',
+          'Foire aux questions — /faq',
           'Page d’accueil — /',
         ],
       },
@@ -550,7 +550,7 @@ const content = {
         items: [
           'गोपनीयता नीति — /privacy',
           'सेवा की शर्तें — /terms',
-          'FAQ — /faq',
+          'अक्सर पूछे जाने वाले प्रश्न — /faq',
           'होम पेज — /',
         ],
       },
@@ -599,7 +599,7 @@ const content = {
         items: [
           'Persónuverndarstefna — /privacy',
           'Þjónustuskilmálar — /terms',
-          'FAQ — /faq',
+          'Algengar spurningar — /faq',
           'Heimasíða — /',
         ],
       },
@@ -648,7 +648,7 @@ const content = {
         items: [
           'Informativa sulla privacy — /privacy',
           'Termini di servizio — /terms',
-          'FAQ — /faq',
+          'Domande frequenti — /faq',
           'Home page — /',
         ],
       },
@@ -697,7 +697,7 @@ const content = {
         items: [
           'プライバシーポリシー — /privacy',
           '利用規約 — /terms',
-          'FAQ — /faq',
+          'よくある質問 — /faq',
           'ホームページ — /',
         ],
       },
@@ -795,7 +795,7 @@ const content = {
         items: [
           '隐私政策 — /privacy',
           '服务条款 — /terms',
-          'FAQ — /faq',
+          '常见问题 — /faq',
           '首页 — /',
         ],
       },
