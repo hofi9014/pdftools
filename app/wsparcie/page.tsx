@@ -18,7 +18,7 @@ const IS_TEST_MODE = STRIPE_DONATE_URL.includes('test_');              /* ← au
 
 const content = {
   pl: {
-    title: 'Wsparcie',
+    title: 'Wesprzyj Projekt',
     subtitle: 'Jak możesz pomóc w rozwoju OptimaPDF.',
     donateSection: {
       h: '☕️ Postaw nam kawę',
@@ -67,7 +67,7 @@ const content = {
     ],
   },
   en: {
-    title: 'Support',
+    title: 'Support the Project',
     subtitle: 'How you can help OptimaPDF grow.',
     donateSection: {
       h: '☕️ Buy us a coffee',
@@ -116,7 +116,7 @@ const content = {
     ],
   },
   de: {
-    title: 'Unterstützung',
+    title: 'Unterstütze das Projekt',
     subtitle: 'Wie Sie OptimaPDF beim Wachsen helfen können.',
     donateSection: {
       h: '☕️ Spendieren Sie uns einen Kaffee',
@@ -165,7 +165,7 @@ const content = {
     ],
   },
   es: {
-    title: 'Apoyo',
+    title: 'Apoya el Proyecto',
     subtitle: 'Cómo puede ayudar a que OptimaPDF crezca.',
     donateSection: {
       h: '☕️ Invítenos a un café',
@@ -214,7 +214,7 @@ const content = {
     ],
   },
   pt: {
-    title: 'Apoio',
+    title: 'Apoie o Projeto',
     subtitle: 'Como pode ajudar o OptimaPDF a crescer.',
     donateSection: {
       h: '☕️ Ofereça-nos um café',
@@ -263,7 +263,7 @@ const content = {
     ],
   },
   no: {
-    title: 'Støtte',
+    title: 'Støtt Prosjektet',
     subtitle: 'Hvordan du kan hjelpe OptimaPDF med å vokse.',
     donateSection: {
       h: '☕️ Kjøp oss en kaffe',
@@ -312,7 +312,7 @@ const content = {
     ],
   },
   sv: {
-    title: 'Stöd',
+    title: 'Stöd Projektet',
     subtitle: 'Hur du kan hjälpa OptimaPDF att växa.',
     donateSection: {
       h: '☕️ Bjud oss på en kaffe',
@@ -361,7 +361,7 @@ const content = {
     ],
   },
   fr: {
-    title: 'Soutien',
+    title: 'Soutenez le Projet',
     subtitle: 'Comment vous pouvez aider OptimaPDF à se développer.',
     donateSection: {
       h: '☕️ Offrez-nous un café',
@@ -410,7 +410,7 @@ const content = {
     ],
   },
   ar: {
-    title: 'الدعم',
+    title: 'ادعم المشروع',
     subtitle: 'كيف يمكنك المساعدة في تطوير OptimaPDF.',
     donateSection: {
       h: '☕️ اشتر لنا قهوة',
@@ -459,7 +459,7 @@ const content = {
     ],
   },
   fa: {
-    title: 'پشتیبانی',
+    title: 'از پروژه حمایت کنید',
     subtitle: 'چگونه می‌توانید به رشد OptimaPDF کمک کنید.',
     donateSection: {
       h: '☕️ برای ما قهوه بخرید',
@@ -508,7 +508,7 @@ const content = {
     ],
   },
   hi: {
-    title: 'सहायता',
+    title: 'प्रोजेक्ट को समर्थन दें',
     subtitle: 'आप OptimaPDF को बढ़ने में कैसे मदद कर सकते हैं।',
     donateSection: {
       h: '☕️ हमें कॉफ़ी पिलाएँ',
@@ -557,7 +557,7 @@ const content = {
     ],
   },
   is: {
-    title: 'Stuðningur',
+    title: 'Styrktu Verkefnið',
     subtitle: 'Hvernig þú getur hjálpað OptimaPDF að vaxa.',
     donateSection: {
       h: '☕️ Bjóddu okkur kaffi',
@@ -606,7 +606,7 @@ const content = {
     ],
   },
   it: {
-    title: 'Supporto',
+    title: 'Sostieni il Progetto',
     subtitle: 'Come può aiutare OptimaPDF a crescere.',
     donateSection: {
       h: '☕️ Ci offra un caffè',
@@ -655,7 +655,7 @@ const content = {
     ],
   },
   ja: {
-    title: 'サポート',
+    title: 'プロジェクトを支援する',
     subtitle: 'OptimaPDFの成長にご協力いただく方法。',
     donateSection: {
       h: '☕️ コーヒーをご馳走ください',
@@ -704,7 +704,7 @@ const content = {
     ],
   },
   tr: {
-    title: 'Destek',
+    title: 'Projeyi Destekleyin',
     subtitle: 'OptimaPDF\'nin büyümesine nasıl yardımcı olabilirsiniz.',
     donateSection: {
       h: '☕️ Bize bir kahve ısmarlayın',
@@ -753,7 +753,7 @@ const content = {
     ],
   },
   zh: {
-    title: '支持',
+    title: '支持本项目',
     subtitle: '您如何帮助OptimaPDF成长。',
     donateSection: {
       h: '☕️ 请我们喝杯咖啡',
