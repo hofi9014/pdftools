@@ -169,6 +169,7 @@ const helpData: HelpCategory[] = [
 export default function HelpPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const { locale: detectedLocale } = useLocale();
   const locale = forcedLocale || detectedLocale;
+  const isRtl = locale === 'ar' || locale === 'fa';
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['general']));
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
 
@@ -191,7 +192,7 @@ export default function HelpPage({ locale: forcedLocale }: { locale?: Locale } =
   };
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-12">
+    <main className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="text-center mb-12">
         <div className="text-5xl mb-4">🆘</div>
         <h1 className="text-3xl sm:text-4xl font-bold tool-heading mb-3">
