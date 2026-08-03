@@ -336,6 +336,7 @@ const faqData: FaqCategory[] = [
 export default function FaqPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const { locale: detectedLocale } = useLocale();
   const locale = forcedLocale || detectedLocale;
+  const isRtl = locale === 'ar' || locale === 'fa';
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
 
@@ -376,7 +377,7 @@ export default function FaqPage({ locale: forcedLocale }: { locale?: Locale } = 
   };
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-12">
+    <main className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />
 
       <div className="text-center mb-12">
