@@ -7153,7 +7153,7 @@ const tr: Record<string, string> = {
   'tool.html2pdf': 'PDF to HTML',
   'tool.images': 'PDF to Images',
   'tool.jpg': 'PDF to JPG',
-  'tool.jpgTopdf': 'Images to PDF',
+  'tool.jpgTopdf': 'Resimlerden PDF\'e',
   'tool.merge': 'PDF Birleştir',
   'tool.metadata': 'Meta Veri',
   'tool.ocr': 'OCR PDF',
