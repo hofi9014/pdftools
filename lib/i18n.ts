@@ -2,6 +2,16 @@
 export const locales = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'] as const;
 export type Locale = (typeof locales)[number];
 
+export const htmlLangMap: Record<Locale, string> = {
+  ar: 'ar', de: 'de', en: 'en', es: 'es', fa: 'fa', fr: 'fr', hi: 'hi',
+  is: 'is', it: 'it', ja: 'ja', no: 'no', pl: 'pl', pt: 'pt-PT',
+  sv: 'sv', tr: 'tr', zh: 'zh-Hans',
+};
+
+export function localeToHtmlLang(locale: Locale): string {
+  return htmlLangMap[locale] ?? locale;
+}
+
 const pl: Record<string, string> = {
   'back.to_home': '← Powrót do strony głównej',
   'breadcrumb.home': 'Strona główna',
