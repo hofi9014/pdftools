@@ -474,7 +474,7 @@ export async function compressPDFClient(file: File, level: 'low' | 'recommended'
   try { pdf.catalog.delete(PDFName.of('Metadata')); } catch {}
 
   const pako = (await import('pako')).default;
-  const scale = level === 'extreme' ? 0.5 : 0.75;
+  const scale = level === 'extreme' ? 0.5 : level === 'low' ? 1 : 0.75;
 
   for (const [, obj] of ctx.enumerateIndirectObjects()) {
     if (!(obj instanceof PDFRawStream) || !obj.dict) continue;
