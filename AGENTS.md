@@ -98,3 +98,6 @@ Projekt używa plików konwencji Next.js w `app/`, które generują endpointy bu
 - `public/favicon.ico` — nie jest referencjonowany w `<link>` (używane jest `/icon` z `app/icon.tsx`)
 
 Nie dodawać plików w `public/` o tych samych nazwach — będą martwe.
+
+## Znane luki / FINDINGI
+- **FINDING (RTL):** strony narzędzi (np. /compress, prawdopodobnie wszystkie w `app/[locale]/[tool]/page.tsx`) nie ustawiają `dir='rtl'` dla ar/fa, mimo że `<html lang>` jest poprawnie ustawiane dynamicznie (patrz poprawka a11y, commit `eec603b`). Strony informacyjne (/help, /faq, /wsparcie, /privacy, /terms, /rodo, /security) poprawnie ustawiają dir per-stronę, ale strony narzędzi tego nie robią. To nie jest regresja z tej sesji — istniejąca luka, udokumentowana podczas prac nad punktem g) (2026-08-09, weryfikacja /ar/compress i /fa/compress). **Naprawa wymaga:** `dir=rtl` na layoutcie narzędzi + weryfikacja układu (kierunek kart, kolejność kolumn, wyrównanie) dla ar i fa. Poza zakresem obecnej sesji — osobne zadanie (punkt i) w rejestrze Priorytetu 2/3).
