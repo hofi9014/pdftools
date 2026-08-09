@@ -129,6 +129,7 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
           </div>
           {files.map((file, i) => {
             const fileResult = results.find(r => r.name.startsWith(file.name.replace('.pdf', '')));
+            const savingsRatio = fileResult ? 1 - fileResult.compressedSize / fileResult.originalSize : 0;
             return (
               <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -140,7 +141,11 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0 ml-2">
                   {fileResult && (
-                    <span className="text-xs text-green-600 dark:text-green-400 font-medium">-{Math.round((1 - fileResult.compressedSize / fileResult.originalSize) * 100)}%</span>
+                    <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                      {savingsRatio < 0.01
+                        ? t('page.compress.already_optimized', locale)
+                        : `-${Math.round(savingsRatio * 100)}%`}
+                    </span>
                   )}
                   <button onClick={() => removeFile(i)} className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 px-2">✕</button>
                 </div>
@@ -163,7 +168,11 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
       {results.length > 1 && (
         <div className="tool-success-box rounded-2xl p-5 mb-6 text-center">
           <p className="font-bold text-green-700 dark:text-green-400">✅ {t('page.compress.all_done', locale)}</p>
-          <p className="text-sm text-green-600 dark:text-green-300 mt-1">{t('page.compress.savings', locale)} -{totalSavings}%</p>
+          {totalSavings < 1 ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('page.compress.already_optimized', locale)}</p>
+          ) : (
+            <p className="text-sm text-green-600 dark:text-green-300 mt-1">{t('page.compress.savings', locale)} -{totalSavings}%</p>
+          )}
           {processedBlobRef.current && (
             <div className="flex justify-center mt-3">
               <CloudFileSaver blob={processedBlobRef.current} fileName="skompresowane.zip" />
