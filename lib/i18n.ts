@@ -7306,7 +7306,7 @@ const tr: Record<string, string> = {
   'page.compress.level_extreme': 'Aşırı',
   'page.compress.level_extreme_desc': 'Maksimum sıkıştırma, daha düşük kalite',
   'page.compress.level_low': 'Düşük',
-  'page.compress.level_low_desc': 'Kayıpsız, boyut neredeyse değişmez',
+  'page.compress.level_low_desc': 'Minimal sıkıştırma, kalite orijinale yakın',
   'page.compress.level_recommended': 'Önerilen',
   'page.compress.level_recommended_desc': 'Boyut ve kalite arasında iyi bir denge',
   'page.compress.level_title': 'Sıkıştırma Düzeyi',
