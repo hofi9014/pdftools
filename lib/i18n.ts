@@ -2930,7 +2930,7 @@ const de: Record<string, string> = {
   'page.compress.level_extreme': 'Extrem',
   'page.compress.level_extreme_desc': 'Maximale Reduzierung, geringere Qualität',
   'page.compress.level_low': 'Niedrig',
-  'page.compress.level_low_desc': 'Verlustfrei, die Größe ändert sich kaum',
+  'page.compress.level_low_desc': 'Minimale Kompression, Qualität fast wie Original',
   'page.compress.level_recommended': 'Empfohlen',
   'page.compress.level_recommended_desc': 'Ausgewogenes Verhältnis von Größe und Qualität',
   'page.compress.level_title': 'Komprimierungsstufe',
