@@ -474,7 +474,8 @@ export async function compressPDFClient(file: File, level: 'low' | 'recommended'
   try { pdf.catalog.delete(PDFName.of('Metadata')); } catch {}
 
   const pako = (await import('pako')).default;
-  const scale = level === 'extreme' ? 0.5 : level === 'low' ? 1 : 0.75;
+  const scale = level === 'extreme' ? 0.5 : level === 'low' ? 0.9 : 0.75;
+  const jpegQuality = level === 'low' ? 95 : 90;
 
   for (const [, obj] of ctx.enumerateIndirectObjects()) {
     if (!(obj instanceof PDFRawStream) || !obj.dict) continue;
@@ -493,8 +494,6 @@ export async function compressPDFClient(file: File, level: 'low' | 'recommended'
       }
     } catch {}
   }
-
-  if (scale >= 1) return pdf.save({ useObjectStreams: true });
 
   for (const [, obj] of ctx.enumerateIndirectObjects()) {
     if (!(obj instanceof PDFRawStream) || !obj.dict) continue;
@@ -517,7 +516,7 @@ export async function compressPDFClient(file: File, level: 'low' | 'recommended'
         canvas.height = nh;
         const ctx2 = canvas.getContext('2d')!;
         ctx2.drawImage(img, 0, 0, nw, nh);
-        const outBlob: Blob | null = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 90));
+        const outBlob: Blob | null = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', jpegQuality));
         if (!outBlob) continue;
         const outBuf = new Uint8Array(await outBlob.arrayBuffer());
         if (outBuf.length < src.length) {
