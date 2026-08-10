@@ -3805,7 +3805,7 @@ const fr: Record<string, string> = {
   'page.compress.level_extreme': 'Extrême',
   'page.compress.level_extreme_desc': 'Réduction maximale, qualité moindre',
   'page.compress.level_low': 'Faible',
-  'page.compress.level_low_desc': 'Sans perte, la taille change à peine',
+  'page.compress.level_low_desc': 'Compression minimale, qualité proche de l\'original',
   'page.compress.level_recommended': 'Recommandé',
   'page.compress.level_recommended_desc': 'Un bon équilibre entre taille et qualité',
   'page.compress.level_title': 'Niveau de compression',
