@@ -325,7 +325,7 @@ const pl: Record<string, string> = {
   'page.compress.level_extreme': 'Ekstremalne',
   'page.compress.level_extreme_desc': 'Maksymalna redukcja rozmiaru pliku, niższa jakość obrazów',
   'page.compress.level_low': 'Niski',
-  'page.compress.level_low_desc': 'Bezstratna, rozmiar może się nie zmienić',
+  'page.compress.level_low_desc': 'Minimalna kompresja, jakość bliska oryginałowi',
   'page.compress.level_recommended': 'Polecane',
   'page.compress.level_recommended_desc': 'Dobra równowaga między rozmiarem a jakością',
   'page.compress.level_title': 'Poziom kompresji',
