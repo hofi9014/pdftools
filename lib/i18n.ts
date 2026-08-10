@@ -6431,7 +6431,7 @@ const is: Record<string, string> = {
   'page.compress.level_extreme': 'Öfgakennt',
   'page.compress.level_extreme_desc': 'Hámarks niðurskurður, lægra gæði',
   'page.compress.level_low': 'Lágt',
-  'page.compress.level_low_desc': 'Án gæðataps, lítil breyting á stærð',
+  'page.compress.level_low_desc': 'Lágmarksþjöppun, gæði næstum upprunaleg',
   'page.compress.level_recommended': 'Mælt með',
   'page.compress.level_recommended_desc': 'Gott jafnvægi milli stærðar og gæða',
   'page.compress.level_title': 'Þjöppunarstig',
