@@ -10807,7 +10807,7 @@ const hi: Record<string, string> = {
   'page.compress.level_extreme': 'अत्यधिक',
   'page.compress.level_extreme_desc': 'अधिकतम कमी, निम्न गुणवत्ता',
   'page.compress.level_low': 'कम',
-  'page.compress.level_low_desc': 'हानि रहित, आकार बमुश्किल बदलता है',
+  'page.compress.level_low_desc': 'न्यूनतम संपीड़न, गुणवत्ता मूल के करीब',
   'page.compress.level_recommended': 'अनुशंसित',
   'page.compress.level_recommended_desc': 'आकार और गुणवत्ता का अच्छा संतुलन',
   'page.compress.level_title': 'दबाव स्तर',
