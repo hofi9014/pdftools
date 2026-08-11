@@ -9056,7 +9056,7 @@ const no: Record<string, string> = {
   'page.compress.level_extreme': 'Ekstrem',
   'page.compress.level_extreme_desc': 'Maksimal reduksjon, lavere kvalitet',
   'page.compress.level_low': 'Lav',
-  'page.compress.level_low_desc': 'Tapsfritt, størrelsen endres nesten ikke',
+  'page.compress.level_low_desc': 'Minimal komprimering, kvalitet nær originalen',
   'page.compress.level_recommended': 'Anbefalt',
   'page.compress.level_recommended_desc': 'God balanse mellom størrelse og kvalitet',
   'page.compress.level_title': 'Kompresjonsnivå',
