@@ -11621,7 +11621,7 @@ const ar: Record<string, string> = {
   'page.compress.level_extreme': 'قصوى',
   'page.compress.level_extreme_desc': 'أقصى تقليل، جودة أقل',
   'page.compress.level_low': 'منخفض',
-  'page.compress.level_low_desc': 'بلا فقدان، حجم شبه ثابت',
+  'page.compress.level_low_desc': 'ضغط بسيط، جودة قريبة من الأصل',
   'page.compress.level_recommended': 'موصى به',
   'page.compress.level_recommended_desc': 'توازن جيد بين الحجم والجودة',
   'page.compress.level_title': 'مستوى الضغط',
