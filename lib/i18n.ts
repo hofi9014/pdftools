@@ -12496,7 +12496,7 @@ const fa: Record<string, string> = {
   'page.compress.level_extreme': 'افراطی',
   'page.compress.level_extreme_desc': 'کاهش حداکثری، کیفیت پایین‌تر',
   'page.compress.level_low': 'پایین',
-  'page.compress.level_low_desc': 'بدون افت کیفیت، حجم شبه ثابت',
+  'page.compress.level_low_desc': 'فشرده‌سازی کمینه، کیفیت نزدیک به اصل',
   'page.compress.level_recommended': 'توصیه شده',
   'page.compress.level_recommended_desc': 'تعادل خوب بین حجم و کیفیت',
   'page.compress.level_title': 'سطح فشرده‌سازی',
