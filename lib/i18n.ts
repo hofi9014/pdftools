@@ -9931,7 +9931,7 @@ const ja: Record<string, string> = {
   'page.compress.level_extreme': 'エクストリーム',
   'page.compress.level_extreme_desc': '削減を最大化、品質低下',
   'page.compress.level_low': '低',
-  'page.compress.level_low_desc': '無劣化、サイズはほぼ変わりません',
+  'page.compress.level_low_desc': '最小圧縮、元に近い画質',
   'page.compress.level_recommended': 'おすすめ',
   'page.compress.level_recommended_desc': 'サイズと品質のバランスがよい',
   'page.compress.level_title': '圧縮レベル',
