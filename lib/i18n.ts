@@ -8181,7 +8181,7 @@ const sv: Record<string, string> = {
   'page.compress.level_extreme': 'Extrem',
   'page.compress.level_extreme_desc': 'Största möjliga storleksminskning, sämre kvalitet',
   'page.compress.level_low': 'Låg',
-  'page.compress.level_low_desc': 'Förlustfri, storleken ändras inte märkbart',
+  'page.compress.level_low_desc': 'Minimal komprimering, kvalitet nära originalet',
   'page.compress.level_recommended': 'Rekommenderat',
   'page.compress.level_recommended_desc': 'Bra balans mellan storlek och kvalitet',
   'page.compress.level_title': 'Komprimeringsnivå',
