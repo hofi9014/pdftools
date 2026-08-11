@@ -13371,7 +13371,7 @@ const zh: Record<string, string> = {
   'page.compress.level_extreme': '极限',
   'page.compress.level_extreme_desc': '最大压缩，质量较低',
   'page.compress.level_low': '低',
-  'page.compress.level_low_desc': '无损压缩，大小几乎不变',
+  'page.compress.level_low_desc': '最小压缩，质量接近原版',
   'page.compress.level_recommended': '推荐',
   'page.compress.level_recommended_desc': '大小和质量的良好平衡',
   'page.compress.level_title': '压缩级别',
