@@ -15,11 +15,10 @@ npm install
 
 ## Konfiguracja
 
-Skopiuj `.env.local` i ustaw klucze API:
+Skopiuj `.env.example` do `.env.local` i ustaw potrzebne klucze:
 
 ```
-ILOVEPDF_PUBLIC_KEY=...
-ILOVEPDF_SECRET_KEY=...
+OPENROUTER_API_KEY=...
 ```
 
 ## Uruchomienie
@@ -56,7 +55,7 @@ npm run build
 - React 19
 - Tailwind CSS 4
 - TypeScript
-- iLovePDF API
+- OpenRouter API
 
 ## Deploy na Vercel
 
@@ -73,7 +72,7 @@ npm run build
 3. **Wejdź na** [vercel.com](https://vercel.com) i zaloguj przez GitHub
 4. **Kliknij "Add New → Project"**, wybierz repozytorium `pdftools`
 5. **Dodaj zmienne środowiskowe** w Vercel (Settings → Environment Variables):
-   - Wartości z pliku `.env.local` (klucze iLovePDF i OpenRouter)
+   - Wartości z pliku `.env.local` (np. klucz OpenRouter dla narzędzi AI)
 6. **Kliknij "Deploy"** – Vercel zbuduje i uruchomi stronę
 7. Vercel da Ci domenę tymczasową (`pdftools.vercel.app`)
 
