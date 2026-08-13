@@ -1,4 +1,5 @@
 import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFRawStream } from 'pdf-lib';
+import { rasterizePage, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 
 let pdfjsInitPromise: Promise<void> | null = null;
 
@@ -394,6 +395,42 @@ ${spine}
 </ncx>`);
 
   return await zip.generateAsync({ type: 'blob' });
+}
+
+export async function redactPdfRaster(file: File, regions: RedactRegion[]): Promise<Uint8Array> {
+  const buf = await file.arrayBuffer();
+  const pdfjsLib = await import('pdfjs-dist');
+  await initPdfjs();
+  const canvasFactory: RasterCanvasFactory = {
+    create(w: number, h: number) {
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      return { canvas, context: canvas.getContext('2d') as unknown as RasterContext };
+    },
+    reset(ctx: unknown, w: number, h: number) {
+      const c = (ctx as RasterContext).canvas;
+      c.width = w;
+      c.height = h;
+    },
+    destroy(ctx: unknown) {
+      const c = (ctx as RasterContext).canvas;
+      c.width = 0;
+      c.height = 0;
+    },
+  };
+  const documentOptions = {
+    cMapUrl: '/pdfjs-dist/cmaps/',
+    cMapPacked: true,
+    standardFontDataUrl: '/pdfjs-dist/standard_fonts/',
+  };
+  let bytes: Uint8Array = new Uint8Array(buf);
+  const pageIndexes = [...new Set(regions.map(r => r.page))].sort((a, b) => a - b);
+  for (const pageIndex of pageIndexes) {
+    const pageRegions = regions.filter(r => r.page === pageIndex);
+    bytes = await rasterizePage(pdfjsLib as unknown as PdfjsLibLike, canvasFactory, bytes, pageIndex, REDACT_RENDER_SCALE, pageRegions, documentOptions);
+  }
+  return bytes;
 }
 
 export async function getPageCount(file: File): Promise<number> {

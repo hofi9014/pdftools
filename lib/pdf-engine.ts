@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFRawStream, PDFNumber, PDFRef } from 'pdf-lib';
 import { readFileSync, existsSync } from 'fs';
+import { rasterizePage, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster.ts';
 
 async function initPdfjs() {
   if ((globalThis as Record<string, unknown>).pdfjsWorker) return;
@@ -727,4 +728,37 @@ export async function extractText(fileBuffer: Buffer): Promise<string> {
     texts.push(content.items.map((item: unknown) => (item as { str: string }).str || '').join(' '));
   }
   return texts.join('\n---\n');
+}
+
+export async function redactPdfRasterBuffer(fileBuffer: Buffer, regions: RedactRegion[]): Promise<Buffer> {
+  await initPdfjs();
+  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const canvasMod = await import('@napi-rs/canvas');
+  if (!(globalThis as Record<string, unknown>).DOMMatrix) {
+    (globalThis as Record<string, unknown>).DOMMatrix = canvasMod.DOMMatrix;
+  }
+  const canvasFactory: RasterCanvasFactory = {
+    create(w: number, h: number) {
+      const canvas = canvasMod.createCanvas(w, h);
+      return { canvas, context: canvas.getContext('2d') as unknown as RasterContext };
+    },
+    reset(ctx: unknown, w: number, h: number) {
+      const c = (ctx as RasterContext).canvas;
+      c.width = w;
+      c.height = h;
+    },
+    destroy(ctx: unknown) {
+      const c = (ctx as RasterContext).canvas;
+      c.width = 0;
+      c.height = 0;
+    },
+  };
+  const documentOptions = { standardFontDataUrl: 'file:///' + getFontsPath().replace(/\\/g, '/') };
+  let bytes: Uint8Array = new Uint8Array(fileBuffer);
+  const pageIndexes = [...new Set(regions.map(r => r.page))].sort((a, b) => a - b);
+  for (const pageIndex of pageIndexes) {
+    const pageRegions = regions.filter(r => r.page === pageIndex);
+    bytes = await rasterizePage(pdfjsLib as unknown as PdfjsLibLike, canvasFactory, bytes, pageIndex, REDACT_RENDER_SCALE, pageRegions, documentOptions);
+  }
+  return Buffer.from(bytes);
 }
