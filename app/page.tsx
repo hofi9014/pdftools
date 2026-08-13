@@ -277,7 +277,7 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
           const catBg = (k: string) => `var(--cat-${k}-bg)`;
 
           return categories.map(cat => {
-            let filtered = tools.filter(t => t.category === cat.key);
+            let filtered = tools.filter(t => t.category === cat.key && !t.disabled);
             if (search) {
               const q = search.toLowerCase();
               filtered = filtered.filter(tt =>

@@ -3,6 +3,7 @@ export interface ToolDef {
   slug: string;
   category: string;
   redirectTo?: string;
+  disabled?: boolean;
 }
 
 export const tools: ToolDef[] = [
@@ -19,7 +20,7 @@ export const tools: ToolDef[] = [
   { key: 'edit',        slug: 'edit-pdf',      category: 'edit' },
   { key: 'pagenumbers', slug: 'page-numbers',  category: 'edit' },
   { key: 'watermark',   slug: 'watermark-pdf', category: 'edit' },
-  { key: 'redact',      slug: 'redact-pdf',    category: 'edit' },
+  { key: 'redact',      slug: 'redact-pdf',    category: 'edit', disabled: true },
   { key: 'flatten',     slug: 'flatten-pdf',   category: 'edit' },
   { key: 'metadata',    slug: 'metadata',      category: 'edit' },
 
@@ -79,7 +80,11 @@ export const categories: CategoryDef[] = [
 ];
 
 export function toolsByCategory(categoryKey: string): ToolDef[] {
-  return tools.filter(t => t.category === categoryKey);
+  return tools.filter(t => t.category === categoryKey && !t.disabled);
+}
+
+export function isToolDisabled(key: string): boolean {
+  return tools.some(t => t.key === key && t.disabled);
 }
 
 export function toolPath(key: string, locale?: string): string {

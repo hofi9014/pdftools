@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
-import { toolPath } from '@/lib/tools';
+import { toolPath, isToolDisabled } from '@/lib/tools';
 
 type T = Record<string, string>;
 
@@ -467,6 +467,7 @@ export default function GuidePage({ locale: forcedLocale }: { locale?: Locale } 
       tools: cat.toolKeys
         .map(k => guideMap.get(k)!)
         .filter(Boolean)
+        .filter(entry => !isToolDisabled(entry.key))
         .filter(entry => {
           if (!search) return true;
           const q = search.toLowerCase();

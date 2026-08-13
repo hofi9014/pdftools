@@ -13,7 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const pages: MetadataRoute.Sitemap = [
     { url: base, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 1.0 },
-    ...tools.map(t => ({
+    ...tools.filter(t => !t.disabled).map(t => ({
       url: base + toolPath(t.key),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
