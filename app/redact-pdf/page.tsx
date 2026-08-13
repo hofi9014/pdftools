@@ -1,7 +1,8 @@
 'use client';
 import { useState, useRef } from 'react';
-import { redactPdf, downloadPdf } from '@/lib/client-pdf';
-import PagePreview from '@/components/PagePreview';
+import { redactPdfRaster, downloadPdf } from '@/lib/client-pdf';
+import RegionSelector from '@/components/redact-pdf/RegionSelector';
+import type { RedactRegion } from '@/lib/pdf-raster';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { useLocale } from '@/lib/locale-context';
@@ -12,7 +13,7 @@ import { isToolDisabled } from '@/lib/tools';
 export default function RedactPdf({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
   const [file, setFile] = useState<File | null>(null);
-  const [selectedPages, setSelectedPages] = useState<number[]>([]);
+  const [regions, setRegions] = useState<RedactRegion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -23,24 +24,20 @@ export default function RedactPdf({ locale: forcedLocale }: { locale?: Locale } 
     if (!f) return;
     if (f.type !== 'application/pdf') { setError(t('error.onlypdf', locale)); return; }
     setFile(f);
-    setSelectedPages([]);
+    setRegions([]);
     setError('');
     setSuccess(false);
   };
 
   const handleSubmit = async () => {
     if (!file) { setError(t('error.select', locale)); return; }
-    if (selectedPages.length === 0) { setError(t('page.redact.select_pages', locale)); return; }
+    if (regions.length === 0) { setError(t('page.redact.select_pages', locale)); return; }
     setLoading(true);
     setError('');
     setSuccess(false);
 
     try {
-      const regions = selectedPages.flatMap(page => [{
-        page,
-        x: 0, y: 0, width: 1, height: 1,
-      }]);
-      const result = await redactPdf(file, regions);
+      const result = await redactPdfRaster(file, regions);
       const blob = await downloadPdf(result, 'zeredagowane.pdf');
       processedBlobRef.current = blob;
       setSuccess(true);
@@ -101,12 +98,10 @@ export default function RedactPdf({ locale: forcedLocale }: { locale?: Locale } 
       </div>
 
       {file && (
-        <PagePreview
+        <RegionSelector
           file={file}
-          mode="delete"
-          selectedPages={selectedPages}
-          onSelectionChange={setSelectedPages}
-          onNewOrder={() => {}}
+          regions={regions}
+          onRegionsChange={setRegions}
         />
       )}
 
@@ -128,9 +123,15 @@ export default function RedactPdf({ locale: forcedLocale }: { locale?: Locale } 
         </div>
       )}
 
-      <button onClick={handleSubmit} disabled={loading || !file || selectedPages.length === 0}
+      {file && regions.length > 0 && (
+        <div className="text-center text-sm font-medium text-gray-600 dark:text-gray-300 mb-3">
+          {t('page.redact.regions_count', locale, { count: regions.length })}
+        </div>
+      )}
+
+      <button data-testid="redact-submit" onClick={handleSubmit} disabled={loading || !file || regions.length === 0}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition
-          ${loading || !file || selectedPages.length === 0 ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
+          ${loading || !file || regions.length === 0 ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
         {loading ? `⏳ ${t('page.redact.btn_loading', locale)}` : `✍️ ${t('page.redact.btn_ready', locale)}`}
       </button>
 
