@@ -28,6 +28,7 @@ export interface RasterCanvas {
   height: number;
   toBuffer?(format: 'image/png'): Uint8Array;
   toDataURL?(format: 'image/png'): string;
+  convertToBlob?(options?: unknown): Promise<Blob>;
 }
 
 export interface RasterContext {
@@ -68,7 +69,7 @@ export interface PdfjsLibLike {
 
 export const REDACT_RENDER_SCALE = 2;
 
-function canvasToPngBytes(canvas: RasterCanvas): Uint8Array {
+async function canvasToPngBytes(canvas: RasterCanvas): Promise<Uint8Array> {
   if (typeof canvas.toBuffer === 'function') {
     const buf = canvas.toBuffer('image/png');
     return new Uint8Array(buf);
@@ -81,7 +82,11 @@ function canvasToPngBytes(canvas: RasterCanvas): Uint8Array {
     for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
     return out;
   }
-  throw new Error('Canvas nie udostępnia toBuffer ani toDataURL');
+  if (typeof canvas.convertToBlob === 'function') {
+    const blob = await canvas.convertToBlob({ type: 'image/png' });
+    return new Uint8Array(await blob.arrayBuffer());
+  }
+  throw new Error('Canvas nie udostępnia toBuffer, toDataURL ani convertToBlob');
 }
 
 function collectContentsRefs(pdfDoc: PDFDocument, obj: PDFObject | undefined): PDFRef[] {
@@ -178,7 +183,7 @@ export async function rasterizePage(
   for (const r of regions) {
     context.fillRect(r.x * vw, r.y * vh, r.width * vw, r.height * vh);
   }
-  const png = canvasToPngBytes(canvas);
+  const png = await canvasToPngBytes(canvas);
   await doc.cleanup();
 
   const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });

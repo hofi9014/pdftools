@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFRawStream } from 'pdf-lib';
 import { rasterizePage, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
+import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
 
 let pdfjsInitPromise: Promise<void> | null = null;
 
@@ -397,8 +398,71 @@ ${spine}
   return await zip.generateAsync({ type: 'blob' });
 }
 
+const REDACT_WORKER_UNAVAILABLE = 'Redact worker is not available in this browser';
+
+let redactWorker: Worker | null = null;
+let redactWorkerDisabled = false;
+let redactRequestId = 0;
+
+function createRedactWorker(): Worker | null {
+  if (redactWorkerDisabled) return null;
+  if (redactWorker) return redactWorker;
+  if (typeof Worker === 'undefined') {
+    redactWorkerDisabled = true;
+    return null;
+  }
+  try {
+    redactWorker = new Worker(new URL('./redact-worker.ts', import.meta.url), { type: 'module' });
+  } catch {
+    redactWorkerDisabled = true;
+    return null;
+  }
+  return redactWorker;
+}
+
+function redactInWorker(buf: ArrayBuffer, regions: RedactRegion[]): Promise<Uint8Array> {
+  return new Promise<Uint8Array>((resolve, reject) => {
+    const worker = createRedactWorker();
+    if (!worker) {
+      reject(new Error(REDACT_WORKER_UNAVAILABLE));
+      return;
+    }
+    const id = ++redactRequestId;
+    const cleanup = () => {
+      worker.removeEventListener('message', onMessage);
+      worker.removeEventListener('error', onError);
+    };
+    const onMessage = (e: MessageEvent<RedactWorkerResponse>) => {
+      if (e.data.id !== id) return;
+      cleanup();
+      if (e.data.type === 'ok') {
+        resolve(new Uint8Array(e.data.buf));
+      } else {
+        reject(new Error(e.data.message));
+      }
+    };
+    const onError = (e: ErrorEvent) => {
+      cleanup();
+      reject(new Error(e.message || 'Redact worker failed'));
+    };
+    worker.addEventListener('message', onMessage);
+    worker.addEventListener('error', onError);
+    const request: RedactWorkerRequest = { id, type: 'redact', buf, regions };
+    worker.postMessage(request, [buf]);
+  });
+}
+
 export async function redactPdfRaster(file: File, regions: RedactRegion[]): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
+  if (typeof Worker !== 'undefined') {
+    try {
+      return await redactInWorker(buf, regions);
+    } catch (err) {
+      if (!(err instanceof Error) || err.message !== REDACT_WORKER_UNAVAILABLE) {
+        throw err;
+      }
+    }
+  }
   const pdfjsLib = await import('pdfjs-dist');
   await initPdfjs();
   const canvasFactory: RasterCanvasFactory = {
