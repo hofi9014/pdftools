@@ -136,6 +136,32 @@ export async function extractPages(file: File, pageIndices: number[]): Promise<U
   return newPdf.save();
 }
 
+export async function splitBySelection(
+  file: File,
+  selectedIndices: number[]
+): Promise<{ selected: Uint8Array | null; rest: Uint8Array | null }> {
+  const buf = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  const total = pdf.getPageCount();
+  const selIndices = [...new Set(selectedIndices)]
+    .filter((i) => i >= 0 && i < total)
+    .sort((a, b) => a - b);
+  const restIndices = Array.from({ length: total }, (_, i) => i).filter((i) => !selIndices.includes(i));
+
+  const makePdf = async (indices: number[]) => {
+    const newPdf = await PDFDocument.create();
+    const pages = await newPdf.copyPages(pdf, indices);
+    pages.forEach((p) => newPdf.addPage(p));
+    return newPdf.save();
+  };
+
+  let selected: Uint8Array | null = null;
+  let rest: Uint8Array | null = null;
+  if (selIndices.length > 0) selected = await makePdf(selIndices);
+  if (restIndices.length > 0) rest = await makePdf(restIndices);
+  return { selected, rest };
+}
+
 export async function reorderPages(file: File, newOrder: number[]): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
