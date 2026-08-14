@@ -284,25 +284,6 @@ export async function pdfToSvgPages(file: File): Promise<{ svg: string; name: st
   return results;
 }
 
-export async function redactPdf(file: File, regions: { page: number; x: number; y: number; width: number; height: number }[]): Promise<Uint8Array> {
-  const buf = await file.arrayBuffer();
-  const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
-  for (const r of regions) {
-    const page = pdf.getPage(r.page);
-    const { width, height } = page.getSize();
-    page.drawRectangle({
-      x: r.x * width,
-      y: height - r.y * height - r.height * height,
-      width: r.width * width,
-      height: r.height * height,
-      color: rgb(0, 0, 0),
-      borderColor: rgb(0, 0, 0),
-      borderWidth: 0,
-    });
-  }
-  return pdf.save();
-}
-
 export async function pdfToEpub(file: File): Promise<Blob> {
   const buf = await file.arrayBuffer();
   const pdfjsLib = await import('pdfjs-dist');

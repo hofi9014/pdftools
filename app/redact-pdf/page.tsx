@@ -8,7 +8,6 @@ import CloudFilePicker from '@/components/CloudFilePicker';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
-import { isToolDisabled } from '@/lib/tools';
 
 export default function RedactPdf({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -47,18 +46,6 @@ export default function RedactPdf({ locale: forcedLocale }: { locale?: Locale } 
       setLoading(false);
     }
   };
-
-  if (isToolDisabled('redact')) {
-    return (
-      <div className="max-w-5xl mx-auto px-4 py-12">
-        <div className="text-center mb-10">
-          <div className="text-6xl mb-4">{getToolIcon('redact')}</div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tool-heading mb-3">{t('tool.redact', locale)}</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">{t('page.redact.disabled', locale)}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">

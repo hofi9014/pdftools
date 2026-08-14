@@ -20,7 +20,7 @@ export const tools: ToolDef[] = [
   { key: 'edit',        slug: 'edit-pdf',      category: 'edit' },
   { key: 'pagenumbers', slug: 'page-numbers',  category: 'edit' },
   { key: 'watermark',   slug: 'watermark-pdf', category: 'edit' },
-  { key: 'redact',      slug: 'redact-pdf',    category: 'edit', disabled: true },
+  { key: 'redact',      slug: 'redact-pdf',    category: 'edit' },
   { key: 'flatten',     slug: 'flatten-pdf',   category: 'edit' },
   { key: 'metadata',    slug: 'metadata',      category: 'edit' },
 
