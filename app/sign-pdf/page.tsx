@@ -41,6 +41,8 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
   const [signName, setSignName] = useState('');
   const [signImage, setSignImage] = useState<File | null>(null);
   const [signPreview, setSignPreview] = useState('');
+  const [sigError, setSigError] = useState('');
+  const [, setSigRatio] = useState(1);
   const [signX, setSignX] = useState(50);
   const [signY, setSignY] = useState(50);
   const [unit, setUnit] = useState('mm');
@@ -55,18 +57,29 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
     sigRef.current?.clear();
     setSignImage(null);
     setSignPreview('');
+    setSigError('');
   }, []);
 
   const saveSignature = useCallback(() => {
-    if (sigRef.current?.isEmpty()) return;
-    const dataUrl = sigRef.current?.toDataURL('image/png');
-    if (dataUrl) {
-      setSignPreview(dataUrl);
-      fetch(dataUrl)
-        .then(r => r.blob())
-        .then(b => setSignImage(new File([b], 'podpis.png', { type: 'image/png' })));
-    }
-  }, []);
+    const sig = sigRef.current;
+    if (!sig || sig.isEmpty()) return;
+    setSigError('');
+    const rawCanvas = sig.getCanvas();
+    const ratio = rawCanvas.width / Math.max(1, rawCanvas.getBoundingClientRect().width);
+    const canvas = sig.getTrimmedCanvas();
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        setSigError(t('page.sign.convert_error', locale));
+        setSignImage(null);
+        setSignPreview('');
+        return;
+      }
+      const file = new File([blob], 'podpis.png', { type: 'image/png' });
+      setSigRatio(ratio);
+      setSignImage(file);
+      setSignPreview(URL.createObjectURL(blob));
+    }, 'image/png');
+  }, [locale]);
 
   const handlePreset = useCallback((id: string) => {
     setPreset(prev => prev === id ? '' : id);
@@ -185,6 +198,7 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
               <button type="button" onClick={clearSignature} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs hover:bg-gray-200 dark:hover:bg-gray-600 transition">{t('page.sign.clear', locale)}</button>
             </div>
             {signPreview && <Image src={signPreview} alt={t('page.sign.preview', locale)} width={200} height={40} className="h-10 w-auto border border-gray-200 rounded" />}
+            {sigError && <p className="text-red-500 text-sm">{sigError}</p>}
           </div>
         </div>
 
