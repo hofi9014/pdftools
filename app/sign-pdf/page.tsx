@@ -42,7 +42,7 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
   const [signImage, setSignImage] = useState<File | null>(null);
   const [signPreview, setSignPreview] = useState('');
   const [sigError, setSigError] = useState('');
-  const [, setSigRatio] = useState(1);
+  const [sigRatio, setSigRatio] = useState(1);
   const [signX, setSignX] = useState(50);
   const [signY, setSignY] = useState(50);
   const [unit, setUnit] = useState('mm');
@@ -102,6 +102,7 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
         signY,
         unit,
         preset,
+        sigRatio,
       });
       processedBlobRef.current = blob;
       const url = URL.createObjectURL(blob);
@@ -114,7 +115,7 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('page.edit.unknown_error', locale));
     } finally { setLoading(false); }
-  }, [file, pageMode, singlePage, customPages, signName, signImage, signX, signY, unit, preset]);
+  }, [file, pageMode, singlePage, customPages, signName, signImage, signX, signY, unit, preset, sigRatio]);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">

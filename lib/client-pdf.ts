@@ -1313,11 +1313,20 @@ export async function signPdfClient(
     signY: number;
     unit: string;
     preset?: string;
+    sigRatio?: number;
   }
 ): Promise<Blob> {
   const MM_TO_PT = 72 / 25.4;
   const IN_TO_PT = 72;
   const MARGIN = 40;
+  const MAX_SIG_W = 150;
+  const MAX_SIG_H = 50;
+  const normalizedSigSize = (natW: number, natH: number, ratio: number) => {
+    const cssW = natW / ratio;
+    const cssH = natH / ratio;
+    const scale = Math.min(MAX_SIG_W / cssW, MAX_SIG_H / cssH, 1);
+    return { cssW, cssH, scale };
+  };
 
   const buf = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(buf, { ignoreEncryption: true });
@@ -1357,8 +1366,9 @@ export async function signPdfClient(
       }
       if (opts.signImage) {
         const img = await createImageBitmap(opts.signImage);
-        estW = Math.round(img.width * 0.5);
-        estH = Math.round(img.height * 0.5);
+        const { cssW, cssH, scale } = normalizedSigSize(img.width, img.height, opts.sigRatio ?? 1);
+        estW = Math.round(cssW * scale);
+        estH = Math.round(cssH * scale);
         img.close();
       }
       switch (opts.preset) {
@@ -1392,7 +1402,10 @@ export async function signPdfClient(
     if (opts.signImage) {
       const pngBuf = await imageToPngClient(opts.signImage);
       const embedImage = await pdfDoc.embedPng(pngBuf);
-      const { width: imgW, height: imgH } = embedImage.scale(0.5);
+      const { width: natW, height: natH } = embedImage.scale(1);
+      const { cssW, cssH, scale } = normalizedSigSize(natW, natH, opts.sigRatio ?? 1);
+      const imgW = cssW * scale;
+      const imgH = cssH * scale;
       page.drawImage(embedImage, {
         x: finalX, y: normalizedY - imgH + 20, width: imgW, height: imgH, opacity: 0.9,
       });
