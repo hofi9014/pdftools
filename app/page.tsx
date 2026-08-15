@@ -275,67 +275,86 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
         {(function() {
           const catBorder = (k: string) => `var(--cat-${k}-border)`;
           const catBg = (k: string) => `var(--cat-${k}-bg)`;
+          const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+          const q = search ? norm(search) : '';
 
-          return categories.map(cat => {
-            let filtered = tools.filter(t => t.category === cat.key && !t.disabled);
-            if (search) {
-              const q = search.toLowerCase();
-              filtered = filtered.filter(tt =>
-                t(`tool.${tt.key}`, locale).toLowerCase().includes(q) ||
-                t(`desc.${tt.key}`, locale).toLowerCase().includes(q)
-              );
-            }
-            if (filtered.length === 0) return null;
-            return (
-              <div key={cat.key} className="mb-12 last:mb-0">
-                <h4 className="text-xl font-bold mb-5 flex items-center gap-2"
-                  style={{ color: `var(--cat-${cat.key})` }}>
-                  <span>{cat.icon}</span>
-                  <span>{t(`nav.category.${cat.key === 'more' ? 'more' : cat.key}`, locale)}</span>
-                </h4>
-                <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-                  {filtered.map((tool) => (
-                    <a key={tool.key} href={toolPath(tool.key)}
-                      className="group"
-                      style={{
-                        display: 'flex', flexDirection: 'column' as const,
-                        padding: '1.25rem 1.5rem', borderRadius: '16px',
-                        backgroundColor: 'var(--coffee-surface-solid)',
-                        border: `1px solid var(--coffee-border)`,
-                        borderLeft: `3px solid ${catBorder(cat.key)}`,
-                        transition: 'all 0.25s',
-                        textDecoration: 'none',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.borderColor = catBorder(cat.key);
-                        e.currentTarget.style.boxShadow = `0 4px 20px color-mix(in srgb, ${catBorder(cat.key)} 20%, transparent)`;
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.borderColor = 'var(--coffee-border)';
-                        e.currentTarget.style.boxShadow = 'none';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                      }}>
-                      <div className="text-3xl sm:text-4xl mb-3">{getToolIcon(tool.key)}</div>
-                      <h4 className="font-bold mb-1 text-sm sm:text-base" style={{ color: 'var(--coffee-text)' }}>{t(`tool.${tool.key}`, locale)}</h4>
-                      <p className="text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--coffee-text-tertiary)' }}>{t(`desc.${tool.key}`, locale)}</p>
-                      {aiTools.has(tool.key) && (
-                        <span className="inline-block mt-2 text-[10px] font-medium px-2 py-0.5 rounded-full"
-                          style={{
-                            backgroundColor: 'color-mix(in srgb, var(--coffee-accent) 12%, transparent)',
-                            color: 'var(--coffee-accent)',
-                            border: '1px solid color-mix(in srgb, var(--coffee-accent) 25%, transparent)',
-                            alignSelf: 'flex-start',
-                          }}>
-                          {t('hero.ai_badge', locale)}
-                        </span>
-                      )}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            );
+          const perCategory = categories.map(cat => {
+            const base = tools.filter(t => t.category === cat.key && !t.disabled);
+            const filtered = q
+              ? base.filter(tt =>
+                  norm(t(`tool.${tt.key}`, locale)).includes(q) ||
+                  norm(t(`desc.${tt.key}`, locale)).includes(q) ||
+                  norm(tt.key).includes(q) ||
+                  norm(tt.slug).includes(q)
+                )
+              : base;
+            return { cat, filtered };
           });
+          const totalShown = perCategory.reduce((n, c) => n + c.filtered.length, 0);
+
+          return (
+            <>
+              {perCategory.map(({ cat, filtered }) => {
+                if (filtered.length === 0) return null;
+                return (
+                  <div key={cat.key} className="mb-12 last:mb-0">
+                    <h4 className="text-xl font-bold mb-5 flex items-center gap-2"
+                      style={{ color: `var(--cat-${cat.key})` }}>
+                      <span>{cat.icon}</span>
+                      <span>{t(`nav.category.${cat.key === 'more' ? 'more' : cat.key}`, locale)}</span>
+                    </h4>
+                    <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+                      {filtered.map((tool) => (
+                        <a key={tool.key} href={toolPath(tool.key)}
+                          className="group"
+                          style={{
+                            display: 'flex', flexDirection: 'column' as const,
+                            padding: '1.25rem 1.5rem', borderRadius: '16px',
+                            backgroundColor: 'var(--coffee-surface-solid)',
+                            border: `1px solid var(--coffee-border)`,
+                            borderLeft: `3px solid ${catBorder(cat.key)}`,
+                            transition: 'all 0.25s',
+                            textDecoration: 'none',
+                          }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.borderColor = catBorder(cat.key);
+                            e.currentTarget.style.boxShadow = `0 4px 20px color-mix(in srgb, ${catBorder(cat.key)} 20%, transparent)`;
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.borderColor = 'var(--coffee-border)';
+                            e.currentTarget.style.boxShadow = 'none';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                          }}>
+                          <div className="text-3xl sm:text-4xl mb-3">{getToolIcon(tool.key)}</div>
+                          <h4 className="font-bold mb-1 text-sm sm:text-base" style={{ color: 'var(--coffee-text)' }}>{t(`tool.${tool.key}`, locale)}</h4>
+                          <p className="text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--coffee-text-tertiary)' }}>{t(`desc.${tool.key}`, locale)}</p>
+                          {aiTools.has(tool.key) && (
+                            <span className="inline-block mt-2 text-[10px] font-medium px-2 py-0.5 rounded-full"
+                              style={{
+                                backgroundColor: 'color-mix(in srgb, var(--coffee-accent) 12%, transparent)',
+                                color: 'var(--coffee-accent)',
+                                border: '1px solid color-mix(in srgb, var(--coffee-accent) 25%, transparent)',
+                                alignSelf: 'flex-start',
+                              }}>
+                              {t('hero.ai_badge', locale)}
+                            </span>
+                          )}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+              {search && totalShown === 0 && (
+                <div className="text-center py-10">
+                  <p className="text-base font-medium" style={{ color: 'var(--coffee-text-secondary)' }}>
+                    {t('home.search_no_results', locale, { query: search })}
+                  </p>
+                </div>
+              )}
+            </>
+          );
         })()}
       </section>
     </main>
