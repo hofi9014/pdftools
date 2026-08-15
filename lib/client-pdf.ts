@@ -1148,8 +1148,48 @@ export async function comparePdfTextClient(fileA: File, fileB: File): Promise<{ 
     } else if (pageA !== pageB) {
       const wordsA = pageA.split(/\s+/);
       const wordsB = pageB.split(/\s+/);
-      const added = wordsB.filter(w => !wordsA.includes(w));
-      const removed = wordsA.filter(w => !wordsB.includes(w));
+      const n = wordsA.length;
+      const m = wordsB.length;
+
+      const added: string[] = [];
+      const removed: string[] = [];
+
+      if (n * m > 4_000_000) {
+        const count = (words: string[]): Map<string, number> => {
+          const map = new Map<string, number>();
+          for (const w of words) map.set(w, (map.get(w) ?? 0) + 1);
+          return map;
+        };
+        const countA = count(wordsA);
+        const countB = count(wordsB);
+        for (const [w, b] of countB) {
+          const a = countA.get(w) ?? 0;
+          for (let k = 0; k < b - Math.min(a, b); k++) added.push(w);
+        }
+        for (const [w, a] of countA) {
+          const b = countB.get(w) ?? 0;
+          for (let k = 0; k < a - Math.min(a, b); k++) removed.push(w);
+        }
+      } else {
+        const lcs: Int32Array[] = [];
+        for (let i = 0; i <= n; i++) lcs.push(new Int32Array(m + 1));
+        for (let i = n - 1; i >= 0; i--) {
+          for (let j = m - 1; j >= 0; j--) {
+            lcs[i][j] = wordsA[i] === wordsB[j]
+              ? lcs[i + 1][j + 1] + 1
+              : Math.max(lcs[i + 1][j], lcs[i][j + 1]);
+          }
+        }
+        let a = 0, b = 0;
+        while (a < n && b < m) {
+          if (wordsA[a] === wordsB[b]) { a++; b++; }
+          else if (lcs[a + 1][b] >= lcs[a][b + 1]) { removed.push(wordsA[a]); a++; }
+          else { added.push(wordsB[b]); b++; }
+        }
+        while (a < n) { removed.push(wordsA[a]); a++; }
+        while (b < m) { added.push(wordsB[b]); b++; }
+      }
+
       if (added.length > 0) differences.push({ page: i + 1, type: 'added', content: added.slice(0, 20).join(' ') });
       if (removed.length > 0) differences.push({ page: i + 1, type: 'removed', content: removed.slice(0, 20).join(' ') });
     }

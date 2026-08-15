@@ -680,40 +680,6 @@ export async function excelToPdf(fileBuffer: Buffer): Promise<Buffer> {
   return Buffer.from(await pdf.save());
 }
 
-export async function comparePdfText(fileBufferA: Buffer, fileBufferB: Buffer): Promise<{ differences: { page: number; type: 'added' | 'removed' | 'changed'; content: string }[] }> {
-  const textA = await extractText(fileBufferA);
-  const textB = await extractText(fileBufferB);
-
-  const pagesA = textA.split('\n---\n');
-  const pagesB = textB.split('\n---\n');
-  const maxPages = Math.max(pagesA.length, pagesB.length);
-  const differences: { page: number; type: 'added' | 'removed' | 'changed'; content: string }[] = [];
-
-  for (let i = 0; i < maxPages; i++) {
-    const pageA = (pagesA[i] || '').trim();
-    const pageB = (pagesB[i] || '').trim();
-
-    if (!pageA && pageB) {
-      differences.push({ page: i + 1, type: 'added', content: pageB.substring(0, 200) });
-    } else if (pageA && !pageB) {
-      differences.push({ page: i + 1, type: 'removed', content: pageA.substring(0, 200) });
-    } else if (pageA !== pageB) {
-      const wordsA = pageA.split(/\s+/);
-      const wordsB = pageB.split(/\s+/);
-      const added = wordsB.filter(w => !wordsA.includes(w));
-      const removed = wordsA.filter(w => !wordsB.includes(w));
-      if (added.length > 0) {
-        differences.push({ page: i + 1, type: 'added', content: added.slice(0, 20).join(' ') });
-      }
-      if (removed.length > 0) {
-        differences.push({ page: i + 1, type: 'removed', content: removed.slice(0, 20).join(' ') });
-      }
-    }
-  }
-
-  return { differences };
-}
-
 export async function extractText(fileBuffer: Buffer): Promise<string> {
   await initPdfjs();
   const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
