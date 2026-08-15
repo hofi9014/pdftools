@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef } from 'react';
-import { splitPDF, splitByRanges, extractPages, downloadZip } from '@/lib/client-pdf';
+import { splitPDF, splitByRanges, splitBySelection, downloadZip } from '@/lib/client-pdf';
 import PagePreview from '@/components/PagePreview';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
@@ -18,6 +18,7 @@ export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } =
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [notice, setNotice] = useState('');
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
   const downloadFileNameRef = useRef('');
@@ -28,6 +29,7 @@ export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } =
     setFile(f);
     setError('');
     setSuccess(false);
+    setNotice('');
     setSelectedPages([]);
   };
 
@@ -38,6 +40,7 @@ export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } =
     setLoading(true);
     setError('');
     setSuccess(false);
+    setNotice('');
 
     try {
       let results: { data: Uint8Array; name: string }[];
@@ -45,9 +48,11 @@ export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } =
         const bufs = await splitPDF(file);
         results = bufs.map((data, i) => ({ data, name: `strona_${i + 1}.pdf` }));
       } else if (splitMode === 'select') {
-        const data = await extractPages(file, selectedPages);
-        const names = selectedPages.map(p => `strona_${p + 1}.pdf`);
-        results = [{ data, name: `wybrane_strony.pdf` }];
+        const { selected, rest } = await splitBySelection(file, selectedPages);
+        results = [];
+        if (selected) results.push({ data: selected, name: 'podzielone_wybrane.pdf' });
+        if (rest) results.push({ data: rest, name: 'podzielone_pozostale.pdf' });
+        if (!rest) setNotice(t('page.split.select_all', locale));
       } else {
         results = await splitByRanges(file, ranges);
       }
@@ -131,6 +136,10 @@ export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } =
             />
           )}
 
+          {splitMode === 'select' && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{t('page.split.select_two_files', locale)}</p>
+          )}
+
           {splitMode === 'ranges' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -158,7 +167,7 @@ export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } =
         </div>
 
         {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
-        {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">✅ {t('result.zip', locale)}</div>}
+        {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">✅ {t('result.zip', locale)}{notice ? ` — ${notice}` : ''}</div>}
         {success && processedBlobRef.current && (
           <div className="flex justify-center mb-6">
             <CloudFileSaver blob={processedBlobRef.current} fileName={downloadFileNameRef.current} />
