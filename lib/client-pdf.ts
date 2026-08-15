@@ -1307,6 +1307,9 @@ export async function unlockPdfClient(file: File, password?: string): Promise<Bl
 }
 
 export async function protectPdfClient(file: File, password: string): Promise<Blob> {
+  if (password.length < 4) {
+    throw new Error('Password must be at least 4 characters');
+  }
   const buf = await file.arrayBuffer();
   const { encryptPDF } = await import('@pdfsmaller/pdf-encrypt');
   const result = await encryptPDF(new Uint8Array(buf), password);

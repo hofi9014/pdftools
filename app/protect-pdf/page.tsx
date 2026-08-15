@@ -29,7 +29,7 @@ export default function ProtectPDF({ locale: forcedLocale }: { locale?: Locale }
 
   const handleProtect = async () => {
     if (!file) { setError(t('error.select', locale)); return; }
-    if (password.length < 4) { setError(t('page.protect.password_min_length', locale)); return; }
+    if (password.length < 4) { setError(t('page.protect.password_min_length', locale, { n: 4 })); return; }
     if (password !== confirmPassword) { setError(t('page.protect.passwords_no_match', locale)); return; }
     setLoading(true);
     setError('');
@@ -111,7 +111,7 @@ export default function ProtectPDF({ locale: forcedLocale }: { locale?: Locale }
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder={t('page.protect.password_min', locale)}
+                placeholder={t('page.protect.password_min', locale, { n: 4 })}
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:border-blue-500 dark:border-blue-400 dark:focus:border-blue-400"
               />
               <button
