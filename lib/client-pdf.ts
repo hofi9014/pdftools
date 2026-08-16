@@ -103,10 +103,18 @@ export async function addWatermark(file: File, text: string, options?: { opacity
       else y = height / 2 - fontSize / 2;
       x = width / 2 - textWidth / 2;
     } else {
-      x = width / 4;
-      if (position === 'top') y = height * 0.75;
-      else if (position === 'bottom') y = height * 0.25;
-      else y = height / 2;
+      const textHeight = font.heightAtSize(fontSize);
+      const ascentHeight = font.heightAtSize(fontSize, { descender: false });
+      const centerYOffset = ascentHeight - textHeight / 2;
+      const rad = (rotation * Math.PI) / 180;
+      const cosR = Math.cos(rad);
+      const sinR = Math.sin(rad);
+      const bboxCenterOffsetX = (textWidth / 2) * cosR - centerYOffset * sinR;
+      const bboxCenterOffsetY = (textWidth / 2) * sinR + centerYOffset * cosR;
+      const refX = width / 2;
+      const refY = position === 'top' ? height * 0.75 : position === 'bottom' ? height * 0.25 : height / 2;
+      x = refX - bboxCenterOffsetX;
+      y = refY - bboxCenterOffsetY;
     }
     page.drawText(text, { x, y, size: fontSize, font, color: rgb(0.5, 0.5, 0.5), opacity, rotate: degrees(rotation) });
   }
