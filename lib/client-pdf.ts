@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFRawStream } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFRawStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation } from 'pdf-lib';
 import { rasterizePage, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
 
@@ -221,11 +221,92 @@ export async function flattenPDF(file: File): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
   const pages = pdf.getPages();
-  for (let i = 0; i < pages.length; i++) {
-    const page = pages[i];
-    (page.node as unknown as Record<string, unknown>).Annots = undefined;
+
+  const acroForm = pdf.catalog.get(PDFName.of('AcroForm'));
+
+  if (acroForm) {
+    const form = pdf.getForm();
+    const pdfFields = form.getFields();
+
+    const sigRefs = new Set<PDFRef>();
+    for (const f of pdfFields) {
+      if (f.constructor.name !== 'PDFSignature') continue;
+      for (const w of f.acroField.getWidgets()) {
+        const ref = pdf.context.getObjectRef(w.dict);
+        if (ref) sigRefs.add(ref);
+      }
+      const fref = pdf.context.getObjectRef(f.acroField.dict);
+      if (fref) sigRefs.add(fref);
+    }
+
+    const helvetica = await pdf.embedFont(StandardFonts.Helvetica);
+
+    for (const f of pdfFields) {
+      if (f.constructor.name === 'PDFSignature') continue;
+      try {
+        if (f.needsAppearancesUpdate()) f.defaultUpdateAppearances(helvetica);
+        for (const widget of f.acroField.getWidgets()) {
+          const page = findWidgetPage(pdf, pages, widget);
+          const appearanceRef = resolveAppearanceRef(f, widget);
+          const rect = widget.getRectangle();
+          page.pushOperators(
+            pushGraphicsState(),
+            translate(rect.x, rect.y),
+            ...rotateInPlace({ ...rect, rotation: 0 }),
+            drawObject(page.node.newXObject('FlatWidget', appearanceRef)),
+            popGraphicsState(),
+          );
+        }
+        form.removeField(f);
+      } catch (err) {
+        console.warn('flattenPDF: skipping field', f.getName?.(), err);
+      }
+    }
+
+    for (const page of pages) {
+      const annots = page.node.Annots();
+      if (!annots) continue;
+      const keep: PDFRef[] = [];
+      for (const a of annots.asArray()) {
+        if (a instanceof PDFRef && sigRefs.has(a)) keep.push(a);
+      }
+      if (keep.length > 0) {
+        page.node.set(PDFName.of('Annots'), pdf.context.obj(keep));
+      } else {
+        page.node.delete(PDFName.of('Annots'));
+      }
+    }
+  } else {
+    for (const page of pages) page.node.delete(PDFName.Annots);
   }
+
   return pdf.save();
+}
+
+function findWidgetPage(pdf: PDFDocument, pages: PDFPage[], widget: PDFWidgetAnnotation): PDFPage {
+  const pageRef = widget.P();
+  const byRef = pages.find((p) => p.ref === pageRef);
+  if (byRef) return byRef;
+  const widgetRef = pdf.context.getObjectRef(widget.dict);
+  const byAnnot = widgetRef
+    ? pages.find((p) => p.node.Annots()?.asArray().includes(widgetRef))
+    : undefined;
+  if (byAnnot) return byAnnot;
+  throw new Error('flattenPDF: could not find page for widget');
+}
+
+function resolveAppearanceRef(field: PDFField, widget: PDFWidgetAnnotation): PDFRef {
+  let refOrDict: PDFRef | PDFDict = widget.getNormalAppearance();
+  if (refOrDict instanceof PDFDict &&
+      (field instanceof PDFCheckBox || field instanceof PDFRadioGroup)) {
+    const value = field.acroField.getValue();
+    const ref = value ? refOrDict.get(value) ?? refOrDict.get(PDFName.of('Off')) : undefined;
+    if (ref instanceof PDFRef) refOrDict = ref;
+  }
+  if (!(refOrDict instanceof PDFRef)) {
+    throw new Error('Failed to extract appearance ref for: ' + field.getName());
+  }
+  return refOrDict;
 }
 
 export async function downloadPdf(data: Uint8Array, filename: string): Promise<Blob> {
