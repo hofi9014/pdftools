@@ -20,12 +20,28 @@ export default function Metadata({ locale: forcedLocale }: { locale?: Locale } =
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
 
-  const handleFile = (f: File | null) => {
+  const handleFile = async (f: File | null) => {
     if (!f) return;
     if (f.type !== 'application/pdf') { setError(t('error.onlypdf', locale)); return; }
     setFile(f);
     setError('');
     setSuccess(false);
+
+    try {
+      const { PDFDocument } = await import('pdf-lib');
+      const buf = await f.arrayBuffer();
+      const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+      setTitle(pdf.getTitle() || '');
+      setAuthor(pdf.getAuthor() || '');
+      setSubject(pdf.getSubject() || '');
+      const kw = pdf.getKeywords();
+      setKeywords(Array.isArray(kw) ? kw.join(', ') : (kw || ''));
+    } catch {
+      setTitle('');
+      setAuthor('');
+      setSubject('');
+      setKeywords('');
+    }
   };
 
   const handleSubmit = async () => {
@@ -105,7 +121,7 @@ export default function Metadata({ locale: forcedLocale }: { locale?: Locale } =
       </div>
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
-      {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">✅ {t('result.success', locale)}</div>}
+      {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">✅ {t('page.metadata.success', locale)}</div>}
       {success && processedBlobRef.current && (
         <div className="flex justify-center mb-6">
           <CloudFileSaver blob={processedBlobRef.current} fileName="z-metadanymi.pdf" />
