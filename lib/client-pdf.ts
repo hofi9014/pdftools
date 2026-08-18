@@ -217,7 +217,7 @@ export async function editMetadata(file: File, meta: { title?: string; author?: 
 
   let xmpXml = await readExistingXmp(pdf);
   if (xmpXml) {
-    xmpXml = applyMetadataToXmp(xmpXml, meta);
+    try { xmpXml = applyMetadataToXmp(xmpXml, meta); } catch { xmpXml = ''; }
   }
   if (!xmpXml) {
     xmpXml = buildNewXmp(meta);
