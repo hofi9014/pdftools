@@ -214,7 +214,123 @@ export async function editMetadata(file: File, meta: { title?: string; author?: 
   if (meta.author !== undefined) pdf.setAuthor(meta.author);
   if (meta.subject !== undefined) pdf.setSubject(meta.subject);
   if (meta.keywords !== undefined) pdf.setKeywords((meta.keywords || '').split(',').map(s => s.trim()).filter(Boolean));
+
+  let xmpXml = await readExistingXmp(pdf);
+  if (xmpXml) {
+    xmpXml = applyMetadataToXmp(xmpXml, meta);
+  }
+  if (!xmpXml) {
+    xmpXml = buildNewXmp(meta);
+  }
+  if (xmpXml) {
+    writeXmpToPdf(pdf, xmpXml);
+  }
+
   return pdf.save();
+}
+
+const RDF_NS = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+const DC_NS = 'http://purl.org/dc/elements/1.1/';
+const PDF_NS = 'http://ns.adobe.com/pdf/1.3/';
+const XML_NS = 'http://www.w3.org/XML/1998/namespace';
+
+async function readExistingXmp(pdf: PDFDocument): Promise<string | null> {
+  const metaRef = pdf.catalog.get(PDFName.of('Metadata'));
+  if (!metaRef) return null;
+  const metaObj = pdf.context.lookup(metaRef as never);
+  if (!(metaObj instanceof PDFRawStream) || !metaObj.dict) return null;
+  const filters = parseFilters(metaObj.dict.get(PDFName.of('Filter')));
+  let raw: Uint8Array = metaObj.contents;
+  if (filters.includes('/FlateDecode') && raw.length > 20) {
+    try {
+      const pako = (await import('pako')).default;
+      raw = pako.inflate(new Uint8Array(raw.buffer, raw.byteOffset, raw.byteLength));
+    } catch { return null; }
+  }
+  try { return new TextDecoder('utf-8').decode(raw); } catch { return null; }
+}
+
+function updateXmpField(doc: Document, nsUri: string, localName: string, value: string, containerTag: 'Alt' | 'Seq' | null): void {
+  let node = doc.getElementsByTagNameNS(nsUri, localName)[0];
+  if (!node) {
+    const desc = doc.getElementsByTagNameNS(RDF_NS, 'Description')[0];
+    if (!desc) return;
+    node = doc.createElementNS(nsUri, localName);
+    if (containerTag) {
+      const container = doc.createElementNS(RDF_NS, 'rdf:' + containerTag);
+      const li = doc.createElementNS(RDF_NS, 'rdf:li');
+      li.setAttributeNS(XML_NS, 'xml:lang', 'x-default');
+      li.textContent = value;
+      container.appendChild(li);
+      node.appendChild(container);
+    } else {
+      node.textContent = value;
+    }
+    desc.appendChild(node);
+    return;
+  }
+  if (containerTag) {
+    const liNodes = node.getElementsByTagNameNS(RDF_NS, 'li');
+    let targetLi: Element | null = null;
+    for (let i = 0; i < liNodes.length; i++) {
+      if (liNodes[i].getAttributeNS(XML_NS, 'lang') === 'x-default') { targetLi = liNodes[i]; break; }
+    }
+    if (!targetLi && liNodes.length > 0) targetLi = liNodes[0];
+    if (targetLi) targetLi.textContent = value;
+  } else {
+    node.textContent = value;
+  }
+}
+
+function applyMetadataToXmp(xmpXml: string, meta: { title?: string; author?: string; subject?: string; keywords?: string }): string {
+  const doc = new DOMParser().parseFromString(xmpXml, 'application/xml');
+  if (doc.querySelector('parsererror')) return '';
+  let desc = doc.getElementsByTagNameNS(RDF_NS, 'Description')[0];
+  if (!desc) {
+    const rdfRoot = doc.getElementsByTagNameNS(RDF_NS, 'RDF')[0];
+    if (!rdfRoot) return '';
+    desc = doc.createElementNS(RDF_NS, 'rdf:Description');
+    desc.setAttributeNS(null, 'rdf:about', '');
+    rdfRoot.appendChild(desc);
+  }
+  if (meta.title !== undefined) updateXmpField(doc, DC_NS, 'title', meta.title, 'Alt');
+  if (meta.author !== undefined) updateXmpField(doc, DC_NS, 'creator', meta.author, 'Seq');
+  if (meta.subject !== undefined) updateXmpField(doc, DC_NS, 'description', meta.subject, 'Alt');
+  if (meta.keywords !== undefined) updateXmpField(doc, PDF_NS, 'Keywords', meta.keywords, null);
+  return new XMLSerializer().serializeToString(doc);
+}
+
+function escapeXml(s: string): string {
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
+function buildNewXmp(meta: { title?: string; author?: string; subject?: string; keywords?: string }): string {
+  const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  return `<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description rdf:about=""
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:xmp="http://ns.adobe.com/xap/1.0/"
+      xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
+      <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${escapeXml(meta.title || '')}</rdf:li></rdf:Alt></dc:title>
+      <dc:creator><rdf:Seq><rdf:li>${escapeXml(meta.author || '')}</rdf:li></rdf:Seq></dc:creator>
+      <dc:description><rdf:Alt><rdf:li xml:lang="x-default">${escapeXml(meta.subject || '')}</rdf:li></rdf:Alt></dc:description>
+      <pdf:Keywords>${escapeXml(meta.keywords || '')}</pdf:Keywords>
+      <xmp:CreateDate>${now}</xmp:CreateDate>
+      <xmp:ModifyDate>${now}</xmp:ModifyDate>
+    </rdf:Description>
+  </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end="w"?>`;
+}
+
+function writeXmpToPdf(pdf: PDFDocument, xmpXml: string): void {
+  try { pdf.catalog.delete(PDFName.of('Metadata')); } catch {}
+  const xmpBytes = new TextEncoder().encode(xmpXml);
+  const xmpStream = pdf.context.stream(xmpBytes, { Type: 'Metadata', Subtype: 'XML' });
+  const xmpRef = pdf.context.register(xmpStream);
+  pdf.catalog.set(PDFName.of('Metadata'), xmpRef);
 }
 
 export async function flattenPDF(file: File): Promise<Uint8Array> {
