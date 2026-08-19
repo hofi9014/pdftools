@@ -187,7 +187,7 @@ const pl: Record<string, string> = {
   'tool.extract': 'Wyodrębnij strony',
   'tool.fillform': 'Wypełnij formularz PDF',
   'tool.flatten': 'Spłaszcz PDF',
-  'tool.html': 'HTML na PDF',
+  'tool.html': 'HTML do PDF',
   'tool.html2pdf': 'Plik PDF z treścią HTML',
   'tool.images': 'PDF do obrazów',
   'tool.jpg': 'PDF do JPG',
