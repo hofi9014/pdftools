@@ -1,4 +1,5 @@
 import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFRawStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation } from 'pdf-lib';
+import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePage, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
 
@@ -515,24 +516,194 @@ export async function pdfToSvgPages(file: File): Promise<{ svg: string; name: st
   return results;
 }
 
+/* ── helpers for pdfToEpub structured extraction ─────────────────── */
+
+interface StructuredBlock {
+  text: string
+  heading: 0 | 1 | 2 | 3
+  bold: boolean
+  italic: boolean
+  newParagraph: boolean
+}
+
+function median(values: number[]): number {
+  if (values.length === 0) return 0;
+  const s = [...values].sort((a, b) => a - b);
+  return s[Math.floor(s.length / 2)];
+}
+
+function isBoldFont(fontName: string): boolean {
+  if (!fontName) return false;
+  const lower = fontName.toLowerCase();
+  return lower.includes('bold') ||
+    lower.includes('black') ||
+    lower.includes('heavy') ||
+    lower.includes('demi') ||
+    lower.includes('ultra') ||
+    lower.endsWith('bd') ||
+    lower.endsWith('bdit');
+}
+
+function isItalicFont(fontName: string): boolean {
+  if (!fontName) return false;
+  const lower = fontName.toLowerCase();
+  return lower.includes('italic') ||
+    lower.includes('oblique') ||
+    lower.includes('slant') ||
+    lower.endsWith('it') ||
+    lower.endsWith('bdit');
+}
+
+function classifyBlocks(blocks: TextBlock[]): StructuredBlock[] {
+  if (blocks.length === 0) return [];
+
+  const fontSizes = blocks.map((b) => b.fontSize).filter((fs) => fs > 0);
+  const freq = new Map<number, number>();
+  for (const fs of fontSizes) freq.set(fs, (freq.get(fs) || 0) + 1);
+  const domFS = [...freq.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || median(fontSizes);
+
+  const lineGaps: number[] = [];
+  for (let i = 1; i < blocks.length; i++) {
+    if (blocks[i].page === blocks[i - 1].page) {
+      const gap = blocks[i - 1].y - blocks[i].y;
+      if (gap > 0 && gap < 200) lineGaps.push(gap);
+    }
+  }
+  const medGap = median(lineGaps) || 14;
+
+  return blocks.map((b, i) => {
+    const ratio = domFS > 0 ? b.fontSize / domFS : 1;
+
+    let heading: 0 | 1 | 2 | 3 = 0;
+    if (ratio >= 1.3 && b.text.length >= 3 && b.text.length <= 80) {
+      if (ratio >= 1.8) heading = 1;
+      else if (ratio >= 1.4) heading = 2;
+      else heading = 3;
+    }
+
+    const prev = i > 0 ? blocks[i - 1] : null;
+    let newParagraph = true;
+    if (prev) {
+      if (prev.page !== b.page) newParagraph = true;
+      else {
+        const gap = prev.y - b.y;
+        newParagraph = gap > medGap * 1.6;
+      }
+    }
+
+    return {
+      text: b.text,
+      heading,
+      bold: isBoldFont(b.fontName),
+      italic: isItalicFont(b.fontName),
+      newParagraph,
+    };
+  });
+}
+
+function blocksToXhtmlBody(blocks: StructuredBlock[]): string {
+  if (blocks.length === 0) return '<p>(brak tekstu)</p>';
+
+  const esc = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  const parts: string[] = [];
+  let buf = '';
+
+  const flush = () => {
+    if (buf.trim()) parts.push(`<p>${buf.trim()}</p>`);
+    buf = '';
+  };
+
+  for (const b of blocks) {
+    if (b.heading > 0) {
+      flush();
+      const tag = `h${b.heading}`;
+      const inner = b.bold ? `<strong>${esc(b.text)}</strong>` : esc(b.text);
+      parts.push(`<${tag}>${inner}</${tag}>`);
+      buf = '';
+      continue;
+    }
+
+    if (b.newParagraph) {
+      flush();
+    }
+
+    let text = esc(b.text);
+    if (b.bold) text = `<strong>${text}</strong>`;
+    if (b.italic) text = `<em>${text}</em>`;
+    buf += (buf && !b.newParagraph ? ' ' : '') + text;
+  }
+
+  flush();
+  return parts.join('\n') || '<p>(brak tekstu)</p>';
+}
+
+/* ── pdfToEpub ───────────────────────────────────────────────────── */
+/*
+ * Known limitation: multi-column documents with detected structure
+ * (headings/bold) may interleave column text - see Punkt 21 diagnosis.
+ * extractTextBlocks sorts Y desc, X asc which produces row-major order
+ * (L1,R1,L2,R2) instead of column-major (L1,L2,R1,R2).
+ * LEGACY path avoids this by using raw pdfjs getTextContent() directly.
+ */
+
 export async function pdfToEpub(file: File): Promise<Blob> {
   const buf = await file.arrayBuffer();
   const pdfjsLib = await import('pdfjs-dist');
   await initPdfjs();
   const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
   const title = file.name.replace(/\.pdf$/i, '');
-  const pages: string[] = [];
+
+  const rawTexts: string[] = [];
+  const pageStructuredBlocks: StructuredBlock[][] = [];
 
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i);
+
     const content = await page.getTextContent();
-    const text = content.items
+    const rawText = content.items
       .filter((item) => 'str' in item)
       .map((item) => (item as unknown as { str: string }).str)
       .join(' ');
-    pages.push(text.trim());
+    rawTexts.push(rawText.trim());
+
+    const viewport = page.getViewport({ scale: 1, rotation: page.rotate });
+    const blocks = await extractTextBlocks(page, i, viewport.height, 1, page.rotate);
+    pageStructuredBlocks.push(classifyBlocks(blocks));
   }
   await doc.cleanup();
+
+  const hasHeadings = pageStructuredBlocks.some((p) => p.some((b) => b.heading > 0));
+  const hasBold = pageStructuredBlocks.some((p) => p.some((b) => b.bold));
+  const hasParagraphBreaks = pageStructuredBlocks.some((p) =>
+    p.filter((b) => b.newParagraph).length > 1
+  );
+  const hasStructure = hasHeadings || hasBold || hasParagraphBreaks;
+
+  const now = new Date().toISOString().replace(/[TZ:.\-]/g, '').slice(0, 14);
+
+  const pageXhtml: string[] = hasStructure
+    ? pageStructuredBlocks.map((blocks, i) => {
+      const body = blocksToXhtmlBody(blocks);
+      return `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>Page ${i + 1}</title><link rel="stylesheet" type="text/css" href="style.css"/></head>
+<body>
+${body}
+</body>
+</html>`;
+    })
+    : rawTexts.map((text, i) => {
+      const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>Page ${i + 1}</title><link rel="stylesheet" type="text/css" href="style.css"/></head>
+<body><p>${escaped || '(brak tekstu)'}</p></body>
+</html>`;
+    });
 
   const JSZip = (await import('jszip')).default;
   const zip = new JSZip();
@@ -546,29 +717,17 @@ export async function pdfToEpub(file: File): Promise<Blob> {
   </rootfiles>
 </container>`);
 
-  const now = new Date().toISOString().replace(/[TZ:.\-]/g, '').slice(0, 14);
-
-  const xhtmlPages = pages.map((text, i) => {
-    const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    return `<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head><title>Page ${i + 1}</title><link rel="stylesheet" type="text/css" href="style.css"/></head>
-<body><p>${escaped || '(brak tekstu)'}</p></body>
-</html>`;
-  });
-
-  xhtmlPages.forEach((html, i) => {
+  pageXhtml.forEach((html, i) => {
     zip.file(`OEBPS/page-${i + 1}.xhtml`, html);
   });
 
-  zip.file('OEBPS/style.css', 'body { font-family: serif; margin: 5%; } p { text-indent: 1em; margin: 0; line-height: 1.5; }');
+  zip.file('OEBPS/style.css', 'body { font-family: serif; margin: 5%; } h1, h2, h3 { margin: 1em 0 0.5em; } p { text-indent: 1em; margin: 0; line-height: 1.5; }');
 
-  const manifest = xhtmlPages.map((_, i) =>
+  const manifest = pageXhtml.map((_, i) =>
     `    <item id="page-${i + 1}" href="page-${i + 1}.xhtml" media-type="application/xhtml+xml"/>`
   ).join('\n');
 
-  const spine = xhtmlPages.map((_, i) =>
+  const spine = pageXhtml.map((_, i) =>
     `    <itemref idref="page-${i + 1}"/>`
   ).join('\n');
 
@@ -599,7 +758,7 @@ ${spine}
   </head>
   <docTitle><text>${title}</text></docTitle>
   <navMap>
-    ${xhtmlPages.map((_, i) => `
+    ${pageXhtml.map((_, i) => `
     <navPoint id="nav-${i + 1}" playOrder="${i + 1}">
       <navLabel><text>Page ${i + 1}</text></navLabel>
       <content src="page-${i + 1}.xhtml"/>
