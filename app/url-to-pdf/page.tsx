@@ -86,7 +86,7 @@ export default function UrlToPdf({ locale: forcedLocale }: { locale?: Locale } =
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
         {[
-          { icon: '🔒', text: t('feature.only_content', locale) },
+          { icon: '🌐', text: t('feature.only_content', locale) },
           { icon: '⚡', text: t('feature.quick_processing', locale) },
           { icon: '🆓', text: t('feature.free_simple', locale) },
         ].map((item, i) => (
