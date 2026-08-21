@@ -105,6 +105,10 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
 
           {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
 
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 rounded-xl p-3 mb-6 text-xs leading-relaxed">
+            ⚠️ {t('page.ai_warning', locale)}
+          </div>
+
           <button onClick={handleExtract} disabled={loading || !file}
             className={`w-full py-4 rounded-2xl font-bold text-lg transition
               ${loading || !file ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>

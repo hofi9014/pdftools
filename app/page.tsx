@@ -264,17 +264,6 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
 
       <InstallSection />
 
-      {/* AI disclaimer */}
-      <section className="max-w-3xl mx-auto px-4 py-4">
-        <div className="rounded-xl p-4 text-xs leading-relaxed" style={{
-          backgroundColor: 'color-mix(in srgb, var(--coffee-accent) 8%, transparent)',
-          border: '1px solid color-mix(in srgb, var(--coffee-accent) 20%, transparent)',
-          color: 'var(--coffee-text-secondary)'
-        }}>
-          {t('hero.ai_disclaimer', locale)}
-        </div>
-      </section>
-
       {/* Cloud feature */}
       <section className="max-w-3xl mx-auto px-4 py-4">
         <div className="rounded-xl p-4 text-xs leading-relaxed" style={{
@@ -372,6 +361,9 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
             <h3 className="text-3xl font-bold text-center mb-3" style={{ color: 'var(--coffee-text)' }}>{t('home.pdfTools', locale)}</h3>
             <p className="text-center mb-12" style={{ color: 'var(--coffee-text-secondary)' }}>
               {t('home.subtitle2', locale)}
+            </p>
+            <p className="text-center mb-6 text-xs" style={{ color: 'var(--coffee-text-secondary)' }}>
+              {t('home.ai_note', locale)}
             </p>
             <ToolCatalog groups={filteredTools} locale={locale} />
           </>

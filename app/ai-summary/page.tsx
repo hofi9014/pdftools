@@ -57,6 +57,10 @@ export default function AiSummary({ locale: forcedLocale }: { locale?: Locale } 
           <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
         </div>
 
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 rounded-xl p-3 mb-6 text-xs leading-relaxed">
+          ⚠️ {t('page.ai_warning', locale)}
+        </div>
+
         <button type="submit" disabled={!file || loading} className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-medium rounded-xl transition">
           {loading ? <span>{t('page.aisummary.loading', locale)}</span> : <span>{t('page.aisummary.btn_generate', locale)}</span>}
         </button>
