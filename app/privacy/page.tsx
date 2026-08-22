@@ -1574,9 +1574,16 @@ const content = {
             h: '3.2 ユーザーがアップロードしたファイル',
             p: 'ツールにアップロードされたPDFファイルは、以下のように処理されます。',
             items: [
-              'クライアント側ツール（merge、split、rotate、watermark、page-numbers、crop-pdf、edit-pdf、sign-pdf、redact-pdf、flatten-pdf、delete-pages、extract-pages、reorder-pages、add-page、metadata、pdf-to-svg、pdf-to-epub、pdf-to-txt、fill-form、pdf-to-images、to-pdfa、compare-pdf、unlock-pdf、protect-pdf） — ファイルはWebAssemblyおよびJavaScriptを使用してブラウザで完全に処理されます。ファイルがお客様のデバイスから離れることはありません。',
-              'サーバー側ツール（compress-pdf、ocr-pdf、pdf-to-word、word-to-pdf、jpg-to-pdf、pdf-to-excel、excel-to-pdf、pdf-to-powerpoint、openoffice-to-pdf、pdf-to-openoffice、pdf-to-html、html-to-pdf、url-to-pdf） — ファイルは一時的にサーバーに送信され、RAMでのみ処理された後、操作完了後に即座に削除されます。最大保存時間：数秒。',
-              'AI機能（AI Chat、AI Summary、AI Translate） — PDFから抽出されたテキストは外部のOpenRouter APIに送信されます。ユーザーを識別するデータは送信されません。コンテンツは保存されず、モデルのトレーニングにも使用されません。',
+              'クライアント側ツール（merge、split、rotate、watermark、page-numbers、crop-pdf、edit-pdf、sign-pdf、redact-pdf、flatten-pdf、delete-pages、extract-pages、reorder-pages、add-page、metadata、pdf-to-svg、pdf-to-epub、pdf-to-txt、fill-form、pdf-to-images、to-pdfa、compare-pdf、unlock-pdf、protect-pdf、compress-pdf、ocr-pdf、pdf-to-word、word-to-pdf、jpg-to-pdf、pdf-to-excel、excel-to-pdf、pdf-to-powerpoint、openoffice-to-pdf、pdf-to-openoffice、pdf-to-html、html-to-pdf） — ファイルはWebAssemblyおよびJavaScriptを使用してブラウザで完全に処理されます。ファイルがお客様のデバイスから離れることはありません。',
+              'サーバー側ツール（url-to-pdf） — 指定されたURLは、ページを取得してPDFに変換するために当社のサーバーで処理されます。',
+            ],
+          },
+          {
+            h: '3.2a AI機能の利用制限',
+            p: 'AI機能（AI Chat、AI Summary、AI Translate）は、当社のサーバーを経由して外部のOpenRouter APIを使用します。PDFから抽出されたテキストはお客様のブラウザから直接OpenRouterに送信されるのではなく、当社のサーバーを経由し、共有のAPIキーを使用して転送されます。',
+            items: [
+              '不正利用を防止するため、リクエスト制限（1つのIPアドレスにつき1日15リクエスト）を適用しています。この目的のため、お客様のIPアドレスは最大24時間、サーバーのメモリに一時的に保存された後、削除されます。お客様のIPアドレスがOpenRouterや第三者と共有されることはありません — サーバー上でのリクエスト数のローカル集計にのみ使用されます。',
+              '送信されたテキストの内容はディスクに保存されることも、モデルのトレーニングに使用されることもありません。',
             ],
           },
           {
