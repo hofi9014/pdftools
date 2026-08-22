@@ -265,9 +265,16 @@ const content = {
             h: '3.2 Vom Benutzer hochgeladene Dateien',
             p: 'PDF-Dateien, die in die Werkzeuge hochgeladen werden, werden wie folgt verarbeitet:',
             items: [
-              'Clientseitige Werkzeuge (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf) — die Datei wird vollständig im Browser mit WebAssembly und JavaScript verarbeitet. Die Datei verlässt niemals Ihr Gerät.',
-              'Serverseitige Werkzeuge (compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf, url-to-pdf) — die Datei wird vorübergehend an den Server gesendet, ausschließlich im RAM verarbeitet und unmittelbar nach dem Vorgang gelöscht. Maximale Speicherzeit: wenige Sekunden.',
-              'KI-Funktionen (AI Chat, AI Summary, AI Translate) — der aus dem PDF extrahierte Text wird an die externe OpenRouter-API gesendet. Wir senden keine nutzeridentifizierenden Daten. Der Inhalt wird nicht gespeichert oder zum Training von Modellen verwendet.',
+              'Clientseitige Werkzeuge (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf, compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf) — die Datei wird vollständig im Browser mit WebAssembly und JavaScript verarbeitet. Die Datei verlässt Ihr Gerät nicht.',
+              'Serverseitige Werkzeuge (url-to-pdf) — die angegebene URL wird von unserem Server abgerufen und in ein PDF umgewandelt.',
+            ],
+          },
+          {
+            h: '3.2a Nutzungsbeschränkungen der KI-Funktionen',
+            p: 'KI-Funktionen (AI Chat, AI Summary, AI Translate) nutzen die externe OpenRouter-API über unseren Server — der aus dem PDF extrahierte Text wird nicht direkt von Ihrem Browser an OpenRouter gesendet, sondern durchläuft unseren Server, der ihn mit unserem gemeinsam genutzten API-Schlüssel weiterleitet.',
+            items: [
+              'Um Missbrauch zu verhindern, wenden wir ein Anfragelimit an (15 pro Tag und IP-Adresse). Zu diesem Zweck wird Ihre IP-Adresse vorübergehend für maximal 24 Stunden im Arbeitsspeicher des Servers gespeichert und anschließend gelöscht. Ihre IP-Adresse wird nicht an OpenRouter oder Dritte weitergegeben — sie dient ausschließlich der lokalen Zählung von Anfragen auf unserem Server.',
+              'Der übermittelte Textinhalt wird nicht auf der Festplatte gespeichert oder zum Training von Modellen verwendet.',
             ],
           },
           {
