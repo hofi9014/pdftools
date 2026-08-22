@@ -1217,9 +1217,16 @@ const content = {
             h: '3.2 उपयोगकर्ता द्वारा अपलोड की गई फ़ाइलें',
             p: 'उपकरणों में अपलोड की गई PDF फ़ाइलों को निम्न प्रकार से संचालित किया जाता है:',
             items: [
-              'क्लाइंट-साइड उपकरण (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf) — फ़ाइल का संचालन WebAssembly और JavaScript का उपयोग करके पूरी तरह से ब्राउज़र में किया जाता है। फ़ाइल आपका डिवाइस कभी नहीं छोड़ती।',
-              'सर्वर-साइड उपकरण (compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf, url-to-pdf) — फ़ाइल अस्थायी रूप से सर्वर को भेजी जाती है, केवल RAM में संचालित की जाती है, और ऑपरेशन के तुरंत बाद हटा दी जाती है। अधिकतम प्रतिधारण समय: कुछ सेकंड।',
-              'AI फ़ंक्शन (AI Chat, AI Summary, AI Translate) — PDF से निकाला गया पाठ बाहरी OpenRouter API को भेजा जाता है। हम उपयोगकर्ता-पहचान वाला डेटा नहीं भेजते। सामग्री संग्रहीत या मॉडल प्रशिक्षण के लिए उपयोग नहीं की जाती।',
+              'क्लाइंट-साइड उपकरण (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf, compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf) — फ़ाइल का संचालन WebAssembly और JavaScript का उपयोग करके पूरी तरह से ब्राउज़र में किया जाता है। फ़ाइल आपका डिवाइस कभी नहीं छोड़ती।',
+              'सर्वर-साइड उपकरण (url-to-pdf) — दिया गया URL पृष्ठ प्राप्त करने और उसे PDF में बदलने के लिए हमारे सर्वर द्वारा संचालित किया जाता है।',
+            ],
+          },
+          {
+            h: '3.2a AI सुविधाओं के उपयोग की सीमाएँ',
+            p: 'AI सुविधाएँ (AI Chat, AI Summary, AI Translate) हमारे सर्वर के माध्यम से बाहरी OpenRouter API का उपयोग करती हैं — PDF से निकाला गया पाठ आपके ब्राउज़र से सीधे OpenRouter को नहीं भेजा जाता, बल्कि हमारे सर्वर से होकर गुज़रता है, जो हमारी साझा API कुंजी का उपयोग करके इसे आगे भेजता है।',
+            items: [
+              'दुरुपयोग को रोकने के लिए, हम एक अनुरोध सीमा लागू करते हैं (प्रति IP पता प्रतिदिन 15 अनुरोध)। इस उद्देश्य के लिए, आपका IP पता अधिकतम 24 घंटे के लिए सर्वर की मेमोरी में अस्थायी रूप से संग्रहीत किया जाता है, जिसके बाद इसे हटा दिया जाता है। आपका IP पता OpenRouter या किसी तीसरे पक्ष के साथ साझा नहीं किया जाता — इसका उपयोग केवल हमारे सर्वर पर अनुरोधों की स्थानीय गणना के लिए किया जाता है।',
+              'भेजी गई पाठ सामग्री डिस्क पर संग्रहीत नहीं की जाती और न ही मॉडल प्रशिक्षण के लिए उपयोग की जाती है।',
             ],
           },
           {
