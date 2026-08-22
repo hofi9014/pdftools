@@ -979,9 +979,16 @@ const content = {
             h: '3.2 الملفات المرفوعة من قبل المستخدم',
             p: 'تتم معالجة ملفات PDF المرفوعة إلى الأدوات كالتالي:',
             items: [
-              'الأدوات الجانبية للعميل (merge، split، rotate، watermark، page-numbers، crop-pdf، edit-pdf، sign-pdf، redact-pdf، flatten-pdf، delete-pages، extract-pages، reorder-pages، add-page، metadata، pdf-to-svg، pdf-to-epub، pdf-to-txt، fill-form، pdf-to-images، to-pdfa، compare-pdf، unlock-pdf، protect-pdf) — تتم معالجة الملف بالكامل في المتصفح باستخدام WebAssembly و JavaScript. لا يترك الملف جهازك أبداً.',
-              'الأدوات الجانبية للخادم (compress-pdf، ocr-pdf، pdf-to-word، word-to-pdf، jpg-to-pdf، pdf-to-excel، excel-to-pdf، pdf-to-powerpoint، openoffice-to-pdf، pdf-to-openoffice، pdf-to-html، html-to-pdf، url-to-pdf) — يتم إرسال الملف مؤقتاً إلى الخادم، ومعالجته حصرياً في ذاكرة RAM، وحذفه فوراً بعد العملية. أقصى مدة تخزين: ثوانٍ قليلة.',
-              'وظائف الذكاء الاصطناعي (AI Chat، AI Summary، AI Translate) — يتم إرسال النص المستخرج من ملف PDF إلى واجهة برمجة OpenRouter الخارجية. لا نرسل بيانات تحدد هوية المستخدم. لا يتم تخزين المحتوى أو استخدامه لتدريب النماذج.',
+              'الأدوات الجانبية للعميل (merge، split، rotate، watermark، page-numbers، crop-pdf، edit-pdf، sign-pdf، redact-pdf، flatten-pdf، delete-pages، extract-pages، reorder-pages، add-page، metadata، pdf-to-svg، pdf-to-epub، pdf-to-txt، fill-form، pdf-to-images، to-pdfa، compare-pdf، unlock-pdf، protect-pdf، compress-pdf، ocr-pdf، pdf-to-word، word-to-pdf، jpg-to-pdf، pdf-to-excel، excel-to-pdf، pdf-to-powerpoint، openoffice-to-pdf، pdf-to-openoffice، pdf-to-html، html-to-pdf) — تتم معالجة الملف بالكامل في المتصفح باستخدام WebAssembly و JavaScript. لا يترك الملف جهازك أبداً.',
+              'الأدوات الجانبية للخادم (url-to-pdf) — تتم معالجة عنوان URL المقدم بواسطة خادمنا لجلب الصفحة وتحويلها إلى PDF.',
+            ],
+          },
+          {
+            h: '3.2a قيود استخدام وظائف الذكاء الاصطناعي',
+            p: 'تستخدم وظائف الذكاء الاصطناعي (AI Chat، AI Summary، AI Translate) واجهة برمجة OpenRouter الخارجية عبر خادمنا — لا يتم إرسال النص المستخرج من ملف PDF مباشرة من متصفحك إلى OpenRouter، بل يمر عبر خادمنا الذي يعيد توجيهه باستخدام مفتاح API المشترك الخاص بنا.',
+            items: [
+              'لمنع إساءة الاستخدام، نطبق حداً لعدد الطلبات (15 طلباً يومياً لكل عنوان IP). لهذا الغرض، يتم تخزين عنوان IP الخاص بك مؤقتاً في ذاكرة الخادم لمدة أقصاها 24 ساعة، ثم يُحذف بعد ذلك. لا تتم مشاركة عنوان IP الخاص بك مع OpenRouter أو أي طرف ثالث — يُستخدم فقط لعد الطلبات محلياً على خادمنا.',
+              'لا يتم حفظ محتوى النص المُرسل على القرص ولا استخدامه لتدريب النماذج.',
             ],
           },
           {
