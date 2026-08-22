@@ -622,9 +622,16 @@ const content = {
             h: '3.2 Filer lastet opp av brukeren',
             p: 'PDF-filer som lastes opp til verktøyene, behandles på følgende måte:',
             items: [
-              'Klientsideverktøy (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf) — filen behandles fullstendig i nettleseren ved bruk av WebAssembly og JavaScript. Filen forlater aldri enheten din.',
-              'Serversideverktøy (compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf, url-to-pdf) — filen sendes midlertidig til serveren, behandles utelukkende i RAM og slettes umiddelbart etter operasjonen. Maksimal lagringstid: noen få sekunder.',
-              'AI-funksjoner (AI Chat, AI Summary, AI Translate) — tekst utvunnet fra PDFen sendes til den eksterne OpenRouter APIen. Vi sender ikke brukeridentifiserende data. Innholdet lagres ikke eller brukes til modelltrening.',
+              'Klientsideverktøy (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf, compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf) — filen behandles fullstendig i nettleseren ved bruk av WebAssembly og JavaScript. Filen forlater aldri enheten din.',
+              'Serversideverktøy (url-to-pdf) — den oppgitte URL-en behandles av vår server for å hente og konvertere siden til PDF.',
+            ],
+          },
+          {
+            h: '3.2a Bruksbegrensninger for AI-funksjoner',
+            p: 'AI-funksjoner (AI Chat, AI Summary, AI Translate) bruker det eksterne OpenRouter-APIet via vår server — tekst utvunnet fra PDFen sendes ikke direkte fra nettleseren din til OpenRouter, men går gjennom vår server, som videresender den ved hjelp av vår delte API-nøkkel.',
+            items: [
+              'For å forhindre misbruk bruker vi en forespørselsgrense (15 per dag per IP-adresse). Til dette formålet lagres IP-adressen din midlertidig i serverens minne i maksimalt 24 timer, hvorpå den slettes. IP-adressen din deles ikke med OpenRouter eller tredjeparter — den brukes utelukkende til lokal telling av forespørsler på vår server.',
+              'Det innsendte tekstinnholdet lagres ikke på disk og brukes ikke til modelltrening.',
             ],
           },
           {
