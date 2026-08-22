@@ -27,9 +27,16 @@ const content = {
             h: '3.2 Pliki przesyłane przez użytkownika',
             p: 'Pliki PDF przesyłane do narzędzi są przetwarzane w następujący sposób:',
             items: [
-              'Narzędzia klienckie (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf) — plik jest przetwarzany w całości w przeglądarce za pomocą WebAssembly i JavaScript. Plik nie opuszcza Twojego urządzenia.',
-              'Narzędzia serwerowe (compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf, url-to-pdf) — plik jest tymczasowo przesyłany na serwer, przetwarzany wyłącznie w pamięci RAM i natychmiast usuwany po zakończeniu operacji. Maksymalny czas przechowania: kilka sekund.',
-              'Funkcje AI (Chat AI, Streszczenie AI, Tłumacz AI) — tekst wyodrębniony z PDF jest wysyłany do zewnętrznego API OpenRouter. Nie wysyłamy danych identyfikujących użytkownika. Treść nie jest przechowywana ani wykorzystywana do trenowania modeli.',
+              'Narzędzia klienckie (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf, compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf) — plik jest przetwarzany w całości w przeglądarce za pomocą WebAssembly i JavaScript. Plik nie opuszcza Twojego urządzenia.',
+              'Narzędzia serwerowe (url-to-pdf) — podany adres URL jest przetwarzany przez nasz serwer w celu pobrania i konwersji strony do PDF.',
+            ],
+          },
+          {
+            h: '3.2a Ograniczenia użycia funkcji AI',
+            p: 'Funkcje AI (Chat AI, Streszczenie AI, Tłumacz AI) korzystają z zewnętrznego API OpenRouter za pośrednictwem naszego serwera — tekst wyodrębniony z PDF nie jest wysyłany bezpośrednio z Twojej przeglądarki do OpenRouter, lecz przechodzi przez nasz serwer, który przekazuje go dalej przy użyciu naszego współdzielonego klucza API.',
+            items: [
+              'Aby zapobiec nadużyciom, stosujemy limit zapytań (15 dziennie na adres IP). W tym celu Twój adres IP jest tymczasowo przechowywany w pamięci serwera przez maksymalnie 24 godziny, po czym jest usuwany. Adres IP nie jest przekazywany do OpenRouter ani żadnej stronie trzeciej — służy wyłącznie do lokalnego liczenia zapytań na naszym serwerze.',
+              'Treść przesyłanego tekstu nie jest zapisywana na dysku ani wykorzystywana do trenowania modeli.',
             ],
           },
           {
@@ -139,9 +146,16 @@ const content = {
             h: '3.2 User-uploaded files',
             p: 'PDF files uploaded to tools are processed as follows:',
             items: [
-              'Client-side tools (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf) — the file is processed entirely in the browser using WebAssembly and JavaScript. The file never leaves your device.',
-              'Server-side tools (compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf, url-to-pdf) — the file is temporarily sent to the server, processed exclusively in RAM, and immediately deleted after the operation. Maximum retention time: a few seconds.',
-              'AI functions (AI Chat, AI Summary, AI Translate) — text extracted from the PDF is sent to the external OpenRouter API. We do not send user-identifying data. The content is not stored or used for model training.',
+              'Client-side tools (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf, compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf) — the file is processed entirely in the browser using WebAssembly and JavaScript. The file never leaves your device.',
+              'Server-side tools (url-to-pdf) — the provided URL is processed by our server in order to fetch and convert the page into a PDF.',
+            ],
+          },
+          {
+            h: '3.2a AI feature usage limits',
+            p: 'AI features (AI Chat, AI Summary, AI Translate) use the external OpenRouter API through our server — text extracted from your PDF is not sent directly from your browser to OpenRouter, but passes through our server, which forwards it using our shared API key.',
+            items: [
+              'To prevent abuse, we apply a rate limit (15 requests per day per IP address). For this purpose, your IP address is temporarily stored in server memory for up to 24 hours, after which it is deleted. Your IP address is not shared with OpenRouter or any third party — it is used solely for local request counting on our server.',
+              'The submitted text content is not saved to disk or used for model training.',
             ],
           },
           {
