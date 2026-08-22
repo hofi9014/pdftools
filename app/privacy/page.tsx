@@ -1098,9 +1098,16 @@ const content = {
             h: '۳.۲ فایل‌های آپلود شده توسط کاربر',
             p: 'فایل‌های PDF آپلود شده به ابزارها به شرح زیر پردازش می‌شوند:',
             items: [
-              'ابزارهای سمت کلاینت (merge، split، rotate، watermark، page-numbers، crop-pdf، edit-pdf، sign-pdf، redact-pdf، flatten-pdf، delete-pages، extract-pages، reorder-pages، add-page، metadata، pdf-to-svg، pdf-to-epub، pdf-to-txt، fill-form، pdf-to-images، to-pdfa، compare-pdf، unlock-pdf، protect-pdf) — فایل به طور کامل در مرورگر با استفاده از WebAssembly و JavaScript پردازش می‌شود. فایل هرگز دستگاه شما را ترک نمی‌کند.',
-              'ابزارهای سمت سرور (compress-pdf، ocr-pdf، pdf-to-word، word-to-pdf، jpg-to-pdf، pdf-to-excel، excel-to-pdf، pdf-to-powerpoint، openoffice-to-pdf، pdf-to-openoffice، pdf-to-html، html-to-pdf، url-to-pdf) — فایل به طور موقت به سرور ارسال شده، فقط در حافظه RAM پردازش شده و بلافاصله پس از عملیات حذف می‌شود. حداکثر زمان نگهداری: چند ثانیه.',
-              'ویژگی‌های هوش مصنوعی (AI Chat، AI Summary، AI Translate) — متن استخراج شده از فایل PDF به API خارجی OpenRouter ارسال می‌شود. ما داده‌های شناسایی کاربر ارسال نمی‌کنیم. محتوا ذخیره یا برای آموزش مدل‌ها استفاده نمی‌شود.',
+              'ابزارهای سمت کلاینت (merge، split، rotate، watermark، page-numbers، crop-pdf، edit-pdf، sign-pdf، redact-pdf، flatten-pdf، delete-pages، extract-pages، reorder-pages، add-page، metadata، pdf-to-svg، pdf-to-epub، pdf-to-txt، fill-form، pdf-to-images، to-pdfa، compare-pdf، unlock-pdf، protect-pdf، compress-pdf، ocr-pdf، pdf-to-word، word-to-pdf، jpg-to-pdf، pdf-to-excel، excel-to-pdf، pdf-to-powerpoint، openoffice-to-pdf، pdf-to-openoffice، pdf-to-html، html-to-pdf) — فایل به طور کامل در مرورگر با استفاده از WebAssembly و JavaScript پردازش می‌شود. فایل هرگز دستگاه شما را ترک نمی‌کند.',
+              'ابزارهای سمت سرور (url-to-pdf) — آدرس URL ارائه‌شده توسط سرور ما برای دریافت و تبدیل صفحه به PDF پردازش می‌شود.',
+            ],
+          },
+          {
+            h: '3.2a محدودیت‌های استفاده از ویژگی‌های هوش مصنوعی',
+            p: 'ویژگی‌های هوش مصنوعی (AI Chat، AI Summary، AI Translate) از API خارجی OpenRouter از طریق سرور ما استفاده می‌کنند — متن استخراج‌شده از فایل PDF مستقیماً از مرورگر شما به OpenRouter ارسال نمی‌شود، بلکه از طریق سرور ما عبور می‌کند که آن را با استفاده از کلید API مشترک ما ارسال می‌کند.',
+            items: [
+              'برای جلوگیری از سوءاستفاده، ما محدودیت درخواست اعمال می‌کنیم (۱۵ درخواست در روز برای هر آدرس IP). برای این منظور، آدرس IP شما به طور موقت حداکثر به مدت ۲۴ ساعت در حافظه سرور ذخیره می‌شود و سپس حذف می‌شود. آدرس IP شما با OpenRouter یا هیچ شخص ثالثی به اشتراک گذاشته نمی‌شود — فقط برای شمارش محلی درخواست‌ها در سرور ما استفاده می‌شود.',
+              'محتوای متن ارسال‌شده روی دیسک ذخیره نمی‌شود و برای آموزش مدل‌ها استفاده نمی‌شود.',
             ],
           },
           {
