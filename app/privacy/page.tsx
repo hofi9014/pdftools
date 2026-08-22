@@ -1693,9 +1693,16 @@ const content = {
             h: '3.2 Kullanıcı tarafından yüklenen dosyalar',
             p: 'Araçlara yüklenen PDF dosyaları şu şekilde işlenir:',
             items: [
-              'İstemci tarafı araçlar (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf) — dosya WebAssembly ve JavaScript kullanılarak tarayıcıda tamamen işlenir. Dosya cihazınızdan asla çıkmaz.',
-              'Sunucu tarafı araçlar (compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf, url-to-pdf) — dosya geçici olarak sunucuya gönderilir, yalnızca RAM\'de işlenir ve işlemden hemen sonra silinir. Maksimum saklama süresi: birkaç saniye.',
-              'Yapay zeka fonksiyonları (AI Chat, AI Summary, AI Translate) — PDF\'den çıkarılan metin harici OpenRouter API\'ye gönderilir. Kullanıcı tanımlayıcı veri gönderilmez. İçerik depolanmaz veya model eğitimi için kullanılmaz.',
+              'İstemci tarafı araçlar (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf, compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf) — dosya WebAssembly ve JavaScript kullanılarak tarayıcıda tamamen işlenir. Dosya cihazınızdan asla çıkmaz.',
+              'Sunucu tarafı araçlar (url-to-pdf) — sağlanan URL, sayfayı almak ve PDF\'ye dönüştürmek için sunucumuz tarafından işlenir.',
+            ],
+          },
+          {
+            h: '3.2a Yapay zeka fonksiyonlarının kullanım sınırları',
+            p: 'Yapay zeka fonksiyonları (AI Chat, AI Summary, AI Translate) sunucumuz aracılığıyla harici OpenRouter API\'sini kullanır — PDF\'den çıkarılan metin tarayıcınızdan doğrudan OpenRouter\'a gönderilmez, bunun yerine sunucumuzdan geçer ve sunucumuz bu metni paylaşılan API anahtarımızı kullanarak iletir.',
+            items: [
+              'Kötüye kullanımı önlemek için bir istek sınırı uyguluyoruz (IP adresi başına günde 15 istek). Bu amaçla, IP adresiniz sunucu belleğinde en fazla 24 saat boyunca geçici olarak saklanır ve ardından silinir. IP adresiniz OpenRouter veya herhangi bir üçüncü tarafla paylaşılmaz — yalnızca sunucumuzda isteklerin yerel olarak sayılması için kullanılır.',
+              'Gönderilen metin içeriği diske kaydedilmez ve model eğitimi için kullanılmaz.',
             ],
           },
           {
