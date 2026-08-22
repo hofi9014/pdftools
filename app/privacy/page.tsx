@@ -1336,9 +1336,16 @@ const content = {
             h: '3.2 Skrár hlaðnar upp af notanda',
             p: 'PDF-skrár sem hlaðið er upp í tækin eru meðhöndlaðar á eftirfarandi hátt:',
             items: [
-              'Biðlaraþættir (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf) — skráin er fullkomlega meðhöndluð í vafraranum með WebAssembly og JavaScript. Skráin yfirgæfir aldrei tækið þitt.',
-              'Þjónustuþættir (compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf, url-to-pdf) — skráin er tímabundið send til þjónsins, meðhöndluð eingöngu í RAM-minni og strax eytt eftir aðgerðina. Hámarks geymslutími: nokkrar sekúndur.',
-              'AI aðgerðir (AI Chat, AI Summary, AI Translate) — texti dreginn úr PDF er sendur til ytri OpenRouter API. Við sendum ekki gögn sem auðkenna notanda. Efnið er ekki geymt né notað til þjálfunar líkana.',
+              'Biðlaraþættir (merge, split, rotate, watermark, page-numbers, crop-pdf, edit-pdf, sign-pdf, redact-pdf, flatten-pdf, delete-pages, extract-pages, reorder-pages, add-page, metadata, pdf-to-svg, pdf-to-epub, pdf-to-txt, fill-form, pdf-to-images, to-pdfa, compare-pdf, unlock-pdf, protect-pdf, compress-pdf, ocr-pdf, pdf-to-word, word-to-pdf, jpg-to-pdf, pdf-to-excel, excel-to-pdf, pdf-to-powerpoint, openoffice-to-pdf, pdf-to-openoffice, pdf-to-html, html-to-pdf) — skráin er fullkomlega meðhöndluð í vafraranum með WebAssembly og JavaScript. Skráin yfirgæfir aldrei tækið þitt.',
+              'Þjónustuþættir (url-to-pdf) — uppgefin URL er unnin af þjóninum okkar til að sækja síðuna og breyta henni í PDF.',
+            ],
+          },
+          {
+            h: '3.2a Takmarkanir á notkun AI-aðgerða',
+            p: 'AI aðgerðir (AI Chat, AI Summary, AI Translate) nota ytri OpenRouter API í gegnum þjóninn okkar — texti sem dreginn er úr PDF er ekki sendur beint frá vafranum þínum til OpenRouter, heldur fer hann í gegnum þjóninn okkar, sem áframsendir hann með sameiginlegum API-lykli okkar.',
+            items: [
+              'Til að koma í veg fyrir misnotkun beitum við beiðnamörkum (15 á dag fyrir hverja IP-tölu). Í þessum tilgangi er IP-talan þín geymd tímabundið í minni þjónsins í að hámarki 24 klukkustundir, en er síðan eytt. IP-talan þín er ekki deilt með OpenRouter né þriðja aðila — hún er eingöngu notuð til staðbundinnar talningar beiðna á þjóninum okkar.',
+              'Sent textaefni er hvorki vistað á diski né notað til þjálfunar líkana.',
             ],
           },
           {
