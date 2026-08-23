@@ -1812,9 +1812,16 @@ const content = {
             h: '3.2 用户上传的文件',
             p: '上传到工具的PDF文件按以下方式处理：',
             items: [
-              '客户端工具（merge、split、rotate、watermark、page-numbers、crop-pdf、edit-pdf、sign-pdf、redact-pdf、flatten-pdf、delete-pages、extract-pages、reorder-pages、add-page、metadata、pdf-to-svg、pdf-to-epub、pdf-to-txt、fill-form、pdf-to-images、to-pdfa、compare-pdf、unlock-pdf、protect-pdf）——文件完全在浏览器中通过WebAssembly和JavaScript处理。文件永远不会离开您的设备。',
-              '服务器端工具（compress-pdf、ocr-pdf、pdf-to-word、word-to-pdf、jpg-to-pdf、pdf-to-excel、excel-to-pdf、pdf-to-powerpoint、openoffice-to-pdf、pdf-to-openoffice、pdf-to-html、html-to-pdf、url-to-pdf）——文件临时发送到服务器，仅在RAM中处理，操作完成后立即删除。最长保留时间：几秒钟。',
-              'AI功能（AI Chat、AI Summary、AI Translate）——从PDF中提取的文本会发送到外部OpenRouter API。我们不发送用户识别数据。内容不会被存储或用于模型训练。',
+              '客户端工具（merge、split、rotate、watermark、page-numbers、crop-pdf、edit-pdf、sign-pdf、redact-pdf、flatten-pdf、delete-pages、extract-pages、reorder-pages、add-page、metadata、pdf-to-svg、pdf-to-epub、pdf-to-txt、fill-form、pdf-to-images、to-pdfa、compare-pdf、unlock-pdf、protect-pdf、compress-pdf、ocr-pdf、pdf-to-word、word-to-pdf、jpg-to-pdf、pdf-to-excel、excel-to-pdf、pdf-to-powerpoint、openoffice-to-pdf、pdf-to-openoffice、pdf-to-html、html-to-pdf）——文件完全在浏览器中通过WebAssembly和JavaScript处理。文件永远不会离开您的设备。',
+              '服务器端工具（url-to-pdf）——提供的URL由我们的服务器处理，用于获取页面并将其转换为PDF。',
+            ],
+          },
+          {
+            h: '3.2a AI功能的使用限制',
+            p: 'AI功能（AI Chat、AI Summary、AI Translate）通过我们的服务器使用外部OpenRouter API——从PDF中提取的文本不会直接从您的浏览器发送到OpenRouter，而是经过我们的服务器，由服务器使用我们的共享API密钥转发。',
+            items: [
+              '为防止滥用，我们实施请求限制（每个IP地址每天15次请求）。为此，您的IP地址会在服务器内存中临时存储最长24小时，之后将被删除。您的IP地址不会与OpenRouter或任何第三方共享——仅用于在我们的服务器上进行本地请求计数。',
+              '提交的文本内容不会保存到磁盘，也不会用于模型训练。',
             ],
           },
           {
