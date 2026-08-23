@@ -889,6 +889,458 @@ export async function extractTextFromPDF(file: File): Promise<string> {
   return texts.join('\n---\n');
 }
 
+// ============================================================
+// IR TYPES (Phase 1a — without TableBlock)
+// ============================================================
+
+interface IRPoint { x: number; y: number; }
+interface IRRect { x: number; y: number; width: number; height: number; }
+
+interface IRTextRun {
+  text: string;
+  fontName: string;
+  fontSize: number;
+  width: number;
+  height: number;
+  position: IRPoint;
+  color: string;
+  bold: boolean;
+  italic: boolean;
+  rotation: number;
+}
+
+interface IRParagraphBlock {
+  kind: 'paragraph';
+  runs: IRTextRun[];
+  bounds: IRRect;
+  role?: 'header' | 'footer' | 'body';
+}
+
+interface IRHeadingBlock {
+  kind: 'heading';
+  level: number;
+  runs: IRTextRun[];
+  bounds: IRRect;
+  role?: 'header' | 'footer' | 'body';
+}
+
+interface IRListItemBlock {
+  kind: 'list-item';
+  marker: string;
+  level: number;
+  runs: IRTextRun[];
+  bounds: IRRect;
+}
+
+interface IRImageBlock {
+  kind: 'image';
+  imageId: string;
+  naturalWidth: number;
+  naturalHeight: number;
+  bounds: IRRect;
+}
+
+type IRBlock = IRParagraphBlock | IRHeadingBlock | IRListItemBlock | IRImageBlock;
+
+// pdfjs-dist operator list arg shapes (internal, untyped)
+interface PDFTmObj { [key: string]: number; }
+interface PDFGlyph { unicode?: string; fontChar?: string; width?: number; }
+
+interface IRPageIR {
+  width: number;
+  height: number;
+  blocks: IRBlock[];
+}
+
+// ============================================================
+// IR HELPERS
+// ============================================================
+
+function getRotation(t: number[]): number {
+  const [a, b] = t;
+  if (Math.abs(b) < 0.01 && Math.abs(t[2]) < 0.01) return 0;
+  return Math.atan2(b, a) * 180 / Math.PI;
+}
+
+function parseFontStyle(fontName: string): { bold: boolean; italic: boolean } {
+  return {
+    bold: /bold/i.test(fontName),
+    italic: /italic|oblique|kurs/i.test(fontName),
+  };
+}
+
+function getRole(y: number, pageHeight: number): 'header' | 'footer' | undefined {
+  if (pageHeight - y < 50) return 'header';
+  if (y < 50) return 'footer';
+  return undefined;
+}
+
+function computeBounds(runs: IRTextRun[]): IRRect {
+  if (runs.length === 0) return { x: 0, y: 0, width: 0, height: 0 };
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const r of runs) {
+    const rad = (r.rotation || 0) * Math.PI / 180;
+    const cosR = Math.cos(rad);
+    const sinR = Math.sin(rad);
+    const corners = [
+      [r.position.x, r.position.y],
+      [r.position.x + r.width * cosR, r.position.y + r.width * sinR],
+      [r.position.x - r.height * sinR, r.position.y - r.height * cosR],
+      [r.position.x + r.width * cosR - r.height * sinR, r.position.y + r.width * sinR - r.height * cosR],
+    ];
+    for (const [cx, cy] of corners) {
+      minX = Math.min(minX, cx);
+      minY = Math.min(minY, cy);
+      maxX = Math.max(maxX, cx);
+      maxY = Math.max(maxY, cy);
+    }
+  }
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+}
+
+const BULLET_REGEX = /^[•‣●\u2022\u2023\u25CF\-–—]\s*/;
+const NUMBERED_REGEX = /^\d+[.)]\s*/;
+
+// ============================================================
+// extractFormattedTextFromPDF — Phase 1a (no tables)
+// ============================================================
+
+export async function extractFormattedTextFromPDF(file: File): Promise<IRPageIR[]> {
+  const buf = await file.arrayBuffer();
+  const pdfjsLib = await import('pdfjs-dist');
+  await initPdfjs();
+  const OPS = pdfjsLib.OPS;
+  const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
+  const pages: IRPageIR[] = [];
+
+  for (let p = 1; p <= doc.numPages; p++) {
+    const page = await doc.getPage(p);
+    const vp = page.getViewport({ scale: 1 });
+    const pageWidth = vp.width;
+    const pageHeight = vp.height;
+
+    const opList = await page.getOperatorList();
+
+    // --- Build operator name map ---
+    const OPS_MAP: Record<number, string> = {};
+    for (const [name, id] of Object.entries(OPS)) OPS_MAP[id as unknown as number] = name;
+
+    // --- State machine: walk opList to build per-showText color context ---
+    interface OpEntry {
+      op: string;
+      args: unknown;
+    }
+    const ops: OpEntry[] = [];
+    for (let i = 0; i < opList.fnArray.length; i++) {
+      ops.push({ op: OPS_MAP[opList.fnArray[i]] || '', args: opList.argsArray[i] });
+    }
+
+    // For each setTextMatrix index, find the fill color that was set before it
+    const textOpColors: Map<number, string> = new Map();
+    let currentFill = '#000000';
+    for (let i = 0; i < ops.length; i++) {
+      const { op, args } = ops[i];
+      if (op === 'setFillRGBColor') currentFill = Array.isArray(args) ? (args[0] as string) : (args as string);
+      if (op === 'setTextMatrix') textOpColors.set(i, currentFill);
+    }
+
+    // For each setTextMatrix index, find the font set before it
+    const textOpFonts: Map<number, { name: string; size: number }> = new Map();
+    let currentFont = { name: '', size: 12 };
+    for (let i = 0; i < ops.length; i++) {
+      const { op, args } = ops[i];
+      if (op === 'setFont' && Array.isArray(args)) {
+        currentFont = { name: args[0] as string, size: args[1] as number };
+      }
+      if (op === 'setTextMatrix') textOpFonts.set(i, { ...currentFont });
+    }
+
+    // KNOWN LIMITATION: Linear color/font state machine
+    // The state machine above tracks color and font as linear "last write wins".
+    // It does NOT implement a proper save/restore stack (save/restore operators).
+    // For PDFs with nested save/restore blocks (e.g., different colors in
+    // save/restore pairs), the last setFillRGBColor before a setTextMatrix
+    // is used, which may be incorrect if a restore() should have reverted
+    // the color. This is a known limitation; most office-generated PDFs
+    // don't use nested save/restore for text formatting.
+
+    // --- Image detection: paintImageXObject with accumulated transforms ---
+    interface ImageOp {
+      imageId: string;
+      natW: number;
+      natH: number;
+      bounds: IRRect;
+    }
+    const images: ImageOp[] = [];
+    let accumTx = [1, 0, 0, 1, 0, 0];
+    for (let i = 0; i < ops.length; i++) {
+      const { op, args } = ops[i];
+      if (op === 'save') accumTx = [1, 0, 0, 1, 0, 0];
+      if (op === 'transform' && Array.isArray(args)) {
+        const m = args as number[];
+        accumTx = [
+          accumTx[0] * m[0] + accumTx[2] * m[1],
+          accumTx[1] * m[0] + accumTx[3] * m[1],
+          accumTx[0] * m[2] + accumTx[2] * m[3],
+          accumTx[1] * m[2] + accumTx[3] * m[3],
+          accumTx[0] * m[4] + accumTx[2] * m[5] + accumTx[4],
+          accumTx[1] * m[4] + accumTx[3] * m[5] + accumTx[5],
+        ];
+      }
+      if (op === 'paintImageXObject' && Array.isArray(args)) {
+        const imgId = args[0] as string;
+        const natW = (args[1] as number) || 100;
+        const natH = (args[2] as number) || 100;
+        const sx = Math.sqrt(accumTx[0] ** 2 + accumTx[1] ** 2);
+        const sy = Math.sqrt(accumTx[2] ** 2 + accumTx[3] ** 2);
+        images.push({
+          imageId: imgId,
+          natW,
+          natH,
+          bounds: {
+            x: accumTx[4],
+            y: accumTx[5],
+            width: natW * sx,
+            height: natH * sy,
+          },
+        });
+      }
+    }
+
+    // --- Build textRuns from operator list showText ---
+    // Using showText directly gives accurate per-segment colors and avoids
+    // getTextContent merging of adjacent same-line text with different colors.
+    // getTextContent merges "Czerwony tekst" + "Niebieski tekst" into one item;
+    // showText has them as two separate calls with different positions and colors.
+    const textRuns: IRTextRun[] = [];
+
+    for (let i = 0; i < ops.length; i++) {
+      if (ops[i].op !== 'setTextMatrix') continue;
+
+      // Extract setTextMatrix values
+      // Args format: [{0:a, 1:b, 2:c, 3:d, 4:e, 5:f}] (array with object)
+      const rawTm = ops[i].args;
+      const tmObj = (Array.isArray(rawTm) ? rawTm[0] : rawTm) as PDFTmObj;
+      if (!tmObj || typeof tmObj !== 'object') continue;
+      const tmX = tmObj[4] ?? tmObj['4'] ?? 0;
+      const tmY = tmObj[5] ?? tmObj['5'] ?? 0;
+      const tmA = tmObj[0] ?? tmObj['0'] ?? 1;
+      const tmB = tmObj[1] ?? tmObj['1'] ?? 0;
+
+      // Find the next showText within a reasonable window
+      let stIdx = -1;
+      for (let j = i + 1; j < Math.min(i + 8, ops.length); j++) {
+        if (ops[j].op === 'showText') { stIdx = j; break; }
+        if (ops[j].op === 'setTextMatrix' || ops[j].op === 'endText') break;
+      }
+      if (stIdx === -1) continue;
+
+      // Extract glyphs from showText args
+      const rawSt = ops[stIdx].args;
+      const glyphArr = (Array.isArray(rawSt)
+        ? (Array.isArray(rawSt[0]) ? rawSt[0] : rawSt)
+        : []) as PDFGlyph[];
+      if (glyphArr.length === 0) continue;
+
+      // Reconstruct text from glyph unicode values (unicode is a string character)
+      const text = glyphArr.map(g => g.unicode || g.fontChar || '').join('');
+      if (!text) continue;
+
+      // Get font and color from state machine
+      const fontInfo = textOpFonts.get(i) || { name: '', size: 12 };
+      const color = textOpColors.get(i) || '#000000';
+
+      // Compute width from glyph widths (width in font units → PDF points)
+      let width = 0;
+      for (const g of glyphArr) {
+        width += (g.width || 0) * fontInfo.size / 1000;
+      }
+      if (width === 0) {
+        width = text.length * fontInfo.size * 0.5;
+      }
+
+      const rotation = getRotation([tmA, tmB, 0, 0, 0, 0]);
+
+      textRuns.push({
+        text,
+        fontName: fontInfo.name,
+        fontSize: fontInfo.size,
+        width,
+        height: fontInfo.size,
+        position: { x: tmX, y: tmY },
+        color,
+        bold: parseFontStyle(fontInfo.name).bold,
+        italic: parseFontStyle(fontInfo.name).italic,
+        rotation,
+      });
+    }
+
+    // --- Compute bodyFontSize ---
+    const sizeStats: Record<string, number> = {};
+    for (const tr of textRuns) {
+      const key = tr.fontSize.toFixed(1);
+      sizeStats[key] = (sizeStats[key] || 0) + tr.text.length;
+    }
+    let bodyFontSize = 12;
+    let maxChars = 0;
+    for (const [sizeStr, chars] of Object.entries(sizeStats)) {
+      if (chars > maxChars) { maxChars = chars; bodyFontSize = parseFloat(sizeStr); }
+    }
+
+    // --- Group runs into blocks ---
+    const blocks: IRBlock[] = [];
+    const used = new Set<number>();
+
+    // Sort runs by Y (top to bottom in PDF coords = descending Y), then X
+    const sorted = textRuns
+      .map((tr, idx) => ({ tr, idx }))
+      .sort((a, b) => {
+        const yDiff = b.tr.position.y - a.tr.position.y;
+        if (Math.abs(yDiff) > 2) return yDiff;
+        return a.tr.position.x - b.tr.position.x;
+      });
+
+    for (const { tr, idx } of sorted) {
+      if (used.has(idx)) continue;
+
+      // --- Image block ---
+      // Check if this run position overlaps with an image
+      const imgMatch = images.find(img =>
+        Math.abs(img.bounds.x - tr.position.x) < 5 &&
+        Math.abs(img.bounds.y + img.bounds.height - tr.position.y) < 5
+      );
+      if (imgMatch && tr.text.trim() === '') {
+        used.add(idx);
+        blocks.push({
+          kind: 'image',
+          imageId: imgMatch.imageId,
+          naturalWidth: imgMatch.natW,
+          naturalHeight: imgMatch.natH,
+          bounds: imgMatch.bounds,
+        });
+        continue;
+      }
+
+      // Skip empty runs
+      if (!tr.text.trim()) { used.add(idx); continue; }
+
+      // --- List item detection ---
+      const bulletMatch = tr.text.match(BULLET_REGEX);
+      const numberedMatch = tr.text.match(NUMBERED_REGEX);
+      if (bulletMatch || numberedMatch) {
+        const match = bulletMatch || numberedMatch;
+        const marker = match![0].trimEnd();
+        const restText = tr.text.slice(match![0].length);
+        const indent = tr.position.x - 50;
+        const level = Math.max(0, Math.round(indent / 20));
+
+        const listRuns: IRTextRun[] = [{
+          ...tr,
+          text: restText,
+        }];
+        used.add(idx);
+
+        // Try to merge consecutive list items at same level or deeper
+        // (don't merge across different indent levels going back)
+        blocks.push({
+          kind: 'list-item',
+          marker,
+          level,
+          runs: listRuns,
+          bounds: computeBounds(listRuns),
+        });
+        continue;
+      }
+
+      // --- Paragraph/heading grouping ---
+      // Collect consecutive runs on similar Y lines into one block
+      const groupRuns: IRTextRun[] = [tr];
+      used.add(idx);
+
+      for (const { tr: other, idx: oIdx } of sorted) {
+        if (used.has(oIdx)) continue;
+        // Same line: Y within lineHeight tolerance
+        const yDiff = Math.abs(other.position.y - tr.position.y);
+        const sameLine = yDiff < Math.max(tr.height, other.height) * 0.5;
+        if (sameLine && Math.abs(other.rotation - tr.rotation) < 1) {
+          groupRuns.push(other);
+          used.add(oIdx);
+        }
+      }
+
+      // If single line, try to merge with consecutive lines below (paragraph grouping)
+      if (groupRuns.length <= 1) {
+        const lineHeight = tr.height || tr.fontSize;
+        let lastY = tr.position.y;
+        let changed = true;
+        while (changed) {
+          changed = false;
+          for (const { tr: next, idx: nIdx } of sorted) {
+            if (used.has(nIdx)) continue;
+            const yGap = lastY - next.position.y;
+            if (yGap > 0 && yGap < lineHeight * 1.5 &&
+                Math.abs(next.fontSize - tr.fontSize) < 1 &&
+                Math.abs(next.position.x - tr.position.x) < 10 &&
+                Math.abs(next.rotation - tr.rotation) < 1) {
+              groupRuns.push(next);
+              used.add(nIdx);
+              lastY = next.position.y;
+              changed = true;
+              break;
+            }
+          }
+        }
+      }
+
+      const bounds = computeBounds(groupRuns);
+      const ratio = tr.fontSize / bodyFontSize;
+      const role = getRole(tr.position.y, pageHeight);
+
+      // Heading detection
+      if (ratio >= 1.15 && !role) {
+        let level = 3;
+        if (ratio >= 1.8) level = 1;
+        else if (ratio >= 1.4) level = 2;
+        blocks.push({ kind: 'heading', level, runs: groupRuns, bounds, role });
+      } else {
+        blocks.push({ kind: 'paragraph', runs: groupRuns, bounds, role });
+      }
+    }
+
+    // --- Insert remaining images at correct Y position ---
+    // Images not matched to an empty text run during the main loop are inserted
+    // at the correct position based on bounds.y (top-to-bottom reading order).
+    for (const img of images) {
+      const alreadyAdded = blocks.some(b => b.kind === 'image' && (b as IRImageBlock).imageId === img.imageId);
+      if (alreadyAdded) continue;
+
+      const imgBlock: IRImageBlock = {
+        kind: 'image',
+        imageId: img.imageId,
+        naturalWidth: img.natW,
+        naturalHeight: img.natH,
+        bounds: img.bounds,
+      };
+
+      // Insert at correct position: bounds.y descending (top to bottom in PDF coords)
+      const imgY = img.bounds.y;
+      let insertIdx = blocks.length;
+      for (let i = 0; i < blocks.length; i++) {
+        if (imgY > blocks[i].bounds.y) {
+          insertIdx = i;
+          break;
+        }
+      }
+      blocks.splice(insertIdx, 0, imgBlock);
+    }
+
+    pages.push({ width: pageWidth, height: pageHeight, blocks });
+  }
+
+  await doc.cleanup();
+  return pages;
+}
+
 function escapeHtml(s: string): string {
   return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
