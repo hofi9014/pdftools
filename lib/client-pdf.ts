@@ -893,6 +893,140 @@ export async function extractTextFromPDF(file: File): Promise<string> {
 // pdfjs-dist operator list arg shapes (internal, untyped)
 interface PDFTmObj { [key: string]: number; }
 interface PDFGlyph { unicode?: string; fontChar?: string; width?: number; }
+interface OpEntry { op: string; args: unknown; }
+
+// ============================================================
+// RAW RECT — output of extractRectsFromOps (Phase 1 of table detection)
+// ============================================================
+
+export interface RawRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fill: boolean;
+  stroke: boolean;
+  fillColor?: string;
+  strokeColor?: string;
+}
+
+// ============================================================
+// TABLE DETECTION — Phase 1: extract rectangles from ops
+// ============================================================
+
+function rgbToHex(r: number, g: number, b: number): string {
+  const h = (v: number) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, '0');
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+
+export function extractRectsFromOps(ops: OpEntry[], pageHeight: number): RawRect[] {
+  const rects: RawRect[] = [];
+  let currentFill = '#000000';
+  let currentStroke = '#000000';
+
+  // Accumulate transforms since last save, compose them
+  const transformStack: number[][] = [];
+  let composedMatrix = [1, 0, 0, 1, 0, 0]; // identity
+
+  function composeMatrix(prev: number[], next: number[]): number[] {
+    // Matrix multiply: next * prev (apply prev first, then next)
+    return [
+      next[0] * prev[0] + next[1] * prev[2],
+      next[0] * prev[1] + next[1] * prev[3],
+      next[2] * prev[0] + next[3] * prev[2],
+      next[2] * prev[1] + next[3] * prev[3],
+      next[4] * prev[0] + next[5] * prev[2] + prev[4],
+      next[4] * prev[1] + next[5] * prev[3] + prev[5],
+    ];
+  }
+
+  function applyMatrix(m: number[], x: number, y: number): { x: number; y: number } {
+    return {
+      x: m[0] * x + m[2] * y + m[4],
+      y: m[1] * x + m[3] * y + m[5],
+    };
+  }
+
+  function applyMatrixToSize(m: number[], w: number, h: number): { w: number; h: number } {
+    // Apply matrix to width/height vector (0,0)→(w,0) and (0,0)→(0,h)
+    const p1 = applyMatrix(m, 0, 0);
+    const p2 = applyMatrix(m, w, 0);
+    const p3 = applyMatrix(m, 0, h);
+    return {
+      w: Math.abs(p2.x - p1.x) + Math.abs(p3.x - p1.x),
+      h: Math.abs(p2.y - p1.y) + Math.abs(p3.y - p1.y),
+    };
+  }
+
+  for (let i = 0; i < ops.length; i++) {
+    const { op, args } = ops[i];
+
+    if (op === 'save') {
+      transformStack.push([...composedMatrix]);
+    } else if (op === 'restore') {
+      composedMatrix = transformStack.pop() || [1, 0, 0, 1, 0, 0];
+    } else if (op === 'transform' && Array.isArray(args)) {
+      const t = args as number[];
+      composedMatrix = composeMatrix(composedMatrix, [t[0], t[1], t[2], t[3], t[4], t[5]]);
+    } else if (op === 'setFillRGBColor') {
+      const a = args as unknown;
+      if (typeof a === 'string') {
+        currentFill = a.startsWith('#') ? a : `#${a}`;
+      } else if (Array.isArray(a) && a.length >= 3 && typeof a[0] === 'number') {
+        currentFill = rgbToHex(a[0] as number, a[1] as number, a[2] as number);
+      } else if (Array.isArray(a) && a.length >= 1 && typeof a[0] === 'string') {
+        const hex = a[0] as string;
+        currentFill = hex.startsWith('#') ? hex : `#${hex}`;
+      }
+    } else if (op === 'setStrokeRGBColor') {
+      const a = args as unknown;
+      if (typeof a === 'string') {
+        currentStroke = a.startsWith('#') ? a : `#${a}`;
+      } else if (Array.isArray(a) && a.length >= 3 && typeof a[0] === 'number') {
+        currentStroke = rgbToHex(a[0] as number, a[1] as number, a[2] as number);
+      } else if (Array.isArray(a) && a.length >= 1 && typeof a[0] === 'string') {
+        const hex = a[0] as string;
+        currentStroke = hex.startsWith('#') ? hex : `#${hex}`;
+      }
+    } else if (op === 'constructPath' && Array.isArray(args)) {
+      // args[0] = painting op ID (fill=22, stroke=20, fillStroke=24)
+      // args[1] = [[coords...]] (path coordinates in local space)
+      // args[2] = {0:x, 1:y, 2:w, 3:h} bounding box in local space
+      const paintingOp = args[0] as number;
+      const bbox = args[2] as Record<string, number> | undefined;
+      if (!bbox) continue;
+
+      const localX = bbox[0] ?? 0;
+      const localY = bbox[1] ?? 0;
+      const localW = bbox[2] ?? 0;
+      const localH = bbox[3] ?? 0;
+      if (localW === 0 && localH === 0) continue;
+
+      // Transform to page coordinates
+      const topLeft = applyMatrix(composedMatrix, localX, localY);
+      const size = applyMatrixToSize(composedMatrix, localW, localH);
+
+      // Normalize Y: PDF origin is bottom-left, IR uses top-left
+      const normY = pageHeight - topLeft.y - size.h;
+
+      const fill = paintingOp === 22 || paintingOp === 24 || paintingOp === 23 || paintingOp === 25 || paintingOp === 26 || paintingOp === 27;
+      const stroke = paintingOp === 20 || paintingOp === 24 || paintingOp === 21 || paintingOp === 25 || paintingOp === 26 || paintingOp === 27;
+
+      rects.push({
+        x: topLeft.x,
+        y: normY,
+        width: size.w,
+        height: size.h,
+        fill,
+        stroke,
+        fillColor: fill ? currentFill : undefined,
+        strokeColor: stroke ? currentStroke : undefined,
+      });
+    }
+  }
+
+  return rects;
+}
 
 // ============================================================
 // IR HELPERS
@@ -968,10 +1102,6 @@ export async function extractFormattedTextFromPDF(file: File): Promise<IRPageIR[
     for (const [name, id] of Object.entries(OPS)) OPS_MAP[id as unknown as number] = name;
 
     // --- State machine: walk opList to build per-showText color context ---
-    interface OpEntry {
-      op: string;
-      args: unknown;
-    }
     const ops: OpEntry[] = [];
     for (let i = 0; i < opList.fnArray.length; i++) {
       ops.push({ op: OPS_MAP[opList.fnArray[i]] || '', args: opList.argsArray[i] });
