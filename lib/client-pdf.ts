@@ -1029,6 +1029,142 @@ export function extractRectsFromOps(ops: OpEntry[], pageHeight: number): RawRect
 }
 
 // ============================================================
+// TABLE DETECTION — Phase 2: cluster rectangles into table candidates
+// ============================================================
+
+const EDGE_TOLERANCE = 2; // pt — two coords within this are "the same edge"
+
+function edgesClose(a: number, b: number): boolean {
+  return Math.abs(a - b) <= EDGE_TOLERANCE;
+}
+
+// Union-Find with path compression and union by rank
+class UnionFind {
+  parent: number[];
+  rank: number[];
+  constructor(n: number) {
+    this.parent = Array.from({ length: n }, (_, i) => i);
+    this.rank = new Array(n).fill(0);
+  }
+  find(x: number): number {
+    if (this.parent[x] !== x) this.parent[x] = this.find(this.parent[x]);
+    return this.parent[x];
+  }
+  union(a: number, b: number): void {
+    const ra = this.find(a), rb = this.find(b);
+    if (ra === rb) return;
+    if (this.rank[ra] < this.rank[rb]) { this.parent[ra] = rb; }
+    else if (this.rank[ra] > this.rank[rb]) { this.parent[rb] = ra; }
+    else { this.parent[rb] = ra; this.rank[ra]++; }
+  }
+}
+
+export interface TableCluster {
+  rects: RawRect[];
+  xEdges: number[];
+  yEdges: number[];
+  cols: number;
+  rows: number;
+  coverage: number;
+}
+
+export function buildTableClusters(rects: RawRect[]): TableCluster[] {
+  if (rects.length < 3) return [];
+
+  // Step 1: Union-Find — group rects sharing any edge (within tolerance)
+  const uf = new UnionFind(rects.length);
+  for (let i = 0; i < rects.length; i++) {
+    for (let j = i + 1; j < rects.length; j++) {
+      const a = rects[i], b = rects[j];
+      const aLeft = a.x, aRight = a.x + a.width;
+      const aTop = a.y, aBottom = a.y + a.height;
+      const bLeft = b.x, bRight = b.x + b.width;
+      const bTop = b.y, bBottom = b.y + b.height;
+
+      const sharesX = edgesClose(aLeft, bLeft) || edgesClose(aLeft, bRight)
+        || edgesClose(aRight, bLeft) || edgesClose(aRight, bRight);
+      const sharesY = edgesClose(aTop, bTop) || edgesClose(aTop, bBottom)
+        || edgesClose(aBottom, bTop) || edgesClose(aBottom, bBottom);
+
+      if (sharesX || sharesY) uf.union(i, j);
+    }
+  }
+
+  // Step 2: Group rects by root
+  const groups = new Map<number, RawRect[]>();
+  for (let i = 0; i < rects.length; i++) {
+    const root = uf.find(i);
+    const arr = groups.get(root) || [];
+    arr.push(rects[i]);
+    groups.set(root, arr);
+  }
+
+  // Step 3: Validate each group against 3 rules
+  const clusters: TableCluster[] = [];
+  for (const groupRects of groups.values()) {
+    if (groupRects.length < 3) continue;
+
+    // Collect global edge lists
+    const xSet = new Set<number>();
+    const ySet = new Set<number>();
+    for (const r of groupRects) {
+      xSet.add(r.x);
+      xSet.add(r.x + r.width);
+      ySet.add(r.y);
+      ySet.add(r.y + r.height);
+    }
+
+    // Merge close edges
+    const mergeClose = (vals: Set<number>): number[] => {
+      const sorted = [...vals].sort((a, b) => a - b);
+      const merged: number[] = [];
+      for (const v of sorted) {
+        if (merged.length > 0 && edgesClose(merged[merged.length - 1], v)) {
+          merged[merged.length - 1] = (merged[merged.length - 1] + v) / 2;
+        } else {
+          merged.push(v);
+        }
+      }
+      return merged;
+    };
+
+    const xEdges = mergeClose(xSet);
+    const yEdges = mergeClose(ySet);
+    const cols = xEdges.length - 1;
+    const rows = yEdges.length - 1;
+
+    if (cols < 2 || rows < 2) continue;
+
+    // Rule 3: coverage — how many grid cells are occupied by at least one rect?
+    const occupied = new Set<string>();
+    for (const r of groupRects) {
+      for (let ri = 0; ri < rows; ri++) {
+        // Rect overlaps row ri if rect spans across the row's y-range
+        const rowTop = yEdges[ri];
+        const rowBottom = yEdges[ri + 1];
+        if (r.y + r.height <= rowTop || r.y >= rowBottom) continue;
+
+        for (let ci = 0; ci < cols; ci++) {
+          const colLeft = xEdges[ci];
+          const colRight = xEdges[ci + 1];
+          if (r.x + r.width <= colLeft || r.x >= colRight) continue;
+
+          occupied.add(`${ri},${ci}`);
+        }
+      }
+    }
+
+    const totalCells = cols * rows;
+    const coverage = occupied.size / totalCells;
+    if (coverage < 0.6) continue;
+
+    clusters.push({ rects: groupRects, xEdges, yEdges, cols, rows, coverage });
+  }
+
+  return clusters;
+}
+
+// ============================================================
 // IR HELPERS
 // ============================================================
 
