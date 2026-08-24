@@ -1115,6 +1115,11 @@ export function buildTableClusters(rects: RawRect[]): TableCluster[] {
     }
 
     // Merge close edges
+    // Known Limitation: chaining — each value is compared only to the last merged
+    // value, not to the first in the group. A chain of closely spaced values (e.g.
+    // 100, 101.5, 103, 104.5) can merge into one edge even though the extremes
+    // differ by >2pt. In practice this is rare: real table columns/rows have clear
+    // separation (≥10pt), so chaining over many values almost never occurs.
     const mergeClose = (vals: Set<number>): number[] => {
       const sorted = [...vals].sort((a, b) => a - b);
       const merged: number[] = [];
@@ -1162,6 +1167,78 @@ export function buildTableClusters(rects: RawRect[]): TableCluster[] {
   }
 
   return clusters;
+}
+
+// ============================================================
+// TABLE DETECTION — Phase 3: build grid + detect merged cells
+// ============================================================
+
+export interface GridCell {
+  row: number;
+  col: number;
+  rowspan: number;
+  colspan: number;
+  rect: RawRect; // the rect that owns this cell
+}
+
+export function buildGridAndDetectMerged(cluster: TableCluster): GridCell[] {
+  const { rects, xEdges, yEdges, cols, rows } = cluster;
+
+  // cellOwner[ri][ci] = index of rect that occupies this cell, or -1
+  const cellOwner: number[][] = Array.from({ length: rows }, () => new Array(cols).fill(-1));
+
+  for (let ri = 0; ri < rows; ri++) {
+    for (let ci = 0; ci < cols; ci++) {
+      const cellLeft = xEdges[ci];
+      const cellRight = xEdges[ci + 1];
+      const cellTop = yEdges[ri];
+      const cellBottom = yEdges[ri + 1];
+
+      for (let ri2 = 0; ri2 < rects.length; ri2++) {
+        const r = rects[ri2];
+        if (r.x + r.width <= cellLeft || r.x >= cellRight) continue;
+        if (r.y + r.height <= cellTop || r.y >= cellBottom) continue;
+        cellOwner[ri][ci] = ri2;
+        break; // one rect per cell assumed (non-overlapping tables)
+      }
+    }
+  }
+
+  // Find top-left corner of each rect's span → that's the GridCell
+  const cells: GridCell[] = [];
+  const visited = new Set<string>();
+
+  for (let ri2 = 0; ri2 < rects.length; ri2++) {
+    // Find all cells owned by this rect
+    const ownedCells: { r: number; c: number }[] = [];
+    for (let ri = 0; ri < rows; ri++) {
+      for (let ci = 0; ci < cols; ci++) {
+        if (cellOwner[ri][ci] === ri2) ownedCells.push({ r: ri, c: ci });
+      }
+    }
+    if (ownedCells.length === 0) continue;
+
+    // Top-left is the cell with smallest (row, col)
+    const topLeft = ownedCells.reduce((a, b) => a.r < b.r || (a.r === b.r && a.c < b.c) ? a : b);
+    // Bottom-right
+    const bottomRight = ownedCells.reduce((a, b) => a.r > b.r || (a.r === b.r && a.c > b.c) ? a : b);
+
+    const rowspan = bottomRight.r - topLeft.r + 1;
+    const colspan = bottomRight.c - topLeft.c + 1;
+    const key = `${topLeft.r},${topLeft.c}`;
+    if (visited.has(key)) continue;
+    visited.add(key);
+
+    cells.push({
+      row: topLeft.r,
+      col: topLeft.c,
+      rowspan,
+      colspan,
+      rect: rects[ri2],
+    });
+  }
+
+  return cells;
 }
 
 // ============================================================
