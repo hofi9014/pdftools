@@ -1181,6 +1181,9 @@ export interface GridCell {
   rect: RawRect; // the rect that owns this cell
 }
 
+// Known Limitation: assumes each rect's owned cells form a perfect rectangle
+// (topLeft→bottomRight). Non-rectangular (L-shaped) merges are not supported
+// — out of scope for MVP.
 export function buildGridAndDetectMerged(cluster: TableCluster): GridCell[] {
   const { rects, xEdges, yEdges, cols, rows } = cluster;
 
@@ -1239,6 +1242,84 @@ export function buildGridAndDetectMerged(cluster: TableCluster): GridCell[] {
   }
 
   return cells;
+}
+
+// ============================================================
+// TABLE DETECTION — Phase 4: assign text runs to grid cells
+// ============================================================
+
+const CELL_TOLERANCE_X = 3; // pt — horizontal tolerance for text-in-cell matching
+const CELL_TOLERANCE_Y = 5; // pt — vertical tolerance for text-in-cell matching
+
+function binarySearchClosest(sorted: number[], val: number): number {
+  let lo = 0, hi = sorted.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (sorted[mid] < val) lo = mid + 1; else hi = mid;
+  }
+  return lo;
+}
+
+export interface CellTextAssignment {
+  cell: GridCell;
+  runIndex: number;
+}
+
+export function assignTextRunsToCells(
+  runs: IRTextRun[],
+  cells: GridCell[],
+  xEdges: number[],
+  yEdges: number[],
+): CellTextAssignment[] {
+  if (cells.length === 0) return [];
+
+  // Sort edges for binary search
+  const xSorted = [...xEdges].sort((a, b) => a - b);
+  const ySorted = [...yEdges].sort((a, b) => a - b);
+
+  const assignments: CellTextAssignment[] = [];
+
+  for (let i = 0; i < runs.length; i++) {
+    const run = runs[i];
+    // Skip rotated runs — they won't align with grid
+    if (run.rotation && Math.abs(run.rotation) > 0.1) continue;
+
+    const runX = run.position.x;
+    const runY = run.position.y;
+    const runCenterY = runY + (run.height || 0) / 2;
+
+    // Find candidate column: binary search on xEdges
+    const colIdx = binarySearchClosest(xSorted, runX + CELL_TOLERANCE_X);
+    // colIdx points to the edge closest to runX; the cell is between colIdx-1 and colIdx
+    // Check the two candidate cells (colIdx-1 and colIdx)
+    const colCandidates = [colIdx - 1, colIdx].filter(c => c >= 0 && c < xEdges.length - 1);
+
+    // Find candidate row: binary search on yEdges
+    const rowIdx = binarySearchClosest(ySorted, runCenterY);
+    const rowCandidates = [rowIdx - 1, rowIdx].filter(r => r >= 0 && r < yEdges.length - 1);
+
+    for (const ri of rowCandidates) {
+      for (const ci of colCandidates) {
+        const cellTop = yEdges[ri];
+        const cellBottom = yEdges[ri + 1];
+        const cellLeft = xEdges[ci];
+        const cellRight = xEdges[ci + 1];
+
+        // Check if run center Y is within tolerance of cell Y range
+        if (runCenterY + CELL_TOLERANCE_Y < cellTop || runCenterY - CELL_TOLERANCE_Y > cellBottom) continue;
+        // Check if run X is within tolerance of cell X range
+        if (runX + CELL_TOLERANCE_X < cellLeft || runX - CELL_TOLERANCE_X > cellRight) continue;
+
+        // Find the GridCell at (ri, ci)
+        const cell = cells.find(c => c.row === ri && c.col === ci);
+        if (!cell) continue;
+
+        assignments.push({ cell, runIndex: i });
+      }
+    }
+  }
+
+  return assignments;
 }
 
 // ============================================================
