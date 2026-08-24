@@ -2,6 +2,7 @@ import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFRawStr
 import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePage, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
+import { renderIRToDocx, type IRTextRun, type IRParagraphBlock, type IRHeadingBlock, type IRListItemBlock, type IRImageBlock, type IRBlock, type IRRect, type IRPageIR } from './client-pdf-docx';
 
 let pdfjsInitPromise: Promise<void> | null = null;
 
@@ -889,68 +890,9 @@ export async function extractTextFromPDF(file: File): Promise<string> {
   return texts.join('\n---\n');
 }
 
-// ============================================================
-// IR TYPES (Phase 1a — without TableBlock)
-// ============================================================
-
-interface IRPoint { x: number; y: number; }
-interface IRRect { x: number; y: number; width: number; height: number; }
-
-interface IRTextRun {
-  text: string;
-  fontName: string;
-  fontSize: number;
-  width: number;
-  height: number;
-  position: IRPoint;
-  color: string;
-  bold: boolean;
-  italic: boolean;
-  rotation: number;
-}
-
-interface IRParagraphBlock {
-  kind: 'paragraph';
-  runs: IRTextRun[];
-  bounds: IRRect;
-  role?: 'header' | 'footer' | 'body';
-}
-
-interface IRHeadingBlock {
-  kind: 'heading';
-  level: number;
-  runs: IRTextRun[];
-  bounds: IRRect;
-  role?: 'header' | 'footer' | 'body';
-}
-
-interface IRListItemBlock {
-  kind: 'list-item';
-  marker: string;
-  level: number;
-  runs: IRTextRun[];
-  bounds: IRRect;
-}
-
-interface IRImageBlock {
-  kind: 'image';
-  imageId: string;
-  naturalWidth: number;
-  naturalHeight: number;
-  bounds: IRRect;
-}
-
-type IRBlock = IRParagraphBlock | IRHeadingBlock | IRListItemBlock | IRImageBlock;
-
 // pdfjs-dist operator list arg shapes (internal, untyped)
 interface PDFTmObj { [key: string]: number; }
 interface PDFGlyph { unicode?: string; fontChar?: string; width?: number; }
-
-interface IRPageIR {
-  width: number;
-  height: number;
-  blocks: IRBlock[];
-}
 
 // ============================================================
 // IR HELPERS
@@ -1469,6 +1411,11 @@ export async function pdfToWord(file: File): Promise<Blob> {
     }],
   });
   return await Packer.toBlob(doc);
+}
+
+export async function pdfToWordIR(file: File): Promise<Blob> {
+  const pages = await extractFormattedTextFromPDF(file);
+  return renderIRToDocx(pages);
 }
 
 export async function pdfToPptxClient(file: File): Promise<Blob> {
