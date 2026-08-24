@@ -1298,6 +1298,9 @@ export function assignTextRunsToCells(
     const rowIdx = binarySearchClosest(ySorted, runCenterY);
     const rowCandidates = [rowIdx - 1, rowIdx].filter(r => r >= 0 && r < yEdges.length - 1);
 
+    // Collect all matching cells, pick closest center (dedup)
+    let bestCell: GridCell | null = null;
+    let bestDist = Infinity;
     for (const ri of rowCandidates) {
       for (const ci of colCandidates) {
         const cellTop = yEdges[ri];
@@ -1305,18 +1308,20 @@ export function assignTextRunsToCells(
         const cellLeft = xEdges[ci];
         const cellRight = xEdges[ci + 1];
 
-        // Check if run center Y is within tolerance of cell Y range
         if (runCenterY + CELL_TOLERANCE_Y < cellTop || runCenterY - CELL_TOLERANCE_Y > cellBottom) continue;
-        // Check if run X is within tolerance of cell X range
         if (runX + CELL_TOLERANCE_X < cellLeft || runX - CELL_TOLERANCE_X > cellRight) continue;
 
-        // Find the GridCell at (ri, ci)
         const cell = cells.find(c => c.row === ri && c.col === ci);
         if (!cell) continue;
 
-        assignments.push({ cell, runIndex: i });
+        // Distance from run center to cell center
+        const cellCenterX = (cellLeft + cellRight) / 2;
+        const cellCenterY = (cellTop + cellBottom) / 2;
+        const dist = Math.abs(runX - cellCenterX) + Math.abs(runCenterY - cellCenterY);
+        if (dist < bestDist) { bestDist = dist; bestCell = cell; }
       }
     }
+    if (bestCell) assignments.push({ cell: bestCell, runIndex: i });
   }
 
   return assignments;
