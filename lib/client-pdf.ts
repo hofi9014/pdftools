@@ -2,7 +2,7 @@ import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFRawStr
 import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePage, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
-import { renderIRToDocx, type IRTextRun, type IRParagraphBlock, type IRHeadingBlock, type IRListItemBlock, type IRImageBlock, type IRBlock, type IRRect, type IRPageIR } from './client-pdf-docx';
+import { renderIRToDocx, type IRTextRun, type IRParagraphBlock, type IRHeadingBlock, type IRListItemBlock, type IRImageBlock, type IRTableCell, type IRBlock, type IRRect, type IRPageIR } from './client-pdf-docx';
 
 let pdfjsInitPromise: Promise<void> | null = null;
 
@@ -998,8 +998,8 @@ export function extractRectsFromOps(ops: OpEntry[], pageHeight: number): RawRect
 
       const localX = bbox[0] ?? 0;
       const localY = bbox[1] ?? 0;
-      const localW = bbox[2] ?? 0;
-      const localH = bbox[3] ?? 0;
+      const localW = (bbox[2] ?? 0) - localX;
+      const localH = (bbox[3] ?? 0) - localY;
       if (localW === 0 && localH === 0) continue;
 
       // Transform to page coordinates
@@ -1187,23 +1187,58 @@ export interface GridCell {
 export function buildGridAndDetectMerged(cluster: TableCluster): GridCell[] {
   const { rects, xEdges, yEdges, cols, rows } = cluster;
 
-  // cellOwner[ri][ci] = index of rect that occupies this cell, or -1
-  const cellOwner: number[][] = Array.from({ length: rows }, () => new Array(cols).fill(-1));
+  // Count how many cells each rect spans (for specificity ranking)
+  const rectCellCounts = new Array(rects.length).fill(0);
+  const clusterW = xEdges[xEdges.length - 1] - xEdges[0];
+  const clusterH = yEdges[yEdges.length - 1] - yEdges[0];
+  for (let ri2 = 0; ri2 < rects.length; ri2++) {
+    const r = rects[ri2];
+    // Skip rects that exactly span the full cluster — they're outer borders
+    if (Math.abs(r.width - clusterW) < 1 && Math.abs(r.height - clusterH) < 1) continue;
+    for (let ri = 0; ri < rows; ri++) {
+      const cellTop = yEdges[ri], cellBottom = yEdges[ri + 1];
+      if (r.y + r.height <= cellTop || r.y >= cellBottom) continue;
+      for (let ci = 0; ci < cols; ci++) {
+        const cellLeft = xEdges[ci], cellRight = xEdges[ci + 1];
+        // Non-zero width: half-open [x, x+w) must overlap [cellLeft, cellRight)
+        // Zero width (line): point x must be within [cellLeft, cellRight)
+        if (r.width > 0) {
+          if (r.x + r.width <= cellLeft || r.x >= cellRight) continue;
+        } else {
+          if (r.x < cellLeft || r.x >= cellRight) continue;
+        }
+        rectCellCounts[ri2]++;
+      }
+    }
+  }
 
+  // cellOwner[ri][ci] = index of rect that owns this cell, or -1
+  // Prefer the most specific rect (fewest total cells) to avoid outer border claiming all cells
+  const cellOwner: number[][] = Array.from({ length: rows }, () => new Array(cols).fill(-1));
   for (let ri = 0; ri < rows; ri++) {
     for (let ci = 0; ci < cols; ci++) {
-      const cellLeft = xEdges[ci];
-      const cellRight = xEdges[ci + 1];
-      const cellTop = yEdges[ri];
-      const cellBottom = yEdges[ri + 1];
-
+      const cellLeft = xEdges[ci], cellRight = xEdges[ci + 1];
+      const cellTop = yEdges[ri], cellBottom = yEdges[ri + 1];
+      let bestIdx = -1, bestCount = Infinity, bestArea = -1;
       for (let ri2 = 0; ri2 < rects.length; ri2++) {
         const r = rects[ri2];
-        if (r.x + r.width <= cellLeft || r.x >= cellRight) continue;
+        if (r.width > 0) {
+          if (r.x + r.width <= cellLeft || r.x >= cellRight) continue;
+        } else {
+          if (r.x < cellLeft || r.x >= cellRight) continue;
+        }
         if (r.y + r.height <= cellTop || r.y >= cellBottom) continue;
-        cellOwner[ri][ci] = ri2;
-        break; // one rect per cell assumed (non-overlapping tables)
+        // Skip rects that exactly span the full cluster — they're outer borders
+        if (Math.abs(r.width - clusterW) < 1 && Math.abs(r.height - clusterH) < 1) continue;
+        const area = r.width * r.height;
+        if (rectCellCounts[ri2] < bestCount ||
+            (rectCellCounts[ri2] === bestCount && area > bestArea)) {
+          bestCount = rectCellCounts[ri2];
+          bestArea = area;
+          bestIdx = ri2;
+        }
       }
+      cellOwner[ri][ci] = bestIdx;
     }
   }
 
@@ -1270,6 +1305,7 @@ export function assignTextRunsToCells(
   cells: GridCell[],
   xEdges: number[],
   yEdges: number[],
+  pageHeight: number,
 ): CellTextAssignment[] {
   if (cells.length === 0) return [];
 
@@ -1285,7 +1321,9 @@ export function assignTextRunsToCells(
     if (run.rotation && Math.abs(run.rotation) > 0.1) continue;
 
     const runX = run.position.x;
-    const runY = run.position.y;
+    const runPDFY = run.position.y;
+    // Convert from PDF bottom-left Y to top-left Y (matching rect coordinates)
+    const runY = pageHeight - runPDFY - (run.height || 0);
     const runCenterY = runY + (run.height || 0) / 2;
 
     // Find candidate column: binary search on xEdges
@@ -1561,6 +1599,59 @@ export async function extractFormattedTextFromPDF(file: File): Promise<IRPageIR[
     // --- Group runs into blocks ---
     const blocks: IRBlock[] = [];
     const used = new Set<number>();
+
+    // --- Table detection: extractRects → cluster → grid → assign → consumedIndices ---
+    const tableRects = extractRectsFromOps(ops, pageHeight);
+    const tableClusters = buildTableClusters(tableRects);
+    for (const cluster of tableClusters) {
+      const gridCells = buildGridAndDetectMerged(cluster);
+      const assignments = assignTextRunsToCells(textRuns, gridCells, cluster.xEdges, cluster.yEdges, pageHeight);
+
+      if (assignments.length > 0) {
+        // Build IRTableCell[][] grid
+        const rows = cluster.rows;
+        const cols = cluster.cols;
+        const cellGrid: (IRTableCell | null)[][] =
+          Array.from({ length: rows }, () => new Array(cols).fill(null));
+
+        for (const { cell, runIndex } of assignments) {
+          used.add(runIndex);
+          if (!cellGrid[cell.row][cell.col]) {
+            cellGrid[cell.row][cell.col] = {
+              runs: [],
+              colspan: cell.colspan,
+              rowspan: cell.rowspan,
+            };
+          }
+          cellGrid[cell.row][cell.col]!.runs.push(textRuns[runIndex]);
+        }
+
+        // Convert null cells to empty placeholders
+        const irCells: IRTableCell[][] = cellGrid.map(row =>
+          row.map(c => c ?? { runs: [], colspan: 1, rowspan: 1 })
+        );
+
+        const columnWidths = [];
+        for (let ci = 0; ci < cluster.xEdges.length - 1; ci++) {
+          columnWidths.push(cluster.xEdges[ci + 1] - cluster.xEdges[ci]);
+        }
+
+        // Compute bounds from cluster
+        const allX = cluster.xEdges;
+        const allY = cluster.yEdges;
+        blocks.push({
+          kind: 'table',
+          cells: irCells,
+          bounds: {
+            x: allX[0],
+            y: allY[0],
+            width: allX[allX.length - 1] - allX[0],
+            height: allY[allY.length - 1] - allY[0],
+          },
+          columnWidths,
+        });
+      }
+    }
 
     // Sort runs by Y (top to bottom in PDF coords = descending Y), then X
     const sorted = textRuns

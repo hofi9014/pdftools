@@ -52,7 +52,20 @@ export interface IRImageBlock {
   bounds: IRRect;
 }
 
-export type IRBlock = IRParagraphBlock | IRHeadingBlock | IRListItemBlock | IRImageBlock;
+export interface IRTableCell {
+  runs: IRTextRun[];
+  colspan: number;
+  rowspan: number;
+}
+
+export interface IRTableBlock {
+  kind: 'table';
+  cells: IRTableCell[][];  // cells[row][col], only top-left of merged cells
+  bounds: IRRect;
+  columnWidths: number[];
+}
+
+export type IRBlock = IRParagraphBlock | IRHeadingBlock | IRListItemBlock | IRImageBlock | IRTableBlock;
 
 export interface IRPageIR {
   width: number;
@@ -106,17 +119,56 @@ function irRunsToTextRunsRotated(TRC: any, runs: IRTextRun[], rotation: number):
 }
 
 export async function renderIRToDocx(pages: IRPageIR[]): Promise<Blob> {
-  const { Document, Packer, Paragraph, HeadingLevel, TextRun } = await import('docx');
+  const {
+    Document, Packer, Paragraph, HeadingLevel, TextRun,
+    Table, TableRow, TableCell, WidthType, BorderStyle,
+  } = await import('docx');
 
-  const allParagraphs: InstanceType<typeof Paragraph>[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allChildren: any[] = [];
 
   for (const page of pages) {
     for (const block of page.blocks) {
+      if (block.kind === 'table') {
+        const table = block as IRTableBlock;
+        const docxRows = table.cells.map(row =>
+          new TableRow({
+            children: row.map(cell => {
+              if (!cell) return new TableCell({ children: [new Paragraph('')] });
+              const paragraphs = cell.runs.length > 0
+                ? [new Paragraph({ children: irRunsToTextRuns(TextRun, cell.runs) })]
+                : [new Paragraph('')];
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const opts: any = { children: paragraphs };
+              if (cell.colspan > 1) opts.columnSpan = cell.colspan;
+              if (cell.rowspan > 1) opts.rowSpan = cell.rowspan;
+              return new TableCell(opts);
+            }),
+          })
+        );
+
+        // columnWidths from IR are in PDF points; docx columnWidths expects DXA (1pt = 20 DXA)
+        allChildren.push(new Table({
+          rows: docxRows,
+          columnWidths: table.columnWidths.map(w => Math.round(w * 20)),
+          width: { size: Math.round(table.columnWidths.reduce((a, b) => a + b, 0) * 20), type: WidthType.DXA },
+          borders: {
+            top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+            bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+            left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+            right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+            insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+            insideVertical: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+          },
+        }));
+        continue;
+      }
+
       const hasRotation = 'runs' in block && (block as { runs: IRTextRun[] }).runs.some(r => Math.abs(r.rotation) > 1);
 
       if (block.kind === 'image') {
         const img = block as IRImageBlock;
-        allParagraphs.push(new Paragraph({
+        allChildren.push(new Paragraph({
           children: [new TextRun({
             text: `[Image: ${img.naturalWidth}×${img.naturalHeight}]`,
             italics: true,
@@ -128,35 +180,36 @@ export async function renderIRToDocx(pages: IRPageIR[]): Promise<Blob> {
         const level = Math.min(Math.max(h.level, 1), 6);
         const headingKey = IR_HEADING_MAP[level] as keyof typeof HeadingLevel;
         if (hasRotation) {
-          allParagraphs.push(new Paragraph({
+          allChildren.push(new Paragraph({
             children: irRunsToTextRunsRotated(TextRun, h.runs, h.runs[0]?.rotation ?? 0),
           }));
         } else {
-          allParagraphs.push(new Paragraph({
+          allChildren.push(new Paragraph({
             heading: HeadingLevel[headingKey],
             children: irRunsToTextRuns(TextRun, h.runs),
           }));
         }
       } else if (block.kind === 'list-item') {
         const li = block as IRListItemBlock;
+        const level = Math.min(li.level, 8);
         if (hasRotation) {
-          allParagraphs.push(new Paragraph({
+          allChildren.push(new Paragraph({
             children: irRunsToTextRunsRotated(TextRun, li.runs, li.runs[0]?.rotation ?? 0),
           }));
         } else {
-          allParagraphs.push(new Paragraph({
-            bullet: { level: li.level },
+          allChildren.push(new Paragraph({
+            bullet: { level },
             children: irRunsToTextRuns(TextRun, li.runs),
           }));
         }
       } else {
         const p = block as IRParagraphBlock;
         if (hasRotation) {
-          allParagraphs.push(new Paragraph({
+          allChildren.push(new Paragraph({
             children: irRunsToTextRunsRotated(TextRun, p.runs, p.runs[0]?.rotation ?? 0),
           }));
         } else {
-          allParagraphs.push(new Paragraph({
+          allChildren.push(new Paragraph({
             children: irRunsToTextRuns(TextRun, p.runs),
           }));
         }
@@ -165,7 +218,7 @@ export async function renderIRToDocx(pages: IRPageIR[]): Promise<Blob> {
   }
 
   const doc = new Document({
-    sections: [{ children: allParagraphs }],
+    sections: [{ children: allChildren }],
   });
   return await Packer.toBlob(doc);
 }
