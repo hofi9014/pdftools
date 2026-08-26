@@ -74,6 +74,133 @@ export interface IRPageIR {
 }
 
 // ============================================================
+// DOCX → IR: STYLE RESOLUTION (Component 1)
+// ============================================================
+
+const WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+
+export interface RunProps {
+  font?: string;
+  size?: string;
+  bold?: boolean;
+  italic?: boolean;
+  color?: string;
+}
+
+export interface StyleDef {
+  basedOn?: string;
+  rPr?: RunProps;
+}
+
+function getLocal(el: Element, local: string): string | null {
+  return el.getAttributeNS(WORD_NS, local);
+}
+
+function parseBoolAttr(el: Element | null, attr: string): boolean | undefined {
+  if (!el) return undefined;
+  const v = getLocal(el, attr);
+  if (v === null) return true;
+  return v !== '0' && v !== 'false';
+}
+
+function parseRPr(rPr: Element | null): RunProps | undefined {
+  if (!rPr) return undefined;
+  const props: RunProps = {};
+  const rFonts = rPr.getElementsByTagNameNS(WORD_NS, 'rFonts');
+  if (rFonts.length > 0) {
+    const font = getLocal(rFonts[0], 'ascii') || getLocal(rFonts[0], 'hAnsi');
+    if (font) props.font = font;
+  }
+  const sz = rPr.getElementsByTagNameNS(WORD_NS, 'sz');
+  if (sz.length > 0) {
+    const v = getLocal(sz[0], 'val');
+    if (v) props.size = v;
+  }
+  const bold = parseBoolAttr(rPr.getElementsByTagNameNS(WORD_NS, 'b')[0] || null, 'val');
+  if (bold !== undefined) props.bold = bold;
+  const italic = parseBoolAttr(rPr.getElementsByTagNameNS(WORD_NS, 'i')[0] || null, 'val');
+  if (italic !== undefined) props.italic = italic;
+  const color = rPr.getElementsByTagNameNS(WORD_NS, 'color');
+  if (color.length > 0) {
+    const v = getLocal(color[0], 'val');
+    if (v) props.color = v;
+  }
+  return Object.keys(props).length > 0 ? props : undefined;
+}
+
+function mergeRunProps(base: RunProps | undefined, override: RunProps | undefined): RunProps {
+  if (!base) return override || {};
+  if (!override) return base;
+  return {
+    font: override.font ?? base.font,
+    size: override.size ?? base.size,
+    bold: override.bold ?? base.bold,
+    italic: override.italic ?? base.italic,
+    color: override.color ?? base.color,
+  };
+}
+
+export function parseStylesXml(xml: string): { styles: Map<string, StyleDef>; docDefaults: RunProps } {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xml, 'application/xml');
+
+  const result = { styles: new Map<string, StyleDef>(), docDefaults: {} as RunProps };
+
+  const defaults = doc.getElementsByTagNameNS(WORD_NS, 'docDefaults');
+  if (defaults.length > 0) {
+    const rPrDefault = defaults[0].getElementsByTagNameNS(WORD_NS, 'rPrDefault');
+    if (rPrDefault.length > 0) {
+      const rPr = rPrDefault[0].getElementsByTagNameNS(WORD_NS, 'rPr');
+      if (rPr.length > 0) result.docDefaults = parseRPr(rPr[0]) || {};
+    }
+  }
+
+  const styleEls = doc.getElementsByTagNameNS(WORD_NS, 'style');
+  for (let i = 0; i < styleEls.length; i++) {
+    const el = styleEls[i];
+    const styleId = getLocal(el, 'styleId');
+    if (!styleId) continue;
+    const basedOn = el.getElementsByTagNameNS(WORD_NS, 'basedOn');
+    const rPr = el.getElementsByTagNameNS(WORD_NS, 'rPr');
+    const def: StyleDef = {};
+    if (basedOn.length > 0) {
+      const v = getLocal(basedOn[0], 'val');
+      if (v) def.basedOn = v;
+    }
+    if (rPr.length > 0) def.rPr = parseRPr(rPr[0]);
+    result.styles.set(styleId, def);
+  }
+
+  return result;
+}
+
+export function resolveRunProps(
+  styles: Map<string, StyleDef>,
+  docDefaults: RunProps,
+  pStyleId: string | undefined,
+  pPrRunProps: Partial<RunProps> | undefined,
+  runProps: Partial<RunProps> | undefined,
+): RunProps {
+  let resolved = { ...docDefaults };
+  if (pStyleId) {
+    const chain: string[] = [];
+    let cur: string | undefined = pStyleId;
+    while (cur) {
+      if (chain.includes(cur)) break;
+      chain.unshift(cur);
+      cur = styles.get(cur)?.basedOn;
+    }
+    for (const id of chain) {
+      const rPr = styles.get(id)?.rPr;
+      if (rPr) resolved = mergeRunProps(resolved, rPr);
+    }
+  }
+  if (pPrRunProps) resolved = mergeRunProps(resolved, pPrRunProps as RunProps);
+  if (runProps) resolved = mergeRunProps(resolved, runProps as RunProps);
+  return resolved;
+}
+
+// ============================================================
 // IR → DOCX RENDERER
 // ============================================================
 
