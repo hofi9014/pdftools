@@ -314,6 +314,315 @@ export function extractImagesFromXml(
 }
 
 // ============================================================
+// DOCX → IR: MAIN TRAVERSAL (Component 3)
+// ============================================================
+// KNOWN LIMITATION: Text inside <w:txbxContent> (text boxes) is
+// intentionally excluded. getText() and parseRuns() only read
+// direct-child elements, skipping content nested in textboxes
+// (which are decorative banners/shapes in this document). This
+// means content that exists ONLY inside a text box — and does not
+// appear in the main body paragraph text — will be lost. In the
+// real_ebook.docx test file, 7 paragraphs (chapter titles like
+// "Czy zastanawiałeś się kiedyś…", test result data like
+// "218 sztuk sprzedanych / 320 sztuk", guarantee badge
+// "365 DNI NA ZWROT!") were affected. Acceptable for MVP because:
+// (a) textboxes are visually styled banners, not core body text,
+// (b) the same text is often self-duplicated inside the textbox
+// (Choice + Fallback), (c) handling would require semantic
+// analysis to distinguish "unique textbox content" from
+// "decorative duplicate", disproportionate cost for MVP.
+// ============================================================
+
+const DXA_PER_PT = 20;
+
+function getText(el: Element): string {
+  let s = '';
+  const children = el.childNodes;
+  for (let i = 0; i < children.length; i++) {
+    const node = children[i];
+    if (node.nodeType !== 1) continue;
+    const child = node as Element;
+    if (child.localName === 't' && child.namespaceURI === WORD_NS) {
+      s += child.textContent || '';
+    }
+  }
+  return s;
+}
+
+function parseRuns(
+  pEl: Element,
+  resolvedStyles: { styles: Map<string, StyleDef>; docDefaults: RunProps },
+  pStyleId: string | undefined,
+  pPrRunProps: Partial<RunProps> | undefined,
+): IRTextRun[] {
+  const runs: IRTextRun[] = [];
+  // Only direct children <w:r> — skip <w:r> inside <w:txbxContent> (textboxes)
+  const children = pEl.childNodes;
+  for (let i = 0; i < children.length; i++) {
+    const node = children[i];
+    if (node.nodeType !== 1) continue;
+    const el = node as Element;
+    if (el.localName !== 'r' || el.namespaceURI !== WORD_NS) continue;
+    const text = getText(el);
+    if (!text) continue;
+    const rPrEl = el.getElementsByTagNameNS(WORD_NS, 'rPr');
+    const rPr = rPrEl.length > 0 ? parseRPr(rPrEl[0]) : undefined;
+    const resolved = resolveRunProps(
+      resolvedStyles.styles, resolvedStyles.docDefaults,
+      pStyleId, pPrRunProps, rPr,
+    );
+    runs.push({
+      text,
+      fontName: resolved.font || 'Arial',
+      fontSize: resolved.size ? parseInt(resolved.size) / 2 : 11,
+      width: 0,
+      height: 0,
+      position: { x: 0, y: 0 },
+      color: resolved.color || '000000',
+      bold: resolved.bold ?? false,
+      italic: resolved.italic ?? false,
+      rotation: 0,
+    });
+  }
+  return runs;
+}
+
+function parseHeadingLevel(pStyleId: string | null): number | null {
+  if (!pStyleId) return null;
+  const m = pStyleId.match(/^Heading(\d)$/i);
+  return m ? parseInt(m[1]) : null;
+}
+
+function processParagraph(
+  pEl: Element,
+  resolvedStyles: { styles: Map<string, StyleDef>; docDefaults: RunProps },
+  imageMap: Map<string, DocxImage>,
+  seenRids: Set<string>,
+): IRBlock[] {
+  const blocks: IRBlock[] = [];
+  const pPr = pEl.getElementsByTagNameNS(WORD_NS, 'pPr');
+  let pStyleId: string | undefined;
+  let numPrEl: Element | null = null;
+  let pPrRPr: Partial<RunProps> | undefined;
+
+  if (pPr.length > 0) {
+    const styleEls = pPr[0].getElementsByTagNameNS(WORD_NS, 'pStyle');
+    if (styleEls.length > 0) pStyleId = getLocal(styleEls[0], 'val') || undefined;
+    const numPr = pPr[0].getElementsByTagNameNS(WORD_NS, 'numPr');
+    if (numPr.length > 0) numPrEl = numPr[0];
+    const rPr = pPr[0].getElementsByTagNameNS(WORD_NS, 'rPr');
+    if (rPr.length > 0) pPrRPr = parseRPr(rPr[0]) || undefined;
+  }
+
+  // Check for images in this paragraph (direct children only — skip textboxes)
+  const pChildren = pEl.childNodes;
+  for (let i = 0; i < pChildren.length; i++) {
+    const node = pChildren[i];
+    if (node.nodeType !== 1) continue;
+    const el = node as Element;
+    if (el.localName === 'r' && el.namespaceURI === WORD_NS) {
+      // Check <w:drawing> direct children of this <w:r>
+      const drvs = el.getElementsByTagNameNS(WORD_NS, 'drawing');
+      for (let d = 0; d < drvs.length; d++) {
+        const blips = drvs[d].getElementsByTagNameNS(DRAWINGML_NS, 'blip');
+        for (let j = 0; j < blips.length; j++) {
+          const embed = blips[j].getAttributeNS(REL_NS, 'embed');
+          if (embed && imageMap.has(embed) && !seenRids.has(embed)) {
+            seenRids.add(embed);
+            const img = imageMap.get(embed)!;
+            const w = emuToPt(img.widthEMU);
+            const h = emuToPt(img.heightEMU);
+            blocks.push({
+              kind: 'image',
+              imageId: embed,
+              naturalWidth: w,
+              naturalHeight: h,
+              bounds: { x: 0, y: 0, width: w, height: h },
+            });
+          }
+        }
+      }
+      // Check <w:pict> direct children of this <w:r>
+      const picts = el.getElementsByTagNameNS(VML_NS, 'imagedata');
+      for (let j = 0; j < picts.length; j++) {
+        const rid = picts[j].getAttributeNS(REL_NS, 'id')
+          || picts[j].getAttribute('r:id');
+        if (rid && imageMap.has(rid) && !seenRids.has(rid)) {
+          seenRids.add(rid);
+          const img = imageMap.get(rid)!;
+          const w = emuToPt(img.widthEMU);
+          const h = emuToPt(img.heightEMU);
+          blocks.push({
+            kind: 'image',
+            imageId: rid,
+            naturalWidth: w,
+            naturalHeight: h,
+            bounds: { x: 0, y: 0, width: w, height: h },
+          });
+        }
+      }
+    }
+  }
+
+  // Text runs
+  const runs = parseRuns(pEl, resolvedStyles, pStyleId, pPrRPr);
+  const text = runs.map(r => r.text).join('').trim();
+  if (!text && blocks.length > 0) return blocks;
+  if (!text) return [];
+
+  const bounds: IRRect = { x: 0, y: 0, width: 0, height: 0 };
+
+  if (numPrEl) {
+    const ilvl = numPrEl.getElementsByTagNameNS(WORD_NS, 'ilvl');
+    const level = ilvl.length > 0 ? parseInt(getLocal(ilvl[0], 'val') || '0') : 0;
+    blocks.unshift({
+      kind: 'list-item',
+      marker: '•',
+      level,
+      runs,
+      bounds,
+    });
+  } else {
+    const headingLevel = parseHeadingLevel(pStyleId || null);
+    if (headingLevel) {
+      blocks.unshift({
+        kind: 'heading',
+        level: headingLevel,
+        runs,
+        bounds,
+      });
+    } else {
+      blocks.unshift({
+        kind: 'paragraph',
+        runs,
+        bounds,
+      });
+    }
+  }
+
+  return blocks;
+}
+
+function emuToPt(emu: number): number {
+  return Math.round(emu / EMU_PER_PT * 10) / 10;
+}
+
+function processTable(
+  tblEl: Element,
+  resolvedStyles: { styles: Map<string, StyleDef>; docDefaults: RunProps },
+): IRTableBlock {
+  const rows: IRTableCell[][] = [];
+  const trEls = tblEl.getElementsByTagNameNS(WORD_NS, 'tr');
+
+  for (let r = 0; r < trEls.length; r++) {
+    const row: IRTableCell[] = [];
+    const tcEls = trEls[r].getElementsByTagNameNS(WORD_NS, 'tc');
+    for (let c = 0; c < tcEls.length; c++) {
+      const tc = tcEls[c];
+      const tcPr = tc.getElementsByTagNameNS(WORD_NS, 'tcPr');
+      let colspan = 1;
+      if (tcPr.length > 0) {
+        const gs = tcPr[0].getElementsByTagNameNS(WORD_NS, 'gridSpan');
+        if (gs.length > 0) colspan = parseInt(getLocal(gs[0], 'val') || '1');
+      }
+      // Collect all text runs from paragraphs inside this cell
+      const cellRuns: IRTextRun[] = [];
+      const pEls = tc.getElementsByTagNameNS(WORD_NS, 'p');
+      for (let p = 0; p < pEls.length; p++) {
+        const pRuns = parseRuns(pEls[p], resolvedStyles, undefined, undefined);
+        cellRuns.push(...pRuns);
+      }
+      row.push({ runs: cellRuns, colspan, rowspan: 1 });
+    }
+    if (row.length > 0) rows.push(row);
+  }
+
+  // Grid column widths from <w:tblGrid>
+  const gridCols = tblEl.getElementsByTagNameNS(WORD_NS, 'gridCol');
+  const colWidths: number[] = [];
+  for (let i = 0; i < gridCols.length; i++) {
+    const w = parseInt(getLocal(gridCols[i], 'w') || '0');
+    colWidths.push(Math.round(w / DXA_PER_PT));
+  }
+
+  const totalW = colWidths.reduce((a, b) => a + b, 0);
+  return {
+    kind: 'table',
+    cells: rows,
+    bounds: { x: 0, y: 0, width: totalW, height: 0 },
+    columnWidths: colWidths,
+  };
+}
+
+export async function docxToIR(file: File): Promise<IRPageIR[]> {
+  const JSZip = (await import('jszip')).default;
+  const buf = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
+
+  const docXml = await zip.file('word/document.xml')!.async('string');
+  const stylesXml = await zip.file('word/styles.xml')?.async('string') || '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>';
+  const relsXml = await zip.file('word/_rels/document.xml.rels')?.async('string') || '';
+
+  const resolvedStyles = parseStylesXml(stylesXml);
+  const rels = parseRels(relsXml);
+
+  // Build image data map: rId → bytes
+  const imageMap = new Map<string, DocxImage>();
+  const imageRefs = extractImagesFromXml(docXml, rels);
+  for (const ref of imageRefs) {
+    const rel = rels.get(ref.rId);
+    if (!rel) continue;
+    const target = rel.target.startsWith('media/') ? rel.target : `media/${rel.target}`;
+    const entry = zip.file(`word/${target}`);
+    if (!entry) continue;
+    const data = await entry.async('uint8array');
+    imageMap.set(ref.rId, {
+      rId: ref.rId,
+      target,
+      data,
+      widthEMU: ref.widthEMU,
+      heightEMU: ref.heightEMU,
+      source: ref.source,
+    });
+  }
+
+  // Parse document.xml
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(docXml, 'application/xml');
+  const body = doc.getElementsByTagNameNS(WORD_NS, 'body');
+  if (body.length === 0) return [{ width: 595, height: 842, blocks: [] }];
+
+  // Page size from last <w:sectPr>/<w:pgSz>
+  let pageW = 595, pageH = 842;
+  const sectPr = body[0].getElementsByTagNameNS(WORD_NS, 'sectPr');
+  if (sectPr.length > 0) {
+    const pgSz = sectPr[sectPr.length - 1].getElementsByTagNameNS(WORD_NS, 'pgSz');
+    if (pgSz.length > 0) {
+      const w = parseInt(getLocal(pgSz[0], 'w') || '0');
+      const h = parseInt(getLocal(pgSz[0], 'h') || '0');
+      if (w && h) { pageW = Math.round(w / DXA_PER_PT); pageH = Math.round(h / DXA_PER_PT); }
+    }
+  }
+
+  // Traverse body children in document order
+  const blocks: IRBlock[] = [];
+  const seenRids = new Set<string>();
+  const children = body[0].childNodes;
+  for (let i = 0; i < children.length; i++) {
+    const node = children[i];
+    if (node.nodeType !== 1) continue;
+    const el = node as Element;
+    if (el.localName === 'p') {
+      blocks.push(...processParagraph(el, resolvedStyles, imageMap, seenRids));
+    } else if (el.localName === 'tbl') {
+      blocks.push(processTable(el, resolvedStyles));
+    }
+  }
+
+  return [{ width: pageW, height: pageH, blocks }];
+}
+
+// ============================================================
 // IR → DOCX RENDERER
 // ============================================================
 
