@@ -201,6 +201,119 @@ export function resolveRunProps(
 }
 
 // ============================================================
+// DOCX → IR: IMAGE EXTRACTION (Component 2)
+// ============================================================
+
+const IMAGE_REL =
+  'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image';
+const DRAWINGML_NS = 'http://schemas.openxmlformats.org/drawingml/2006/main';
+const WP_NS = 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing';
+const VML_NS = 'urn:schemas-microsoft-com:vml';
+const REL_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+
+export interface DocxImage {
+  rId: string;
+  target: string;
+  /** bytes of the image file (jpeg/png/etc) extracted from word/media/ */
+  data: Uint8Array;
+  /** width in EMU from <wp:extent> or CSS pt from VML style */
+  widthEMU: number;
+  heightEMU: number;
+  source: 'drawingml' | 'vml';
+}
+
+const EMU_PER_PT = 12700;
+
+export function parseRels(xml: string): Map<string, { type: string; target: string }> {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xml, 'application/xml');
+  const relsNs = 'http://schemas.openxmlformats.org/package/2006/relationships';
+  const map = new Map<string, { type: string; target: string }>();
+  const rels = doc.getElementsByTagNameNS(relsNs, 'Relationship');
+  for (let i = 0; i < rels.length; i++) {
+    const id = rels[i].getAttribute('Id');
+    const type = rels[i].getAttribute('Type');
+    const target = rels[i].getAttribute('Target');
+    if (id && type && target) map.set(id, { type, target });
+  }
+  return map;
+}
+
+export function extractImagesFromXml(
+  docXml: string,
+  rels: Map<string, { type: string; target: string }>,
+): { rId: string; widthEMU: number; heightEMU: number; source: 'drawingml' | 'vml' }[] {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(docXml, 'application/xml');
+  const results: { rId: string; widthEMU: number; heightEMU: number; source: 'drawingml' | 'vml' }[] = [];
+  const seen = new Set<string>();
+
+  // DrawingML: <a:blip r:embed="rIdX"/>
+  const blips = doc.getElementsByTagNameNS(DRAWINGML_NS, 'blip');
+  for (let i = 0; i < blips.length; i++) {
+    const embed = blips[i].getAttributeNS(REL_NS, 'embed');
+    if (!embed) continue;
+    const rel = rels.get(embed);
+    if (!rel || rel.type !== IMAGE_REL) continue;
+
+    // Walk up to find <wp:extent>
+    let parent = blips[i].parentElement;
+    let cx = 0, cy = 0;
+    while (parent) {
+      if (parent.localName === 'anchor' || parent.localName === 'inline') {
+        const ext = parent.getElementsByTagNameNS(WP_NS, 'extent');
+        if (ext.length > 0) {
+          cx = parseInt(ext[0].getAttribute('cx') || '0', 10);
+          cy = parseInt(ext[0].getAttribute('cy') || '0', 10);
+        }
+        break;
+      }
+      parent = parent.parentElement;
+    }
+    if (!seen.has(embed)) {
+      seen.add(embed);
+      results.push({ rId: embed, widthEMU: cx, heightEMU: cy, source: 'drawingml' });
+    }
+  }
+
+  // VML: <v:imagedata r:id="rIdX"/> or <v:imagedata o:relid="rIdX"/>
+  const vImagedata = doc.getElementsByTagNameNS(VML_NS, 'imagedata');
+  for (let i = 0; i < vImagedata.length; i++) {
+    const rid = vImagedata[i].getAttributeNS(REL_NS, 'id')
+      || vImagedata[i].getAttribute('o:relid')
+      || vImagedata[i].getAttribute('r:id');
+    if (!rid) continue;
+    const rel = rels.get(rid);
+    if (!rel || rel.type !== IMAGE_REL) continue;
+    if (seen.has(rid)) continue;
+    seen.add(rid);
+
+    // Walk up to <v:shape> for CSS dimensions
+    let parent = vImagedata[i].parentElement;
+    let wPt = 0, hPt = 0;
+    while (parent) {
+      const style = parent.getAttribute('style');
+      if (style) {
+        const wMatch = style.match(/width:\s*([\d.]+)pt/);
+        const hMatch = style.match(/height:\s*([\d.]+)pt/);
+        if (wMatch) wPt = parseFloat(wMatch[1]);
+        if (hMatch) hPt = parseFloat(hMatch[1]);
+        if (wPt && hPt) break;
+      }
+      parent = parent.parentElement;
+    }
+    results.push({
+      rId: rid,
+      widthEMU: Math.round(wPt * EMU_PER_PT),
+      heightEMU: Math.round(hPt * EMU_PER_PT),
+      source: 'vml',
+    });
+  }
+
+  return results;
+}
+
+// ============================================================
 // IR → DOCX RENDERER
 // ============================================================
 
