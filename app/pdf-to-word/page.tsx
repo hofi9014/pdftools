@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef } from 'react';
 import JSZip from 'jszip';
-import { pdfToWord } from '@/lib/client-pdf';
+import { pdfToWord, pdfToWordIR } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -15,6 +15,7 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [fallbackUsed, setFallbackUsed] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
   const downloadFileNameRef = useRef('');
@@ -39,6 +40,7 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
     setLoading(true);
     setError('');
     setSuccess(false);
+    setFallbackUsed(false);
     setProgress(0);
 
     const batchResults: { name: string; data: Blob }[] = [];
@@ -46,7 +48,14 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const blob = await pdfToWord(file);
+        let blob: Blob;
+        try {
+          blob = await pdfToWordIR(file);
+        } catch (irErr) {
+          console.error('pdfToWordIR failed, falling back to plain text:', irErr);
+          blob = await pdfToWord(file);
+          setFallbackUsed(true);
+        }
         batchResults.push({ name: file.name.replace('.pdf', '.docx'), data: blob });
         setProgress(i + 1);
       }
@@ -151,6 +160,11 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
       </div>
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {fallbackUsed && !error && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 rounded-xl p-4 mb-6">
+          ⚠️ {t('page.word.fallback', locale)}
+        </div>
+      )}
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
           ✅ {files.length > 1 ? t('result.zip', locale) : t('result.success', locale)}
