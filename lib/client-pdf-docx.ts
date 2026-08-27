@@ -1,5 +1,7 @@
-// IR types shared between extraction (client-pdf.ts) and rendering (docx)
-// This file has ZERO browser dependencies — only `docx`.
+// IR types shared between extraction (client-pdf.ts) and rendering (docx/pdf)
+// Dependencies: docx, pdf-lib, @pdf-lib/fontkit
+
+import { PDFDocument, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
 
 // ============================================================
 // IR TYPES (Phase 1a — without TableBlock)
@@ -589,6 +591,11 @@ function emuToPt(emu: number): number {
   return Math.round(emu / EMU_PER_PT * 10) / 10;
 }
 
+export interface DocxIRResult {
+  pages: IRPageIR[];
+  images: Map<string, DocxImage>;
+}
+
 function processTable(
   tblEl: Element,
   resolvedStyles: { styles: Map<string, StyleDef>; docDefaults: RunProps },
@@ -636,7 +643,7 @@ function processTable(
   };
 }
 
-export async function docxToIR(file: File): Promise<IRPageIR[]> {
+export async function docxToIR(file: File): Promise<DocxIRResult> {
   const JSZip = (await import('jszip')).default;
   const buf = await file.arrayBuffer();
   const zip = await JSZip.loadAsync(buf);
@@ -672,7 +679,7 @@ export async function docxToIR(file: File): Promise<IRPageIR[]> {
   const parser = new DOMParser();
   const doc = parser.parseFromString(docXml, 'application/xml');
   const body = doc.getElementsByTagNameNS(WORD_NS, 'body');
-  if (body.length === 0) return [{ width: 595, height: 842, blocks: [] }];
+  if (body.length === 0) return { pages: [{ width: 595, height: 842, blocks: [] }], images: imageMap };
 
   // Page size from last <w:sectPr>/<w:pgSz>
   let pageW = 595, pageH = 842;
@@ -701,7 +708,7 @@ export async function docxToIR(file: File): Promise<IRPageIR[]> {
     }
   }
 
-  return [{ width: pageW, height: pageH, blocks }];
+  return { pages: [{ width: pageW, height: pageH, blocks }], images: imageMap };
 }
 
 // ============================================================
@@ -852,4 +859,326 @@ export async function renderIRToDocx(pages: IRPageIR[]): Promise<Blob> {
     sections: [{ children: allChildren }],
   });
   return await Packer.toBlob(doc);
+}
+
+// ============================================================
+// IR → PDF RENDERER
+// ============================================================
+// Renders IRPageIR[] to PDF using LiberationSans (via @pdf-lib/fontkit).
+// Covers Latin/Cyrillic/Greek scripts. For Arabic/Devanagari/CJK/Thai/
+// Hebrew, detectUnsupportedScript() should trigger fallback to legacy
+// officeToPdf() BEFORE reaching this renderer.
+//
+// KNOWN LIMITATION: Text inside <w:txbxContent> is not present in IR
+// (excluded by docxToIR getText/parseRuns). Those paragraphs will
+// simply not appear in the output.
+//
+// KNOWN LIMITATION: tables are split across pages row-by-row, but a
+// single table row taller than one page height is not split vertically
+// and may overflow the bottom margin.
+
+function hexToColor(hex: string): ReturnType<typeof rgb> {
+  const h = hex.replace('#', '');
+  return rgb(
+    parseInt(h.substring(0, 2), 16) / 255,
+    parseInt(h.substring(2, 4), 16) / 255,
+    parseInt(h.substring(4, 6), 16) / 255,
+  );
+}
+
+const FONT_SIZES: Record<number, number> = {
+  1: 24, 2: 20, 3: 16, 4: 13, 5: 11.5, 6: 10.5,
+};
+
+type EmbeddedFonts = {
+  regular: PDFFont;
+  bold: PDFFont;
+  italic: PDFFont;
+  boldItalic: PDFFont;
+};
+
+function pickFont(fonts: EmbeddedFonts, bold: boolean, italic: boolean): PDFFont {
+  if (bold && italic) return fonts.boldItalic;
+  if (bold) return fonts.bold;
+  if (italic) return fonts.italic;
+  return fonts.regular;
+}
+
+function measureText(fonts: EmbeddedFonts, run: IRTextRun): number {
+  return pickFont(fonts, run.bold, run.italic).widthOfTextAtSize(run.text, run.fontSize);
+}
+
+function breakIntoLines(
+  runs: IRTextRun[],
+  fonts: EmbeddedFonts,
+  maxLineWidth: number,
+): Array<{ runs: Array<{ run: IRTextRun; font: PDFFont; width: number }>; width: number }> {
+  const lines: Array<{ runs: Array<{ run: IRTextRun; font: PDFFont; width: number }>; width: number }> = [];
+  let currentLine: Array<{ run: IRTextRun; font: PDFFont; width: number }> = [];
+  let currentWidth = 0;
+
+  for (const run of runs) {
+    const words = run.text.split(/(?<=\s)/);
+    for (const word of words) {
+      if (!word) continue;
+      const wordRun: IRTextRun = { ...run, text: word };
+      const w = measureText(fonts, wordRun);
+      if (currentLine.length > 0 && currentWidth + w > maxLineWidth) {
+        lines.push({ runs: currentLine, width: currentWidth });
+        currentLine = [];
+        currentWidth = 0;
+      }
+      currentLine.push({ run: wordRun, font: pickFont(fonts, run.bold, run.italic), width: w });
+      currentWidth += w;
+    }
+  }
+  if (currentLine.length > 0) lines.push({ runs: currentLine, width: currentWidth });
+  return lines;
+}
+
+export async function renderIRToPdf(
+  pages: IRPageIR[],
+  images: Map<string, DocxImage>,
+  loadFontBytes?: (fileName: string) => Promise<Uint8Array>,
+): Promise<Blob> {
+  // Font loading defaults to browser fetch() from public/pdfjs-dist/standard_fonts/.
+  // Callers in Node/test environments may inject their own loader.
+  const load = loadFontBytes ?? (async (name: string) => {
+    const res = await fetch(`/pdfjs-dist/standard_fonts/${name}`);
+    if (!res.ok) throw new Error(`Font fetch failed: ${name} (${res.status})`);
+    return new Uint8Array(await res.arrayBuffer());
+  });
+
+  const fontkit = (await import('@pdf-lib/fontkit')).default;
+  const pdfDoc = await PDFDocument.create();
+  pdfDoc.registerFontkit(fontkit);
+
+  const fonts: EmbeddedFonts = {
+    regular: await pdfDoc.embedFont(await load('LiberationSans-Regular.ttf')),
+    bold: await pdfDoc.embedFont(await load('LiberationSans-Bold.ttf')),
+    italic: await pdfDoc.embedFont(await load('LiberationSans-Italic.ttf')),
+    boldItalic: await pdfDoc.embedFont(await load('LiberationSans-BoldItalic.ttf')),
+  };
+
+  const MARGIN = 50;
+  let currentPage: PDFPage | null = null;
+  let cursorY = 0;
+  let pageW = 595;
+  let pageH = 842;
+
+  function ensurePage(): void {
+    if (!currentPage) {
+      currentPage = pdfDoc.addPage([pageW, pageH]);
+      cursorY = pageH - MARGIN;
+    }
+  }
+
+  function breakPage(): void {
+    currentPage = null;
+  }
+
+  function ensureSpace(needed: number): void {
+    ensurePage();
+    if (cursorY - needed < MARGIN) breakPage();
+    ensurePage();
+  }
+
+  function drawTextBlock(
+    runs: IRTextRun[],
+    fontSize: number,
+    indentPt: number,
+  ): void {
+    if (runs.length === 0) return;
+    const availW = pageW - MARGIN * 2 - indentPt;
+    const lines = breakIntoLines(runs, fonts, availW);
+    const lineH = fontSize * 1.3;
+
+    for (const line of lines) {
+      ensureSpace(lineH);
+      let x = MARGIN + indentPt;
+      for (const seg of line.runs) {
+        currentPage!.drawText(seg.run.text, {
+          x,
+          y: cursorY - seg.run.fontSize,
+          size: seg.run.fontSize,
+          font: seg.font,
+          color: hexToColor(seg.run.color),
+        });
+        x += seg.width;
+      }
+      cursorY -= lineH;
+    }
+  }
+
+  async function renderBlock(block: IRBlock): Promise<void> {
+    if (block.kind === 'heading') {
+      const h = block as IRHeadingBlock;
+      const fs = FONT_SIZES[Math.min(h.level, 6)] || 11;
+      ensureSpace(fs * 1.5);
+      drawTextBlock(h.runs, fs, 0);
+      cursorY -= fs * 0.3;
+    } else if (block.kind === 'list-item') {
+      const li = block as IRListItemBlock;
+      const indent = 20 + li.level * 15;
+      const markerW = fonts.regular.widthOfTextAtSize(li.marker + ' ', li.runs[0]?.fontSize || 11);
+      ensureSpace(li.runs[0]?.fontSize || 11);
+      const fs = li.runs[0]?.fontSize || 11;
+      const font = pickFont(fonts, li.runs[0]?.bold || false, li.runs[0]?.italic || false);
+      currentPage!.drawText(li.marker + ' ', {
+        x: MARGIN + indent - markerW,
+        y: cursorY - fs,
+        size: fs,
+        font,
+        color: hexToColor(li.runs[0]?.color || '000000'),
+      });
+      drawTextBlock(li.runs, fs, indent);
+    } else if (block.kind === 'image') {
+      await renderImage(block as IRImageBlock);
+    } else if (block.kind === 'table') {
+      renderTable(block as IRTableBlock);
+    } else {
+      const p = block as IRParagraphBlock;
+      const fs = p.runs[0]?.fontSize || 11;
+      drawTextBlock(p.runs, fs, 0);
+      cursorY -= fs * 0.3;
+    }
+  }
+
+  async function renderImage(img: IRImageBlock): Promise<void> {
+    const imgData = images.get(img.imageId);
+    if (!imgData) {
+      // Guard: an image block without its bytes would otherwise render blank
+      // silently. docxToIR() returns pages + images together (contract):
+      // pass BOTH from the same result. Missing entries here mean a bug.
+      console.warn(`[renderIRToPdf] image block references unknown imageId: ${img.imageId}`);
+      return;
+    }
+    const availW = pageW - MARGIN * 2;
+    const availH = cursorY - MARGIN;
+    if (availH < 50) breakPage();
+    const scale = Math.min(1, availW / img.naturalWidth, (pageH - MARGIN * 2) / img.naturalHeight);
+    const w = img.naturalWidth * scale;
+    const h = img.naturalHeight * scale;
+    ensureSpace(h);
+    const target = imgData.target.toLowerCase();
+    let embedded: PDFImage | undefined;
+    try {
+      if (target.endsWith('.jpg') || target.endsWith('.jpeg')) {
+        embedded = await pdfDoc.embedJpg(imgData.data);
+      } else {
+        embedded = await pdfDoc.embedPng(imgData.data);
+      }
+    } catch { return; }
+    if (embedded) {
+      currentPage!.drawImage(embedded, {
+        x: MARGIN,
+        y: cursorY - h,
+        width: w,
+        height: h,
+      });
+      cursorY -= h + 5;
+    }
+  }
+
+  function renderTable(table: IRTableBlock): void {
+    const nCols = table.columnWidths.length;
+    if (nCols === 0) return;
+    const totalW = table.columnWidths.reduce((a, b) => a + b, 0);
+    if (totalW === 0) return;
+    const tableW = Math.min(totalW, pageW - MARGIN * 2);
+    const scale = totalW > 0 && tableW < totalW ? tableW / totalW : 1;
+    const colWidths = table.columnWidths.map(w => w * scale);
+
+    const PAD = 4;
+    const LINE_H = 12;
+    const cellTextWidth = (colIdx: number) =>
+      Math.max(0, colWidths[colIdx] - PAD * 2);
+
+    const rowHeights: number[] = [];
+    for (const row of table.cells) {
+      let maxH = LINE_H + PAD * 2;
+      for (let c = 0; c < row.length && c < nCols; c++) {
+        const cell = row[c];
+        const cw = cellTextWidth(c);
+        let textH = LINE_H;
+        if (cw > 0 && cell.runs.length > 0) {
+          const lines = breakIntoLines(cell.runs, fonts, cw);
+          textH = lines.length * LINE_H;
+        }
+        maxH = Math.max(maxH, textH + PAD * 2);
+      }
+      rowHeights.push(maxH);
+    }
+
+    const totalH = rowHeights.reduce((a, b) => a + b, 0);
+    ensurePage();
+
+    let tableY = cursorY;
+    for (let r = 0; r < table.cells.length; r++) {
+      const rh = rowHeights[r];
+      const row = table.cells[r];
+
+      // Force a page break before this row when it does not fit below the
+      // table cursor — but not on an already-empty page (that would risk an
+      // infinite break loop for a row taller than the whole page).
+      if (tableY - rh < MARGIN && tableY !== pageH - MARGIN) {
+        breakPage();
+        ensurePage();
+        tableY = cursorY;
+      }
+
+      let cellX = MARGIN;
+
+      for (let c = 0; c < row.length && c < nCols; c++) {
+        const cw = colWidths[c];
+
+        currentPage!.drawRectangle({
+          x: cellX, y: tableY - rh, width: cw, height: rh,
+          borderColor: rgb(0.6, 0.6, 0.6), borderWidth: 0.5,
+        });
+
+        const cell = row[c];
+        if (cell.runs.length > 0) {
+          const cwInner = cellTextWidth(c);
+          let textY = tableY - PAD - LINE_H;
+          if (cwInner > 0) {
+            const lines = breakIntoLines(cell.runs, fonts, cwInner);
+            for (const line of lines) {
+              let textX = cellX + PAD;
+              for (const seg of line.runs) {
+                currentPage!.drawText(seg.run.text, {
+                  x: textX, y: textY, size: seg.run.fontSize,
+                  font: seg.font,
+                  color: hexToColor(seg.run.color),
+                });
+                textX += seg.width;
+              }
+              textY -= LINE_H;
+            }
+          }
+        }
+
+        cellX += cw;
+      }
+      tableY -= rh;
+    }
+    cursorY = tableY - 5;
+  }
+
+  // ── MAIN RENDER LOOP ──
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i];
+    pageW = page.width;
+    pageH = page.height;
+
+    if (i > 0) breakPage();
+    ensurePage();
+
+    for (const block of page.blocks) {
+      await renderBlock(block);
+    }
+  }
+
+  const pdfBytes = await pdfDoc.save();
+  return new Blob([pdfBytes as BlobPart], { type: 'application/pdf' });
 }
