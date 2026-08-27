@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { officeToPdf } from '@/lib/client-pdf';
+import { docxToIR, renderIRToPdf, hasUnsupportedScriptInPages } from '@/lib/client-pdf-docx';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -21,6 +22,7 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [fallbackUsed, setFallbackUsed] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
 
@@ -37,6 +39,7 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
     setFile(f);
     setError('');
     setSuccess(false);
+    setFallbackUsed(false);
   };
 
   const getFileIcon = (fileName: string) => {
@@ -52,9 +55,30 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
     setLoading(true);
     setError('');
     setSuccess(false);
+    setFallbackUsed(false);
 
     try {
-      const blob = await officeToPdf(file);
+      const ext = file.name.toLowerCase().split('.').pop() || '';
+      let blob: Blob;
+      let fallbackUsed = false;
+      if (ext === 'docx') {
+        try {
+          const { pages, images } = await docxToIR(file);
+          if (hasUnsupportedScriptInPages(pages)) {
+            console.warn('Unsupported script detected, falling back to legacy officeToPdf');
+            blob = await officeToPdf(file);
+            fallbackUsed = true;
+          } else {
+            blob = await renderIRToPdf(pages, images);
+          }
+        } catch (irErr) {
+          console.error('docxToIR/renderIRToPdf failed, falling back:', irErr);
+          blob = await officeToPdf(file);
+          fallbackUsed = true;
+        }
+      } else {
+        blob = await officeToPdf(file);
+      }
       processedBlobRef.current = blob;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -62,6 +86,7 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
       a.download = file.name.replace(/\.\w+$/, '') + '.pdf';
       a.click();
       URL.revokeObjectURL(url);
+      setFallbackUsed(fallbackUsed);
       setSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('error.generic', locale));
@@ -80,7 +105,7 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
 
       <div className="grid grid-cols-4 gap-3 mb-6">
         {FORMATS.map((item) => (
-          <button key={item.id} onClick={() => { setFormat(item.id); setFile(null); setError(''); setSuccess(false); }}
+          <button key={item.id} onClick={() => { setFormat(item.id); setFile(null); setError(''); setSuccess(false); setFallbackUsed(false); }}
             className={`rounded-xl p-4 border-2 text-center transition cursor-pointer
               ${format === item.id ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-600'}`}>
             <div className="text-3xl mb-2">{item.icon}</div>
@@ -121,6 +146,11 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
       </div>
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {fallbackUsed && !error && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 rounded-xl p-4 mb-6">
+          ⚠️ {t('page.word.fallback', locale)}
+        </div>
+      )}
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
           ✅ {t('result.success', locale)}
