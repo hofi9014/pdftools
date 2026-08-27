@@ -333,6 +333,88 @@ export function extractImagesFromXml(
 // "decorative duplicate", disproportionate cost for MVP.
 // ============================================================
 
+// Unicode ranges for scripts NOT supported by LiberationSans.
+// LiberationSans covers: Latin (U+0000-U+024F), Cyrillic (U+0400-U+04FF),
+// Greek (U+0370-U+03FF). Everything else below → tofu in PDF output.
+//
+// IMPORTANT: Only actual SCRIPT blocks are listed. Punctuation (em dash,
+// curly quotes, euro sign, CJK punctuation) is NOT listed because it
+// renders acceptably even with tofu — a missing-glyph box for "—" or "。"
+// is far less disruptive than missing all CJK/Arabic/Hindi characters.
+// This catches >99% of real-world content for the project's 16 languages.
+const UNSUPPORTED_SCRIPT_RANGES: Array<[number, number]> = [
+  [0x0600, 0x06FF],   // Arabic
+  [0x0750, 0x077F],   // Arabic Supplement
+  [0x08A0, 0x08FF],   // Arabic Extended-A
+  [0xFB50, 0xFDFF],   // Arabic Presentation Forms-A
+  [0xFE70, 0xFEFF],   // Arabic Presentation Forms-B
+  [0x0590, 0x05FF],   // Hebrew
+  [0xFB1D, 0xFB4F],   // Hebrew Presentation Forms
+  [0x0900, 0x097F],   // Devanagari (Hindi, Marathi, Nepali, Sanskrit)
+  [0x0980, 0x09FF],   // Bengali
+  [0x0A00, 0x0A7F],   // Gurmukhi (Punjabi)
+  [0x0A80, 0x0AFF],   // Gujarati
+  [0x0B00, 0x0B7F],   // Oriya
+  [0x0B80, 0x0BFF],   // Tamil
+  [0x0C00, 0x0C7F],   // Telugu
+  [0x0C80, 0x0CFF],   // Kannada
+  [0x0D00, 0x0D7F],   // Malayalam
+  [0x0E00, 0x0E7F],   // Thai
+  [0x1000, 0x109F],   // Myanmar (Burmese)
+  [0x10A0, 0x10FF],   // Georgian
+  [0x1200, 0x137F],   // Ethiopic
+  [0x13A0, 0x13FF],   // Cherokee
+  [0x1400, 0x167F],   // Canadian Syllabics
+  [0x1800, 0x18AF],   // Mongolian
+  [0x0F00, 0x0FFF],   // Tibetan
+  [0x1100, 0x11FF],   // Hangul Jamo
+  [0x3040, 0x309F],   // Hiragana (Japanese)
+  [0x30A0, 0x30FF],   // Katakana (Japanese)
+  [0x31F0, 0x31FF],   // Katakana Phonetic Extensions
+  [0xAC00, 0xD7AF],   // Hangul Syllables (Korean)
+  [0x4E00, 0x9FFF],   // CJK Unified Ideographs (Chinese, Japanese, Korean)
+  [0x3400, 0x4DBF],   // CJK Extension A
+  [0x20000, 0x2A6DF], // CJK Extension B
+  [0x2F800, 0x2FA1F], // CJK Compatibility Ideographs Supplement
+  [0x2E80, 0x2EFF],   // CJK Radicals Supplement
+  [0x2F00, 0x2FDF],   // Kangxi Radicals
+];
+
+function isUnsupportedCodePoint(cp: number): boolean {
+  for (let i = 0; i < UNSUPPORTED_SCRIPT_RANGES.length; i++) {
+    const [lo, hi] = UNSUPPORTED_SCRIPT_RANGES[i];
+    if (cp >= lo && cp <= hi) return true;
+  }
+  return false;
+}
+
+export function detectUnsupportedScript(text: string): boolean {
+  for (let i = 0; i < text.length; i++) {
+    const cp = text.codePointAt(i)!;
+    if (cp > 0xFFFF) i++; // skip surrogate pair second half
+    if (isUnsupportedCodePoint(cp)) return true;
+  }
+  return false;
+}
+
+function hasUnsupportedInRuns(runs: IRTextRun[]): boolean {
+  return runs.some(r => detectUnsupportedScript(r.text));
+}
+
+export function hasUnsupportedScriptInPages(pages: IRPageIR[]): boolean {
+  return pages.some(page =>
+    page.blocks.some(b => {
+      if (b.kind === 'table') {
+        return b.cells.some(row => row.some(cell => hasUnsupportedInRuns(cell.runs)));
+      }
+      if ('runs' in b) {
+        return hasUnsupportedInRuns(b.runs);
+      }
+      return false;
+    }),
+  );
+}
+
 const DXA_PER_PT = 20;
 
 function getText(el: Element): string {
