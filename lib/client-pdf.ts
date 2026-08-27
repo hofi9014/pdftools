@@ -2156,7 +2156,16 @@ export async function officeToPdf(file: File): Promise<Blob> {
   }
 
   const pdf = await PDFDocument.create();
-  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  // StandardFonts (WinAnsi) cannot encode Polish/Latin-Extended glyphs (e.g.
+  // "ś") and widthOfTextAtSize() THROWS on them — crashing this fallback (and,
+  // previously, the whole word-to-pdf tool) for Polish content. Use LiberationSans
+  // instead: full Latin/Cyrillic/Greek coverage; truly unsupported code points
+  // (e.g. Hangul) embed as .notdef glyphs instead of throwing.
+  const fontkit = (await import('@pdf-lib/fontkit')).default;
+  pdf.registerFontkit(fontkit);
+  const fontRes = await fetch('/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf');
+  if (!fontRes.ok) throw new Error('Font fetch failed: LiberationSans-Regular.ttf');
+  const font = await pdf.embedFont(new Uint8Array(await fontRes.arrayBuffer()));
   const fontSize = 12;
   const margin = 50;
   const lineHeight = fontSize * 1.5;
