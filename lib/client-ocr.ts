@@ -1,5 +1,5 @@
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import { initPdfjs } from '@/lib/client-pdf';
+import { PDFDocument, rgb, type PDFFont } from 'pdf-lib';
+import { initPdfjs, embedLiberationSans } from '@/lib/client-pdf';
 
 interface Word {
   text: string;
@@ -45,22 +45,37 @@ function preprocessCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {
   return canvas;
 }
 
-async function createOcrPage(
+// Returns how many OCR words could not be placed in the invisible text layer
+// (unsupported scripts — with StandardFonts.WinAnsi even Polish/Latin-Extended
+// words were silently dropped; LiberationSans covers Latin/Cyrillic/Greek, so
+// only truly unsupported scripts like Arabic/CJK/Hangul remain). Unsupported
+// words are detected via glyph coverage (not the old throw), then still counted
+// and sampled so the loss is never fully silent.
+export async function createOcrPage(
   newPdf: PDFDocument,
   origPdf: PDFDocument,
   pageIndex: number,
-  words: Word[]
-) {
+  words: Word[],
+  font: PDFFont
+): Promise<{ dropped: number; samples: string[] }> {
   const [copiedPage] = await newPdf.copyPages(origPdf, [pageIndex]);
   newPdf.addPage(copiedPage);
   const page = newPdf.getPage(newPdf.getPageCount() - 1);
-  const font = await newPdf.embedFont(StandardFonts.Helvetica);
+  const charSet = new Set(font.getCharacterSet());
   const { width, height } = page.getSize();
 
   const scaleX = width / 2000;
   const scaleY = height / 2800;
 
+  let dropped = 0;
+  const samples: string[] = [];
+  const markDropped = (text: string) => { dropped++; if (samples.length < 10) samples.push(text); };
+
   for (const word of words) {
+    if ([...word.text].some(ch => !charSet.has(ch.codePointAt(0)!))) {
+      markDropped(word.text);
+      continue;
+    }
     try {
       page.drawText(word.text, {
         x: word.bbox.x0 * scaleX,
@@ -71,15 +86,17 @@ async function createOcrPage(
         opacity: 0,
       });
     } catch {
+      markDropped(word.text);
     }
   }
+  return { dropped, samples };
 }
 
 export async function ocrPdfClient(
   file: File,
   language = 'pol',
   onProgress?: (page: number, total: number) => void
-): Promise<{ pdfData: Uint8Array; text: string }> {
+): Promise<{ pdfData: Uint8Array; text: string; droppedWordCount: number; droppedWordSamples: string[] }> {
   const buf = await file.arrayBuffer().catch((e) => {
     console.error('[OCR] Error reading file:', e);
     throw new Error('Nie można odczytać pliku');
@@ -104,6 +121,8 @@ export async function ocrPdfClient(
 
   let fullText = '';
   const totalPages = origPdf.getPageCount();
+  const font = await embedLiberationSans(newPdf);
+  const dropStats = { count: 0, samples: new Set<string>() };
 
   for (let i = 0; i < totalPages; i++) {
     onProgress?.(i + 1, totalPages);
@@ -120,7 +139,12 @@ export async function ocrPdfClient(
 
       const { data } = await tessWorker.recognize(canvas.toDataURL('image/png'));
       const words = extractWords(data);
-      await createOcrPage(newPdf, origPdf, i, words);
+      const { dropped, samples } = await createOcrPage(newPdf, origPdf, i, words, font);
+      if (dropped > 0) {
+        dropStats.count += dropped;
+        samples.forEach(s => dropStats.samples.add(s));
+        console.warn(`[OCR] Page ${i + 1}/${totalPages} — skipped ${dropped} words from unsupported scripts (e.g. ${samples.slice(0, 3).join(', ')}...)`);
+      }
 
       const pageText = extractFullText(data);
       if (pageText) {
@@ -143,6 +167,10 @@ export async function ocrPdfClient(
   await doc.cleanup();
   await tessWorker.terminate();
 
+  if (dropStats.count > 0) {
+    console.warn(`[OCR] Total: ${dropStats.count} words from unsupported scripts could not be added to the searchable text layer: ${[...dropStats.samples].slice(0, 5).join(', ')}...`);
+  }
+
   const pdfData = await newPdf.save() as unknown as Uint8Array;
-  return { pdfData, text: fullText };
+  return { pdfData, text: fullText, droppedWordCount: dropStats.count, droppedWordSamples: [...dropStats.samples] };
 }
