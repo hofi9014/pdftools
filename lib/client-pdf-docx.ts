@@ -2,6 +2,7 @@
 // Dependencies: docx, pdf-lib, @pdf-lib/fontkit
 
 import { PDFDocument, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
+import type JSZip from 'jszip';
 
 // ============================================================
 // IR TYPES (Phase 1a — without TableBlock)
@@ -221,7 +222,7 @@ export interface DocxImage {
   /** width in EMU from <wp:extent> or CSS pt from VML style */
   widthEMU: number;
   heightEMU: number;
-  source: 'drawingml' | 'vml';
+  source: 'drawingml' | 'vml' | 'odf';
 }
 
 const EMU_PER_PT = 12700;
@@ -1181,4 +1182,629 @@ export async function renderIRToPdf(
 
   const pdfBytes = await pdfDoc.save();
   return new Blob([pdfBytes as BlobPart], { type: 'application/pdf' });
+}
+
+// ============================================================
+// ODF → IR (Components 1-3) — OpenDocument (.odt) extraction
+// Mirrors the OOXML docxToIR pipeline above, for ODF documents.
+// Uses the NATIVE browser global DOMParser (same as parseRels/
+// parseStylesXml above) — no @xmldom in production.
+// ============================================================
+
+const ODF_OFFICE = 'urn:oasis:names:tc:opendocument:xmlns:office:1.0';
+const ODF_STYLE = 'urn:oasis:names:tc:opendocument:xmlns:style:1.0';
+const ODF_TEXT = 'urn:oasis:names:tc:opendocument:xmlns:text:1.0';
+const ODF_DRAW = 'urn:oasis:names:tc:opendocument:xmlns:drawing:1.0';
+const ODF_SVG = 'urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0';
+const ODF_TABLE = 'urn:oasis:names:tc:opendocument:xmlns:table:1.0';
+const ODF_FO = 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0';
+const ODF_MANIFEST = 'urn:oasis:names:tc:opendocument:xmlns:manifest:1.0';
+const XLINK = 'http://www.w3.org/1999/xlink';
+
+const ODF_A4_W = 595;
+const ODF_A4_H = 842;
+const ODF_DEFAULT_FONT = 'Arial';
+const ODF_DEFAULT_SIZE = 11;
+
+// ============================================================
+// ODF Component 1 — STYLE RESOLUTION
+// ============================================================
+
+export interface OdfRunProps {
+  font?: string;       // style:font-name
+  size?: number;       // fo:font-size (pt, decimal)
+  bold?: boolean;      // fo:font-weight
+  italic?: boolean;    // fo:font-style
+  color?: string;      // fo:color (hex, e.g. #E94F1E)
+  underline?: string;  // style:text-underline-style
+}
+
+export interface OdfStyleDef {
+  family: string;                // paragraph | text
+  parent?: string;               // style:parent-style-name
+  displayName?: string;          // style:display-name
+  defaultOutlineLevel?: number;  // style:default-outline-level (headings)
+  rPr?: OdfRunProps;
+  pPr?: Record<string, string>;  // paragraph props (captured, not mapped to IR run)
+}
+
+export interface OdfStyleIndex {
+  styles: Map<string, OdfStyleDef>;       // key `${family}\u0000${name}`
+  defaults: Map<string, OdfRunProps>;     // family -> default-style text props
+  defaultParas: Map<string, Record<string, string>>;
+}
+
+// Namespace-aware attribute getter (style:name, text:outline-level, fo:color, ...)
+function odfAttr(el: Element | null, local: string): string | null {
+  if (!el) return null;
+  const nsCandidates = [ODF_STYLE, ODF_TEXT, ODF_FO, ODF_OFFICE];
+  for (const ns of nsCandidates) {
+    const v = el.getAttributeNS(ns, local);
+    if (v !== null) return v;
+  }
+  for (let i = 0; i < el.attributes.length; i++) {
+    const a = el.attributes.item(i);
+    if (a && a.localName === local) return a.value;
+  }
+  return null;
+}
+
+function odfChildNS(el: Element, ns: string, local: string): Element | undefined {
+  const list = el.getElementsByTagNameNS(ns, local);
+  return list.length ? (list.item(0) as unknown as Element) : undefined;
+}
+
+function odfParseLenPt(v: string | null): number | undefined {
+  if (!v) return undefined;
+  const m = v.match(/^([-+]?[0-9]*\.?[0-9]+)\s*(pt|mm|cm|in|px)?$/i);
+  if (!m) return undefined;
+  const n = parseFloat(m[1]);
+  const unit = (m[2] || 'pt').toLowerCase();
+  switch (unit) {
+    case 'pt': return n;
+    case 'mm': return n * 2.83464567;
+    case 'cm': return n * 28.3464567;
+    case 'in': return n * 72;
+    case 'px': return n;
+    default: return n;
+  }
+}
+
+function odfParseTextProps(te: Element | null): OdfRunProps | undefined {
+  if (!te) return undefined;
+  const p: OdfRunProps = {};
+  const font = odfAttr(te, 'font-name');
+  if (font) p.font = font;
+  const size = odfParseLenPt(odfAttr(te, 'font-size'));
+  if (size !== undefined) p.size = size;
+  const w = odfAttr(te, 'font-weight');
+  if (w !== null && /bold/i.test(w)) p.bold = true;
+  else if (w !== null && /normal/i.test(w)) p.bold = false;
+  const st = odfAttr(te, 'font-style');
+  if (st !== null && /italic|oblique/i.test(st)) p.italic = true;
+  else if (st !== null && /normal/i.test(st)) p.italic = false;
+  const c = odfAttr(te, 'color');
+  if (c && /^#[0-9a-fA-F]{6}$/.test(c)) p.color = c.toUpperCase();
+  const ul = odfAttr(te, 'text-underline-style');
+  if (ul && ul !== 'none') p.underline = ul;
+  return Object.keys(p).length ? p : undefined;
+}
+
+/** Resolve run props for a named style (paragraph or text family) up its parent chain. */
+export function resolveOdfRunProps(
+  index: OdfStyleIndex,
+  styleName: string,
+  family: 'paragraph' | 'text',
+): OdfRunProps {
+  const keyOf = (f: string, n: string) => `${f}\u0000${n}`;
+  let resolved: OdfRunProps = { ...(index.defaults.get(family) || {}) };
+  const order: string[] = [];
+  const seen = new Set<string>();
+  let cur: string | undefined = styleName;
+  while (cur) {
+    if (seen.has(cur)) break;
+    seen.add(cur);
+    order.unshift(cur);
+    const def = index.styles.get(keyOf(family, cur));
+    if (!def) break;
+    cur = def.parent;
+  }
+  for (const nm of order) {
+    const def = index.styles.get(keyOf(family, nm));
+    if (def?.rPr) resolved = { ...resolved, ...def.rPr };
+  }
+  return resolved;
+}
+
+/** Resolve props for a run in a paragraph context: paragraph chain, then run/span chain. */
+export function resolveOdfRunContext(
+  index: OdfStyleIndex,
+  pStyleName: string | undefined,
+  runStyleNames: string[],
+): { rPr: OdfRunProps; fontFamily: 'text'; chain: string[] } {
+  let resolved: OdfRunProps = { ...(index.defaults.get('paragraph') || {}) };
+  const seen = new Set<string>();
+  const keyOf = (f: string, n: string) => `${f}\u0000${n}`;
+  const chain: string[] = [];
+  const merged = new Set<string>();
+
+  const collect = (family: 'paragraph' | 'text', name: string): string[] => {
+    const order: string[] = [];
+    let cur: string | undefined = name;
+    while (cur) {
+      if (seen.has(cur)) break;
+      seen.add(cur);
+      order.unshift(cur);
+      const def = index.styles.get(keyOf(family, cur));
+      if (!def) break;
+      cur = def.parent;
+    }
+    return order;
+  };
+
+  const paraOrder = pStyleName ? collect('paragraph', pStyleName) : [];
+  for (const nm of paraOrder) {
+    if (merged.has(nm)) continue;
+    merged.add(nm); chain.push(`p:${nm}`);
+    const def = index.styles.get(keyOf('paragraph', nm));
+    if (def?.rPr) resolved = { ...resolved, ...def.rPr };
+  }
+
+  for (const runStyle of runStyleNames) {
+    const textOrder = collect('text', runStyle);
+    for (const nm of textOrder) {
+      if (merged.has(nm)) continue;
+      merged.add(nm); chain.push(`t:${nm}`);
+      const def = index.styles.get(keyOf('text', nm));
+      if (def?.rPr) resolved = { ...resolved, ...def.rPr };
+    }
+  }
+  return { rPr: resolved, fontFamily: 'text', chain };
+}
+
+function odfParseParagraphProps(pe: Element | null): Record<string, string> | undefined {
+  if (!pe) return undefined;
+  const out: Record<string, string> = {};
+  for (let i = 0; i < pe.attributes.length; i++) {
+    const a = pe.attributes.item(i);
+    if (a) out[a.name] = a.value;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
+function odfParseStyleBlock(styleEl: Element): OdfStyleDef {
+  const def: OdfStyleDef = { family: odfAttr(styleEl, 'family') || 'paragraph' };
+  const name = odfAttr(styleEl, 'name');
+  const parent = odfAttr(styleEl, 'parent-style-name');
+  const display = odfAttr(styleEl, 'display-name');
+  const olevel = odfAttr(styleEl, 'default-outline-level');
+  (def as unknown as { name?: string }).name = name || '';
+  if (parent) def.parent = parent;
+  if (display) def.displayName = display;
+  if (olevel) def.defaultOutlineLevel = parseInt(olevel, 10);
+  const te = odfChildNS(styleEl, ODF_STYLE, 'text-properties');
+  const pe = odfChildNS(styleEl, ODF_STYLE, 'paragraph-properties');
+  def.rPr = odfParseTextProps(te || null);
+  def.pPr = odfParseParagraphProps(pe || null);
+  return def;
+}
+
+/** Parse document-styles / document-content roots into a style registry. */
+export function parseOdfStyles(xmls: string[]): OdfStyleIndex {
+  const index: OdfStyleIndex = { styles: new Map(), defaults: new Map(), defaultParas: new Map() };
+  const keyOf = (f: string, n: string) => `${f}\u0000${n}`;
+  for (const xml of xmls) {
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    const styleEls = doc.getElementsByTagNameNS(ODF_STYLE, 'style');
+    for (let i = 0; i < styleEls.length; i++) {
+      const el = styleEls.item(i) as unknown as Element;
+      const name = odfAttr(el, 'name');
+      if (name) {
+        const def = odfParseStyleBlock(el);
+        index.styles.set(keyOf(def.family, name), def);
+      }
+    }
+    const defEls = doc.getElementsByTagNameNS(ODF_STYLE, 'default-style');
+    for (let i = 0; i < defEls.length; i++) {
+      const el = defEls.item(i) as unknown as Element;
+      const fam = odfAttr(el, 'family') || 'paragraph';
+      const te = odfChildNS(el, ODF_STYLE, 'text-properties');
+      const pe = odfChildNS(el, ODF_STYLE, 'paragraph-properties');
+      const rp = odfParseTextProps(te || null);
+      if (rp) index.defaults.set(fam, rp);
+      const pp = odfParseParagraphProps(pe || null);
+      if (pp) index.defaultParas.set(fam, pp);
+    }
+  }
+  return index;
+}
+
+// ============================================================
+// ODF Component 2 — IMAGE EXTRACTION
+// ============================================================
+
+/** ODF manifest parser — maps every Pictures/ file entry by full-path. */
+export function parseOdfManifest(
+  manifestXml: string,
+): Map<string, { mediaType: string; fullPath: string }> {
+  const doc = new DOMParser().parseFromString(manifestXml, 'application/xml');
+  const map = new Map<string, { mediaType: string; fullPath: string }>();
+  const entries = doc.getElementsByTagNameNS(ODF_MANIFEST, 'file-entry');
+  for (let i = 0; i < entries.length; i++) {
+    const el = entries.item(i) as unknown as Element;
+    const fullPath = el.getAttributeNS(ODF_MANIFEST, 'full-path');
+    const mediaType = el.getAttributeNS(ODF_MANIFEST, 'media-type');
+    if (fullPath && fullPath.startsWith('Pictures/')) {
+      map.set(fullPath, { mediaType: mediaType || '', fullPath });
+    }
+  }
+  return map;
+}
+
+export interface OdfImageRef {
+  href: string;
+  widthPt: number;
+  heightPt: number;
+  isBackground: boolean;
+}
+
+/**
+ * Scan content.xml for <draw:frame> objects embedding a <draw:image>.
+ * One entry per image-bearing frame, keyed by xlink:href.
+ *  - svg:width/height (frame) converted to pt.
+ *  - text:anchor-type="page" => isBackground:true (decorative wallpaper, dropped).
+ */
+export function extractImagesFromOdtXml(contentXml: string): OdfImageRef[] {
+  const doc = new DOMParser().parseFromString(contentXml, 'application/xml');
+  const results: OdfImageRef[] = [];
+  const seen = new Set<string>();
+  const frames = doc.getElementsByTagNameNS(ODF_DRAW, 'frame');
+  for (let i = 0; i < frames.length; i++) {
+    const frame = frames.item(i) as unknown as Element;
+    const imgs = frame.getElementsByTagNameNS(ODF_DRAW, 'image');
+    if (imgs.length === 0) continue;
+    const img = imgs.item(0) as unknown as Element;
+    const href = img.getAttributeNS(XLINK, 'href');
+    if (!href) continue;
+    if (seen.has(href)) continue;
+    seen.add(href);
+    const w = odfParseLenPt(frame.getAttributeNS(ODF_SVG, 'width'));
+    const h = odfParseLenPt(frame.getAttributeNS(ODF_SVG, 'height'));
+    const anchor = frame.getAttributeNS(ODF_TEXT, 'anchor-type');
+    results.push({ href, widthPt: w ?? 0, heightPt: h ?? 0, isBackground: anchor === 'page' });
+  }
+  return results;
+}
+
+/**
+ * Build the ODF image map (analog of the docxToIR image-map build): read
+ * manifest.xml + content.xml, then pull raw bytes for every image-bearing,
+ * NON-background frame from Pictures/.
+ *  - rId   := xlink:href (Pictures/...) — ODF analogue of rel rId
+ *  - source:= 'odf'
+ */
+export async function extractOdtImages(zip: JSZip): Promise<Map<string, DocxImage>> {
+  const manifestXml = await zip.file('META-INF/manifest.xml')!.async('string');
+  const contentXml = await zip.file('content.xml')!.async('string');
+
+  parseOdfManifest(manifestXml);
+  const refs = extractImagesFromOdtXml(contentXml);
+
+  const imageMap = new Map<string, DocxImage>();
+  for (const ref of refs) {
+    if (ref.isBackground) continue;
+    const entry = zip.file(ref.href);
+    if (!entry) continue;
+    const data = await entry.async('uint8array');
+    imageMap.set(ref.href, {
+      rId: ref.href,
+      target: ref.href,
+      data,
+      widthEMU: Math.round(ref.widthPt * EMU_PER_PT),
+      heightEMU: Math.round(ref.heightPt * EMU_PER_PT),
+      source: 'odf',
+    });
+  }
+  return imageMap;
+}
+
+// ============================================================
+// ODF Component 3 — MAIN TRAVERSAL
+// ============================================================
+
+function odfAttrNS(el: Element | null, ns: string, local: string): string | null {
+  return el ? el.getAttributeNS(ns, local) : null;
+}
+
+function odfMakeSpaceRun(style: { fontName: string; fontSize: number; color: string }): IRTextRun {
+  return {
+    text: ' ',
+    fontName: style.fontName,
+    fontSize: style.fontSize,
+    width: 0, height: 0, position: { x: 0, y: 0 },
+    color: style.color, bold: false, italic: false, rotation: 0,
+  };
+}
+
+function odfStylingOf(last: IRTextRun | undefined): { fontName: string; fontSize: number; color: string } {
+  return {
+    fontName: last?.fontName || ODF_DEFAULT_FONT,
+    fontSize: last?.fontSize || ODF_DEFAULT_SIZE,
+    color: last?.color || '000000',
+  };
+}
+
+function odfToIRTextRun(text: string, rPr: OdfRunProps): IRTextRun {
+  return {
+    text,
+    fontName: rPr.font || ODF_DEFAULT_FONT,
+    fontSize: rPr.size || ODF_DEFAULT_SIZE,
+    width: 0, height: 0, position: { x: 0, y: 0 },
+    color: rPr.color ? rPr.color.replace(/^#/, '') : '000000',
+    bold: rPr.bold ?? false,
+    italic: rPr.italic ?? false,
+    rotation: 0,
+  };
+}
+
+/**
+ * Thread the span-style chain so nested <text:span> formatting (e.g. red bold
+ * T18_1 in the level-7 heading) applies to inner text nodes. Mirrors OOXML
+ * resolveRunProps — paragraph style at base, span styles innermost-last.
+ */
+function odfCollectRuns(
+  containerEl: Element,
+  index: OdfStyleIndex,
+  pStyleName: string | undefined,
+  spanStyles: string[],
+  outRuns: IRTextRun[],
+  outImages: IRImageBlock[],
+  imageMap: Map<string, DocxImage>,
+): void {
+  const children = containerEl.childNodes;
+  for (let i = 0; i < children.length; i++) {
+    const node = children[i];
+    if (node.nodeType === 3) {
+      const txt = (node as unknown as { data: string }).data || '';
+      if (txt.trim()) {
+        const resolved = resolveOdfRunContext(index, pStyleName, spanStyles);
+        outRuns.push(odfToIRTextRun(txt, resolved.rPr));
+      } else if (txt) {
+        outRuns.push(odfMakeSpaceRun(odfStylingOf(outRuns[outRuns.length - 1])));
+      }
+      continue;
+    }
+    if (node.nodeType !== 1) continue;
+    const el = node as Element;
+    const local = el.localName;
+    if (local === 'span') {
+      const spanStyle = el.getAttributeNS(ODF_TEXT, 'style-name') || undefined;
+      odfCollectRuns(el, index, pStyleName, spanStyle ? [...spanStyles, spanStyle] : spanStyles, outRuns, outImages, imageMap);
+    } else if (local === 's' || local === 'tab' || local === 'line-break') {
+      outRuns.push(odfMakeSpaceRun(odfStylingOf(outRuns[outRuns.length - 1])));
+    } else if (local === 'a') {
+      odfCollectRuns(el, index, pStyleName, spanStyles, outRuns, outImages, imageMap);
+    } else if (local === 'frame') {
+      // caption <text:p> inside a frame is DROPPED — only <draw:image> is read
+      const img = odfFrameToIRImage(el, imageMap);
+      if (img) outImages.push(img);
+    } else if (local === 'g' && el.namespaceURI === ODF_DRAW) {
+      odfCollectRuns(el, index, pStyleName, spanStyles, outRuns, outImages, imageMap);
+    }
+  }
+}
+
+function odfFrameToIRImage(frameEl: Element, imageMap: Map<string, DocxImage>): IRImageBlock | null {
+  const imgs = frameEl.getElementsByTagNameNS(ODF_DRAW, 'image');
+  if (imgs.length === 0) return null;
+  const href = odfAttrNS(imgs[0], XLINK, 'href');
+  if (!href) return null;
+  if (odfAttrNS(frameEl, ODF_TEXT, 'anchor-type') === 'page') return null; // skip decorative bg
+  // imageMap is the single source of truth for dimensions. Fallback to the frame's raw
+  // svg:width/height ONLY when the image is not in the map — effectively unreachable
+  // (page-anchored backgrounds are already skipped above).
+  const img = imageMap.get(href);
+  return {
+    kind: 'image',
+    imageId: href,
+    naturalWidth: img ? Math.round(img.widthEMU / EMU_PER_PT) : Math.round(odfParseLenPt(odfAttrNS(frameEl, ODF_SVG, 'width')) ?? 0),
+    naturalHeight: img ? Math.round(img.heightEMU / EMU_PER_PT) : Math.round(odfParseLenPt(odfAttrNS(frameEl, ODF_SVG, 'height')) ?? 0),
+    bounds: {
+      x: 0, y: 0,
+      width: img ? Math.round(img.widthEMU / EMU_PER_PT) : 0,
+      height: img ? Math.round(img.heightEMU / EMU_PER_PT) : 0,
+    },
+  };
+}
+
+function odfMakeBlockRuns(
+  containerEl: Element,
+  index: OdfStyleIndex,
+  pStyleName: string | undefined,
+  imageMap: Map<string, DocxImage>,
+): { runs: IRTextRun[]; images: IRImageBlock[] } {
+  const runs: IRTextRun[] = [];
+  const images: IRImageBlock[] = [];
+  odfCollectRuns(containerEl, index, pStyleName, [], runs, images, imageMap);
+  return { runs, images };
+}
+
+/** Heading level: text:outline-level (element) first, else style's default-outline-level. */
+function odfResolveHeadingLevel(hEl: Element, index: OdfStyleIndex): number {
+  const direct = odfAttrNS(hEl, ODF_TEXT, 'outline-level');
+  if (direct !== null && direct !== '') return parseInt(direct, 10);
+  const styleName = odfAttrNS(hEl, ODF_TEXT, 'style-name');
+  if (styleName) {
+    const seen = new Set();
+    let cur = index.styles.get(`paragraph\u0000${styleName}`);
+    while (cur) {
+      if (cur.defaultOutlineLevel != null) return cur.defaultOutlineLevel;
+      if (cur.parent == null || seen.has(cur.parent)) break;
+      seen.add(cur.parent);
+      cur = index.styles.get(`paragraph\u0000${cur.parent}`);
+    }
+  }
+  return 1;
+}
+
+function odfProcessParagraph(
+  pEl: Element,
+  index: OdfStyleIndex,
+  imageMap: Map<string, DocxImage>,
+  kind: 'paragraph' | 'heading',
+  forcedLevel?: number,
+): { block?: IRParagraphBlock | IRHeadingBlock; images: IRImageBlock[] } {
+  const pStyleName = odfAttrNS(pEl, ODF_TEXT, 'style-name') || undefined;
+  const { runs, images } = odfMakeBlockRuns(pEl, index, pStyleName, imageMap);
+  const bounds = { x: 0, y: 0, width: 0, height: 0 };
+  let block: IRParagraphBlock | IRHeadingBlock | undefined;
+  if (kind === 'heading') {
+    block = { kind: 'heading', level: forcedLevel ?? odfResolveHeadingLevel(pEl, index), runs, bounds };
+  } else {
+    block = { kind: 'paragraph', runs, bounds };
+  }
+  return { block, images };
+}
+
+/** Recursively process a <text:list> at structural depth. */
+function odfProcessList(
+  listEl: Element,
+  index: OdfStyleIndex,
+  imageMap: Map<string, DocxImage>,
+  depth: number,
+  out: IRBlock[],
+): void {
+  const items = listEl.getElementsByTagNameNS(ODF_TEXT, 'list-item');
+  for (let i = 0; i < items.length; i++) {
+    const li = items[i] as unknown as Element;
+    if (li.parentNode !== listEl) continue; // direct children only
+    const liChildren = li.childNodes;
+    for (let c = 0; c < liChildren.length; c++) {
+      const nc = liChildren[c];
+      if (nc.nodeType !== 1) continue;
+      const el = nc as Element;
+      if (el.localName === 'p' || el.localName === 'h') {
+        const kind = el.localName === 'h' ? 'heading' : 'paragraph';
+        const forced = el.localName === 'h' ? (parseInt(odfAttrNS(el, ODF_TEXT, 'outline-level') || '', 10) || undefined) : undefined;
+        const { block, images } = odfProcessParagraph(el, index, imageMap, kind, forced);
+        const bounds = { x: 0, y: 0, width: 0, height: 0 };
+        // list-item level ALWAYS = STRUCTURAL nesting depth (never heading outline-level)
+        if (block) out.push({ kind: 'list-item', marker: '•', level: depth, runs: block.runs, bounds });
+        for (const im of images) out.push(im);
+      }
+      if (el.localName === 'list') {
+        odfProcessList(el, index, imageMap, depth + 1, out);
+      }
+    }
+  }
+}
+
+/**
+ * ODF tables — spec-only (real file has 0 <table:table>). Column widths from
+ * <table:table-column style:column-width> measured in pt.
+ */
+function odfProcessTable(tblEl: Element, index: OdfStyleIndex, imageMap: Map<string, DocxImage>): IRTableBlock {
+  const rows: IRTableCell[][] = [];
+  const trEls = tblEl.getElementsByTagNameNS(ODF_TABLE, 'table-row');
+  for (let r = 0; r < trEls.length; r++) {
+    const tr = trEls[r] as unknown as Element;
+    if ((tr.parentNode as Element).localName !== 'table') continue;
+    const row: IRTableCell[] = [];
+    const tcEls = tr.getElementsByTagNameNS(ODF_TABLE, 'table-cell');
+    for (let c = 0; c < tcEls.length; c++) {
+      const tc = tcEls[c] as unknown as Element;
+      if ((tc.parentNode as Element) !== tr) continue;
+      const colspan = parseInt(odfAttrNS(tc, ODF_TABLE, 'number-columns-spanned') || '1', 10) || 1;
+      const rowspan = parseInt(odfAttrNS(tc, ODF_TABLE, 'number-rows-spanned') || '1', 10) || 1;
+      const cellRuns: IRTextRun[] = [];
+      const pEls = tc.getElementsByTagNameNS(ODF_TEXT, 'p');
+      for (let p = 0; p < pEls.length; p++) {
+        const pEl = pEls[p] as unknown as Element;
+        const pStyleName = odfAttrNS(pEl, ODF_TEXT, 'style-name') || undefined;
+        cellRuns.push(...odfMakeBlockRuns(pEl, index, pStyleName, imageMap).runs);
+      }
+      row.push({ runs: cellRuns, colspan, rowspan });
+    }
+    rows.push(row);
+  }
+  const colWidths: number[] = [];
+  const colEls = tblEl.getElementsByTagNameNS(ODF_TABLE, 'table-column');
+  for (let i = 0; i < colEls.length; i++) {
+    const col = colEls[i] as unknown as Element;
+    if ((col.parentNode as Element) !== tblEl) continue;
+    colWidths.push(Math.round(odfParseLenPt(odfAttrNS(col, ODF_STYLE, 'column-width')) ?? 0));
+  }
+  const totalW = colWidths.reduce((a, b) => a + b, 0);
+  return { kind: 'table', cells: rows, bounds: { x: 0, y: 0, width: totalW, height: 0 }, columnWidths: colWidths };
+}
+
+function odfTraverseOfficeText(
+  root: Element,
+  index: OdfStyleIndex,
+  imageMap: Map<string, DocxImage>,
+  out: IRBlock[],
+): void {
+  // <text:section> / <draw:g> (block level) = transparent containers -> recurse.
+  // Block-level <draw:frame> -> IRImageBlock. Caption text inside frames is dropped.
+  const children = root.childNodes;
+  for (let i = 0; i < children.length; i++) {
+    const node = children[i];
+    if (node.nodeType !== 1) continue;
+    const el = node as Element;
+    const local = el.localName;
+    if (local === 'section' || (local === 'g' && el.namespaceURI === ODF_DRAW)) {
+      odfTraverseOfficeText(el, index, imageMap, out);
+    } else if (local === 'h') {
+      const { block, images } = odfProcessParagraph(el, index, imageMap, 'heading');
+      if (block) out.push(block);
+      out.push(...images);
+    } else if (local === 'p') {
+      const { block, images } = odfProcessParagraph(el, index, imageMap, 'paragraph');
+      if (block && block.runs.length > 0) out.push(block);
+      out.push(...images);
+    } else if (local === 'list') {
+      odfProcessList(el, index, imageMap, 0, out);
+    } else if (local === 'table' && el.namespaceURI === ODF_TABLE) {
+      out.push(odfProcessTable(el, index, imageMap));
+    } else if (local === 'frame' && el.namespaceURI === ODF_DRAW) {
+      const img = odfFrameToIRImage(el, imageMap);
+      if (img) out.push(img);
+    }
+  }
+}
+
+/** Internal working function — exposes the style index for diagnostics/tests. */
+export async function odtToIRInternal(
+  zip: JSZip,
+): Promise<{ pages: IRPageIR[]; images: Map<string, DocxImage>; index: OdfStyleIndex }> {
+  const contentXml = await zip.file('content.xml')!.async('string');
+  const stylesXml = await zip.file('styles.xml')?.async('string')
+    || '<office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"><office:styles/></office:document-styles>';
+
+  const index = parseOdfStyles([stylesXml, contentXml]);
+  const imageMap = await extractOdtImages(zip);
+
+  const doc = new DOMParser().parseFromString(contentXml, 'application/xml');
+  const bodies = doc.getElementsByTagNameNS(ODF_OFFICE, 'text');
+  if (bodies.length === 0) {
+    return { pages: [{ width: ODF_A4_W, height: ODF_A4_H, blocks: [] }], images: imageMap, index };
+  }
+  const officeText = bodies[0] as unknown as Element;
+
+  const blocks: IRBlock[] = [];
+  odfTraverseOfficeText(officeText, index, imageMap, blocks);
+
+  return { pages: [{ width: ODF_A4_W, height: ODF_A4_H, blocks }], images: imageMap, index };
+}
+
+/**
+ * PRODUCTION ODT entry point — contract identical to docxToIR(file: File):
+ * returns exactly DocxIRResult { pages, images } with NO extra fields.
+ */
+export async function odtToIR(file: File): Promise<DocxIRResult> {
+  const JSZip = (await import('jszip')).default;
+  const buf = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
+  const { pages, images } = await odtToIRInternal(zip);
+  return { pages, images };
 }
