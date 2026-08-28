@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFRawStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFRawStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation, type PDFFont } from 'pdf-lib';
 import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePage, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
@@ -89,7 +89,7 @@ export async function addPageNumbers(file: File, options: { startNumber?: number
 export async function addWatermark(file: File, text: string, options?: { opacity?: number; rotation?: number; fontSize?: number; position?: 'top' | 'center' | 'bottom' }): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
-  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  const font = await embedLiberationSans(pdf);
   const opacity = (options?.opacity ?? 50) / 100;
   const rotation = options?.rotation ?? 45;
   const fontSize = options?.fontSize ?? 48;
@@ -357,12 +357,12 @@ export async function flattenPDF(file: File): Promise<Uint8Array> {
       if (fref) sigRefs.add(fref);
     }
 
-    const helvetica = await pdf.embedFont(StandardFonts.Helvetica);
+    const font = await embedLiberationSans(pdf);
 
     for (const f of pdfFields) {
       if (f.constructor.name === 'PDFSignature') continue;
       try {
-        if (f.needsAppearancesUpdate()) f.defaultUpdateAppearances(helvetica);
+        if (f.needsAppearancesUpdate()) f.defaultUpdateAppearances(font);
         for (const widget of f.acroField.getWidgets()) {
           const page = findWidgetPage(pdf, pages, widget);
           const appearanceRef = resolveAppearanceRef(f, widget);
@@ -375,9 +375,16 @@ export async function flattenPDF(file: File): Promise<Uint8Array> {
             popGraphicsState(),
           );
         }
-        form.removeField(f);
       } catch (err) {
         console.warn('flattenPDF: skipping field', f.getName?.(), err);
+      }
+      // Always remove the field, even if its appearance could not be generated.
+      // Otherwise PDFDocument.save() re-runs updateFieldAppearances() with the
+      // WinAnsi default font (Helvetica) and crashes on non-WinAnsi values.
+      try {
+        form.removeField(f);
+      } catch (err) {
+        console.warn('flattenPDF: could not remove field', f.getName?.(), err);
       }
     }
 
@@ -398,7 +405,9 @@ export async function flattenPDF(file: File): Promise<Uint8Array> {
     for (const page of pages) page.node.delete(PDFName.Annots);
   }
 
-  return pdf.save();
+  // Appearances were generated explicitly above; skip save()'s auto-pass which
+  // would use the WinAnsi default font (Helvetica) on any remaining field.
+  return pdf.save({ updateFieldAppearances: false });
 }
 
 function findWidgetPage(pdf: PDFDocument, pages: PDFPage[], widget: PDFWidgetAnnotation): PDFPage {
@@ -2090,6 +2099,19 @@ export async function pdfToExcel(file: File): Promise<Blob> {
   return createXlsx(rows);
 }
 
+// StandardFonts (WinAnsi) cannot encode Polish/Latin-Extended glyphs (e.g.
+// "ś") — widthOfTextAtSize()/drawText() THROW on them, crashing tools or
+// silently dropping words. LiberationSans covers Latin/Cyrillic/Greek; truly
+// unsupported code points (e.g. Hangul or Arabic) embed as .notdef glyphs
+// instead of throwing. Embed once per PDFDocument run (never per page/word).
+export async function embedLiberationSans(pdf: PDFDocument): Promise<PDFFont> {
+  const fontkit = (await import('@pdf-lib/fontkit')).default;
+  pdf.registerFontkit(fontkit);
+  const fontRes = await fetch('/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf');
+  if (!fontRes.ok) throw new Error('Font fetch failed: LiberationSans-Regular.ttf');
+  return pdf.embedFont(new Uint8Array(await fontRes.arrayBuffer()));
+}
+
 export async function officeToPdf(file: File): Promise<Blob> {
   const ext = file.name.toLowerCase().split('.').pop() || '';
   const buf = await file.arrayBuffer();
@@ -2156,16 +2178,7 @@ export async function officeToPdf(file: File): Promise<Blob> {
   }
 
   const pdf = await PDFDocument.create();
-  // StandardFonts (WinAnsi) cannot encode Polish/Latin-Extended glyphs (e.g.
-  // "ś") and widthOfTextAtSize() THROWS on them — crashing this fallback (and,
-  // previously, the whole word-to-pdf tool) for Polish content. Use LiberationSans
-  // instead: full Latin/Cyrillic/Greek coverage; truly unsupported code points
-  // (e.g. Hangul) embed as .notdef glyphs instead of throwing.
-  const fontkit = (await import('@pdf-lib/fontkit')).default;
-  pdf.registerFontkit(fontkit);
-  const fontRes = await fetch('/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf');
-  if (!fontRes.ok) throw new Error('Font fetch failed: LiberationSans-Regular.ttf');
-  const font = await pdf.embedFont(new Uint8Array(await fontRes.arrayBuffer()));
+  const font = await embedLiberationSans(pdf);
   const fontSize = 12;
   const margin = 50;
   const lineHeight = fontSize * 1.5;
@@ -2382,7 +2395,7 @@ export async function htmlToPdf(html: string): Promise<Blob> {
   const text = html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
   const lines = text.split('\n').filter(l => l.trim());
   const pdf = await PDFDocument.create();
-  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  const font = await embedLiberationSans(pdf);
   const fontSize = 11;
   const margin = 50;
   const lineHeight = fontSize * 1.5;

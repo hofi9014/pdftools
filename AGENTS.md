@@ -80,6 +80,13 @@ Polskojęzyczna aplikacja webowa do edycji plików PDF (Next.js 16, React 19, Ta
 - Pliki w pamięci serwera: 5 min TTL, jednorazowe użycie, cleanup co 60s
 - Żaden token OAuth nie jest przechowywany po stronie serwera
 
+## ⚠️ WinAnsi / StandardFonts — NOTATKA 2026-08-27
+- `StandardFonts.Helvetica` (WinAnsi) **nie potrafi zakodować polskich/łacińskich rozszerzonych glifów** — `widthOfTextAtSize()`/`drawText()` rzucają `WinAnsi cannot encode "ś"`, crashując narzędzia albo cicho usuwając słowa.
+- Naprawa: wspólny helper `embedLiberationSans(pdf)` w `lib/client-pdf.ts` (LiberationSans przez fontkit, embedowanie raz na PDF) — używany już przez: `officeToPdf` (commit a804f5c), `addWatermark`, `htmlToPdf`, `flattenPDF`, oraz OCR (`client-ocr.ts`, embed w `ocrPdfClient` raz na dokument).
+- OCR: niespójne skrypty są wykrywane **przez pokrycie glifów** (`font.getCharacterSet()`, try/catch jako siatka bezpieczeństwa), a słowa z naprawdę nieobsługiwanych skryptów (arabski/CJK/Hangul) są **zliczane i logowane** (`[OCR] Total: N words...`); `ocrPdfClient()` zwraca też `droppedWordCount`/`droppedWordSamples` zamiast całkowitej ciszy.
+- **Pozostałe miejsce o tym samym wzorcu (NIEnaprawione, niski priorytet):** fallback Helvetica w `lib/pdf/exportEditedPdf.ts:89` (edit-pdf) — aktywuje się tylko gdy embedowanie WOFF2 z Google Fonts zawiedzie; wtedy polski tekst crashes. `addPageNumbers` nadal używa Helvetica — bezpieczne (tylko cyfry). `lib/pdf-engine.ts` to **martwy kod** (zero importów) — nie naprawiać.
+- Ograniczenie wspólne: LiberationSans pokrywa tylko łacinę/cyrylicę/grecki — arabski/CJK/Hangul renderuje się jako `.notdef` (nie crash, tofu).
+
 ## Uruchamianie
 - `npm run dev` — dev server
 - `npm run build` — build
