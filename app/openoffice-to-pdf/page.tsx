@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { officeToPdf } from '@/lib/client-pdf';
+import { odtToIR, renderIRToPdf, hasUnsupportedScriptInPages } from '@/lib/client-pdf-docx';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -14,6 +15,7 @@ export default function OpenOfficeToPDF({ locale: forcedLocale }: { locale?: Loc
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [fallbackUsed, setFallbackUsed] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
 
   const handleFile = (f: File | null) => {
@@ -23,6 +25,7 @@ export default function OpenOfficeToPDF({ locale: forcedLocale }: { locale?: Loc
     setFile(f);
     setError('');
     setSuccess(false);
+    setFallbackUsed(false);
   };
 
   const handleConvert = async () => {
@@ -30,9 +33,25 @@ export default function OpenOfficeToPDF({ locale: forcedLocale }: { locale?: Loc
     setLoading(true);
     setError('');
     setSuccess(false);
+    setFallbackUsed(false);
 
     try {
-      const blob = await officeToPdf(file);
+      let blob: Blob;
+      let fallbackUsed = false;
+      try {
+        const { pages, images } = await odtToIR(file);
+        if (hasUnsupportedScriptInPages(pages)) {
+          console.warn('Unsupported script detected, falling back to legacy officeToPdf');
+          blob = await officeToPdf(file);
+          fallbackUsed = true;
+        } else {
+          blob = await renderIRToPdf(pages, images);
+        }
+      } catch (irErr) {
+        console.error('odtToIR/renderIRToPdf failed, falling back:', irErr);
+        blob = await officeToPdf(file);
+        fallbackUsed = true;
+      }
       processedBlobRef.current = blob;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -40,6 +59,7 @@ export default function OpenOfficeToPDF({ locale: forcedLocale }: { locale?: Loc
       a.download = file.name.replace('.odt', '.pdf');
       a.click();
       URL.revokeObjectURL(url);
+      setFallbackUsed(fallbackUsed);
       setSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('error.generic', locale));
@@ -97,6 +117,11 @@ export default function OpenOfficeToPDF({ locale: forcedLocale }: { locale?: Loc
       </div>
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {fallbackUsed && !error && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 rounded-xl p-4 mb-6">
+          ⚠️ {t('page.openoffice.fallback', locale)}
+        </div>
+      )}
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
           {t('page.openoffice.success', locale)}
