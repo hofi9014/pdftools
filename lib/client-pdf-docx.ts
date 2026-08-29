@@ -1808,3 +1808,313 @@ export async function odtToIR(file: File): Promise<DocxIRResult> {
   const { pages, images } = await odtToIRInternal(zip);
   return { pages, images };
 }
+
+// ============================================================
+// IR → ODT RENDERER
+// ============================================================
+// Mirrors renderIRToDocx (IR→OOXML) but emits an OpenDocument (.odt) package.
+// Contract: renderIRToOdt(pages, images) -> Blob of MIME
+// application/vnd.oasis.opendocument.text.
+// Structure (validated incrementally — Components 1–5):
+//   ZIP: mimetype STORE-first (ODF spec), content.xml, styles.xml, meta.xml,
+//        META-INF/manifest.xml, optional Pictures/<img>.
+//   Named text styles deduplicated by (font,size,bold,italic,color) -> T{n}.
+//   <text:list> nesting reconstructed from flat IRListItemBlock levels with a
+//        defensive clamp (never deeper than currentDepth+1).
+//   <draw:frame>/<draw:image> per IRImageBlock + manifest entry per picture.
+//   <table:table> per IRTableBlock (colspan/rowspan/column widths).
+
+const ODT_MIME = 'application/vnd.oasis.opendocument.text';
+
+function odtXmlEsc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/** Normalize an IR run color (may or may not carry '#') to ODF's '#RRGGBB'. */
+function odtRenderColorHex(color: string): string {
+  return color.startsWith('#') ? color : `#${color}`;
+}
+
+function odtRenderMimeForTarget(target: string): string {
+  const t = target.toLowerCase();
+  if (t.endsWith('.jpg') || t.endsWith('.jpeg')) return 'image/jpeg';
+  if (t.endsWith('.png')) return 'image/png';
+  if (t.endsWith('.gif')) return 'image/gif';
+  if (t.endsWith('.bmp')) return 'image/bmp';
+  return 'application/octet-stream';
+}
+
+/**
+ * Basename of DocxImage.target. Targets in this codebase may be prefixed
+ * ('Pictures/img.png' from ODT, or 'word/media/...' from DOCX) or bare
+ * ('img.png'). We always take the last path segment and append a unique index
+ * so same-named pictures from different source folders don't collide.
+ */
+function odtRenderUniqueFile(target: string, index: number): string {
+  const slash = target.lastIndexOf('/');
+  const base = slash >= 0 ? target.slice(slash + 1) : target;
+  const dot = base.lastIndexOf('.');
+  const name = dot >= 0 ? base.slice(0, dot) : base;
+  const ext = dot >= 0 ? base.slice(dot) : '';
+  return `${name}${index}${ext}`;
+}
+
+// ---- style dedup ----
+interface OdtRunStyle { font: string; size: number; bold: boolean; italic: boolean; color: string; }
+
+function odtRenderStyleKey(s: OdtRunStyle): string {
+  return `${s.font}|${s.size}|${s.bold ? 'b' : ''}|${s.italic ? 'i' : ''}|${s.color}`;
+}
+
+function odtRenderScanStyles(): {
+  styles: { name: string; props: OdtRunStyle }[];
+  nameFor: (r: IRTextRun) => string;
+} {
+  const map = new Map<string, string>();
+  const styles: { name: string; props: OdtRunStyle }[] = [];
+  let n = 0;
+  const nameFor = (r: IRTextRun): string => {
+    const props: OdtRunStyle = {
+      font: r.fontName || '',
+      size: r.fontSize,
+      bold: !!r.bold,
+      italic: !!r.italic,
+      color: odtRenderColorHex(r.color),
+    };
+    const key = odtRenderStyleKey(props);
+    let name = map.get(key);
+    if (!name) {
+      n += 1;
+      name = `T${n}`;
+      map.set(key, name);
+      styles.push({ name, props });
+    }
+    return name;
+  };
+  return { styles, nameFor };
+}
+
+function odtRenderAutoStylesXml(styles: { name: string; props: OdtRunStyle }[]): string {
+  if (styles.length === 0) return '';
+  const rows = styles
+    .map((s) => {
+      const fw = s.props.bold ? 'bold' : 'normal';
+      return (
+        `  <style:style style:name="${s.name}" style:family="text">` +
+        `<style:text-properties` +
+        (s.props.font ? ` style:font-name="${odtXmlEsc(s.props.font)}"` : '') +
+        ` fo:font-size="${s.props.size}pt"` +
+        ` fo:font-weight="${fw}"` +
+        (s.props.italic ? ` fo:font-style="italic"` : '') +
+        ` fo:color="${s.props.color}"/>` +
+        `</style:style>`
+      );
+    })
+    .join('\n');
+  return '\n' + rows + '\n';
+}
+
+function odtRenderRunsXml(runs: IRTextRun[], nameFor: (r: IRTextRun) => string): string {
+  return runs
+    .map((r) => (r.text ? `<text:span text:style-name="${nameFor(r)}">${odtXmlEsc(r.text)}</text:span>` : ''))
+    .join('');
+}
+
+// ---- list reconstruction (inverse of odfProcessList) ----
+interface OdtListItemT { runs: IRTextRun[]; nested: OdtListT[]; }
+interface OdtListT { children: OdtListItemT[]; }
+
+function odtRenderReconstructList(items: IRListItemBlock[]): OdtListT {
+  const stack: OdtListT[] = [];
+  const root: OdtListT = { children: [] };
+  stack[0] = root;
+  for (const it of items) {
+    const currentDepth = stack.length - 1;
+    // Defensive clamp: never build deeper than currentDepth+1 (handles skips
+    // e.g. level 0 -> 2 or an item starting at level N with no context).
+    const depth = Math.min(it.level, currentDepth + 1);
+    while (stack.length - 1 > depth) stack.pop();
+    while (stack.length - 1 < depth) {
+      const parentList = stack[stack.length - 1];
+      const parentItem = parentList.children[parentList.children.length - 1];
+      if (!parentItem) break; // cannot nest without a parent item
+      const nested: OdtListT = { children: [] };
+      parentItem.nested.push(nested);
+      stack.push(nested);
+    }
+    stack[stack.length - 1].children.push({ runs: it.runs, nested: [] });
+  }
+  return root;
+}
+
+function odtRenderListXml(node: OdtListT, nameFor: (r: IRTextRun) => string): string {
+  const items = node.children
+    .map((it) => {
+      const inner = odtRenderRunsXml(it.runs, nameFor);
+      const p = inner ? `<text:p>${inner}</text:p>` : `<text:p/>`;
+      const nested = it.nested.map((n) => odtRenderListXml(n, nameFor)).join('');
+      return `<text:list-item>${p}${nested}</text:list-item>`;
+    })
+    .join('');
+  return `<text:list>${items}</text:list>`;
+}
+
+function odtRenderTableXml(table: IRTableBlock, nameFor: (r: IRTextRun) => string): string {
+  const cols = table.columnWidths
+    .map((w) => `<table:table-column style:column-width="${Math.round(w)}pt"/>`)
+    .join('');
+  const rows = table.cells
+    .map((row) =>
+      `<table:table-row>` +
+      row
+        .map((cell) => {
+          const inner = odtRenderRunsXml(cell.runs, nameFor);
+          const p = inner ? `<text:p>${inner}</text:p>` : `<text:p/>`;
+          const attrs: string[] = [];
+          if (cell.colspan > 1) attrs.push(`table:number-columns-spanned="${cell.colspan}"`);
+          if (cell.rowspan > 1) attrs.push(`table:number-rows-spanned="${cell.rowspan}"`);
+          return `<table:table-cell${attrs.length ? ' ' + attrs.join(' ') : ''}>${p}</table:table-cell>`;
+        })
+        .join('') +
+      `</table:table-row>`
+    )
+    .join('');
+  return `<table:table>${cols}${rows}</table:table>`;
+}
+
+interface OdtPicture { path: string; data: Uint8Array; media: string; }
+
+function odtRenderBodyXml(
+  pages: IRPageIR[],
+  images: Map<string, DocxImage>,
+  nameFor: (r: IRTextRun) => string,
+  pictures: OdtPicture[],
+): string {
+  const out: string[] = [];
+  let imgIdx = 0;
+  for (const page of pages) {
+    let listBuffer: IRListItemBlock[] = [];
+    const flushLists = (): void => {
+      if (listBuffer.length) {
+        out.push(odtRenderListXml(odtRenderReconstructList(listBuffer), nameFor));
+        listBuffer = [];
+      }
+    };
+    for (const block of page.blocks) {
+      if (block.kind === 'list-item') {
+        listBuffer.push(block as IRListItemBlock);
+        continue;
+      }
+      flushLists();
+      if (block.kind === 'paragraph') {
+        const p = block as IRParagraphBlock;
+        const inner = odtRenderRunsXml(p.runs, nameFor);
+        out.push(inner ? `<text:p>${inner}</text:p>` : `<text:p/>`);
+      } else if (block.kind === 'heading') {
+        const h = block as IRHeadingBlock;
+        const lvl = Math.min(Math.max(h.level, 1), 6);
+        out.push(`<text:h text:outline-level="${lvl}">${odtRenderRunsXml(h.runs, nameFor)}</text:h>`);
+      } else if (block.kind === 'table') {
+        out.push(odtRenderTableXml(block as IRTableBlock, nameFor));
+      } else if (block.kind === 'image') {
+        const img = block as IRImageBlock;
+        const imgData = images.get(img.imageId);
+        if (!imgData) {
+          console.warn(`[renderIRToOdt] image block references unknown imageId: ${img.imageId}`);
+          continue; // guard: unknown id skipped rather than writing a broken frame
+        }
+        imgIdx += 1;
+        const file = odtRenderUniqueFile(imgData.target, imgIdx);
+        pictures.push({ path: `Pictures/${file}`, data: imgData.data, media: odtRenderMimeForTarget(imgData.target) });
+        out.push(
+          `<draw:frame draw:name="image${imgIdx}" text:anchor-type="as-char" ` +
+            `svg:width="${img.naturalWidth}pt" svg:height="${img.naturalHeight}pt">` +
+            `<draw:image xlink:href="Pictures/${odtXmlEsc(file)}" xlink:type="simple" ` +
+            `xlink:show="embed" xlink:actuate="onLoad"/>` +
+            `</draw:frame>`
+        );
+      }
+    }
+    flushLists();
+  }
+  return out.join('\n');
+}
+
+function odtRenderContentXml(body: string, styles: { name: string; props: OdtRunStyle }[]): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<office:document-content
+  xmlns:office="${ODF_OFFICE}"
+  xmlns:text="${ODF_TEXT}"
+  xmlns:style="${ODF_STYLE}"
+  xmlns:fo="${ODF_FO}"
+  xmlns:draw="${ODF_DRAW}"
+  xmlns:svg="${ODF_SVG}"
+  xmlns:table="${ODF_TABLE}"
+  xmlns:xlink="${XLINK}">
+  <office:automatic-styles>${odtRenderAutoStylesXml(styles)}
+  </office:automatic-styles>
+  <office:body>
+    <office:text>
+${body}
+    </office:text>
+  </office:body>
+</office:document-content>`;
+}
+
+function odtRenderManifestXml(pictures: OdtPicture[]): string {
+  const rows = [
+    `  <manifest:file-entry manifest:full-path="/" manifest:media-type="${ODT_MIME}"/>`,
+    `  <manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>`,
+    `  <manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>`,
+    `  <manifest:file-entry manifest:full-path="meta.xml" manifest:media-type="text/xml"/>`,
+    ...pictures.map((p) => `  <manifest:file-entry manifest:full-path="${p.path}" manifest:media-type="${p.media}"/>`),
+  ].join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<manifest:manifest xmlns:manifest="${ODF_MANIFEST}" manifest:version="1.2">
+${rows}
+</manifest:manifest>`;
+}
+
+const ODT_STYLES_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<office:document-styles xmlns:office="${ODF_OFFICE}" xmlns:style="${ODF_STYLE}" xmlns:text="${ODF_TEXT}">
+  <office:styles/>
+</office:document-styles>`;
+
+const ODT_META_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<office:document-meta xmlns:office="${ODF_OFFICE}" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0">
+  <office:meta>
+    <meta:generator>OptimaPDF</meta:generator>
+  </office:meta>
+</office:document-meta>`;
+
+export async function renderIRToOdt(
+  pages: IRPageIR[],
+  images: Map<string, DocxImage>,
+): Promise<Blob> {
+  // 1. Style dedup is LAZY: nameFor() is called once per run while body renders.
+  //    Identical (font,size,bold,italic,color) runs share one generated T{n}
+  //    style. `styles` is serialized into content.xml AFTER body rendering, so
+  //    the list is fully populated by the time it is used.
+  const { styles, nameFor } = odtRenderScanStyles();
+
+  // 2. Render body; collect picture bytes for Pictures/ + manifest.
+  const pictures: OdtPicture[] = [];
+  const body = odtRenderBodyXml(pages, images, nameFor, pictures);
+
+  // 3. Assemble package — mimetype MUST be the first, uncompressed ZIP entry.
+  const JSZip = (await import('jszip')).default;
+  const zip = new JSZip();
+  zip.file('mimetype', ODT_MIME, { compression: 'STORE' });
+  zip.file('content.xml', odtRenderContentXml(body, styles));
+  zip.file('styles.xml', ODT_STYLES_XML);
+  zip.file('meta.xml', ODT_META_XML);
+  zip.file('META-INF/manifest.xml', odtRenderManifestXml(pictures));
+  for (const pic of pictures) zip.file(pic.path, pic.data);
+
+  const bytes = await zip.generateAsync({
+    type: 'uint8array',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 6 },
+  });
+  return new Blob([bytes as BlobPart], { type: ODT_MIME });
+}
