@@ -1089,35 +1089,82 @@ export async function renderIRToPdf(
     const tableW = Math.min(totalW, pageW - MARGIN * 2);
     const scale = totalW > 0 && tableW < totalW ? tableW / totalW : 1;
     const colWidths = table.columnWidths.map(w => w * scale);
+    // precomputed absolute left edge of each grid column
+    const colX: number[] = [];
+    let acc = MARGIN;
+    for (const w of colWidths) { colX.push(acc); acc += w; }
 
     const PAD = 4;
     const LINE_H = 12;
-    const cellTextWidth = (colIdx: number) =>
-      Math.max(0, colWidths[colIdx] - PAD * 2);
+    const nRows = table.cells.length;
 
-    const rowHeights: number[] = [];
-    for (const row of table.cells) {
-      let maxH = LINE_H + PAD * 2;
-      for (let c = 0; c < row.length && c < nCols; c++) {
-        const cell = row[c];
-        const cw = cellTextWidth(c);
-        let textH = LINE_H;
-        if (cw > 0 && cell.runs.length > 0) {
-          const lines = breakIntoLines(cell.runs, fonts, cw);
-          textH = lines.length * LINE_H;
+    // Assign every top-left cell to a (row, gridCol) position, honouring the
+    // footprint left by previous colspan/rowspan cells above/left of it.
+    const starts: { r: number; g: number; cell: IRTableCell }[] = [];
+    const activeRowspan: number[] = new Array(nCols).fill(0);
+    for (let r = 0; r < nRows; r++) {
+      const row = table.cells[r];
+      let g = 0;
+      const newlyOwned: number[] = new Array(nCols).fill(0);
+      for (let k = 0; k < row.length && g < nCols; k++) {
+        while (g < nCols && activeRowspan[g] > 0) g++;
+        const cell: IRTableCell | undefined = row[k];
+        if (!cell) { g++; continue; }
+        const cs = Math.min(Math.max(cell.colspan || 1, 1), nCols - g);
+        const rs = Math.max(cell.rowspan || 1, 1);
+        starts.push({ r, g, cell });
+        for (let cc = 0; cc < cs; cc++) {
+          if (rs > 1) {
+            // A rowspan cell covers EVERY spanned column in the following rows,
+            // not just its first column — mark them all so later rows skip them.
+            activeRowspan[g] = Math.max(activeRowspan[g], rs - 1);
+            newlyOwned[g] = 1;
+          }
+          g++;
         }
-        maxH = Math.max(maxH, textH + PAD * 2);
       }
-      rowHeights.push(maxH);
+      // Consume one row of occupancy only for spans started in earlier rows;
+      // a span begun in this row must still cover the following rows.
+      for (let c = 0; c < nCols; c++) if (!newlyOwned[c]) activeRowspan[c] = Math.max(0, activeRowspan[c] - 1);
     }
 
+    // Pass 1: row heights — base from non-rowspan cells in each row, then grow
+    // the last row of any rowspan range to fit its overflow.
+    const baseH = new Array<number>(nRows).fill(LINE_H + PAD * 2);
+    const cellHeight = (g: number, cs: number, cell: IRTableCell): number => {
+      const cw = colWidths.slice(g, g + cs).reduce((a, b) => a + b, 0) - PAD * 2;
+      if (cw <= 0 || cell.runs.length === 0) return LINE_H + PAD * 2;
+      const lines = breakIntoLines(cell.runs, fonts, Math.max(cw, 1));
+      return Math.max(lines.length * LINE_H + PAD * 2, LINE_H + PAD * 2);
+    };
+    for (const { r, g, cell } of starts) {
+      const cs = Math.min(Math.max(cell.colspan || 1, 1), nCols - g);
+      const rs = Math.max(cell.rowspan || 1, 1);
+      if (rs > 1) continue; // handled below
+      baseH[r] = Math.max(baseH[r], cellHeight(g, cs, cell));
+    }
+    for (const { r, g, cell } of starts) {
+      const cs = Math.min(Math.max(cell.colspan || 1, 1), nCols - g);
+      const rs = Math.max(cell.rowspan || 1, 1);
+      if (rs <= 1) continue;
+      const H = cellHeight(g, cs, cell);
+      const spanEnd = Math.min(r + rs - 1, nRows - 1);
+      let occupied = 0;
+      for (let rr = r; rr <= spanEnd; rr++) occupied += baseH[rr];
+      if (H > occupied) baseH[spanEnd] += H - occupied;
+    }
+    const rowHeights = baseH;
     const totalH = rowHeights.reduce((a, b) => a + b, 0);
     ensurePage();
 
     let tableY = cursorY;
-    for (let r = 0; r < table.cells.length; r++) {
-      const rh = rowHeights[r];
+    // Recompute occupancy fresh for the drawing pass (starts above already
+    // consumed the occupancy once; use a dedicated copy here).
+    const drawActive: number[] = new Array(nCols).fill(0);
+    for (let r = 0; r < nRows; r++) {
       const row = table.cells[r];
+      const rh = rowHeights[r];
+      const newlyOwned: number[] = new Array(nCols).fill(0);
 
       // Force a page break before this row when it does not fit below the
       // table cursor — but not on an already-empty page (that would risk an
@@ -1128,24 +1175,33 @@ export async function renderIRToPdf(
         tableY = cursorY;
       }
 
-      let cellX = MARGIN;
-
-      for (let c = 0; c < row.length && c < nCols; c++) {
-        const cw = colWidths[c];
+      let g = 0;
+      for (let k = 0; k < row.length && g < nCols; k++) {
+        while (g < nCols && drawActive[g] > 0) g++;
+        const cell: IRTableCell | undefined = row[k];
+        if (!cell) { g++; continue; }
+        const cs = Math.min(Math.max(cell.colspan || 1, 1), nCols - g);
+        const rs = Math.max(cell.rowspan || 1, 1);
+        const cellW = colWidths.slice(g, g + cs).reduce((a, b) => a + b, 0);
+        const spanEnd = Math.min(r + rs - 1, nRows - 1);
+        const cellY2 = tableY;
+        let cellH = 0;
+        for (let rr = r; rr <= spanEnd; rr++) cellH += rowHeights[rr];
+        const cellXX = colX[g];
 
         currentPage!.drawRectangle({
-          x: cellX, y: tableY - rh, width: cw, height: rh,
+          x: cellXX, y: cellY2 - cellH, width: cellW, height: cellH,
           borderColor: rgb(0.6, 0.6, 0.6), borderWidth: 0.5,
         });
 
-        const cell = row[c];
         if (cell.runs.length > 0) {
-          const cwInner = cellTextWidth(c);
-          let textY = tableY - PAD - LINE_H;
+          const cwInner = cellW - PAD * 2;
+          let textY = cellY2 - PAD - LINE_H;
           if (cwInner > 0) {
-            const lines = breakIntoLines(cell.runs, fonts, cwInner);
+            const lines = breakIntoLines(cell.runs, fonts, Math.max(cwInner, 1));
             for (const line of lines) {
-              let textX = cellX + PAD;
+              let textX = cellXX + PAD;
+              if (textY < 60) break; // clamp decoration overflow
               for (const seg of line.runs) {
                 currentPage!.drawText(seg.run.text, {
                   x: textX, y: textY, size: seg.run.fontSize,
@@ -1159,8 +1215,16 @@ export async function renderIRToPdf(
           }
         }
 
-        cellX += cw;
+        for (let cc = 0; cc < cs; cc++) {
+          if (rs > 1) {
+            drawActive[g] = Math.max(drawActive[g], rs - 1);
+            newlyOwned[g] = 1;
+          }
+          g++;
+        }
       }
+      // Consume one row of occupancy only for spans started in earlier rows.
+      for (let c = 0; c < nCols; c++) if (!newlyOwned[c]) drawActive[c] = Math.max(0, drawActive[c] - 1);
       tableY -= rh;
     }
     cursorY = tableY - 5;
