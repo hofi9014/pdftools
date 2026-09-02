@@ -77,6 +77,61 @@ export interface IRPageIR {
 }
 
 // ============================================================
+// IR TYPES — XLSX (Spreadsheet) — Component: xlsxToIR (XLSX → IR)
+// ============================================================
+
+export type IRSpreadsheetCellType =
+  | 'string' | 'number' | 'date' | 'time' | 'boolean' | 'formula' | 'error' | 'empty';
+
+export interface IRSpreadsheetRunFormat {
+  bold?: boolean;
+  italic?: boolean;
+  colorHex?: string;
+  fillHex?: string;
+}
+
+export interface IRSpreadsheetCell {
+  display: string;
+  type: IRSpreadsheetCellType;
+  raw: string | number | boolean | null;
+  dateEpoch?: '1900' | '1904';
+  formula?: string;
+  fmt?: IRSpreadsheetRunFormat;
+  colspan: number;
+  rowspan: number;
+}
+
+export interface IRSheetMergedRange {
+  row: number;
+  col: number;
+  rowspan: number;
+  colspan: number;
+}
+
+export interface IRConditionalFormattingRule {
+  sqref: string;
+  type: string;
+  operator?: string;
+  formula?: string[];
+  dxfId?: number;
+}
+
+export interface IRSheet {
+  kind: 'sheet';
+  name: string;
+  cells: (IRSpreadsheetCell | undefined)[][];
+  columnWidths: number[];
+  mergedRanges: IRSheetMergedRange[];
+  /** Raw conditional-formatting rules (stored verbatim, NOT evaluated). */
+  conditionalFormattingRules?: IRConditionalFormattingRule[];
+}
+
+export interface IRSpreadsheet {
+  kind: 'spreadsheet';
+  sheets: IRSheet[];
+}
+
+// ============================================================
 // DOCX → IR: STYLE RESOLUTION (Component 1)
 // ============================================================
 
@@ -1871,6 +1926,483 @@ export async function odtToIR(file: File): Promise<DocxIRResult> {
   const zip = await JSZip.loadAsync(buf);
   const { pages, images } = await odtToIRInternal(zip);
   return { pages, images };
+}
+
+// ============================================================
+// XLSX → IR (Component: xlsxToIR)
+// ============================================================
+// Contract mirror of docxToIR/odtToIR: xlsxToIR(file: File) -> IRSpreadsheet.
+// Reads an OOXML .xlsx package (JSZip) via DOMParser and maps:
+//   - sharedStrings.xml  -> string cell values (t="s" -> index)
+//   - styles.xml         -> cellXfs -> IRSpreadsheetRunFormat (bold/italic/color/fill)
+//   - built-in + custom numFmt -> IRSpreadsheetCellType (date/time/percent/currency)
+//   - worksheets/sheetN.xml -> cells (values + A1 refs + types), mergeCells
+//     (top-left carries colspan/rowspan; covered slots -> undefined), <cols> widths
+//   - workbook.xml + rels -> sheet order + names, workbookPr date1904 -> dateEpoch
+// Known limitation (per approved design): border + alignment are NOT mapped.
+// conditionalFormatting is READ and stored verbatim on IRSheet (conditionalFormattingRules)
+// but NOT evaluated here (rule evaluation + dxf color resolution -> pending: Component 2b).
+
+const XLSX_NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+
+function xlsxGetAttr(el: Element, local: string): string | null {
+  return el.getAttribute(local);
+}
+
+function xlsxRefToRC(ref: string): { row: number; col: number } {
+  let col = 0;
+  let i = 0;
+  for (; i < ref.length; i++) {
+    const c = ref.charCodeAt(i);
+    if (c >= 65 && c <= 90) col = col * 26 + (c - 64);
+    else if (c >= 97 && c <= 122) col = col * 26 + (c - 96);
+    else break;
+  }
+  const row = parseInt(ref.slice(i), 10);
+  return { row: (isNaN(row) ? 1 : row) - 1, col: col - 1 };
+}
+
+// Convert a theme color index to a concrete RGB hex using the theme Dk1/Lt1..accent6.
+function xlsxThemeColor(clrScheme: Element | null, themeIdx: number, tint: number): string {
+  const hex = xlsxResolveThemeHex(clrScheme, themeIdx);
+  if (hex && Math.abs(tint) > 1e-9) return xlsxApplyTint(hex, tint);
+  return hex;
+}
+
+function xlsxResolveThemeHex(clrScheme: Element | null, themeIdx: number): string {
+  const T = 'http://schemas.openxmlformats.org/drawingml/2006/main';
+  if (!clrScheme) return '';
+  const tags = ['dk1', 'lt1', 'dk2', 'lt2', 'accent1', 'accent2', 'accent3', 'accent4', 'accent5', 'accent6', 'hlink', 'folHlink'];
+  const tag = tags[themeIdx];
+  if (!tag) return '';
+  const els = clrScheme.getElementsByTagNameNS(T, tag);
+  if (els.length === 0) return '';
+  const srgb = els[0].getElementsByTagNameNS(T, 'srgbClr');
+  if (srgb.length > 0) return (xlsxGetAttr(srgb[0] as Element, 'val') || '').toUpperCase();
+  return '';
+}
+
+function xlsxApplyTint(hex: string, tint: number): string {
+  const H = 255, L = 0;
+  const lum = tint < 0 ? L * (1 + tint) : H * (1 - tint);
+  const r = Math.round(parseInt(hex.slice(0, 2), 16) * lum / 255);
+  const g = Math.round(parseInt(hex.slice(2, 4), 16) * lum / 255);
+  const b = Math.round(parseInt(hex.slice(4, 6), 16) * lum / 255);
+  return [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
+interface XlsxStyle {
+  numFmtId: number;
+  formatCode?: string;
+  bold?: boolean;
+  italic?: boolean;
+  colorHex?: string;
+  fillHex?: string;
+}
+
+function xlsxIsDateLike(style: XlsxStyle | undefined): boolean {
+  if (!style) return false;
+  const id = style.numFmtId;
+  if (id === 14 || id === 15 || id === 16 || id === 17 || id === 22
+    || (id >= 27 && id <= 36) || (id >= 50 && id <= 58)) return true;
+  if (style.formatCode && /d|m|y|h|s/i.test(style.formatCode)) return true;
+  return false;
+}
+
+function xlsxIsTimeOnly(style: XlsxStyle | undefined): boolean {
+  if (!style) return false;
+  return style.numFmtId === 18 || style.numFmtId === 19 || style.numFmtId === 20
+    || style.numFmtId === 21 || style.numFmtId === 45 || style.numFmtId === 46;
+}
+
+function xlsxIsPercent(style: XlsxStyle | undefined): boolean {
+  if (!style) return false;
+  return style.numFmtId === 9 || style.numFmtId === 10
+    || (!!style.formatCode && /%/.test(style.formatCode));
+}
+
+// Serial date formatter. dateEpoch '1900' handles the Excel 1900 leap-year quirk.
+// Convert an XLSX serial date to a human-readable string.
+// Invariants (industry standard, matches Excel/lotus 1900 & 1904 systems):
+//   1900 system: serial 25569 == 1970-01-01   -> epoch = 1899-12-30
+//   1904 system: serial 0     == 1904-01-01
+// The 1900 leap-year bug (fake 1900-02-29, serial 60) is absorbed by the epoch
+// offset and needs NO explicit correction.
+function xlsxFormatSerialDate(serial: number, timeOnly: boolean, epoch: '1900' | '1904'): string {
+  const whole = Math.floor(serial);
+  const frac = serial - whole;
+  const milliseconds = Math.round(frac * 86400 * 1000);
+
+  const baseMs = epoch === '1904'
+    ? Date.UTC(1904, 0, 1)
+    : Date.UTC(1899, 11, 30);
+  const d = new Date(baseMs + whole * 86400000 + milliseconds);
+
+  if (timeOnly) {
+    const h = d.getUTCHours();
+    const m = d.getUTCMinutes();
+    const s = d.getUTCSeconds();
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}${s ? ':' + String(s).padStart(2, '0') : ''}`;
+  }
+  return `${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}-${String(d.getUTCFullYear()).slice(2)}`;
+}
+
+export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
+  const JSZip = (await import('jszip')).default;
+  const buf = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
+
+  const sharedStrings: string[] = [];
+  const sharedXml = await zip.file('xl/sharedStrings.xml')?.async('string');
+  if (sharedXml) {
+    const doc = new DOMParser().parseFromString(sharedXml, 'application/xml');
+    const siEls = doc.getElementsByTagNameNS(XLSX_NS, 'si');
+    for (let i = 0; i < siEls.length; i++) {
+      const si = siEls[i] as Element;
+      const ts = si.getElementsByTagNameNS(XLSX_NS, 't');
+      let text = '';
+      for (let j = 0; j < ts.length; j++) text += ts[j].textContent || '';
+      sharedStrings.push(text);
+    }
+  }
+
+  const stylesXml = await zip.file('xl/styles.xml')?.async('string')
+    || '<styleSheet xmlns="' + XLSX_NS + '"/>';
+  const styleDoc = new DOMParser().parseFromString(stylesXml, 'application/xml');
+  const xfs: XlsxStyle[] = [];
+  const cellXfsEl = styleDoc.getElementsByTagNameNS(XLSX_NS, 'cellXfs');
+  const fonts = styleDoc.getElementsByTagNameNS(XLSX_NS, 'font');
+  const fills = styleDoc.getElementsByTagNameNS(XLSX_NS, 'fill');
+  const numFmtEls = styleDoc.getElementsByTagNameNS(XLSX_NS, 'numFmt');
+  const customFormats = new Map<number, string>();
+  for (let i = 0; i < numFmtEls.length; i++) {
+    const nf = numFmtEls[i] as Element;
+    const id = parseInt(xlsxGetAttr(nf, 'numFmtId') || '0', 10);
+    customFormats.set(id, xlsxGetAttr(nf, 'formatCode') || '');
+  }
+  const clrScheme = styleDoc.getElementsByTagNameNS('http://schemas.openxmlformats.org/drawingml/2006/main', 'clrScheme');
+  const themeEl = clrScheme.length ? clrScheme[0] as Element : null;
+  if (cellXfsEl.length > 0) {
+    const xfEls = cellXfsEl[0].getElementsByTagNameNS(XLSX_NS, 'xf');
+    for (let i = 0; i < xfEls.length; i++) {
+      const xf = xfEls[i] as Element;
+      const numFmtId = parseInt(xlsxGetAttr(xf, 'numFmtId') || '0', 10);
+      let bold: boolean | undefined;
+      let italic: boolean | undefined;
+      let colorHex: string | undefined;
+      let fillHex: string | undefined;
+      const fontId = parseInt(xlsxGetAttr(xf, 'fontId') || '0', 10);
+      const font = fonts[fontId] as Element | undefined;
+      if (font) {
+        if (font.getElementsByTagNameNS(XLSX_NS, 'b').length > 0) bold = true;
+        if (font.getElementsByTagNameNS(XLSX_NS, 'i').length > 0) italic = true;
+        const color = font.getElementsByTagNameNS(XLSX_NS, 'color');
+        if (color.length > 0) {
+          const c = color[0] as Element;
+          const rgb = xlsxGetAttr(c, 'rgb');
+          if (rgb) colorHex = rgb.slice(-6).toUpperCase();
+          else {
+            const th = xlsxGetAttr(c, 'theme');
+            if (th !== null) {
+              colorHex = xlsxThemeColor(themeEl, parseInt(th, 10), parseFloat(xlsxGetAttr(c, 'tint') || '0'));
+            }
+          }
+        }
+      }
+      const fillId = parseInt(xlsxGetAttr(xf, 'fillId') || '0', 10);
+      const fill = fills[fillId] as Element | undefined;
+      if (fill) {
+        const pf = fill.getElementsByTagNameNS(XLSX_NS, 'patternFill');
+        if (pf.length > 0) {
+          const fg = pf[0].getElementsByTagNameNS(XLSX_NS, 'fgColor');
+          if (fg.length > 0) {
+            const c = fg[0] as Element;
+            const rgb = xlsxGetAttr(c, 'rgb');
+            if (rgb) fillHex = rgb.slice(-6).toUpperCase();
+            else {
+              const th = xlsxGetAttr(c, 'theme');
+              if (th !== null) {
+                fillHex = xlsxThemeColor(themeEl, parseInt(th, 10), parseFloat(xlsxGetAttr(c, 'tint') || '0'));
+              }
+            }
+          }
+        }
+      }
+      xfs.push({ numFmtId, formatCode: customFormats.get(numFmtId), bold, italic, colorHex, fillHex });
+    }
+  }
+
+  const workbookXml = await zip.file('xl/workbook.xml')?.async('string') || '';
+  const workbookDoc = new DOMParser().parseFromString(workbookXml, 'application/xml');
+  const workbookPr = workbookDoc.getElementsByTagNameNS(XLSX_NS, 'workbookPr');
+  const date1904 = workbookPr.length > 0 && xlsxGetAttr(workbookPr[0] as Element, 'date1904') === 'true';
+  const epoch: '1900' | '1904' = date1904 ? '1904' : '1900';
+
+  // Map sheet order+name to rel target via workbook.xml.rels.
+  const relsXml = await zip.file('xl/_rels/workbook.xml.rels')?.async('string') || '';
+  const relDoc = new DOMParser().parseFromString(relsXml, 'application/xml');
+  const relMap = new Map<string, string>();
+  const relEls = relDoc.getElementsByTagNameNS('http://schemas.openxmlformats.org/package/2006/relationships', 'Relationship');
+  for (let i = 0; i < relEls.length; i++) {
+    const r = relEls[i] as Element;
+    const id = r.getAttribute('Id');
+    const target = r.getAttribute('Target');
+    if (id && target) relMap.set(id, target.replace(/^\/+/, ''));
+  }
+
+  const sheets: IRSheet[] = [];
+  const sheetEls = workbookDoc.getElementsByTagNameNS(XLSX_NS, 'sheet');
+  for (let i = 0; i < sheetEls.length; i++) {
+    const sheetEl = sheetEls[i] as Element;
+    const name = xlsxGetAttr(sheetEl, 'name') || `Sheet${i + 1}`;
+    const rid = sheetEl.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id')
+      || sheetEl.getAttribute('r:id');
+    const target = relMap.get(rid || '');
+    if (!target) continue;
+    const sheetXml = await zip.file(target.startsWith('xl/') ? target : `xl/${target}`)?.async('string') || '';
+    const sDoc = new DOMParser().parseFromString(sheetXml, 'application/xml');
+
+    // columnWidths from <cols> (character-width units like XLSX width attrs).
+    const columnWidths: number[] = [];
+    const colsEl = sDoc.getElementsByTagNameNS(XLSX_NS, 'col');
+    for (let c = 0; c < colsEl.length; c++) {
+      const colEl = colsEl[c] as Element;
+      const min = parseInt(xlsxGetAttr(colEl, 'min') || '0', 10);
+      const max = parseInt(xlsxGetAttr(colEl, 'max') || '0', 10);
+      const width = parseFloat(xlsxGetAttr(colEl, 'width') || '0');
+      for (let cc = min; cc <= max; cc++) columnWidths[cc - 1] = width;
+    }
+
+    const mergedRanges: IRSheetMergedRange[] = [];
+    const mergeEls = sDoc.getElementsByTagNameNS(XLSX_NS, 'mergeCell');
+    for (let m = 0; m < mergeEls.length; m++) {
+      const ref = xlsxGetAttr(mergeEls[m] as Element, 'ref') || '';
+      const colon = ref.indexOf(':');
+      const top = xlsxRefToRC(colon >= 0 ? ref.slice(0, colon) : ref);
+      const bottom = xlsxRefToRC(colon >= 0 ? ref.slice(colon + 1) : ref);
+      mergedRanges.push({
+        row: top.row,
+        col: top.col,
+        rowspan: bottom.row - top.row + 1,
+        colspan: bottom.col - top.col + 1,
+      });
+    }
+
+    // Build a coverage map: (row,col) -> merged top-left index for spanned slots.
+    const mergedTopLeftByCell = new Map<string, number>();
+    for (let m = 0; m < mergedRanges.length; m++) {
+      const rg = mergedRanges[m];
+      for (let r = 0; r < rg.rowspan; r++) {
+        for (let c = 0; c < rg.colspan; c++) {
+          mergedTopLeftByCell.set(`${rg.row + r},${rg.col + c}`, m);
+        }
+      }
+    }
+
+    // Collect conditionalFormatting rules verbatim (stored, NOT evaluated).
+    const conditionalFormattingRules: IRConditionalFormattingRule[] = [];
+    const cfEls = sDoc.getElementsByTagNameNS(XLSX_NS, 'conditionalFormatting');
+    for (let cf = 0; cf < cfEls.length; cf++) {
+      const cfEl = cfEls[cf] as Element;
+      const sqref = xlsxGetAttr(cfEl, 'sqref') || '';
+      const rules = cfEl.getElementsByTagNameNS(XLSX_NS, 'cfRule');
+      for (let rl = 0; rl < rules.length; rl++) {
+        const rlEl = rules[rl] as Element;
+        const type = xlsxGetAttr(rlEl, 'type') || '';
+        const operator = xlsxGetAttr(rlEl, 'operator') || undefined;
+        const dxfIdStr = xlsxGetAttr(rlEl, 'dxfId') || '';
+        const formulaEls = rlEl.getElementsByTagNameNS(XLSX_NS, 'formula');
+        const formula: string[] = [];
+        for (let f = 0; f < formulaEls.length; f++) formula.push((formulaEls[f] as Element).textContent || '');
+        conditionalFormattingRules.push({
+          sqref,
+          type,
+          operator,
+          formula: formula.length > 0 ? formula : undefined,
+          dxfId: dxfIdStr !== '' ? parseInt(dxfIdStr, 10) : undefined,
+        });
+      }
+    }
+
+    const cells: (IRSpreadsheetCell | undefined)[][] = [];
+    const gridRows: Element[] = [];
+    const sheetData = sDoc.getElementsByTagNameNS(XLSX_NS, 'sheetData');
+    if (sheetData.length > 0) {
+      const rowEls = sheetData[0].getElementsByTagNameNS(XLSX_NS, 'row');
+      for (let r = 0; r < rowEls.length; r++) gridRows.push(rowEls[r] as Element);
+    }
+
+    const rawCells = new Map<string, IRSpreadsheetCell>();
+    for (let r = 0; r < gridRows.length; r++) {
+      const rowEl = gridRows[r];
+      const cellEls = rowEl.getElementsByTagNameNS(XLSX_NS, 'c');
+      for (let c = 0; c < cellEls.length; c++) {
+        const cellEl = cellEls[c] as Element;
+        const ref = xlsxGetAttr(cellEl, 'r') || '';
+        const { row, col } = xlsxRefToRC(ref);
+        const styleIdx = parseInt(xlsxGetAttr(cellEl, 's') || '0', 10);
+        const style = xfs[styleIdx];
+        const t = xlsxGetAttr(cellEl, 't') || 'n';
+        let type: IRSpreadsheetCellType = 'empty';
+        let raw: string | number | boolean | null = null;
+        let display = '';
+        let formula: string | undefined;
+
+        const formulaEl = cellEl.getElementsByTagNameNS(XLSX_NS, 'f');
+        if (formulaEl.length > 0) {
+          formula = formulaEl[0].textContent || '';
+          type = 'formula';
+        }
+
+        const vEl = cellEl.getElementsByTagNameNS(XLSX_NS, 'v');
+        const v = vEl.length > 0 ? vEl[0].textContent || '' : '';
+
+        if (t === 's') {
+          const idx = parseInt(v, 10);
+          raw = sharedStrings[idx] ?? '';
+          display = raw;
+          type = 'string';
+        } else if (t === 'str') {
+          raw = v;
+          display = v;
+          type = 'formula';
+        } else if (t === 'b') {
+          raw = v === '1' || v === 'true';
+          display = raw ? 'TRUE' : 'FALSE';
+          type = 'boolean';
+        } else if (t === 'e') {
+          raw = v || '#VALUE!';
+          display = raw;
+          type = 'error';
+        } else if (t === 'inlineStr') {
+          const isEl = cellEl.getElementsByTagNameNS(XLSX_NS, 'is');
+          let text = '';
+          if (isEl.length > 0) {
+            const ts = isEl[0].getElementsByTagNameNS(XLSX_NS, 't');
+            for (let k = 0; k < ts.length; k++) text += ts[k].textContent || '';
+          }
+          raw = text;
+          display = text;
+          type = 'string';
+        } else {
+          // numeric
+          const num = parseFloat(v);
+          if (isNaN(num)) {
+            if (v === '') {
+              type = 'empty';
+              raw = null;
+              display = '';
+            } else {
+              raw = v;
+              display = v;
+              type = 'number';
+            }
+          } else {
+            if (formula) {
+              raw = num;
+              display = v;
+              type = 'formula';
+            } else if (xlsxIsTimeOnly(style)) {
+              raw = num;
+              display = xlsxFormatSerialDate(num, true, epoch);
+              type = 'time';
+              if (epoch === '1904') raw = v;
+            } else if (xlsxIsDateLike(style)) {
+              raw = num;
+              display = xlsxFormatSerialDate(num, false, epoch);
+              type = 'date';
+            } else if (xlsxIsPercent(style)) {
+              raw = num;
+              display = `${(num * 100).toLocaleString('en-US')}%`;
+              type = 'number';
+            } else {
+              raw = num;
+              display = v;
+              type = 'number';
+            }
+          }
+        }
+
+        const fmt: IRSpreadsheetRunFormat | undefined = style &&
+          (style.bold !== undefined || style.italic !== undefined || style.colorHex || style.fillHex)
+          ? {
+            bold: style.bold,
+            italic: style.italic,
+            colorHex: style.colorHex,
+            fillHex: style.fillHex,
+          }
+          : undefined;
+
+        rawCells.set(`${row},${col}`, {
+          display,
+          type,
+          raw,
+          dateEpoch: type === 'date' ? epoch : undefined,
+          formula,
+          fmt,
+          colspan: 1,
+          rowspan: 1,
+        });
+      }
+    }
+
+    // Assemble grid with merged slots -> undefined (only top-left carries the cell).
+    let maxCol = -1;
+    for (const key of rawCells.keys()) {
+      const comma = key.indexOf(',');
+      const col = parseInt(key.slice(comma + 1), 10);
+      if (col > maxCol) maxCol = col;
+    }
+    for (const rg of mergedRanges) {
+      if (rg.col + rg.colspan - 1 > maxCol) maxCol = rg.col + rg.colspan - 1;
+    }
+
+    const rowsCount = gridRows.length > 0
+      ? parseInt(xlsxGetAttr(gridRows[gridRows.length - 1], 'r') || '0', 10)
+      : (gridRows.length || 1);
+
+    for (let r = 0; r < rowsCount; r++) {
+      const rowArr: (IRSpreadsheetCell | undefined)[] = new Array(maxCol + 1).fill(undefined);
+      for (let c = 0; c <= maxCol; c++) {
+        const key = `${r},${c}`;
+        const merged = mergedTopLeftByCell.get(key);
+        const own = rawCells.get(key);
+        if (merged !== undefined) {
+          const rg = mergedRanges[merged];
+          // Install the top-left cell (with spans) only at the anchor.
+          if (r === rg.row && c === rg.col) {
+            const base = rawCells.get(key);
+            if (base) {
+              rowArr[c] = {
+                ...base,
+                colspan: rg.colspan,
+                rowspan: rg.rowspan,
+              };
+            }
+          }
+          // covered slots stay undefined
+        } else if (own) {
+          rowArr[c] = own;
+        }
+      }
+      cells.push(rowArr);
+    }
+
+    sheets.push({
+      kind: 'sheet',
+      name,
+      cells,
+      columnWidths,
+      mergedRanges,
+      conditionalFormattingRules,
+    });
+    if (conditionalFormattingRules.length > 0) {
+      // Diagnostic evidence: full raw list is surfaced via console for manual cross-verification.
+      console.log('[xlsxToIR:conditionalFormatting]', name, JSON.stringify(conditionalFormattingRules));
+    }
+  }
+
+  return { kind: 'spreadsheet', sheets };
 }
 
 // ============================================================
