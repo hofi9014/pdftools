@@ -124,6 +124,10 @@ export interface IRSheet {
   mergedRanges: IRSheetMergedRange[];
   /** Raw conditional-formatting rules (stored verbatim, NOT evaluated). */
   conditionalFormattingRules?: IRConditionalFormattingRule[];
+  /** Frozen header rows, repeated at the top of every PDF page (from <pane state="frozen"> ySplit). Absent = renderer default (1). */
+  frozenRows?: number;
+  /** Frozen header cols, repeated on every horizontal fragment (from <pane state="frozen"> xSplit). Absent = renderer default (0). */
+  frozenCols?: number;
 }
 
 export interface IRSpreadsheet {
@@ -2162,6 +2166,25 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
     const sheetXml = await zip.file(target.startsWith('xl/') ? target : `xl/${target}`)?.async('string') || '';
     const sDoc = new DOMParser().parseFromString(sheetXml, 'application/xml');
 
+    // Frozen panes from <sheetView><pane state="frozen"> (OOXML §18.3.1.73 pane):
+    // when state="frozen", xSplit/ySplit are plain column/row counts of the
+    // left/top pane. Stored as optional IRSheet.frozenCols/frozenRows; absent
+    // when the sheet has no frozen pane (renderer falls back to 1 row/0 cols).
+    let frozenRows: number | undefined;
+    let frozenCols: number | undefined;
+    const sheetViewEls = sDoc.getElementsByTagNameNS(XLSX_NS, 'sheetView');
+    for (let v = 0; v < sheetViewEls.length; v++) {
+      const paneEls = (sheetViewEls[v] as Element).getElementsByTagNameNS(XLSX_NS, 'pane');
+      if (paneEls.length === 0) continue;
+      const pane = paneEls[0] as Element;
+      if (xlsxGetAttr(pane, 'state') !== 'frozen') continue;
+      const xs = parseInt(xlsxGetAttr(pane, 'xSplit') || '0', 10);
+      const ys = parseInt(xlsxGetAttr(pane, 'ySplit') || '0', 10);
+      frozenCols = isNaN(xs) ? 0 : Math.max(0, xs);
+      frozenRows = isNaN(ys) ? 0 : Math.max(0, ys);
+      break;
+    }
+
     // columnWidths from <cols> (character-width units like XLSX width attrs).
     const columnWidths: number[] = [];
     const colsEl = sDoc.getElementsByTagNameNS(XLSX_NS, 'col');
@@ -2395,6 +2418,8 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
       columnWidths,
       mergedRanges,
       conditionalFormattingRules,
+      ...(frozenRows !== undefined ? { frozenRows } : {}),
+      ...(frozenCols !== undefined ? { frozenCols } : {}),
     });
     if (conditionalFormattingRules.length > 0) {
       // Diagnostic evidence: full raw list is surfaced via console for manual cross-verification.
@@ -2403,6 +2428,497 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
   }
 
   return { kind: 'spreadsheet', sheets };
+}
+
+// ============================================================
+// IR → PDF RENDERER (XLSX) — GEOMETRY & PAGINATION (pure, no PDF)
+// Component 2, subcomponent 1 (approved design, steps 1-3). These
+// functions are side-effect-free: geometry + pagination run without
+// any PDFDocument/PDFPage, so they can be unit-tested on numbers alone.
+// Text width measurement is injected (`measure`); the renderer later
+// wraps pdf-lib embedded fonts, tests wrap a LiberationSans PDFFont.
+// ============================================================
+
+// XLSX <col width> is expressed in Excel character-width units (e.g. 8.43).
+// SheetJS approximation: px ≈ chars*7+5, then px→pt at 96dpi (×0.75).
+// Excel default (8.43 chars) → (8.43*7+5)*0.75 = 48.0075pt.
+// NOTE: the 48.0075 figure is derived, never a handwritten magic number.
+export function xlsxCharWidthToPt(chars: number): number {
+  return (chars * 7 + 5) * 0.75;
+}
+
+export const XLSX_DEFAULT_COL_CHARS = 8.43;
+export const XLSX_DEFAULT_COL_PT = xlsxCharWidthToPt(XLSX_DEFAULT_COL_CHARS); // 48.0075
+
+export interface SpreadsheetCellMeasure {
+  (text: string, fontSize: number, bold: boolean, italic: boolean): number;
+}
+
+// Conservative monospace-ish fallback (approx 0.55em/char) so geometry is
+// computable without fonts; callers embedding real fonts MUST inject a
+// precise measure to keep pagination identical to the PDF output.
+const spreadsheetAvgMeasure: SpreadsheetCellMeasure = (text, fontSize) => text.length * fontSize * 0.55;
+
+// Per-column width in pt. Missing/0 entries in sheet.columnWidths fall back
+// to the Excel default width (8.43 chars → XLSX_DEFAULT_COL_PT).
+export function spreadsheetColWidthsPt(sheet: IRSheet): number[] {
+  const nCols = sheet.cells[0]?.length ?? 0;
+  const out: number[] = new Array(nCols);
+  for (let c = 0; c < nCols; c++) {
+    const chars = sheet.columnWidths[c];
+    out[c] = chars !== undefined && chars > 0 ? xlsxCharWidthToPt(chars) : XLSX_DEFAULT_COL_PT;
+  }
+  return out;
+}
+
+// Number of wrapped lines a cell text takes at maxWidthPt. Mirrors the
+// word-splitting of breakIntoLines (split on /(?<=\s)/ so trailing spaces
+// stay glued to their word). Empty text = 1 line (min-height cell).
+export function spreadsheetWrapLines(
+  text: string,
+  maxWidthPt: number,
+  fontSize: number,
+  measure: SpreadsheetCellMeasure = spreadsheetAvgMeasure,
+): number {
+  if (maxWidthPt <= 0 || text === '') return 1;
+  let lines = 1;
+  let w = 0;
+  for (const word of text.split(/(?<=\s)/)) {
+    if (!word) continue;
+    const wordW = measure(word, fontSize, false, false);
+    if (w > 0 && w + wordW > maxWidthPt) { lines++; w = 0; }
+    w += wordW;
+  }
+  return lines;
+}
+
+export interface SpreadsheetRowHeightsOpts {
+  fontSize?: number;   // default 10
+  lineH?: number;      // default 11
+  pad?: number;        // default 3
+  measure?: SpreadsheetCellMeasure;
+}
+
+// Row heights in pt, mirroring renderTable()'s two-pass semantics:
+//  - base: max(cellHeight) of non-rowspan cells in the row,
+//  - rowspan: grow the LAST row of the range to fit the spanning cell.
+// cellHeight = wrapLines(display, colspanWidth - 2*pad) * lineH + 2*pad.
+export function spreadsheetRowHeightsPt(
+  sheet: IRSheet,
+  colWidthsPt: number[],
+  opts: SpreadsheetRowHeightsOpts = {},
+): number[] {
+  const fontSize = opts.fontSize ?? 10;
+  const lineH = opts.lineH ?? 11;
+  const pad = opts.pad ?? 3;
+  const measure = opts.measure ?? spreadsheetAvgMeasure;
+  const minH = lineH + pad * 2;
+  const nRows = sheet.cells.length;
+
+  const cellHeight = (row: number, col: number, cell: IRSpreadsheetCell): number => {
+    const cs = Math.max(cell.colspan || 1, 1);
+    const inner = colWidthsPt.slice(col, col + cs).reduce((a, b) => a + b, 0) - pad * 2;
+    if (inner <= 0) return minH;
+    return Math.max(spreadsheetWrapLines(cell.display, inner, fontSize, measure) * lineH + pad * 2, minH);
+  };
+
+  const baseH: number[] = new Array(nRows).fill(minH);
+  const rowspanNeeds: Array<{ r: number; spanEnd: number; h: number }> = [];
+
+  for (let r = 0; r < nRows; r++) {
+    const row = sheet.cells[r];
+    for (let c = 0; c < row.length; c++) {
+      const cell = row[c];
+      if (!cell) continue;
+      const rs = Math.max(cell.rowspan || 1, 1);
+      const h = cellHeight(r, c, cell);
+      if (rs <= 1) baseH[r] = Math.max(baseH[r], h);
+      else rowspanNeeds.push({ r, spanEnd: Math.min(r + rs - 1, nRows - 1), h });
+    }
+  }
+  for (const { r, spanEnd, h } of rowspanNeeds) {
+    let occupied = 0;
+    for (let rr = r; rr <= spanEnd; rr++) occupied += baseH[rr];
+    if (h > occupied) baseH[spanEnd] += h - occupied;
+  }
+  return baseH;
+}
+
+export interface SpreadsheetColFragment {
+  /** Body columns [start, end); header cols [0,frozenCols) are always prepended. */
+  start: number;
+  end: number;
+}
+
+// Horizontal pagination (greedy). Invariant: every fragment = frozen header
+// cols [0,G) + a CONTIGUOUS run of body columns containing ≥1 column.
+// Break rule: a body column opens a new fragment when it no longer fits the
+// remaining band width (availableW − headerColsWidth). A single column wider
+// than the whole band is never split — it becomes a fragment on its own
+// (drawn clipped), mirroring renderTable's sure-fit guarantee.
+export function spreadsheetColFragments(
+  sheet: IRSheet,
+  colWidthsPt: number[],
+  availableW: number,
+  frozenCols: number,
+): SpreadsheetColFragment[] {
+  const nCols = colWidthsPt.length;
+  const G = frozenCols === undefined ? 0 : Math.min(Math.max(frozenCols, 0), nCols);
+  if (nCols === 0) return [];
+  const headerW = colWidthsPt.slice(0, G).reduce((a, b) => a + b, 0);
+  const budget = availableW - headerW;
+
+  const fragments: SpreadsheetColFragment[] = [];
+  let runStart = G;
+  let runWidth = 0;
+  for (let c = G; c < nCols; c++) {
+    const cw = colWidthsPt[c];
+    if (runWidth > 0 && runWidth + cw > budget) {
+      fragments.push({ start: runStart, end: c });
+      runStart = c;
+      runWidth = 0;
+    }
+    runWidth += cw;
+  }
+  fragments.push({ start: runStart, end: nCols });
+  return fragments;
+}
+
+export interface SpreadsheetRowChunk {
+  /** Body rows [start, end); header rows [0,H) are always prepended. */
+  start: number;
+  end: number;
+}
+
+// Vertical pagination (greedy), same invariant as columns: chunks are
+// contiguous body-row runs, header rows [0,H) prepended verbatim per page.
+// A single row taller than the available height is never split.
+export function spreadsheetRowChunks(
+  sheet: IRSheet,
+  rowHeightsPt: number[],
+  availableH: number,
+  frozenRows: number,
+): SpreadsheetRowChunk[] {
+  const nRows = rowHeightsPt.length;
+  const H = frozenRows === undefined ? 1 : Math.min(Math.max(frozenRows, 0), nRows);
+  if (nRows === 0) return [];
+
+  const chunks: SpreadsheetRowChunk[] = [];
+  let runStart = H;
+  let runH = 0;
+  for (let r = H; r < nRows; r++) {
+    const rh = rowHeightsPt[r];
+    if (runH > 0 && runH + rh > availableH) {
+      chunks.push({ start: runStart, end: r });
+      runStart = r;
+      runH = 0;
+    }
+    runH += rh;
+  }
+  chunks.push({ start: runStart, end: nRows });
+  return chunks;
+}
+
+// ============================================================
+// IR → PDF RENDERER (XLSX) — CELL DRAWING (Krok 4a)
+// Pure helpers + one drawing primitive. Drawing function uses
+// pdf-lib types; pure helpers are testable without PDF.
+// ============================================================
+
+// ONE source of truth for column X positions INSIDE a fragment.
+// Returns, for every grid column c in [frag.start, frag.end), the
+// horizontal offset x (pt) from the LEFT EDGE OF THE FRAGMENT (0 =
+// fragment's left edge), and the column's width w. Callers only add
+// the page MARGIN (and later any frozen-col offset) ONCE, at draw
+// time. Because both the header loop and every body-data row consume
+// THIS same list, c→x can never diverge between header and cells.
+// Pure: no pdf-lib, no side effects. (See approved Component 2 design:
+// "one place computing x per fragment, shared by header + data".)
+export function spreadsheetFragmentColsX(
+  colWidthsPt: number[],
+  frag: SpreadsheetColFragment,
+): Array<{ c: number; x: number; w: number }> {
+  const out: Array<{ c: number; x: number; w: number }> = [];
+  let x = 0;
+  for (let c = frag.start; c < frag.end; c++) {
+    const w = colWidthsPt[c] ?? 0;
+    out.push({ c, x, w });
+    x += w;
+  }
+  return out;
+}
+
+// Cell alignment: strings/blank → left; numeric types → right.
+// Mirrors renderTable's alignment rule (line ~1232).
+export function spreadsheetCellAlign(cell: IRSpreadsheetCell): 'left' | 'right' {
+  if (cell.type === 'string' || cell.type === 'empty' || cell.display === '') return 'left';
+  return 'right';
+}
+
+// Wrap text into lines (array of strings). Same word-splitting as
+// spreadsheetWrapLines but returns the actual lines, not just the count.
+// Uses trailing-space-preserving split /(?<=\s)/ so words keep their spaces.
+export function spreadsheetWrapText(
+  text: string,
+  maxWidthPt: number,
+  fontSize: number,
+  measure: SpreadsheetCellMeasure,
+): string[] {
+  if (text === '' || maxWidthPt <= 0) return [text || ''];
+  const words = text.split(/(?<=\s)/);
+  const lines: string[] = [];
+  let cur = '';
+  let curW = 0;
+  for (const w of words) {
+    if (!w) continue;
+    const ww = measure(w, fontSize, false, false);
+    if (curW > 0 && curW + ww > maxWidthPt) { lines.push(cur); cur = w; curW = ww; }
+    else { cur += w; curW += ww; }
+  }
+  if (cur) lines.push(cur);
+  return lines.length > 0 ? lines : [''];
+}
+
+// Clip a cell's grid rectangle to a visible band (fragment columns or
+// chunk rows). Returns the visible sub-rectangle and whether anything
+// is visible at all. Handles cells that straddle band boundaries or
+// extend beyond the fragment edge.
+export interface ClippedCellSpan {
+  /** First visible grid column (>= bodyStart). */
+  colStart: number;
+  /** One past last visible grid column (<= bodyEnd). */
+  colEnd: number;
+  /** First visible grid row (>= bodyRowStart). */
+  rowStart: number;
+  /** One past last visible grid row (<= bodyRowEnd). */
+  rowEnd: number;
+  /** True if the cell has any visible area. */
+  visible: boolean;
+}
+
+export function clipCellToBand(
+  r: number, c: number,
+  cs: number, rs: number,
+  bodyColStart: number, bodyColEnd: number,
+  bodyRowStart: number, bodyRowEnd: number,
+): ClippedCellSpan {
+  const colStart = Math.max(c, bodyColStart);
+  const colEnd   = Math.min(c + cs, bodyColEnd);
+  const rowStart = Math.max(r, bodyRowStart);
+  const rowEnd   = Math.min(r + rs, bodyRowEnd);
+  return { colStart, colEnd, rowStart, rowEnd, visible: colStart < colEnd && rowStart < rowEnd };
+}
+
+// ============================================================
+// Drawing primitive — renders one cell onto a PDFPage.
+// This is the only function in this section that touches pdf-lib.
+// Gridlines use the same visual style as renderTable (rgb 0.6, 0.5pt).
+// ============================================================
+
+// Font name matching EmbeddedFonts keys (lines 953-958).
+export type SpreadsheetFonts = { regular: PDFFont; bold: PDFFont; italic: PDFFont; boldItalic: PDFFont };
+
+function ssPickFont(fonts: SpreadsheetFonts, bold: boolean, italic: boolean): PDFFont {
+  if (bold && italic) return fonts.boldItalic;
+  if (bold) return fonts.bold;
+  if (italic) return fonts.italic;
+  return fonts.regular;
+}
+
+export interface DrawSpreadsheetCellOpts {
+  fontSize?: number;
+  lineH?: number;
+  pad?: number;
+  gridLineWidth?: number;
+  gridColor?: ReturnType<typeof rgb>;
+  clipText?: boolean;   // default true: truncate lines below bottom padding
+}
+
+export function drawSpreadsheetCell(
+  page: PDFPage,
+  cell: IRSpreadsheetCell,
+  x: number, y: number,
+  w: number, h: number,
+  fonts: SpreadsheetFonts,
+  opts: DrawSpreadsheetCellOpts = {},
+): void {
+  const fontSize = opts.fontSize ?? 10;
+  const lineH    = opts.lineH    ?? 11;
+  const pad      = opts.pad      ?? 3;
+  const glw      = opts.gridLineWidth ?? 0.5;
+  const glc      = opts.gridColor ?? rgb(0.6, 0.6, 0.6);
+  const clipText = opts.clipText  ?? true;
+
+  const dl = (x1: number, y1: number, x2: number, y2: number) =>
+    page.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness: glw, color: glc });
+
+  dl(x, y, x + w, y);           // top
+  dl(x, y - h, x + w, y - h);   // bottom
+  dl(x, y, x, y - h);           // left
+  dl(x + w, y, x + w, y - h);   // right
+
+  if (!cell.display) return;
+
+  const align = spreadsheetCellAlign(cell);
+  const bold  = cell.fmt?.bold   ?? false;
+  const italic = cell.fmt?.italic ?? false;
+  const font  = ssPickFont(fonts, bold, italic);
+  const innerW = w - pad * 2;
+  if (innerW <= 0) return;
+
+  const measure: SpreadsheetCellMeasure = (t, fs, b, i) =>
+    ssPickFont(fonts, b, i).widthOfTextAtSize(t, fs);
+  const lines = spreadsheetWrapText(cell.display, innerW, fontSize, measure);
+
+  let textY = y - pad - fontSize;
+  const bottomLimit = y - h + pad;
+  for (const line of lines) {
+    if (clipText && textY < bottomLimit) break;
+    const lw = font.widthOfTextAtSize(line, fontSize);
+    const tx = align === 'right' ? x + w - pad - lw : x + pad;
+    page.drawText(line, { x: tx, y: textY, size: fontSize, font, color: rgb(0, 0, 0) });
+    textY -= lineH;
+  }
+}
+
+// ============================================================
+// IR → PDF RENDERER (XLSX) — FULL SHEET COMPOSER (Krok 4b)
+// renderSpreadsheetIRToPdf(sheets) -> Blob. Composition:
+//   - Horizontal pagination via spreadsheetColFragments; EVERY page
+//     re-prepends the frozen header columns [0,G).
+//   - Vertical pagination via spreadsheetRowChunks; EVERY page repeats
+//     the frozen header rows [0,H) at the top.
+//   - Mini sheet-title header (fontSize+6) drawn on the sheet's first
+//     page only; body budget reserves the title height on every page so
+//     the title can never overflow (approved "sure-to-fit" rule).
+//   - spreadsheetFragmentColsX is the SINGLE source of truth for column
+//     X within a fragment; the caller adds MARGIN (+ header-cols width
+//     for the body run) exactly once, at draw time.
+// ============================================================
+
+export interface RenderSpreadsheetOpts {
+  pageWidth?: number;   // default 595 (A4 width)
+  pageHeight?: number;  // default 842 (A4 height)
+  margin?: number;      // default 50
+  titlePt?: number;     // default fontSize + 6
+  fontSize?: number;    // default 10
+  lineH?: number;       // default 11
+  pad?: number;         // default 3
+}
+
+export async function renderSpreadsheetIRToPdf(
+  spreadsheet: IRSpreadsheet,
+  opts: RenderSpreadsheetOpts = {},
+  loadFontBytes?: (fileName: string) => Promise<Uint8Array>,
+): Promise<Blob> {
+  const load = loadFontBytes ?? (async (name: string) => {
+    const res = await fetch(`/pdfjs-dist/standard_fonts/${name}`);
+    if (!res.ok) throw new Error(`Font fetch failed: ${name} (${res.status})`);
+    return new Uint8Array(await res.arrayBuffer());
+  });
+
+  const PAGE_W = opts.pageWidth ?? 595;
+  const PAGE_H = opts.pageHeight ?? 842;
+  const MARGIN = opts.margin ?? 50;
+  const FONT_SIZE = opts.fontSize ?? 10;
+  const LINE_H = opts.lineH ?? 11;
+  const PAD = opts.pad ?? 3;
+  const TITLE_PT = opts.titlePt ?? (FONT_SIZE + 6);
+  const availableW = PAGE_W - MARGIN * 2;
+
+  const fontkit = (await import('@pdf-lib/fontkit')).default;
+  const pdfDoc = await PDFDocument.create();
+  pdfDoc.registerFontkit(fontkit);
+  const fonts: SpreadsheetFonts = {
+    regular: await pdfDoc.embedFont(await load('LiberationSans-Regular.ttf')),
+    bold: await pdfDoc.embedFont(await load('LiberationSans-Bold.ttf')),
+    italic: await pdfDoc.embedFont(await load('LiberationSans-Italic.ttf')),
+    boldItalic: await pdfDoc.embedFont(await load('LiberationSans-BoldItalic.ttf')),
+  };
+  const measure: SpreadsheetCellMeasure = (t, fs, b, i) => ssPickFont(fonts, b, i).widthOfTextAtSize(t, fs);
+  const drawOpts: DrawSpreadsheetCellOpts = { fontSize: FONT_SIZE, lineH: LINE_H, pad: PAD };
+  const black = rgb(0, 0, 0);
+
+  for (const sheet of spreadsheet.sheets) {
+    const nRows = sheet.cells.length;
+    const nCols = sheet.cells[0]?.length ?? 0;
+    if (nRows === 0 || nCols === 0) continue;
+
+    const colPt = spreadsheetColWidthsPt(sheet);
+    const rowHt = spreadsheetRowHeightsPt(sheet, colPt, {
+      fontSize: FONT_SIZE, lineH: LINE_H, pad: PAD, measure,
+    });
+    const H = sheet.frozenRows === undefined ? 1 : Math.min(Math.max(sheet.frozenRows, 0), nRows);
+    const G = sheet.frozenCols === undefined ? 0 : Math.min(Math.max(sheet.frozenCols, 0), nCols);
+    const headerW = colPt.slice(0, G).reduce((a, b) => a + b, 0);
+    const headerBlockPt = rowHt.slice(0, H).reduce((a, b) => a + b, 0);
+    const bodyBudget = PAGE_H - MARGIN * 2 - TITLE_PT - headerBlockPt;
+
+    const fragments = spreadsheetColFragments(sheet, colPt, availableW, G);
+    const chunks = spreadsheetRowChunks(sheet, rowHt, bodyBudget, H);
+
+    // Frozen header columns: X offsets within the header block (left of body).
+    const headerColsX = spreadsheetFragmentColsX(colPt, { start: 0, end: G });
+    const headerXOf = new Map<number, number>();
+    for (const e of headerColsX) headerXOf.set(e.c, MARGIN + e.x);
+
+    let firstPageOfSheet = true;
+
+    for (let fi = 0; fi < fragments.length; fi++) {
+      const frag = fragments[fi];
+      const bodyColsX = spreadsheetFragmentColsX(colPt, frag);
+      const bodyXOf = new Map<number, number>();
+      const bodyLeft = MARGIN + headerW;
+      for (const e of bodyColsX) bodyXOf.set(e.c, bodyLeft + e.x);
+
+      for (let ci = 0; ci < chunks.length; ci++) {
+        const ch = chunks[ci];
+        const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+        let y = PAGE_H - MARGIN;
+
+        if (firstPageOfSheet) {
+          page.drawText(sheet.name, { x: MARGIN, y: PAGE_H - MARGIN - TITLE_PT, size: TITLE_PT, font: fonts.bold, color: black });
+        }
+        y -= TITLE_PT;
+
+        const drawClipped = (
+          row: number, c: number, colBandStart: number, colBandEnd: number,
+          rowStart: number, rowEnd: number,
+        ) => {
+          const cell = sheet.cells[row]?.[c];
+          if (!cell) return;
+          const cs = Math.max(cell.colspan || 1, 1);
+          const rs = Math.max(cell.rowspan || 1, 1);
+          const clip = clipCellToBand(row, c, cs, rs, colBandStart, colBandEnd, rowStart, rowEnd);
+          if (!clip.visible) return;
+          const leftCol = clip.colStart;
+          const leftX = leftCol < G ? (headerXOf.get(leftCol) ?? MARGIN) : (bodyXOf.get(leftCol) ?? bodyLeft);
+          let w = 0;
+          for (let cc = clip.colStart; cc < clip.colEnd; cc++) w += colPt[cc] ?? 0;
+          let h = 0;
+          for (let rr = clip.rowStart; rr < clip.rowEnd; rr++) h += rowHt[rr] ?? 0;
+          drawSpreadsheetCell(page, cell, leftX, y, w, h, fonts, drawOpts);
+        };
+
+        // Frozen header rows [0,H) — full fragment horizontal extent.
+        for (let r = 0; r < H; r++) {
+          for (const e of headerColsX) drawClipped(r, e.c, 0, G, 0, H);
+          for (const e of bodyColsX) drawClipped(r, e.c, frag.start, frag.end, 0, H);
+          y -= rowHt[r] ?? 0;
+        }
+        // Body rows [ch.start, ch.end) — full fragment horizontal extent.
+        for (let r = ch.start; r < ch.end; r++) {
+          for (const e of headerColsX) drawClipped(r, e.c, 0, G, ch.start, ch.end);
+          for (const e of bodyColsX) drawClipped(r, e.c, frag.start, frag.end, ch.start, ch.end);
+          y -= rowHt[r] ?? 0;
+        }
+        firstPageOfSheet = false;
+      }
+    }
+  }
+
+  const pdfBytes = await pdfDoc.save();
+  return new Blob([pdfBytes as BlobPart], { type: 'application/pdf' });
 }
 
 // ============================================================
