@@ -99,6 +99,8 @@ export interface IRSpreadsheetCell {
   fmt?: IRSpreadsheetRunFormat;
   colspan: number;
   rowspan: number;
+  /** True when `type` was inferred by heuristic from display text (e.g. PDF→Excel), not ground truth. */
+  inferred?: boolean;
 }
 
 export interface IRSheetMergedRange {
@@ -2431,6 +2433,136 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
 }
 
 // ============================================================
+// IR → XLSX WRITER (Component: renderIRSpreadsheetToXlsx)
+// ============================================================
+// Inverse of xlsxToIR: reassembles an IRSpreadsheet (which for pdf-to-excel
+// came from renderIRSpreadsheetToXlsx's input via pdfToIRSpreadsheet) back
+// into a real .xlsx Blob using exceljs.
+
+/** 0-based column index → Excel column letters (0→A, 25→Z, 26→AA). */
+function xlsxColName(col: number): string {
+  let n = col + 1;
+  let out = '';
+  while (n > 0) {
+    const rem = (n - 1) % 26;
+    out = String.fromCharCode(65 + rem) + out;
+    n = Math.floor((n - 1) / 26);
+  }
+  return out;
+}
+
+/** IRSheetMergedRange (0-indexed spans) → Excel merge ref "A1:C3". */
+function xlsxMergeRefFromRange(rg: IRSheetMergedRange): string {
+  const topLeft = `${xlsxColName(rg.col)}${rg.row + 1}`;
+  const bottomRight = `${xlsxColName(rg.col + rg.colspan - 1)}${rg.row + rg.rowspan}`;
+  return `${topLeft}:${bottomRight}`;
+}
+
+/**
+ * Value-assignment rule for inferred cells. `inferred:true` means the type was
+ * GUESSED from display text, not ground truth — so we only write a native
+ * Excel numeric when that guess is lossless (the display string reproduces the
+ * numeric raw exactly). E.g. a synthetic cell `"999.99"`→999.99 is lossless and
+ * becomes a real number (illustrative only — the real EPZ_SIERPIEN grid has no
+ * such lossless decimal in the visible range); `"07.00"`→7 is LOSSY (leading zeros / "00" formatting dropped), so it
+ * stays a string, preserving the exact user-visible text and matching the
+ * original file (which stored "07.00" as a string). Dates/times carry only a
+ * display string (no serial), so they stay strings too. Everything else writes
+ * its display text verbatim.
+ */
+export function xlsxWriteValue(cell: IRSpreadsheetCell):
+  { value: string | number | boolean; native: boolean } {
+  if (cell.type === 'number' && typeof cell.raw === 'number' && isFinite(cell.raw)
+    && cell.display === String(cell.raw)) {
+    return { value: cell.raw, native: true };
+  }
+  return { value: cell.display, native: false };
+}
+
+/**
+ * renderIRSpreadsheetToXlsx(ir) → Blob (MIME application/vnd.openxmlformats-officedocument.spreadsheetml.sheet).
+ * Mirrors xlsxToIR so pdf-to-excel output can be written back to a real workbook:
+ *   - mergedRanges → worksheet.mergeCells("A1:C3") via xlsxMergeRefFromRange
+ *   - columnWidths (already in Excel char-width units) → worksheet.columns[i].width (1:1)
+ *   - inferred cells → xlsxWriteValue (native number only when lossless)
+ *   - fmt.bold/italic are honored (cell.font) even though pdf sources currently
+ *     yield bold=false everywhere (see AGENTS FINDING) — kept for forward compat.
+ *   - conditionalFormattingRules are NOT re-emitted (storage-only in IR).
+ */
+export async function renderIRSpreadsheetToXlsx(ir: IRSpreadsheet): Promise<Blob> {
+  const ExcelJS = (await import('exceljs')).default;
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'OptimaPDF';
+  wb.created = new Date();
+  wb.modified = new Date();
+
+  for (const sheet of ir.sheets) {
+    let ws = wb.getWorksheet(sheet.name);
+    if (!ws) ws = wb.addWorksheet(sheet.name);
+
+    const nCols = sheet.cells[0]?.length ?? 0;
+    const rows = sheet.cells.length;
+
+    // Column widths: already in Excel char-width units → set 1:1.
+    for (let c = 0; c < nCols; c++) {
+      const chars = sheet.columnWidths[c];
+      if (chars !== undefined && chars > 0) ws.getColumn(c + 1).width = chars;
+    }
+
+    for (let r = 0; r < rows; r++) {
+      const rowCells = sheet.cells[r];
+      if (!rowCells) continue;
+      for (let c = 0; c < rowCells.length; c++) {
+        const cell = rowCells[c];
+        if (!cell) continue;
+        const ex = ws.getCell(r + 1, c + 1);
+        const { value } = xlsxWriteValue(cell);
+        ex.value = value;
+        if (cell.fmt && (cell.fmt.bold !== undefined || cell.fmt.italic !== undefined
+          || cell.fmt.colorHex || cell.fmt.fillHex)) {
+          ex.font = {
+            bold: cell.fmt.bold,
+            italic: cell.fmt.italic,
+            color: cell.fmt.colorHex ? { argb: 'FF' + cell.fmt.colorHex } : undefined,
+          };
+        }
+      }
+    }
+
+    // Emit merged ranges. exceljs discards values written into covered (non-anchor)
+    // cells, so a merged range must NEVER swallow valued cells whose anchor is blank:
+    // a blank-anchor merge that covers a valued cell is necessarily a pdfIR false
+    // merge (cs2 artifact — real cells are never anchored on nothing). Suppressing
+    // those false merges preserves the covered data (e.g. Arkusz3 I3, the SUM result
+    // "0", which GT keeps as a standalone cell). Blank-anchor merges that cover only
+    // empty cells are still emitted (harmless structural spans, e.g. header band).
+    for (const rg of sheet.mergedRanges) {
+      const anchorBlank = !sheet.cells[rg.row]?.[rg.col]
+        || sheet.cells[rg.row]![rg.col]!.display === '';
+      let coversValued = false;
+      if (anchorBlank) {
+        for (let dr = 0; dr < rg.rowspan && !coversValued; dr++) {
+          for (let dc = 0; dc < rg.colspan && !coversValued; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const covered = sheet.cells[rg.row + dr]?.[rg.col + dc];
+            if (covered && covered.display !== '') { coversValued = true; break; }
+          }
+        }
+      }
+      if (anchorBlank && coversValued) continue; // false merge → don't swallow data
+      ws.mergeCells(xlsxMergeRefFromRange(rg));
+    }
+
+    ws.getRow(1).commit();
+  }
+
+  const ab = await wb.xlsx.writeBuffer();
+  return new Blob([ab], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+}
+
+// ============================================================
 // IR → PDF RENDERER (XLSX) — GEOMETRY & PAGINATION (pure, no PDF)
 // Component 2, subcomponent 1 (approved design, steps 1-3). These
 // functions are side-effect-free: geometry + pagination run without
@@ -2445,6 +2577,11 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
 // NOTE: the 48.0075 figure is derived, never a handwritten magic number.
 export function xlsxCharWidthToPt(chars: number): number {
   return (chars * 7 + 5) * 0.75;
+}
+
+/** Inverse of xlsxCharWidthToPt: pt → Excel character-width units (chars). */
+export function ptToXlsxCharWidth(pt: number): number {
+  return (pt / 0.75 - 5) / 7;
 }
 
 export const XLSX_DEFAULT_COL_CHARS = 8.43;

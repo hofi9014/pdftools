@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "node scripts/copy-tesseract-assets.mjs && node scripts/copy-pdfjs-assets.mjs",
-    "validate:guides": "npx --yes tsx scripts/validate-guides.ts"
+    "validate:guides": "npx --yes tsx scripts/validate-guides.ts",
+    "test:regression": "npx --yes tsx tests/pdf-excel-regression.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
@@ -18,6 +19,7 @@
     "docx": "^9.7.1",
     "dommatrix": "^0.1.1",
     "dompurify": "^3.4.11",
+    "exceljs": "^4.4.0",
     "flag-icons": "^7.5.0",
     "jszip": "^3.10.1",
     "next": "16.2.9",

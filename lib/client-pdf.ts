@@ -2,7 +2,7 @@ import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFRawStr
 import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePage, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
-import { renderIRToDocx, type IRTextRun, type IRParagraphBlock, type IRHeadingBlock, type IRListItemBlock, type IRImageBlock, type IRTableCell, type IRBlock, type IRRect, type IRPageIR } from './client-pdf-docx';
+import { renderIRToDocx, type IRTextRun, type IRImageBlock, type IRTableCell, type IRBlock, type IRRect, type IRPageIR, type IRSpreadsheetCell, type IRSheet, type IRSpreadsheet, type IRConditionalFormattingRule, ptToXlsxCharWidth } from './client-pdf-docx';
 
 let pdfjsInitPromise: Promise<void> | null = null;
 
@@ -1150,23 +1150,89 @@ export function buildTableClusters(rects: RawRect[]): TableCluster[] {
     if (cols < 2 || rows < 2) continue;
 
     // Rule 3: coverage — how many grid cells are occupied by at least one rect?
-    const occupied = new Set<string>();
+    // Two complementary signals are combined:
+    //  (a) Area coverage: a non-degenerate (filled) rect whose area overlaps the
+    //      cell counts it as occupied. Zero-width/height (stroke) border lines
+    //      never produce area, so they are ignored here — matches filled-rect
+    //      table detection (Component 1, real office PDFs).
+    //  (b) Boundary coverage: a cell is also counted when its four borders are
+    //      all present as stroke lines (top/bottom/left/right). This is what lets
+    //      line-drawn grids (e.g. output of renderSpreadsheetIRToPdf) pass the
+    //      density check, while still rejecting sparse stray-rect structures.
+    const areaCovered = new Set<string>();
+    const hasTop = new Set<string>();
+    const hasBottom = new Set<string>();
+    const hasLeft = new Set<string>();
+    const hasRight = new Set<string>();
     for (const r of groupRects) {
-      for (let ri = 0; ri < rows; ri++) {
-        // Rect overlaps row ri if rect spans across the row's y-range
-        const rowTop = yEdges[ri];
-        const rowBottom = yEdges[ri + 1];
-        if (r.y + r.height <= rowTop || r.y >= rowBottom) continue;
+      const isHLine = r.height < 0.5; // horizontal border line (near-zero height)
+      const isVLine = r.width < 0.5;  // vertical border line (near-zero width)
 
+      // --- Area coverage (non-degenerate rects) ---
+      if (!isHLine && !isVLine) {
+        for (let ri = 0; ri < rows; ri++) {
+          const rowTop = yEdges[ri];
+          const rowBottom = yEdges[ri + 1];
+          if (r.y + r.height <= rowTop || r.y >= rowBottom) continue;
+          for (let ci = 0; ci < cols; ci++) {
+            const colLeft = xEdges[ci];
+            const colRight = xEdges[ci + 1];
+            if (r.x + r.width <= colLeft || r.x >= colRight) continue;
+            areaCovered.add(`${ri},${ci}`);
+          }
+        }
+        continue;
+      }
+
+      // --- Border-line coverage (zero-width/height stroke lines) ---
+      if (isHLine) {
+        // horizontal line: x-range [r.x, r.x+r.width] at y=r.y
+        for (let ri = 0; ri < rows; ri++) {
+          const rowTop = yEdges[ri], rowBottom = yEdges[ri + 1];
+          // line lies on this row's top or bottom edge
+          const isTop = edgesClose(r.y, rowTop);
+          const isBottom = edgesClose(r.y, rowBottom);
+          if (!isTop && !isBottom) continue;
+          for (let ci = 0; ci < cols; ci++) {
+            const colLeft = xEdges[ci], colRight = xEdges[ci + 1];
+            // cell column overlaps the line's x-span (inclusive)
+            if (r.x < colRight + EDGE_TOLERANCE && r.x + r.width > colLeft - EDGE_TOLERANCE) {
+              const cell = `${ri},${ci}`;
+              if (isTop) hasTop.add(cell);
+              if (isBottom) hasBottom.add(cell);
+            }
+          }
+        }
+      } else if (isVLine) {
+        // vertical line: y-range [r.y, r.y+r.height] at x=r.x
         for (let ci = 0; ci < cols; ci++) {
-          const colLeft = xEdges[ci];
-          const colRight = xEdges[ci + 1];
-          if (r.x + r.width <= colLeft || r.x >= colRight) continue;
-
-          occupied.add(`${ri},${ci}`);
+          const colLeft = xEdges[ci], colRight = xEdges[ci + 1];
+          const isLeft = edgesClose(r.x, colLeft);
+          const isRight = edgesClose(r.x, colRight);
+          if (!isLeft && !isRight) continue;
+          for (let ri = 0; ri < rows; ri++) {
+            const rowTop = yEdges[ri], rowBottom = yEdges[ri + 1];
+            if (r.y < rowBottom + EDGE_TOLERANCE && r.y + r.height > rowTop - EDGE_TOLERANCE) {
+              const cell = `${ri},${ci}`;
+              if (isLeft) hasLeft.add(cell);
+              if (isRight) hasRight.add(cell);
+            }
+          }
         }
       }
     }
+
+    // A cell is occupied if it has area coverage OR all four border lines.
+    const occupied = new Set<string>();
+    for (let ri = 0; ri < rows; ri++) {
+      for (let ci = 0; ci < cols; ci++) {
+        const cell = `${ri},${ci}`;
+        if (hasTop.has(cell) && hasBottom.has(cell) && hasLeft.has(cell) && hasRight.has(cell)) {
+          occupied.add(cell);
+        }
+      }
+    }
+    for (const cell of areaCovered) occupied.add(cell);
 
     const totalCells = cols * rows;
     const coverage = occupied.size / totalCells;
@@ -1189,6 +1255,14 @@ export interface GridCell {
   colspan: number;
   rect: RawRect; // the rect that owns this cell
 }
+
+export interface CellTextAssignment {
+  cell: GridCell;
+  runIndex: number;
+}
+
+const CELL_TOLERANCE_X = 3; // pt — horizontal tolerance for text-in-cell matching
+const CELL_TOLERANCE_Y = 5; // pt — vertical tolerance for text-in-cell matching
 
 // Known Limitation: assumes each rect's owned cells form a perfect rectangle
 // (topLeft→bottomRight). Non-rectangular (L-shaped) merges are not supported
@@ -1287,26 +1361,13 @@ export function buildGridAndDetectMerged(cluster: TableCluster): GridCell[] {
 
   return cells;
 }
-
-// ============================================================
-// TABLE DETECTION — Phase 4: assign text runs to grid cells
-// ============================================================
-
-const CELL_TOLERANCE_X = 3; // pt — horizontal tolerance for text-in-cell matching
-const CELL_TOLERANCE_Y = 5; // pt — vertical tolerance for text-in-cell matching
-
-function binarySearchClosest(sorted: number[], val: number): number {
+    function binarySearchClosest(sorted: number[], val: number): number {
   let lo = 0, hi = sorted.length - 1;
   while (lo < hi) {
     const mid = (lo + hi) >> 1;
     if (sorted[mid] < val) lo = mid + 1; else hi = mid;
   }
   return lo;
-}
-
-export interface CellTextAssignment {
-  cell: GridCell;
-  runIndex: number;
 }
 
 export function assignTextRunsToCells(
@@ -1374,6 +1435,79 @@ export function assignTextRunsToCells(
   return assignments;
 }
 
+/**
+ * Roundtrip-only merge refinement via grid topology (border absence).
+ *
+ * The shared buildGridAndDetectMerged must stay byte-identical for word/odt
+ * (see AGENTS regression gate). This post-pass re-infers merged blocks from
+ * the drawn border lines only (zero-width/zero-height rects), so a merged
+ * block is reconstructed from the edges that truly carry a line. It is used
+ * solitarily by the pdf-to-excel roundtrip path (pdfTablesToCells) and never
+ * by the shared extractFormattedTextFromPDF path.
+ */
+function detectMergesByTopology(cluster: TableCluster): GridCell[] {
+  const { rects, xEdges, yEdges, cols, rows } = cluster;
+  const EDGE_T = 1.0; // pt tolerance for edge-line alignment
+  const hasBottom = Array.from({ length: rows }, () => new Array(cols).fill(false));
+  const hasRight = Array.from({ length: rows }, () => new Array(cols).fill(false));
+  for (const r of rects) {
+    const isH = r.height < 0.5;
+    const isV = r.width < 0.5;
+    if (isH && !isV && r.width > 0.5) {
+      for (let ri = 0; ri < rows; ri++) {
+        if (Math.abs(r.y - yEdges[ri + 1]) > EDGE_T) continue;
+        for (let ci = 0; ci < cols; ci++) {
+          const cl = xEdges[ci], cr = xEdges[ci + 1];
+          if (r.x <= cl + EDGE_T && r.x + r.width >= cr - EDGE_T) hasBottom[ri][ci] = true;
+        }
+      }
+    }
+    if (isV && !isH && r.height > 0.5) {
+      for (let ci = 0; ci < cols; ci++) {
+        if (Math.abs(r.x - xEdges[ci + 1]) > EDGE_T) continue;
+        for (let ri = 0; ri < rows; ri++) {
+          const ct = yEdges[ri], cb = yEdges[ri + 1];
+          if (r.y <= ct + EDGE_T && r.y + r.height >= cb - EDGE_T) hasRight[ri][ci] = true;
+        }
+      }
+    }
+  }
+
+  const cells: GridCell[] = [];
+  const cellSpanRow = Array.from({ length: rows }, () => new Array(cols).fill(1));
+  const cellSpanCol = Array.from({ length: rows }, () => new Array(cols).fill(1));
+  for (let r2 = rows - 1; r2 >= 0; r2--) {
+    for (let c = 0; c < cols; c++) {
+      let rn = 1;
+      while (r2 + rn < rows && !hasBottom[r2 + rn - 1][c]) rn++;
+      cellSpanRow[r2][c] = rn;
+    }
+  }
+  for (let c = cols - 1; c >= 0; c--) {
+    for (let r2 = 0; r2 < rows; r2++) {
+      let cn = 1;
+      while (c + cn < cols && !hasRight[r2][c + cn - 1]) cn++;
+      cellSpanCol[r2][c] = cn;
+    }
+  }
+
+  for (let r2 = 0; r2 < rows; r2++) {
+    for (let c = 0; c < cols; c++) {
+      const rowspan = cellSpanRow[r2][c];
+      const colspan = cellSpanCol[r2][c];
+      const isRowTop = r2 === 0 || hasBottom[r2 - 1][c];
+      const isColLeft = c === 0 || hasRight[r2][c - 1];
+      const cellRsp = isRowTop && isColLeft ? rowspan : 1;
+      const cellCsp = isRowTop && isColLeft ? colspan : 1;
+      if (!isRowTop && rowspan > 1) continue;
+      if (!isColLeft && colspan > 1) continue;
+      cells.push({ row: r2, col: c, rowspan: cellRsp, colspan: cellCsp, rect: rects[0] });
+    }
+  }
+
+  return cells;
+}
+
 // ============================================================
 // IR HELPERS
 // ============================================================
@@ -1424,6 +1558,175 @@ const BULLET_REGEX = /^[•‣●\u2022\u2023\u25CF\-–—]\s*/;
 const NUMBERED_REGEX = /^\d+[.)]\s*/;
 
 // ============================================================
+// Shared per-page scaffold — reused by extractFormattedTextFromPDF
+// and pdfTablesToCells (single source of truth for op/text extraction)
+// ============================================================
+
+interface PdfPageScaffoldImage {
+  imageId: string;
+  natW: number;
+  natH: number;
+  bounds: IRRect;
+}
+
+export interface PdfPageScaffold {
+  ops: OpEntry[];
+  textRuns: IRTextRun[];
+  images: PdfPageScaffoldImage[];
+}
+
+export function buildPageScaffold(
+  opList: { fnArray: number[]; argsArray: unknown[] },
+  OPS: Record<string, number>,
+): PdfPageScaffold {
+  // --- Build operator name map ---
+  const OPS_MAP: Record<number, string> = {};
+  for (const [name, id] of Object.entries(OPS)) OPS_MAP[id as unknown as number] = name;
+
+  // --- State machine: walk opList to build per-showText color context ---
+  const ops: OpEntry[] = [];
+  for (let i = 0; i < opList.fnArray.length; i++) {
+    ops.push({ op: OPS_MAP[opList.fnArray[i]] || '', args: opList.argsArray[i] });
+  }
+
+  // For each setTextMatrix index, find the fill color that was set before it
+  const textOpColors: Map<number, string> = new Map();
+  let currentFill = '#000000';
+  for (let i = 0; i < ops.length; i++) {
+    const { op, args } = ops[i];
+    if (op === 'setFillRGBColor') currentFill = Array.isArray(args) ? (args[0] as string) : (args as string);
+    if (op === 'setTextMatrix') textOpColors.set(i, currentFill);
+  }
+
+  // For each setTextMatrix index, find the font set before it
+  const textOpFonts: Map<number, { name: string; size: number }> = new Map();
+  let currentFont = { name: '', size: 12 };
+  for (let i = 0; i < ops.length; i++) {
+    const { op, args } = ops[i];
+    if (op === 'setFont' && Array.isArray(args)) {
+      currentFont = { name: args[0] as string, size: args[1] as number };
+    }
+    if (op === 'setTextMatrix') textOpFonts.set(i, { ...currentFont });
+  }
+
+  // KNOWN LIMITATION: Linear color/font state machine
+  // The state machine above tracks color and font as linear "last write wins".
+  // It does NOT implement a proper save/restore stack (save/restore operators).
+  // For PDFs with nested save/restore blocks (e.g., different colors in
+  // save/restore pairs), the last setFillRGBColor before a setTextMatrix
+  // is used, which may be incorrect if a restore() should have reverted
+  // the color. This is a known limitation; most office-generated PDFs
+  // don't use nested save/restore for text formatting.
+
+  // --- Image detection: paintImageXObject with accumulated transforms ---
+  const images: PdfPageScaffoldImage[] = [];
+  let accumTx = [1, 0, 0, 1, 0, 0];
+  for (let i = 0; i < ops.length; i++) {
+    const { op, args } = ops[i];
+    if (op === 'save') accumTx = [1, 0, 0, 1, 0, 0];
+    if (op === 'transform' && Array.isArray(args)) {
+      const m = args as number[];
+      accumTx = [
+        accumTx[0] * m[0] + accumTx[2] * m[1],
+        accumTx[1] * m[0] + accumTx[3] * m[1],
+        accumTx[0] * m[2] + accumTx[2] * m[3],
+        accumTx[1] * m[2] + accumTx[3] * m[3],
+        accumTx[0] * m[4] + accumTx[2] * m[5] + accumTx[4],
+        accumTx[1] * m[4] + accumTx[3] * m[5] + accumTx[5],
+      ];
+    }
+    if (op === 'paintImageXObject' && Array.isArray(args)) {
+      const imgId = args[0] as string;
+      const natW = (args[1] as number) || 100;
+      const natH = (args[2] as number) || 100;
+      const sx = Math.sqrt(accumTx[0] ** 2 + accumTx[1] ** 2);
+      const sy = Math.sqrt(accumTx[2] ** 2 + accumTx[3] ** 2);
+      images.push({
+        imageId: imgId,
+        natW,
+        natH,
+        bounds: {
+          x: accumTx[4],
+          y: accumTx[5],
+          width: natW * sx,
+          height: natH * sy,
+        },
+      });
+    }
+  }
+
+  // --- Build textRuns from operator list showText ---
+  // Using showText directly gives accurate per-segment colors and avoids
+  // getTextContent merging of adjacent same-line text with different colors.
+  // getTextContent merges "Czerwony tekst" + "Niebieski tekst" into one item;
+  // showText has them as two separate calls with different positions and colors.
+  const textRuns: IRTextRun[] = [];
+
+  for (let i = 0; i < ops.length; i++) {
+    if (ops[i].op !== 'setTextMatrix') continue;
+
+    // Extract setTextMatrix values
+    // Args format: [{0:a, 1:b, 2:c, 3:d, 4:e, 5:f}] (array with object)
+    const rawTm = ops[i].args;
+    const tmObj = (Array.isArray(rawTm) ? rawTm[0] : rawTm) as PDFTmObj;
+    if (!tmObj || typeof tmObj !== 'object') continue;
+    const tmX = tmObj[4] ?? tmObj['4'] ?? 0;
+    const tmY = tmObj[5] ?? tmObj['5'] ?? 0;
+    const tmA = tmObj[0] ?? tmObj['0'] ?? 1;
+    const tmB = tmObj[1] ?? tmObj['1'] ?? 0;
+
+    // Find the next showText within a reasonable window
+    let stIdx = -1;
+    for (let j = i + 1; j < Math.min(i + 8, ops.length); j++) {
+      if (ops[j].op === 'showText') { stIdx = j; break; }
+      if (ops[j].op === 'setTextMatrix' || ops[j].op === 'endText') break;
+    }
+    if (stIdx === -1) continue;
+
+    // Extract glyphs from showText args
+    const rawSt = ops[stIdx].args;
+    const glyphArr = (Array.isArray(rawSt)
+      ? (Array.isArray(rawSt[0]) ? rawSt[0] : rawSt)
+      : []) as PDFGlyph[];
+    if (glyphArr.length === 0) continue;
+
+    // Reconstruct text from glyph unicode values (unicode is a string character)
+    const text = glyphArr.map(g => g.unicode || g.fontChar || '').join('');
+    if (!text) continue;
+
+    // Get font and color from state machine
+    const fontInfo = textOpFonts.get(i) || { name: '', size: 12 };
+    const color = textOpColors.get(i) || '#000000';
+
+    // Compute width from glyph widths (width in font units → PDF points)
+    let width = 0;
+    for (const g of glyphArr) {
+      width += (g.width || 0) * fontInfo.size / 1000;
+    }
+    if (width === 0) {
+      width = text.length * fontInfo.size * 0.5;
+    }
+
+    const rotation = getRotation([tmA, tmB, 0, 0, 0, 0]);
+
+    textRuns.push({
+      text,
+      fontName: fontInfo.name,
+      fontSize: fontInfo.size,
+      width,
+      height: fontInfo.size,
+      position: { x: tmX, y: tmY },
+      color,
+      bold: parseFontStyle(fontInfo.name).bold,
+      italic: parseFontStyle(fontInfo.name).italic,
+      rotation,
+    });
+  }
+
+  return { ops, textRuns, images };
+}
+
+// ============================================================
 // extractFormattedTextFromPDF — Phase 1a (no tables)
 // ============================================================
 
@@ -1443,155 +1746,7 @@ export async function extractFormattedTextFromPDF(file: File): Promise<IRPageIR[
 
     const opList = await page.getOperatorList();
 
-    // --- Build operator name map ---
-    const OPS_MAP: Record<number, string> = {};
-    for (const [name, id] of Object.entries(OPS)) OPS_MAP[id as unknown as number] = name;
-
-    // --- State machine: walk opList to build per-showText color context ---
-    const ops: OpEntry[] = [];
-    for (let i = 0; i < opList.fnArray.length; i++) {
-      ops.push({ op: OPS_MAP[opList.fnArray[i]] || '', args: opList.argsArray[i] });
-    }
-
-    // For each setTextMatrix index, find the fill color that was set before it
-    const textOpColors: Map<number, string> = new Map();
-    let currentFill = '#000000';
-    for (let i = 0; i < ops.length; i++) {
-      const { op, args } = ops[i];
-      if (op === 'setFillRGBColor') currentFill = Array.isArray(args) ? (args[0] as string) : (args as string);
-      if (op === 'setTextMatrix') textOpColors.set(i, currentFill);
-    }
-
-    // For each setTextMatrix index, find the font set before it
-    const textOpFonts: Map<number, { name: string; size: number }> = new Map();
-    let currentFont = { name: '', size: 12 };
-    for (let i = 0; i < ops.length; i++) {
-      const { op, args } = ops[i];
-      if (op === 'setFont' && Array.isArray(args)) {
-        currentFont = { name: args[0] as string, size: args[1] as number };
-      }
-      if (op === 'setTextMatrix') textOpFonts.set(i, { ...currentFont });
-    }
-
-    // KNOWN LIMITATION: Linear color/font state machine
-    // The state machine above tracks color and font as linear "last write wins".
-    // It does NOT implement a proper save/restore stack (save/restore operators).
-    // For PDFs with nested save/restore blocks (e.g., different colors in
-    // save/restore pairs), the last setFillRGBColor before a setTextMatrix
-    // is used, which may be incorrect if a restore() should have reverted
-    // the color. This is a known limitation; most office-generated PDFs
-    // don't use nested save/restore for text formatting.
-
-    // --- Image detection: paintImageXObject with accumulated transforms ---
-    interface ImageOp {
-      imageId: string;
-      natW: number;
-      natH: number;
-      bounds: IRRect;
-    }
-    const images: ImageOp[] = [];
-    let accumTx = [1, 0, 0, 1, 0, 0];
-    for (let i = 0; i < ops.length; i++) {
-      const { op, args } = ops[i];
-      if (op === 'save') accumTx = [1, 0, 0, 1, 0, 0];
-      if (op === 'transform' && Array.isArray(args)) {
-        const m = args as number[];
-        accumTx = [
-          accumTx[0] * m[0] + accumTx[2] * m[1],
-          accumTx[1] * m[0] + accumTx[3] * m[1],
-          accumTx[0] * m[2] + accumTx[2] * m[3],
-          accumTx[1] * m[2] + accumTx[3] * m[3],
-          accumTx[0] * m[4] + accumTx[2] * m[5] + accumTx[4],
-          accumTx[1] * m[4] + accumTx[3] * m[5] + accumTx[5],
-        ];
-      }
-      if (op === 'paintImageXObject' && Array.isArray(args)) {
-        const imgId = args[0] as string;
-        const natW = (args[1] as number) || 100;
-        const natH = (args[2] as number) || 100;
-        const sx = Math.sqrt(accumTx[0] ** 2 + accumTx[1] ** 2);
-        const sy = Math.sqrt(accumTx[2] ** 2 + accumTx[3] ** 2);
-        images.push({
-          imageId: imgId,
-          natW,
-          natH,
-          bounds: {
-            x: accumTx[4],
-            y: accumTx[5],
-            width: natW * sx,
-            height: natH * sy,
-          },
-        });
-      }
-    }
-
-    // --- Build textRuns from operator list showText ---
-    // Using showText directly gives accurate per-segment colors and avoids
-    // getTextContent merging of adjacent same-line text with different colors.
-    // getTextContent merges "Czerwony tekst" + "Niebieski tekst" into one item;
-    // showText has them as two separate calls with different positions and colors.
-    const textRuns: IRTextRun[] = [];
-
-    for (let i = 0; i < ops.length; i++) {
-      if (ops[i].op !== 'setTextMatrix') continue;
-
-      // Extract setTextMatrix values
-      // Args format: [{0:a, 1:b, 2:c, 3:d, 4:e, 5:f}] (array with object)
-      const rawTm = ops[i].args;
-      const tmObj = (Array.isArray(rawTm) ? rawTm[0] : rawTm) as PDFTmObj;
-      if (!tmObj || typeof tmObj !== 'object') continue;
-      const tmX = tmObj[4] ?? tmObj['4'] ?? 0;
-      const tmY = tmObj[5] ?? tmObj['5'] ?? 0;
-      const tmA = tmObj[0] ?? tmObj['0'] ?? 1;
-      const tmB = tmObj[1] ?? tmObj['1'] ?? 0;
-
-      // Find the next showText within a reasonable window
-      let stIdx = -1;
-      for (let j = i + 1; j < Math.min(i + 8, ops.length); j++) {
-        if (ops[j].op === 'showText') { stIdx = j; break; }
-        if (ops[j].op === 'setTextMatrix' || ops[j].op === 'endText') break;
-      }
-      if (stIdx === -1) continue;
-
-      // Extract glyphs from showText args
-      const rawSt = ops[stIdx].args;
-      const glyphArr = (Array.isArray(rawSt)
-        ? (Array.isArray(rawSt[0]) ? rawSt[0] : rawSt)
-        : []) as PDFGlyph[];
-      if (glyphArr.length === 0) continue;
-
-      // Reconstruct text from glyph unicode values (unicode is a string character)
-      const text = glyphArr.map(g => g.unicode || g.fontChar || '').join('');
-      if (!text) continue;
-
-      // Get font and color from state machine
-      const fontInfo = textOpFonts.get(i) || { name: '', size: 12 };
-      const color = textOpColors.get(i) || '#000000';
-
-      // Compute width from glyph widths (width in font units → PDF points)
-      let width = 0;
-      for (const g of glyphArr) {
-        width += (g.width || 0) * fontInfo.size / 1000;
-      }
-      if (width === 0) {
-        width = text.length * fontInfo.size * 0.5;
-      }
-
-      const rotation = getRotation([tmA, tmB, 0, 0, 0, 0]);
-
-      textRuns.push({
-        text,
-        fontName: fontInfo.name,
-        fontSize: fontInfo.size,
-        width,
-        height: fontInfo.size,
-        position: { x: tmX, y: tmY },
-        color,
-        bold: parseFontStyle(fontInfo.name).bold,
-        italic: parseFontStyle(fontInfo.name).italic,
-        rotation,
-      });
-    }
+    const { ops, textRuns, images } = buildPageScaffold(opList, OPS);
 
     // --- Compute bodyFontSize ---
     const sizeStats: Record<string, number> = {};
@@ -1810,6 +1965,636 @@ export async function extractFormattedTextFromPDF(file: File): Promise<IRPageIR[
 
   await doc.cleanup();
   return pages;
+}
+
+// ============================================================
+// pdfTablesToCells — Component 3, Step 3.1: per-page table geometry
+// Reuses the 4 detection phases (extractRectsFromOps → buildTableClusters
+// → buildGridAndDetectMerged → assignTextRunsToCells) via the shared
+// buildPageScaffold. Output is low-level geometry + text assignments,
+// intended as input for mergeBandsForRoundtrip (3.2).
+// ============================================================
+
+export interface PdfTableClusterResult {
+  xEdges: number[];
+  yEdges: number[];
+  cells: GridCell[];
+  assignments: CellTextAssignment[];
+  textRuns: IRTextRun[];
+  rows: number;
+  cols: number;
+}
+
+export interface PdfTablesToCellsPage {
+  page: number;
+  pageWidth: number;
+  pageHeight: number;
+  clusters: PdfTableClusterResult[];
+}
+
+export async function pdfTablesToCells(file: File): Promise<PdfTablesToCellsPage[]> {
+  const buf = await file.arrayBuffer();
+  const pdfjsLib = await import('pdfjs-dist');
+  await initPdfjs();
+  const OPS = pdfjsLib.OPS;
+  const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
+  const result: PdfTablesToCellsPage[] = [];
+
+  for (let p = 1; p <= doc.numPages; p++) {
+    const page = await doc.getPage(p);
+    const vp = page.getViewport({ scale: 1 });
+    const pageWidth = vp.width;
+    const pageHeight = vp.height;
+
+    const opList = await page.getOperatorList();
+    const { ops, textRuns } = buildPageScaffold(opList, OPS);
+
+    const tableRects = extractRectsFromOps(ops, pageHeight);
+    const tableClusters = buildTableClusters(tableRects);
+
+    const clusters: PdfTableClusterResult[] = [];
+    for (const cluster of tableClusters) {
+      const cells = detectMergesByTopology(cluster);
+      const assignments = assignTextRunsToCells(textRuns, cells, cluster.xEdges, cluster.yEdges, pageHeight);
+      clusters.push({
+        xEdges: cluster.xEdges,
+        yEdges: cluster.yEdges,
+        cells,
+        assignments,
+        textRuns,
+        rows: cluster.rows,
+        cols: cluster.cols,
+      });
+    }
+
+    result.push({ page: p, pageWidth, pageHeight, clusters });
+  }
+
+  await doc.cleanup();
+  return result;
+}
+
+// ============================================================
+// Component 3, Step 3.2: mergeBandsForRoundtrip — reassemble the
+// fragment-major paginated spreadsheet PDF back into IRSheet rows.
+// ============================================================
+// The renderer (renderSpreadsheetIRToPdf) paginates fragment-major,
+// chunk-minor: for each column-fragment it stacks all vertical chunks;
+// then it moves to the next column-fragment. Every page re-prepends the
+// frozen title row (index 0) at the top.
+//
+// mergeBandsForRoundtrip reverses that:
+//   - R1 (segmentation): page stream is split into sheets. A page that
+//     carries a mini sheet-title heading ("ArkuszN") starts a new sheet.
+//   - R2 (direction): within a sheet, pages are grouped into column-
+//     fragments by identical xEdges geometry (downLike); distinct
+//     fragments share a left/right boundary (rightLike). If both hold for
+//     a page it is dual-direction → ambiguous → new sheet + warning.
+//   - R3 (header dedup): the longest common TEXT prefix (compared from
+//     row index 0) between a continuation page and the already-assembled
+//     sheet is dropped before appending. Applied to rows (down) and, for
+//     right fragments, to the shared leading rows (columns are concatenated).
+//   - R4 (alarm): geometry says a direction matches but the first
+//     row/column content differs → header-mismatch warning + new sheet,
+//     never a silent merge.
+// Loose pages without any detected cluster (e.g. the single trailing
+// column band, rejected by the cols>=2 guard) cannot be placed
+// geometrically; they are reported as zero-cluster-skipped warnings rather
+// than fabricated into the sheet (the real EPZ trailing column is header-
+// only, so this loses no data).
+// ============================================================
+
+export interface MergeBandPage {
+  page: number;
+  pageHeight: number;
+  /** Present only on the sheet's first page (mini sheet-title heading). */
+  sheetTitle?: string;
+  /** Plain text of the whole page (for 0-cluster pages). */
+  pageText?: string;
+  clusters: PdfTableClusterResult[];
+}
+
+export type MergeWarning =
+  | { kind: 'dual-direction-match'; page: number }
+  | { kind: 'header-mismatch'; page: number; direction: 'down' | 'right'; expected: string; got: string }
+  | { kind: 'prefix-not-0'; page: number }
+  | { kind: 'zero-cluster-skipped'; page: number; text: string }
+  | { kind: 'merge-continuation-ambiguous'; page: number; col: number };
+
+export interface MergeResult {
+  sheets: IRSheet[];
+  warnings: MergeWarning[];
+}
+
+const EDGE_SIG_PRECISION = 0.5; // geometry signature rounding (pt)
+
+/** Longest common TEXT prefix length between a and b, compared from index 0. */
+function commonPrefixLen(a: string[], b: string[]): number {
+  let n = 0;
+  const m = Math.min(a.length, b.length);
+  while (n < m && a[n] === b[n]) n++;
+  return n;
+}
+
+function clusterCellText(cluster: PdfTableClusterResult, row: number, col: number): string {
+  const parts: string[] = [];
+  for (const { cell, runIndex } of cluster.assignments) {
+    if (cell.row === row && cell.col === col) parts.push(cluster.textRuns[runIndex]?.text ?? '');
+  }
+  return parts.join(' ').trim();
+}
+
+/**
+ * Interpolated string/number/boolean heuristic for PDF-sourced cells.
+ * Optional dominant-run format (bold/italic) is attached to the cell; when
+ * provided it reflects the renderer's per-cell text style (see daily pipeline docs).
+ */
+export function irCellFromText(text: string, fmt?: { bold?: boolean; italic?: boolean }): IRSpreadsheetCell {
+  const t = text.trim();
+  const base: IRSpreadsheetCell = { display: t, type: 'string', raw: t, colspan: 1, rowspan: 1 };
+  if (fmt !== undefined && (fmt.bold === true || fmt.italic === true)) {
+    base.fmt = { bold: fmt.bold === true ? true : undefined, italic: fmt.italic === true ? true : undefined };
+  }
+  if (!t) return base;
+  if (/^\d+$/.test(t)) { return { ...base, type: 'number', raw: Number(t), inferred: true }; }
+  if (/^\d{2}-\d{2}-\d{2}$/.test(t) || /^\d{4}-\d{2}-\d{2}$/.test(t)) { return { ...base, type: 'date', raw: t, inferred: true }; }
+  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(t)) { return { ...base, type: 'time', raw: t, inferred: true }; }
+  if (/^\d+(\.\d+)?$/.test(t)) { return { ...base, type: 'number', raw: parseFloat(t), inferred: true }; }
+  return base;
+}
+
+/** Dominant bold/italic of the run(s) assigned to a cluster cell (by glyph width). */
+function clusterCellFormats(
+  cluster: PdfTableClusterResult,
+  row: number,
+  col: number,
+): { bold?: boolean; italic?: boolean } | undefined {
+  let best: { bold: boolean; italic: boolean } | undefined;
+  let bestWeight = -1;
+  for (const { cell, runIndex } of cluster.assignments) {
+    if (cell.row !== row || cell.col !== col) continue;
+    const run = cluster.textRuns[runIndex];
+    if (!run) continue;
+    const weight = run.width || (run.text?.length ?? 0);
+    if (weight > bestWeight) {
+      bestWeight = weight;
+      best = { bold: run.bold, italic: run.italic };
+    }
+    // Track whether ANY bold/italic run exists to catch equal-weight cases.
+    if (run.bold || run.italic) best = { bold: best?.bold || run.bold, italic: best?.italic || run.italic };
+  }
+  return best;
+}
+
+interface FragmentGrid {
+  sig: string;
+  xEdges: number[];
+  cols: number;
+  firstPage: number;
+  /** rows x cols of parsed IR cells (or undefined for empty). */
+  cells: (IRSpreadsheetCell | undefined)[][];
+  /** rows x cols of plain text (for prefix dedup). */
+  text: string[][];
+  /** present-cell merged ranges (row,col,rowspan,colspan). */
+  merges: { row: number; col: number; rowspan: number; colspan: number }[];
+}
+
+/** Map a page column (by local x span) onto the canonical column index. */
+function clusterColIndex(xEdges: number[], localXEdges: number[], localCol: number): number {
+  for (let k = 0; k + 1 < xEdges.length; k++) {
+    if (Math.abs(xEdges[k] - localXEdges[localCol]) < EDGE_SIG_PRECISION &&
+        Math.abs(xEdges[k + 1] - localXEdges[localCol + 1]) < EDGE_SIG_PRECISION) {
+      return k;
+    }
+  }
+  return localCol;
+}
+
+/**
+ * Canonical columns whose multi-row merges reach the LAST body row of a page
+ * (i.e. the row the renderer clipped at the page bottom). A rowspan that was
+ * split by vertical pagination disappears "into" page N+1 here: the piece on
+ * page N exactly abuts the bottom body edge. Returns an empty set when the
+ * page has no such abutting multi-row merges.
+ */
+function bottomRowspanCols(
+  cl: PdfTableClusterResult,
+  xEdges: number[],
+  localXEdges: number[],
+): Set<number> {
+  const out = new Set<number>();
+  for (const cell of cl.cells) {
+    if (cell.rowspan <= 1) continue; // only vertical merges can cross a row break
+    if (cell.row + cell.rowspan >= cl.rows) {
+      out.add(clusterColIndex(xEdges, localXEdges, cell.col));
+    }
+  }
+  return out;
+}
+
+/** Per-row plain text of a page cluster aligned to a canonical column width. */
+function canonicalRowTexts(cl: PdfTableClusterResult, localXEdges: number[], xEdges: number[], width: number): string[] {
+  const rows: string[] = [];
+  for (let r = 0; r < cl.rows; r++) {
+    const rowArr: string[] = new Array(width).fill('');
+    for (let c = 0; c < cl.cols; c++) {
+      const ci = clusterColIndex(xEdges, localXEdges, c);
+      if (ci < width) rowArr[ci] = clusterCellText(cl, r, c);
+    }
+    rows.push(rowArr.join('\u0001').trim());
+  }
+  return rows;
+}
+
+function buildFragmentGrid(pages: MergeBandPage[]): { grid: FragmentGrid; warnings: MergeWarning[] } {
+  const warnings: MergeWarning[] = [];
+  const first = pages[0];
+  // Canonical columns = the WIDEST xEdges across the pages' clusters (all
+  // pages share the same left edge). Empty trailing columns may vanish from a
+  // continuation page (no strokes/text), so the first page's width may exceed a
+  // later page's measured width; we align every page to the widest.
+  let xEdges = first.clusters[0].xEdges;
+  for (const p of pages) {
+    for (const cl of p.clusters) {
+      if (cl.xEdges.length > xEdges.length) xEdges = cl.xEdges;
+    }
+  }
+  const cols = xEdges.length - 1;
+  const cells: (IRSpreadsheetCell | undefined)[][] = [];
+  const text: string[][] = [];
+  const merges: FragmentGrid['merges'] = [];
+
+  let anchorRowTexts: string[] | null = null;
+  // Columns whose last page-body merge reached the very bottom body row of the
+  // PRECEDING page. A rowspan crossing a page break is drawn (clipped) as two
+  // pieces: a bottom piece ending at the last body row of page N and a top
+  // piece starting at the first non-frozen body row of page N+1, in the same
+  // column. This renderer never draws a gap between them, so we cannot prove
+  // they are one original cell (see AGENTS FINDING). Per the conservative V1
+  // rule (never glue, always warn) we surface every such pairing as
+  // 'merge-continuation-ambiguous' instead of silently merging them.
+  let prevBottomCols = new Set<number>();
+
+  for (const page of pages) {
+    if (page.clusters.length === 0) {
+      warnings.push({ kind: 'zero-cluster-skipped', page: page.page, text: page.pageText ?? '' });
+      continue;
+    }
+    const cl = page.clusters[0];
+    const localX = cl.xEdges;
+    const rowTexts = canonicalRowTexts(cl, localX, xEdges, cols);
+
+    // Row base for this page: all rows already accumulated. Seed page starts at
+    // 0; each continuation appends after the previous page's rows.
+    const rowBase = cells.length;
+
+    if (anchorRowTexts === null) {
+      // Seed the fragment with this page's rows, padded to canonical width.
+      for (let r = 0; r < cl.rows; r++) {
+        const rowCells: (IRSpreadsheetCell | undefined)[] = new Array(cols).fill(undefined);
+        const rowTextsArr: string[] = new Array(cols).fill('');
+        for (let c = 0; c < cl.cols; c++) {
+          const ci = clusterColIndex(xEdges, localX, c);
+          if (ci < cols) {
+            const txt = clusterCellText(cl, r, c);
+            rowTextsArr[ci] = txt;
+            rowCells[ci] = txt ? irCellFromText(txt, clusterCellFormats(cl, r, c)) : undefined;
+          }
+        }
+        cells.push(rowCells);
+        text.push(rowTextsArr);
+      }
+      // Record merged ranges from the first page at their absolute row index
+      // (rowBase === 0 here).
+      for (const cell of cl.cells) {
+        if (cell.rowspan > 1 || cell.colspan > 1) {
+          const ci = clusterColIndex(xEdges, localX, cell.col);
+          if (ci < cols) {
+            merges.push({ row: rowBase + cell.row, col: ci, rowspan: cell.rowspan, colspan: cell.colspan });
+          }
+        }
+      }
+      anchorRowTexts = rowTexts;
+      prevBottomCols = bottomRowspanCols(cl, xEdges, localX);
+      continue;
+    }
+
+    // Continuation page: dedup the longest common text prefix vs the anchor.
+    const common = commonPrefixLen(anchorRowTexts, rowTexts);
+    if (common === 0) {
+      // Geometry agrees (same fragment) but the top row text differs →
+      // R4 alarm. Never merge silently.
+      warnings.push({
+        kind: 'header-mismatch',
+        page: page.page,
+        direction: 'down',
+        expected: anchorRowTexts[0] ?? '',
+        got: rowTexts[0] ?? '',
+      });
+      continue;
+    }
+    // The page's first `common` rows duplicate already-assembled rows (repeated
+    // frozen title), so their merged ranges must NOT be re-recorded. Every
+    // merged cell in a row r >= common lands at (rowBase + r - common).
+    const mergeRowBase = rowBase - common;
+    // A merged cell whose top sits on the first non-frozen body row in a column
+    // whose preceding page ended at its bottom body row is a split rowspan — we
+    // do not glue pieces (the renderer cannot prove they are one cell), so this
+    // pairing is surfaced as a warning.
+    for (const cell of cl.cells) {
+      if (cell.row !== common) continue;
+      if (cell.rowspan <= 1 && cell.colspan <= 1) continue;
+      const ci = clusterColIndex(xEdges, localX, cell.col);
+      if (prevBottomCols.has(ci)) {
+        warnings.push({ kind: 'merge-continuation-ambiguous', page: page.page, col: ci });
+      }
+    }
+    // Reject every merged cell whose leading row lies within the duplicated
+    // frozen rows [0, common): repeated title/header rows only "happen" to still
+    // carry rowspans/colspans, but they are not recoverable data on this page.
+    for (const cell of cl.cells) {
+      if (cell.row < common) continue;
+      if (cell.rowspan > 1 || cell.colspan > 1) {
+        const ci = clusterColIndex(xEdges, localX, cell.col);
+        if (ci < cols) {
+          merges.push({ row: mergeRowBase + cell.row, col: ci, rowspan: cell.rowspan, colspan: cell.colspan });
+        }
+      }
+    }
+    for (let r = common; r < cl.rows; r++) {
+      const rowCells: (IRSpreadsheetCell | undefined)[] = new Array(cols).fill(undefined);
+      const rowTxt: string[] = new Array(cols).fill('');
+      for (let c = 0; c < cl.cols; c++) {
+        const ci = clusterColIndex(xEdges, localX, c);
+        if (ci < cols) {
+          const txt = clusterCellText(cl, r, c);
+          rowTxt[ci] = txt;
+          rowCells[ci] = txt ? irCellFromText(txt, clusterCellFormats(cl, r, c)) : undefined;
+        }
+      }
+      cells.push(rowCells);
+      text.push(rowTxt);
+    }
+    prevBottomCols = bottomRowspanCols(cl, xEdges, localX);
+  }
+
+  const grid: FragmentGrid = {
+    sig: xEdges.join(','),
+    xEdges,
+    cols,
+    firstPage: first.page,
+    cells,
+    text,
+    merges,
+  };
+  return { grid, warnings };
+}
+
+/**
+ * Pure core: given per-page band clusters, re-assemble sheets + warnings.
+ * Synthetic-unit-testable without pdfjs.
+ */
+export function assembleSheets(bands: MergeBandPage[]): MergeResult {
+  const warnings: MergeWarning[] = [];
+
+  // --- R1: segment pages into sheets ---
+  const sheetGroups: MergeBandPage[][] = [];
+  let current: MergeBandPage[] = [];
+  for (const p of bands) {
+    if (p.sheetTitle && current.length > 0) {
+      sheetGroups.push(current);
+      current = [];
+    }
+    current.push(p);
+  }
+  if (current.length > 0) sheetGroups.push(current);
+
+  const sheets: IRSheet[] = [];
+
+  for (const group of sheetGroups) {
+    const title = group.find(p => p.sheetTitle)?.sheetTitle ?? 'Arkusz';
+    const titledPages = group.filter(p => p.clusters.length > 0);
+
+    // Blank pages in a sheet group carry no recoverable table band; surface them
+    // as zero-cluster-skipped so nothing is dropped silently.
+    for (const bl of group) {
+      if (bl.clusters.length === 0) {
+        warnings.push({ kind: 'zero-cluster-skipped', page: bl.page, text: bl.pageText ?? '' });
+      }
+    }
+
+    if (titledPages.length === 0) {
+      continue;
+    }
+
+    // --- R1b: group pages by geometry LEFT EDGE (downLike). ---
+    // Rendered sheets render fragments in contiguous column runs with distinct
+    // left edges; pages sharing a left edge are down-continuations of one
+    // fragment. Empty trailing columns may disappear from a continuation page,
+    // so we key on the left edge only (buildFragmentGrid collapses to the
+    // widest column set).
+    const fragKey = (cl: PdfTableClusterResult): string => cl.xEdges[0].toFixed(1);
+    const fragMap = new Map<string, MergeBandPage[]>();
+    const fragOrder: string[] = [];
+    for (const p of titledPages) {
+      const key = fragKey(p.clusters[0]);
+      if (!fragMap.has(key)) { fragMap.set(key, []); fragOrder.push(key); }
+      fragMap.get(key)!.push(p);
+    }
+
+    // Order fragments left→right (by left edge, then widest right edge).
+    const sigBounds = new Map<string, { left: number; right: number; cols: number }>();
+    for (const key of fragOrder) {
+      const c = fragMap.get(key)![0].clusters[0];
+      sigBounds.set(key, { left: c.xEdges[0], right: c.xEdges[c.xEdges.length - 1], cols: c.cols });
+    }
+    fragOrder.sort((a, b) => {
+      const ba = sigBounds.get(a)!;
+      const bb = sigBounds.get(b)!;
+      if (ba.left !== bb.left) return ba.left - bb.left;
+      return ba.right - bb.right;
+    });
+
+    // Build fragment grids (down-merging each fragment's chunk pages).
+    const fragmentGrids = fragOrder.map(sig => {
+      const r = buildFragmentGrid(fragMap.get(sig)!);
+      for (const w of r.warnings) warnings.push(w);
+      return r.grid;
+    });
+
+    // --- R2/R4: greedily partition fragments into sheets. ---
+    // A fragment joins the current sheet only when it is a clear right band
+    // (its left edge abuts the current sheet's right edge) AND its leading row
+    // text matches the current sheet's leading row (R3 checks). Otherwise the
+    // fragment is dual-direction (R2) or header-mismatch (R4) → it opens a new
+    // sheet, never a silent merge.
+    const sheetsForGroup: { name: string; fragments: FragmentGrid[] }[] = [];
+    let current = { name: title, fragments: [fragmentGrids[0]] };
+
+    for (let i = 1; i < fragmentGrids.length; i++) {
+      const fg = fragmentGrids[i];
+      const anchor = current.fragments[0];
+      const abuts = Math.abs(fg.xEdges[0] - anchor.xEdges[anchor.xEdges.length - 1]) < EDGE_SIG_PRECISION;
+
+      if (abuts) {
+        // Clear right band of the same sheet (R1 already grouped them) → join.
+        current.fragments.push(fg);
+      } else {
+        // Ambiguous placement → R2 dual-direction-match → new sheet + warning.
+        warnings.push({ kind: 'dual-direction-match', page: firstPageOfFragment(fg) });
+        sheetsForGroup.push(current);
+        current = { name: title, fragments: [fg] };
+      }
+    }
+    sheetsForGroup.push(current);
+
+    // --- Materialize each sheet from its fragment list ---
+    for (const sc of sheetsForGroup) {
+      const folded = foldFragmentsRight(sc.fragments);
+      sheets.push({
+        kind: 'sheet',
+        name: sc.name,
+        cells: folded.cells,
+        columnWidths: folded.columnWidths,
+        mergedRanges: folded.merges,
+      });
+    }
+  }
+
+  return { sheets, warnings };
+}
+
+function firstPageOfFragment(fg: FragmentGrid): number {
+  return fg.firstPage;
+}
+
+/** Horizontally concatenate an ordered list of fragment grids into one sheet. */
+function foldFragmentsRight(frags: FragmentGrid[]): {
+  cells: (IRSpreadsheetCell | undefined)[][];
+  columnWidths: number[];
+  merges: { row: number; col: number; rowspan: number; colspan: number }[];
+} {
+  let outCells: (IRSpreadsheetCell | undefined)[][] = frags[0].cells.map(r => [...r]);
+  let outMerges: FragmentGrid['merges'] = [...frags[0].merges];
+  let nColsTotal = frags[0].cols;
+  const columnWidths: number[] = [];
+
+  for (let ci = 0; ci < Math.max(0, frags[0].xEdges.length - 1); ci++) {
+    columnWidths.push(frags[0].xEdges[ci + 1] - frags[0].xEdges[ci]);
+  }
+
+  for (let i = 1; i < frags.length; i++) {
+    const fg = frags[i];
+    const hA = outCells.length;
+    const hB = fg.cells.length;
+    const H = Math.max(hA, hB);
+    const newCols = nColsTotal + fg.cols;
+
+    const merged: (IRSpreadsheetCell | undefined)[][] = [];
+    for (let r = 0; r < H; r++) {
+      const row: (IRSpreadsheetCell | undefined)[] = [];
+      for (let c = 0; c < newCols; c++) row.push(undefined);
+      if (r < hA) for (let c = 0; c < nColsTotal; c++) row[c] = outCells[r][c];
+      if (r < hB) for (let c = 0; c < fg.cols; c++) row[nColsTotal + c] = fg.cells[r][c];
+      merged.push(row);
+    }
+    const nextMerges: FragmentGrid['merges'] = [...outMerges];
+    for (const m of fg.merges) nextMerges.push({ ...m, col: m.col + nColsTotal });
+    for (let ci = 0; ci < Math.max(0, fg.xEdges.length - 1); ci++) {
+      columnWidths.push(fg.xEdges[ci + 1] - fg.xEdges[ci]);
+    }
+
+    outCells = merged;
+    outMerges = nextMerges;
+    nColsTotal = newCols;
+  }
+
+  return {
+    cells: outCells,
+    columnWidths,
+    merges: outMerges.map(m => ({ row: m.row, col: m.col, rowspan: m.rowspan, colspan: m.colspan })),
+  };
+}
+
+// ============================================================
+// Orchestrator: pipe pdfTablesToCells (clusters) + the extracted page
+// layout (sheet-title headings + loose text) into assembleSheets.
+// ============================================================
+
+export async function mergeBandsForRoundtrip(file: File): Promise<MergeResult> {
+  const [tables, layout] = await Promise.all([
+    pdfTablesToCells(file),
+    extractFormattedTextFromPDF(file),
+  ]);
+
+  const layoutByPage = new Map<number, IRPageIR>();
+  for (const [i, pg] of layout.entries()) layoutByPage.set(i + 1, pg);
+
+  const bands: MergeBandPage[] = tables.map((t) => {
+    const pg = layoutByPage.get(t.page);
+    let sheetTitle: string | undefined;
+    let pageText: string | undefined;
+
+    if (pg) {
+      if (t.clusters.length === 0) {
+        // Loose text of 0-cluster pages, surfaced for the warning (never fabricated).
+        pageText = pg.blocks
+          .map(b => ('runs' in b ? b.runs.map(r => r.text).join('') : ''))
+          .join(' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+      const heading = pg.blocks.find(b => b.kind === 'heading' && !b.role);
+      if (heading && 'runs' in heading) {
+        const htxt = heading.runs.map(r => r.text).join('').trim();
+        if (htxt) sheetTitle = htxt;
+      }
+    }
+
+    return { page: t.page, pageHeight: t.pageHeight, sheetTitle, pageText, clusters: t.clusters };
+  });
+
+  return assembleSheets(bands);
+}
+
+// ============================================================
+// Component 3, Step 3.3: pdfToIRSpreadsheet — reassemble a paginated
+// spreadsheet PDF into an IRSpreadsheet (the pdf-to-excel output).
+// ============================================================
+
+/**
+ * Result of pdfToIRSpreadsheet. Warnings are returned as a SIBLING of the
+ * spreadsheet (not a field on IRSpreadsheet) so the IR document stays a pure
+ * data contract mirroring xlsxToIR/odtToIR (which the writer consumes) while
+ * diagnostics stay available to the caller.
+ */
+export interface PdfToIRSpreadsheetResult {
+  spreadsheet: IRSpreadsheet;
+  warnings: MergeWarning[];
+}
+
+/**
+ * Full pdf → IRSpreadsheet pipeline:
+ *   pdfTablesToCells → mergeBandsForRoundtrip → IR-mapping.
+ * - display/colspan/rowspan come from the assembled GridCell/IR cells.
+ * - fmt.bold/italic come from the dominant run in each cell.
+ * - type/raw/inferred follow the regex heuristic (irCellFromText); inferred:true
+ *   only on number/date/time recognized by pattern; strings stay unmarked.
+ * - columnWidths: pt → chars (inverse of xlsxCharWidthToPt) so the XLSX writer
+ *   can emit widths comparable to the source.
+ * - conditionalFormattingRules: PDF carries no CF, so it is an empty array.
+ */
+export async function pdfToIRSpreadsheet(file: File): Promise<PdfToIRSpreadsheetResult> {
+  const { sheets, warnings } = await mergeBandsForRoundtrip(file);
+  const mapped: IRSheet[] = sheets.map((s) => ({
+    kind: 'sheet',
+    name: s.name,
+    cells: s.cells,
+    columnWidths: s.columnWidths.map((pt) => ptToXlsxCharWidth(pt)),
+    mergedRanges: s.mergedRanges,
+    conditionalFormattingRules: [] as IRConditionalFormattingRule[],
+  }));
+  return { spreadsheet: { kind: 'spreadsheet', sheets: mapped }, warnings };
 }
 
 function escapeHtml(s: string): string {
