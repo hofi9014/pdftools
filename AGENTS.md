@@ -28,7 +28,7 @@ Polskojęzyczna aplikacja webowa do edycji plików PDF (Next.js 16, React 19, Ta
 - `editPdf` (tekst, prostokąty na strony)
 - `signPdfClient` (Canvas API → PNG → pdf-lib embed)
 - `unlockPdfClient` (@pdfsmaller/pdf-decrypt), `protectPdfClient` (@pdfsmaller/pdf-encrypt)
-- `pdfToWord`, `wordToPdf`, `pdfToJpgClient`, `jpgToPdf`, `pdfToExcel`, `xlsxToPdf`, `pdfToPptx`, `pdfToOdt`, `officeToPdf`, `pdfToTxt`, `pdfToSvg`, `pdfToEpub`, `pdfToHtml`, `htmlToPdf`
+- `pdfToWord`, `wordToPdf`, `pdfToJpgClient`, `jpgToPdf`, `pdfToIRSpreadsheet`(+`renderIRSpreadsheetToXlsx` in client-pdf-docx.ts, pdf-to-excel), `xlsxToPdf`, `pdfToPptx`, `pdfToOdt`, `officeToPdf`, `pdfToTxt`, `pdfToSvg`, `pdfToEpub`, `pdfToHtml`, `htmlToPdf`
 - `comparePdfTextClient`, `comparePdfVisual` (canvas pixel diff)
 - `extractFormFields`, `fillFormFields` (AcroForm), `extractImagesFromPdf`
 - `convertToPdfA` (PDF/A-1b best-effort: XMP, OutputIntent, flatten, JS cleanup)

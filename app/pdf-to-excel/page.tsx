@@ -1,7 +1,8 @@
 'use client';
 import { useState, useRef } from 'react';
 import JSZip from 'jszip';
-import { pdfToExcel } from '@/lib/client-pdf';
+import { pdfToIRSpreadsheet } from '@/lib/client-pdf';
+import { renderIRSpreadsheetToXlsx } from '@/lib/client-pdf-docx';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -15,6 +16,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [warnings, setWarnings] = useState<number>(0);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
   const downloadFileNameRef = useRef('');
@@ -27,11 +29,13 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
     else setError('');
     setFiles(prev => [...prev, ...pdfs]);
     setSuccess(false);
+    setWarnings(0);
   };
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
     setSuccess(false);
+    setWarnings(0);
   };
 
   const handleSubmit = async () => {
@@ -40,16 +44,21 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
     setError('');
     setSuccess(false);
     setProgress(0);
+    setWarnings(0);
 
     const batchResults: { name: string; data: Blob }[] = [];
 
     try {
+      let warnCount = 0;
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const blob = await pdfToExcel(file);
+        const { spreadsheet, warnings } = await pdfToIRSpreadsheet(file);
+        warnCount += warnings.length;
+        const blob = await renderIRSpreadsheetToXlsx(spreadsheet);
         batchResults.push({ name: file.name.replace(/\.pdf$/i, '.xlsx'), data: blob });
         setProgress(i + 1);
       }
+      setWarnings(warnCount);
 
       if (batchResults.length === 1) {
         const r = batchResults[0];
@@ -114,7 +123,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
         <div className="tool-card rounded-2xl shadow-sm border mb-6">
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
             <p className="font-medium text-gray-700 dark:text-gray-300">{files.length} {t('files.count', locale)}</p>
-            <button onClick={() => { setFiles([]); setSuccess(false); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
+            <button onClick={() => { setFiles([]); setSuccess(false); setWarnings(0); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
           </div>
           {files.map((file, i) => (
             <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -155,6 +164,11 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
           ✅ {t('result.success', locale)} {files.length > 1 ? t('page.excel.success_zip', locale) : t('page.excel.success_single', locale)}
+        </div>
+      )}
+      {success && warnings > 0 && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 rounded-xl p-4 mb-6">
+          ⚠️ {t('page.excel.warn_formatting', locale)}
         </div>
       )}
       {success && processedBlobRef.current && (
