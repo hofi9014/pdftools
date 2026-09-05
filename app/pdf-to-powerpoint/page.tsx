@@ -1,44 +1,89 @@
 'use client';
 import { useState, useRef } from 'react';
-import CloudFileSaver from '@/components/CloudFileSaver';
-import CloudFilePicker from '@/components/CloudFilePicker';
-import { pdfToPptxClient } from '@/lib/client-pdf';
+import JSZip from 'jszip';
+import { pdfToIRDeck } from '@/lib/client-pdf';
+import { renderIRToPptx } from '@/lib/client-pptx';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import CloudFileSaver from '@/components/CloudFileSaver';
+import CloudFilePicker from '@/components/CloudFilePicker';
 
 export default function PDFToPowerPoint({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [warnings, setWarnings] = useState<number>(0);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
+  const downloadFileNameRef = useRef('');
 
-  const handleFile = (f: File | null) => {
-    if (!f) return;
-    if (f.type !== 'application/pdf') { setError(t('error.onlypdf', locale)); return; }
-    setFile(f);
-    setError('');
+  const handleFiles = (newFiles: FileList | File[] | null) => {
+    if (!newFiles || newFiles.length === 0) return;
+    const arr = Array.from(newFiles);
+    const pdfs = arr.filter(f => f.type === 'application/pdf');
+    if (pdfs.length !== arr.length) setError(t('page.excel.not_pdf', locale));
+    else setError('');
+    setFiles(prev => [...prev, ...pdfs]);
     setSuccess(false);
+    setWarnings(0);
+  };
+
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+    setSuccess(false);
+    setWarnings(0);
   };
 
   const handleConvert = async () => {
-    if (!file) { setError(t('error.select', locale)); return; }
+    if (files.length === 0) { setError(t('page.excel.no_files', locale)); return; }
     setLoading(true);
     setError('');
     setSuccess(false);
+    setProgress(0);
+    setWarnings(0);
+
+    const batchResults: { name: string; data: Blob }[] = [];
 
     try {
-      const blob = await pdfToPptxClient(file);
-      processedBlobRef.current = blob;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = file.name.replace('.pdf', '.pptx');
-      a.click();
-      URL.revokeObjectURL(url);
+      let warnCount = 0;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const { deck, warnings } = await pdfToIRDeck(file);
+        warnCount += warnings.length;
+        const blob = await renderIRToPptx(deck);
+        batchResults.push({ name: file.name.replace(/\.pdf$/i, '.pptx'), data: blob });
+        setProgress(i + 1);
+      }
+      setWarnings(warnCount);
+
+      if (batchResults.length === 1) {
+        const r = batchResults[0];
+        processedBlobRef.current = r.data;
+        downloadFileNameRef.current = r.name;
+        const url = URL.createObjectURL(r.data);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = r.name;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        const zip = new JSZip();
+        batchResults.forEach(r => zip.file(r.name, r.data));
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        processedBlobRef.current = zipBlob;
+        downloadFileNameRef.current = 'powerpoints.zip';
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'powerpoints.zip';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
       setSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('error.generic', locale));
@@ -49,82 +94,106 @@ export default function PDFToPowerPoint({ locale: forcedLocale }: { locale?: Loc
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
-        <div className="text-center mb-10">
-          <div className="text-6xl mb-4">{getToolIcon('ppt')}</div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tool-heading mb-3">{t('tool.ppt', locale)}</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">{t('page.ppt.desc', locale)}</p>
-        </div>
+      <div className="text-center mb-10">
+        <div className="text-6xl mb-4">{getToolIcon('ppt')}</div>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tool-heading mb-3">{t('tool.ppt', locale)}</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">{t('page.ppt.desc', locale)}</p>
+      </div>
 
-        <div
-          onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-          onDragLeave={() => setDragOver(false)}
-          onClick={() => document.getElementById('fileInput')?.click()}
-          className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition mb-6
-            ${dragOver ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700'}
-            ${file ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}
-        >
-          {file ? (
-            <div>
-              <div className="text-5xl mb-3">📄</div>
-              <p className="font-medium tool-heading">{file.name}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{t('drag.change', locale)}</p>
-            </div>
-          ) : (
-            <div>
-              <div className="text-5xl mb-3">📂</div>
-              <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
-              <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.subtitle', locale)}</p>
-            </div>
-          )}
-          <input id="fileInput" type="file" accept=".pdf" className="hidden"
-            onChange={e => handleFile(e.target.files?.[0] || null)} />
-        </div>
+      <div
+        onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onClick={() => document.getElementById('fileInput')?.click()}
+        className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition mb-6
+          ${dragOver ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+      >
+        <div className="text-5xl mb-3">📂</div>
+        <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
+        <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.subtitle', locale)}</p>
+        <input id="fileInput" type="file" accept=".pdf" multiple className="hidden"
+          onChange={e => handleFiles(e.target.files)} />
+      </div>
 
       <div className="flex justify-center gap-2 mb-6">
-        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
+        <CloudFilePicker onFilesPicked={handleFiles} label={"☁️ " + t('cloud.add', locale)} />
       </div>
 
-        <div className="tool-info-box rounded-2xl p-5 mb-6">
-          <h3 className="font-bold tool-heading mb-2">{t('section.conversion_info', locale)}</h3>
-          <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-            <li>{t('page.ppt.info_1', locale)}</li>
-            <li>{t('page.ppt.info_2', locale)}</li>
-            <li>{t('page.ppt.info_3', locale)}</li>
-          </ul>
-        </div>
-
-        {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
-        {success && (
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
-            ✅ {t('page.ppt.success', locale)}
+      {files.length > 0 && (
+        <div className="tool-card rounded-2xl shadow-sm border mb-6">
+          <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+            <p className="font-medium text-gray-700 dark:text-gray-300">{files.length} {t('files.count', locale)}</p>
+            <button onClick={() => { setFiles([]); setSuccess(false); setWarnings(0); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
           </div>
-        )}
-        {success && file && processedBlobRef.current && (
-          <div className="flex justify-center mb-6">
-            <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', '.pptx')} />
-          </div>
-        )}
-
-        <button onClick={handleConvert} disabled={loading || !file}
-          className={`w-full py-4 rounded-2xl font-bold text-lg transition
-            ${loading || !file ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
-          {loading ? <span>⏳ {t('btn.loading', locale)}</span> : <span>🎯 {t('page.ppt.btn', locale)}</span>}
-        </button>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
-          {[
-            { icon: '🔒', text: t('feature.files_deleted', locale) },
-            { icon: '⚡', text: t('feature.fast_cloud', locale) },
-            { icon: '🆓', text: t('feature.free_simple', locale) },
-          ].map((item, i) => (
-            <div key={i} className="tool-feature-card rounded-xl p-4 border">
-              <div className="text-2xl mb-1">{item.icon}</div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
+          {files.map((file, i) => (
+            <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <span className="text-2xl flex-shrink-0">📄</span>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium tool-heading truncate">{file.name}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                </div>
+              </div>
+              <button onClick={() => removeFile(i)} className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 px-2 flex-shrink-0">✕</button>
             </div>
           ))}
+          {loading && (
+            <div className="p-4 border-t border-gray-100 dark:border-gray-700">
+              <div className="flex items-center gap-3">
+                <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                  <div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${(progress / files.length) * 100}%` }} />
+                </div>
+                <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">{progress}/{files.length}</span>
+              </div>
+            </div>
+          )}
         </div>
+      )}
+
+      <div className="tool-info-box rounded-2xl p-5 mb-6">
+        <h3 className="font-bold tool-heading mb-2">{t('section.conversion_info', locale)}</h3>
+        <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+          <li>{t('page.ppt.info_1', locale)}</li>
+          <li>{t('page.ppt.info_2', locale)}</li>
+          <li>{t('page.ppt.info_3', locale)}</li>
+        </ul>
       </div>
+
+      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {success && (
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
+          ✅ {t('result.success', locale)} {files.length > 1 ? t('page.excel.success_zip', locale) : t('page.ppt.success', locale)}
+        </div>
+      )}
+      {success && warnings > 0 && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 rounded-xl p-4 mb-6">
+          ⚠️ {t('page.pptx.warn_reconstructed', locale)}
+        </div>
+      )}
+      {success && processedBlobRef.current && (
+        <div className="flex justify-center mb-6">
+          <CloudFileSaver blob={processedBlobRef.current} fileName={downloadFileNameRef.current} />
+        </div>
+      )}
+
+      <button onClick={handleConvert} disabled={loading || files.length === 0}
+        className={`w-full py-4 rounded-2xl font-bold text-lg transition
+          ${loading || files.length === 0 ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
+        {loading ? <span>⏳ {t('btn.loading', locale)} {progress}/{files.length}</span> : <span>🎯 {t('page.ppt.btn', locale)}</span>}
+      </button>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
+        {[
+          { icon: '🔒', text: t('feature.files_deleted', locale) },
+          { icon: '📦', text: t('feature.zip_output', locale) },
+          { icon: '🆓', text: t('feature.free_simple', locale) },
+        ].map((item, i) => (
+          <div key={i} className="tool-feature-card rounded-xl p-4 border">
+            <div className="text-2xl mb-1">{item.icon}</div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

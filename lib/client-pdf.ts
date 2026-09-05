@@ -3,6 +3,7 @@ import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePage, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
 import { renderIRToDocx, type IRTextRun, type IRImageBlock, type IRTableCell, type IRBlock, type IRRect, type IRPageIR, type IRSpreadsheetCell, type IRSheet, type IRSpreadsheet, type IRConditionalFormattingRule, ptToXlsxCharWidth } from './client-pdf-docx';
+import type { IRSlide, IRSlideElement, IRDeck, IRPtRect, IRTextContent } from './client-pptx';
 
 let pdfjsInitPromise: Promise<void> | null = null;
 
@@ -1595,7 +1596,7 @@ export function buildPageScaffold(
   for (let i = 0; i < ops.length; i++) {
     const { op, args } = ops[i];
     if (op === 'setFillRGBColor') currentFill = Array.isArray(args) ? (args[0] as string) : (args as string);
-    if (op === 'setTextMatrix') textOpColors.set(i, currentFill);
+    if (op === 'setTextMatrix' || op === 'showText') textOpColors.set(i, currentFill);
   }
 
   // For each setTextMatrix index, find the font set before it
@@ -1606,7 +1607,7 @@ export function buildPageScaffold(
     if (op === 'setFont' && Array.isArray(args)) {
       currentFont = { name: args[0] as string, size: args[1] as number };
     }
-    if (op === 'setTextMatrix') textOpFonts.set(i, { ...currentFont });
+    if (op === 'setTextMatrix' || op === 'showText') textOpFonts.set(i, { ...currentFont });
   }
 
   // KNOWN LIMITATION: Linear color/font state machine
@@ -1655,18 +1656,15 @@ export function buildPageScaffold(
     }
   }
 
-  // --- Build textRuns from operator list showText ---
-  // Using showText directly gives accurate per-segment colors and avoids
-  // getTextContent merging of adjacent same-line text with different colors.
-  // getTextContent merges "Czerwony tekst" + "Niebieski tekst" into one item;
-  // showText has them as two separate calls with different positions and colors.
+  // Extract textRuns: handle both setTextMatrix→showText and moveText→showText
+  // patterns.  LibreOffice exports use moveText for continuation lines within a
+  // paragraph, so setTextMatrix alone misses most body text.
   const textRuns: IRTextRun[] = [];
 
   for (let i = 0; i < ops.length; i++) {
     if (ops[i].op !== 'setTextMatrix') continue;
 
     // Extract setTextMatrix values
-    // Args format: [{0:a, 1:b, 2:c, 3:d, 4:e, 5:f}] (array with object)
     const rawTm = ops[i].args;
     const tmObj = (Array.isArray(rawTm) ? rawTm[0] : rawTm) as PDFTmObj;
     if (!tmObj || typeof tmObj !== 'object') continue;
@@ -1674,56 +1672,322 @@ export function buildPageScaffold(
     const tmY = tmObj[5] ?? tmObj['5'] ?? 0;
     const tmA = tmObj[0] ?? tmObj['0'] ?? 1;
     const tmB = tmObj[1] ?? tmObj['1'] ?? 0;
+    const tmC = tmObj[2] ?? tmObj['2'] ?? 0;
+    const tmD = tmObj[3] ?? tmObj['3'] ?? 1;
+    const tmScale = Math.sqrt(tmA * tmA + tmB * tmB);
 
-    // Find the next showText within a reasonable window
-    let stIdx = -1;
-    for (let j = i + 1; j < Math.min(i + 8, ops.length); j++) {
-      if (ops[j].op === 'showText') { stIdx = j; break; }
-      if (ops[j].op === 'setTextMatrix' || ops[j].op === 'endText') break;
+    // Scan forward within the current BT…ET block for showText and moveText
+    let accDx = 0; // accumulated moveText delta in text space
+    let accDy = 0;
+
+    for (let j = i + 1; j < ops.length; j++) {
+      const op = ops[j].op;
+      if (op === 'endText' || op === 'setTextMatrix') break; // end of BT block or new Tm
+
+      if (op === 'moveText' && Array.isArray(ops[j].args)) {
+        const delta = ops[j].args as number[];
+        accDx += Number(delta[0]) || 0;
+        accDy += Number(delta[1]) || 0;
+        continue;
+      }
+
+      if (op === 'showText') {
+        const rawSt = ops[j].args;
+        const glyphArr = (Array.isArray(rawSt)
+          ? (Array.isArray(rawSt[0]) ? rawSt[0] : rawSt)
+          : []) as PDFGlyph[];
+        if (glyphArr.length === 0) continue;
+
+        const text = glyphArr.map(g => g.unicode || g.fontChar || '').join('');
+        if (!text) continue;
+
+        const fontInfo = textOpFonts.get(j) || { name: '', size: 12 };
+        const color = textOpColors.get(j) || '#000000';
+        const effectiveFontSize = fontInfo.size * (tmScale || 1);
+
+        let width = 0;
+        for (const g of glyphArr) {
+          width += (g.width || 0) * effectiveFontSize / 1000;
+        }
+        if (width === 0) {
+          width = text.length * effectiveFontSize * 0.5;
+        }
+
+        const rotation = getRotation([tmA, tmB, 0, 0, 0, 0]);
+
+        // Absolute position: Tm origin + accumulated moveText scaled by Tm
+        const posX = tmX + accDx * tmA + accDy * tmC;
+        const posY = tmY + accDx * tmB + accDy * tmD;
+
+        textRuns.push({
+          text,
+          fontName: fontInfo.name,
+          fontSize: effectiveFontSize,
+          width,
+          height: effectiveFontSize,
+          position: { x: posX, y: posY },
+          color,
+          bold: parseFontStyle(fontInfo.name).bold,
+          italic: parseFontStyle(fontInfo.name).italic,
+          rotation,
+        });
+
+        // After showText, PDF spec says the text cursor advances by the
+        // glyph width in text space.  We DON'T accumulate that here because
+        // the next moveText will set the position explicitly.
+      }
     }
-    if (stIdx === -1) continue;
-
-    // Extract glyphs from showText args
-    const rawSt = ops[stIdx].args;
-    const glyphArr = (Array.isArray(rawSt)
-      ? (Array.isArray(rawSt[0]) ? rawSt[0] : rawSt)
-      : []) as PDFGlyph[];
-    if (glyphArr.length === 0) continue;
-
-    // Reconstruct text from glyph unicode values (unicode is a string character)
-    const text = glyphArr.map(g => g.unicode || g.fontChar || '').join('');
-    if (!text) continue;
-
-    // Get font and color from state machine
-    const fontInfo = textOpFonts.get(i) || { name: '', size: 12 };
-    const color = textOpColors.get(i) || '#000000';
-
-    // Compute width from glyph widths (width in font units → PDF points)
-    let width = 0;
-    for (const g of glyphArr) {
-      width += (g.width || 0) * fontInfo.size / 1000;
-    }
-    if (width === 0) {
-      width = text.length * fontInfo.size * 0.5;
-    }
-
-    const rotation = getRotation([tmA, tmB, 0, 0, 0, 0]);
-
-    textRuns.push({
-      text,
-      fontName: fontInfo.name,
-      fontSize: fontInfo.size,
-      width,
-      height: fontInfo.size,
-      position: { x: tmX, y: tmY },
-      color,
-      bold: parseFontStyle(fontInfo.name).bold,
-      italic: parseFontStyle(fontInfo.name).italic,
-      rotation,
-    });
   }
 
   return { ops, textRuns, images };
+}
+
+// ============================================================
+// segmentSlideElements — C2: PDF page → IRSlide
+// ============================================================
+// Groups text runs into textboxes by Y-band (3 pt), splits on
+// X-indent / font-size / font-name change, converts rects to
+// shapes and images.  Y-flipped (PDF bottom-left → IR top-left).
+
+function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
+  bounds: { x: number; y: number; width: number; height: number };
+  lines: Array<{ runs: IRTextRun[]; text: string; fontSize: number }>;
+  fontSize: number;
+  color: string;
+}> {
+  if (runs.length === 0) return [];
+
+  const sorted = [...runs].sort((a, b) => {
+    const yDiff = Math.abs(a.position.y - b.position.y);
+    if (yDiff < 3) return a.position.x - b.position.x;
+    return b.position.y - a.position.y; // PDF: larger Y = higher on page
+  });
+
+  // --- Phase 1: group runs into horizontal LINES (same Y-band, 3 pt) ---
+  const Y_GAP = 3;
+  const lines: IRTextRun[][] = [];
+  let curLine: IRTextRun[] = [sorted[0]];
+  let lineY = sorted[0].position.y;
+
+  for (let i = 1; i < sorted.length; i++) {
+    const r = sorted[i];
+    if (Math.abs(r.position.y - lineY) > Y_GAP) {
+      lines.push(curLine);
+      curLine = [r];
+      lineY = r.position.y;
+    } else {
+      curLine.push(r);
+    }
+  }
+  lines.push(curLine);
+
+  // --- Phase 2: merge consecutive lines into PARAGRAPHS ---
+  // A line that is vertically far from the previous one (relative to its own
+  // line height) starts a new paragraph.  Same-size runs with small vertical
+  // gaps belong together; a jump > 2.0× the line height begins a new block.
+  // A WHITESPACE-ONLY line (no visible text after trim) is a HARD separator:
+  // it never merges with either neighbor and is dropped from the output (it
+  // does not become its own empty textbox) — the vertical spacing between the
+  // two surrounding real blocks already carries that separation.
+  type Paragraph = {
+    lines: Array<{ runs: IRTextRun[]; text: string; fontSize: number }>;
+    fontSize: number;
+    color: string;
+    minX: number;
+    minY: number;
+    maxX: number;
+    maxY: number;
+  };
+
+  // Work top→bottom: lines[0] is topmost (largest Y in PDF coords)
+  const isBlankLine = (lineRuns: IRTextRun[]) =>
+    lineRuns.every(r => r.text.trim().length === 0);
+
+  const summarizeLine = (lineRuns: IRTextRun[]) => {
+    const run = lineRuns[0];
+    const minX = Math.min(...lineRuns.map(r => r.position.x));
+    const maxX = Math.max(...lineRuns.map(r => r.position.x + r.width));
+    const minY = Math.min(...lineRuns.map(r => r.position.y));
+    const maxY = Math.max(...lineRuns.map(r => r.position.y + r.height));
+    const fs = lineRuns.reduce((m, r) => r.fontSize > m ? r.fontSize : m, 0);
+    const color = lineRuns[0].color;
+    const runFontName = run.fontName;
+    return {
+      lineRuns, minX, maxX, minY, maxY, fs, color, runFontName,
+      blank: isBlankLine(lineRuns),
+    };
+  };
+
+  // Aggregate the runs of one logical line into a paragraph-entry descriptor.
+  // Baseline = minY (position.y). Used for vertical gap decisions.
+  const lineDescs = lines.map(summarizeLine);
+
+  const paragraphs: Paragraph[] = [];
+
+  // prevReal tracks the previous NON-blank line for gap/overlap decisions.
+  let prevReal: (typeof lineDescs)[number] | null = null;
+
+  const openParagraph = (ld: (typeof lineDescs)[number]) => {
+    paragraphs.push({
+      lines: [{
+        runs: ld.lineRuns,
+        text: ld.lineRuns.map(r => r.text).join(' '),
+        fontSize: ld.fs,
+      }],
+      fontSize: ld.fs,
+      color: ld.color,
+      minX: ld.minX,
+      minY: ld.minY,
+      maxX: ld.maxX,
+      maxY: ld.maxY,
+    });
+  };
+
+  for (let li = 0; li < lineDescs.length; li++) {
+    const cur = lineDescs[li];
+
+    // Blank lines are hard separators: skip entirely. They break the current
+    // paragraph (next real line opens a new one) but are never emitted.
+    if (cur.blank) {
+      prevReal = null;
+      continue;
+    }
+
+    if (prevReal === null) {
+      openParagraph(cur);
+      prevReal = cur;
+      continue;
+    }
+
+    const para = paragraphs[paragraphs.length - 1];
+
+    // Baseline-to-baseline distance between this line and the previous line.
+    // PDF Y grows UP, so previous baseline > current baseline (line below).
+    const baselineDist = prevReal.minY - cur.minY;
+
+    // horizontal overlap of line extents (to detect column breaks)
+    const hOverlap = Math.min(prevReal.maxX, cur.maxX) - Math.max(prevReal.minX, cur.minX);
+
+    // A new paragraph if: font size jump OR the vertical gap between line
+    // baselines is much larger than the normal 1.2× line step OR the two lines
+    // are in different columns (no horizontal overlap).
+    const fontSizeJump = Math.abs(cur.fs - para.fontSize) > 0.5;
+    const lineStep = Math.max(cur.fs, prevReal.fs) * 1.2;
+    const bigGap = baselineDist > lineStep * 1.6;
+    const noOverlap = hOverlap < -3;
+
+    if (fontSizeJump || bigGap || noOverlap) {
+      openParagraph(cur);
+    } else {
+      para.minY = Math.min(para.minY, cur.minY);
+      para.maxY = Math.max(para.maxY, cur.maxY);
+      para.minX = Math.min(para.minX, cur.minX);
+      para.maxX = Math.max(para.maxX, cur.maxX);
+      para.fontSize = Math.max(para.fontSize, cur.fs);
+      para.color = para.color || cur.color;
+      para.lines.push({
+        runs: cur.lineRuns,
+        text: cur.lineRuns.map(r => r.text).join(' '),
+        fontSize: cur.fs,
+      });
+    }
+    prevReal = cur;
+  }
+
+  // --- Phase 3: within each line, split on X-indent / font change ---
+  // Phase 2 already merged into paragraphs by line. Here we further split a
+  // single line if it contains runs with a large X-indent gap OR a font change.
+  const textboxes: Array<{
+    bounds: { x: number; y: number; width: number; height: number };
+    lines: Array<{ runs: IRTextRun[]; text: string; fontSize: number }>;
+    fontSize: number;
+    color: string;
+  }> = [];
+
+  for (const para of paragraphs) {
+    const h = Math.max(para.maxY - para.minY, para.fontSize || 12);
+    textboxes.push({
+      bounds: { x: para.minX, y: para.minY, width: para.maxX - para.minX, height: h },
+      lines: para.lines,
+      fontSize: para.fontSize,
+      color: para.color,
+    });
+  }
+
+  return textboxes;
+}
+
+export async function segmentSlideElements(
+  file: File,
+  pageNum: number,
+): Promise<IRSlide> {
+  await initPdfjs();
+  const buf = await file.arrayBuffer();
+  const pdfjsLib = await import('pdfjs-dist');
+  const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
+  const page = await doc.getPage(pageNum);
+
+  const viewport = page.getViewport({ scale: 1 });
+  const pageWidth = viewport.width;
+  const pageHeight = viewport.height;
+
+  const opList = await page.getOperatorList();
+  const scaffold = buildPageScaffold(opList, pdfjsLib.OPS);
+  const rawRects = extractRectsFromOps(scaffold.ops, pageHeight);
+
+  // --- Text elements (grouped into textboxes) ---
+  const textboxes = groupRunsIntoTextboxes(scaffold.textRuns);
+  const textElements: IRSlideElement[] = textboxes.map(tb => ({
+    kind: 'textbox' as const,
+    bounds: {
+      x: tb.bounds.x,
+      y: pageHeight - tb.bounds.y - tb.bounds.height, // Y-flip
+      width: tb.bounds.width,
+      height: tb.bounds.height,
+    },
+    content: {
+      text: tb.lines.map(l => l.text).join('\n'),
+      fontSize: tb.fontSize,
+      bold: false,
+      italic: false,
+      color: tb.color || '#000000',
+      align: 'left' as const,
+    },
+  }));
+
+  // --- Shape elements (rects, filtered < 1 pt) ---
+  // A rect with NO fill AND NO stroke is invisible (e.g. transparent clip or
+  // a leftover paint operation) — emit it only if it has at least one visible
+  // attribute (fill or stroke).  This drops noise without losing visible boxes.
+  const shapeElements: IRSlideElement[] = rawRects
+    .filter(r => r.width >= 1 && r.height >= 1 && (r.fill || r.stroke))
+    .map(r => ({
+      kind: 'shape' as const,
+      bounds: {
+        x: r.x,
+        y: pageHeight - r.y - r.height, // Y-flip
+        width: r.width,
+        height: r.height,
+      },
+      shape: 'rect' as const,
+      fill: r.fill ? (r.fillColor || '#000000') : '',
+      stroke: r.stroke ? (r.strokeColor || '#000000') : '',
+    }));
+
+  // --- Image elements ---
+  // buildPageScaffold only stores imageId (not base64); actual pixel data
+  // requires canvas rendering via paintImageXObject.  Deferred to v2 — for
+  // now we emit 0 image elements; the text + shape elements already cover
+  // the main content.
+  const elements = [...textElements, ...shapeElements];
+
+  await doc.cleanup();
+
+  return {
+    widthPt: pageWidth,
+    heightPt: pageHeight,
+    elements,
+  };
 }
 
 // ============================================================
@@ -2732,26 +2996,70 @@ export async function pdfToWordIR(file: File): Promise<Blob> {
   return renderIRToDocx(pages);
 }
 
-export async function pdfToPptxClient(file: File): Promise<Blob> {
-  const text = await extractTextFromPDF(file);
-  const pptxgen = (await import('pptxgenjs')).default;
-  const pres = new pptxgen();
-  const slides = text.split('\n---\n');
-  for (const slideText of slides) {
-    const slide = pres.addSlide();
-    const lines = slideText.trim().split('\n').filter(l => l.trim());
-    if (lines.length === 0) {
-      slide.addText('[Pusta strona]', { x: 0.5, y: 0.5, w: 9, h: 0.5, fontSize: 12, color: '999999' });
-      continue;
-    }
-    const title = lines[0];
-    const body = lines.slice(1).join('\n');
-    slide.addText(title, { x: 0.5, y: 0.3, w: 9, h: 0.8, fontSize: 28, bold: true, color: '1E3A5F' });
-    if (body) {
-      slide.addText(body, { x: 0.5, y: 1.3, w: 9, h: 5.5, fontSize: 16, color: '333333', valign: 'top' });
-    }
+// ============================================================
+// Component C3: pdfToIRDeck — PDF → IRDeck (pdf-to-powerpoint)
+// ============================================================
+// For every page, segmentSlideElements extracts an absolutely-positioned
+// IRSlide. Page dimensions are collected across the whole document: if they
+// diverge (size OR orientation) a warning is raised and the FIRST page's
+// dimensions are used as the deck layout. A portrait first page additionally
+// suggests a document rather than a presentation (informational warning, not
+// blocking). Warnings are returned as a SIBLING of the deck (same pattern as
+// pdfToIRSpreadsheet) so IRDeck stays a pure data contract for the writer.
+
+export type PdfToIRDeckWarning =
+  | { kind: 'inconsistent-page-dimensions'; page: number; widthPt: number; heightPt: number }
+  | { kind: 'portrait-source'; page: number; widthPt: number; heightPt: number };
+
+export interface PdfToIRDeckResult {
+  deck: IRDeck;
+  warnings: PdfToIRDeckWarning[];
+}
+
+export async function pdfToIRDeck(file: File): Promise<PdfToIRDeckResult> {
+  await initPdfjs();
+  const buf = await file.arrayBuffer();
+  const pdfjsLib = await import('pdfjs-dist');
+  const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
+  const pageCount = doc.numPages;
+
+  // --- Phase 1: collect per-page dimensions (size + orientation) ---
+  const dims: Array<{ widthPt: number; heightPt: number; orientation: 'portrait' | 'landscape' }> = [];
+  for (let p = 1; p <= pageCount; p++) {
+    const page = await doc.getPage(p);
+    const viewport = page.getViewport({ scale: 1 });
+    const widthPt = viewport.width;
+    const heightPt = viewport.height;
+    dims.push({ widthPt, heightPt, orientation: heightPt > widthPt ? 'portrait' : 'landscape' });
   }
-  return (await pres.write({ outputType: 'blob' })) as Blob;
+  await doc.cleanup();
+
+  const warnings: PdfToIRDeckWarning[] = [];
+  const first = dims[0];
+  const deckWidth = first.widthPt;
+  const deckHeight = first.heightPt;
+
+  // Inconsistent page dimensions (size OR orientation vs the first page).
+  const inconsistent = dims
+    .map((d, i) => ({ ...d, idx: i + 1 }))
+    .filter(d => d.widthPt !== deckWidth || d.heightPt !== deckHeight);
+  for (const d of inconsistent) {
+    warnings.push({ kind: 'inconsistent-page-dimensions', page: d.idx, widthPt: d.widthPt, heightPt: d.heightPt });
+  }
+
+  // Portrait first page → looks like a document, not a presentation.
+  if (first.orientation === 'portrait') {
+    warnings.push({ kind: 'portrait-source', page: 1, widthPt: deckWidth, heightPt: deckHeight });
+  }
+
+  // --- Phase 2: segment each page into an IRSlide ---
+  const slides: IRSlide[] = [];
+  for (let p = 1; p <= pageCount; p++) {
+    slides.push(await segmentSlideElements(file, p));
+  }
+
+  const deck: IRDeck = { widthPt: deckWidth, heightPt: deckHeight, slides };
+  return { deck, warnings };
 }
 
 // StandardFonts (WinAnsi) cannot encode Polish/Latin-Extended glyphs (e.g.
