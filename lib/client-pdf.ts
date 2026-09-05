@@ -1739,6 +1739,87 @@ export function buildPageScaffold(
     }
   }
 
+  // Fallback branch — structurally SEPARATE from the setTextMatrix loop above.
+  //
+  // Some real-world exporters (observed: the user's PPTX-style pipeline PDFs,
+  // certain LibreOffice Impress exports) draw text as
+  //   beginText → setFont → moveText → showText → endText
+  // with ZERO setTextMatrix ops anywhere. The loop above anchors exclusively on
+  // setTextMatrix, so such blocks yielded NO runs → every consumer
+  // (pdf-to-word/odt/excel/pptx) silently produced 0 chars of text. This branch
+  // handles ONLY BT blocks that contain no setTextMatrix — blocks that DO use
+  // setTextMatrix (all existing fixtures, our own renderer output) take the
+  // exact same code path as before, so the two branches are disjoint by
+  // construction and the change is behavior-neutral for prior inputs.
+  for (let i = 0; i < ops.length; i++) {
+    if (ops[i].op !== 'beginText') continue;
+
+    // Inspect the BT…ET block up front: any setTextMatrix inside means the Tm
+    // loop above already owns that block — bail out to avoid duplicate runs.
+    let blockHasTm = false;
+    let blockHasShowText = false;
+    let blockEnd = i + 1;
+    for (; blockEnd < ops.length; blockEnd++) {
+      const bop = ops[blockEnd].op;
+      if (bop === 'endText') break;
+      if (bop === 'setTextMatrix') blockHasTm = true;
+      if (bop === 'showText') blockHasShowText = true;
+    }
+    if (blockHasTm || !blockHasShowText) continue;
+
+    // Anchor at identity text matrix: without Tm the text line matrix starts at
+    // 0,0 at BT, so each moveText delta accumulates the absolute top-left text
+    // position in user space 1:1 — the same convention as the Tm path with
+    // [1,0,0,1,0,0] (posX = tmX + accDx*tmA + accDy*tmC).
+    let accDx = 0;
+    let accDy = 0;
+
+    for (let j = i + 1; j < blockEnd; j++) {
+      const { op, args } = ops[j];
+      if (op === 'moveText' && Array.isArray(args)) {
+        const delta = args as number[];
+        accDx += Number(delta[0]) || 0;
+        accDy += Number(delta[1]) || 0;
+        continue;
+      }
+      if (op !== 'showText') continue;
+
+      const rawSt = args;
+      const glyphArr = (Array.isArray(rawSt)
+        ? (Array.isArray(rawSt[0]) ? rawSt[0] : rawSt)
+        : []) as PDFGlyph[];
+      if (glyphArr.length === 0) continue;
+
+      const text = glyphArr.map((g: PDFGlyph) => g.unicode || g.fontChar || '').join('');
+      if (!text) continue;
+
+      const fontInfo = textOpFonts.get(j) || { name: '', size: 12 };
+      const color = textOpColors.get(j) || '#000000';
+      const fontSize = fontInfo.size;
+
+      let width = 0;
+      for (const g of glyphArr) {
+        width += (g.width || 0) * fontSize / 1000;
+      }
+      if (width === 0) {
+        width = text.length * fontSize * 0.5;
+      }
+
+      textRuns.push({
+        text,
+        fontName: fontInfo.name,
+        fontSize,
+        width,
+        height: fontSize,
+        position: { x: accDx, y: accDy },
+        color,
+        bold: parseFontStyle(fontInfo.name).bold,
+        italic: parseFontStyle(fontInfo.name).italic,
+        rotation: 0,
+      });
+    }
+  }
+
   return { ops, textRuns, images };
 }
 
@@ -1935,8 +2016,84 @@ export async function segmentSlideElements(
   const scaffold = buildPageScaffold(opList, pdfjsLib.OPS);
   const rawRects = extractRectsFromOps(scaffold.ops, pageHeight);
 
-  // --- Text elements (grouped into textboxes) ---
-  const textboxes = groupRunsIntoTextboxes(scaffold.textRuns);
+  // --- Table detection FIRST (C5): cell text must never reach the textbox
+  // segmentation below. Reuses the shared Phase-1 table detector exactly as
+  // extractFormattedTextFromPDF does (clusters → grid → assignments), so a
+  // cluster becomes a table ONLY if it has ≥1 text assignment — this both
+  // keeps freeform textboxes from being misdetected as tables and guarantees
+  // the cell text is consumed (excluded from groupRunsIntoTextboxes). The
+  // identical skip rule (`assignments.length === 0 → continue`) lives in the
+  // shared word/odt path.
+  const tableClusters = buildTableClusters(rawRects);
+  const tableElements: IRSlideElement[] = [];
+  const tableConsumedRuns = new Set<number>();
+  const tableConsumedRects = new Set<RawRect>();
+
+  for (const cluster of tableClusters) {
+    if (cluster.rows < 2 || cluster.cols < 2) continue;
+
+    const gridCells = buildGridAndDetectMerged(cluster);
+    const assignments = assignTextRunsToCells(
+      scaffold.textRuns,
+      gridCells,
+      cluster.xEdges,
+      cluster.yEdges,
+      pageHeight,
+    );
+    if (assignments.length === 0) continue;
+
+    // Build IRTableCell[][] grid; only the top-left anchors of merged cells
+    // carry runs — covered (merged) slots stay placeholders (same as shared
+    // path).
+    const cellGrid: (IRTableCell | null)[][] =
+      Array.from({ length: cluster.rows }, () => new Array(cluster.cols).fill(null));
+
+    for (const { cell, runIndex } of assignments) {
+      tableConsumedRuns.add(runIndex);
+      if (!cellGrid[cell.row][cell.col]) {
+        cellGrid[cell.row][cell.col] = {
+          runs: [],
+          colspan: cell.colspan,
+          rowspan: cell.rowspan,
+        };
+      }
+      cellGrid[cell.row][cell.col]!.runs.push(scaffold.textRuns[runIndex]);
+    }
+
+    const irCells: IRTableCell[][] = cellGrid.map(row =>
+      row.map(c => c ?? { runs: [], colspan: 1, rowspan: 1 })
+    );
+
+    const columnWidths: number[] = [];
+    for (let ci = 0; ci < cluster.xEdges.length - 1; ci++) {
+      columnWidths.push(cluster.xEdges[ci + 1] - cluster.xEdges[ci]);
+    }
+
+    // Cluster edges are already top-origin (extractRectsFromOps normalizes Y),
+    // matching the pptx IR convention — unlike textboxes (bottom-origin run
+    // positions) no extra Y-flip is needed here.
+    tableElements.push({
+      kind: 'table',
+      bounds: {
+        x: cluster.xEdges[0],
+        y: cluster.yEdges[0],
+        width: cluster.xEdges[cluster.xEdges.length - 1] - cluster.xEdges[0],
+        height: cluster.yEdges[cluster.yEdges.length - 1] - cluster.yEdges[0],
+      },
+      rows: cluster.rows,
+      cols: cluster.cols,
+      cells: irCells,
+      columnWidths,
+    });
+
+    // Drop the table's rects from the shape layer so gridlines/cell fills are
+    // not drawn a second time as standalone shapes.
+    for (const r of cluster.rects) tableConsumedRects.add(r);
+  }
+
+  // --- Text elements (grouped into textboxes) — table-consumed runs excluded ---
+  const remainingRuns = scaffold.textRuns.filter((_, idx) => !tableConsumedRuns.has(idx));
+  const textboxes = groupRunsIntoTextboxes(remainingRuns);
   const textElements: IRSlideElement[] = textboxes.map(tb => ({
     kind: 'textbox' as const,
     bounds: {
@@ -1960,7 +2117,7 @@ export async function segmentSlideElements(
   // a leftover paint operation) — emit it only if it has at least one visible
   // attribute (fill or stroke).  This drops noise without losing visible boxes.
   const shapeElements: IRSlideElement[] = rawRects
-    .filter(r => r.width >= 1 && r.height >= 1 && (r.fill || r.stroke))
+    .filter(r => !tableConsumedRects.has(r) && r.width >= 1 && r.height >= 1 && (r.fill || r.stroke))
     .map(r => ({
       kind: 'shape' as const,
       bounds: {
@@ -1979,7 +2136,7 @@ export async function segmentSlideElements(
   // requires canvas rendering via paintImageXObject.  Deferred to v2 — for
   // now we emit 0 image elements; the text + shape elements already cover
   // the main content.
-  const elements = [...textElements, ...shapeElements];
+  const elements = [...tableElements, ...textElements, ...shapeElements];
 
   await doc.cleanup();
 

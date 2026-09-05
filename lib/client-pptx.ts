@@ -7,6 +7,8 @@
 
 export const PT_PER_INCH = 72;
 
+import type { IRTableCell } from './client-pdf-docx';
+
 export interface IRPtRect {
   x: number; // points, top-left origin (Y grows DOWN, like pptxgenjs, unlike raw PDF)
   y: number;
@@ -26,7 +28,8 @@ export interface IRTextContent {
 export type IRSlideElement =
   | { kind: 'textbox'; bounds: IRPtRect; content: IRTextContent }
   | { kind: 'image'; bounds: IRPtRect; dataBase64: string }
-  | { kind: 'shape'; bounds: IRPtRect; shape: 'rect'; fill: string; stroke: string };
+  | { kind: 'shape'; bounds: IRPtRect; shape: 'rect'; fill: string; stroke: string }
+  | { kind: 'table'; bounds: IRPtRect; rows: number; cols: number; cells: IRTableCell[][]; columnWidths: number[] };
 
 export interface IRSlide {
   // Per-slide page size in points. MUST equal the deck's widthPt/heightPt —
@@ -104,6 +107,43 @@ export async function renderIRToPptx(deck: IRDeck): Promise<Blob> {
           const stroke = hexColor(el.stroke);
           if (stroke) opts.line = { color: stroke, width: 1 };
           s.addShape('rect', opts);
+          break;
+        }
+        case 'table': {
+          // Native colspan/rowspan table via pptxgenjs addTable. Merged grid
+          // slots are emitted EXACTLY ONCE (the anchor cell): pptxgenjs expands
+          // colspan/rowspan anchors into merge-mask cells itself ("lopsided
+          // rows" contract — covered positions must be absent from the rows).
+          const covered = new Set<string>();
+          const tabRows: { text: string; options?: object }[][] = [];
+          for (let r = 0; r < el.rows; r++) {
+            const tabRow: { text: string; options?: object }[] = [];
+            for (let c = 0; c < el.cols; c++) {
+              if (covered.has(`${r}:${c}`)) continue;
+              const cell = el.cells[r][c];
+              const colspan = cell.colspan ?? 1;
+              const rowspan = cell.rowspan ?? 1;
+              for (let rr = r; rr < r + rowspan; rr++) {
+                for (let cc = c; cc < c + colspan; cc++) covered.add(`${rr}:${cc}`);
+              }
+              const text = (cell.runs ?? []).map(run => run.text).join('\n');
+              const options =
+                colspan > 1 || rowspan > 1
+                  ? { ...(colspan > 1 ? { colspan } : {}), ...(rowspan > 1 ? { rowspan } : {}) }
+                  : undefined;
+              tabRow.push({ text, options });
+            }
+            tabRows.push(tabRow);
+          }
+          s.addTable(tabRows, {
+            x,
+            y,
+            w: el.bounds.width / PT_PER_INCH,
+            h: el.bounds.height / PT_PER_INCH,
+            colW: el.columnWidths.length === el.cols
+              ? el.columnWidths.map(pt => pt / PT_PER_INCH)
+              : undefined,
+          });
           break;
         }
       }
