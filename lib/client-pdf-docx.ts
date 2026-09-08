@@ -286,6 +286,25 @@ export interface DocxImage {
   source: 'drawingml' | 'vml' | 'odf';
 }
 
+export interface WriterImage {
+  imageId: string;
+  page: number;
+  width: number;
+  height: number;
+  mime: 'image/jpeg' | 'image/png';
+  data: Uint8Array;
+  dedupeKey: string;
+  sourceStream: string;
+  bounds: IRRect;
+}
+
+/** Convert WriterImage (from buildPdfImageMap) into DocxImage (ODT writer contract). */
+export function writerImageToDocxImage(img: WriterImage): DocxImage {
+  const ext = img.mime === 'image/jpeg' ? 'jpg' : 'png';
+  const target = `${img.imageId}.${ext}`;
+  return { rId: '', target, data: img.data, widthEMU: 0, heightEMU: 0, source: 'odf' };
+}
+
 const EMU_PER_PT = 12700;
 
 export function parseRels(xml: string): Map<string, { type: string; target: string }> {
@@ -818,9 +837,9 @@ function irRunsToTextRunsRotated(TRC: any, runs: IRTextRun[], rotation: number):
   return [prefix, ...content, suffix];
 }
 
-export async function renderIRToDocx(pages: IRPageIR[]): Promise<Blob> {
+export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, WriterImage>): Promise<Blob> {
   const {
-    Document, Packer, Paragraph, HeadingLevel, TextRun,
+    Document, Packer, Paragraph, HeadingLevel, TextRun, ImageRun,
     Table, TableRow, TableCell, WidthType, BorderStyle,
   } = await import('docx');
 
@@ -868,13 +887,30 @@ export async function renderIRToDocx(pages: IRPageIR[]): Promise<Blob> {
 
       if (block.kind === 'image') {
         const img = block as IRImageBlock;
-        allChildren.push(new Paragraph({
-          children: [new TextRun({
-            text: `[Image: ${img.naturalWidth}×${img.naturalHeight}]`,
-            italics: true,
-            color: '888888',
-          })],
-        }));
+        const imgData = images?.get(img.imageId);
+        if (imgData) {
+          // docx ImageRun speaks pixels at 96 DPI: px = pt × 96/72 = pt × 4/3.
+          // Display size is taken from the PAINTED bounds (C3 directive), not
+          // from the natural raster size.
+          const widthPx = Math.round(img.bounds.width * (4 / 3));
+          const heightPx = Math.round(img.bounds.height * (4 / 3));
+          allChildren.push(new Paragraph({
+            children: [new ImageRun({
+              data: imgData.data,
+              type: imgData.mime === 'image/jpeg' ? 'jpg' : 'png',
+              transformation: { width: widthPx, height: heightPx },
+            })],
+          }));
+        } else {
+          // No decoded bytes for this painted image → opaque textual placeholder.
+          allChildren.push(new Paragraph({
+            children: [new TextRun({
+              text: `[Image: ${img.naturalWidth}×${img.naturalHeight}]`,
+              italics: true,
+              color: '888888',
+            })],
+          }));
+        }
       } else if (block.kind === 'heading') {
         const h = block as IRHeadingBlock;
         const level = Math.min(Math.max(h.level, 1), 6);
@@ -3277,7 +3313,7 @@ function odtRenderBodyXml(
         pictures.push({ path: `Pictures/${file}`, data: imgData.data, media: odtRenderMimeForTarget(imgData.target) });
         out.push(
           `<draw:frame draw:name="image${imgIdx}" text:anchor-type="as-char" ` +
-            `svg:width="${img.naturalWidth}pt" svg:height="${img.naturalHeight}pt">` +
+            `svg:width="${img.bounds.width}pt" svg:height="${img.bounds.height}pt">` +
             `<draw:image xlink:href="Pictures/${odtXmlEsc(file)}" xlink:type="simple" ` +
             `xlink:show="embed" xlink:actuate="onLoad"/>` +
             `</draw:frame>`
