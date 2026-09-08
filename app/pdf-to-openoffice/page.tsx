@@ -3,7 +3,8 @@ import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { pdfToOdt, extractFormattedTextFromPDF } from '@/lib/client-pdf';
-import { renderIRToOdt } from '@/lib/client-pdf-docx';
+import { renderIRToOdt, writerImageToDocxImage, type DocxImage } from '@/lib/client-pdf-docx';
+import { buildPdfImageMap } from '@/lib/pdf/extractPdfImages';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -39,7 +40,10 @@ export default function PDFToOpenOffice({ locale: forcedLocale }: { locale?: Loc
       let fallbackUsed = false;
       try {
         const pages = await extractFormattedTextFromPDF(file);
-        blob = await renderIRToOdt(pages, new Map());
+        const imageMap = await buildPdfImageMap(file, []);
+        const odtImages = new Map<string, DocxImage>();
+        for (const [id, img] of imageMap.images) odtImages.set(id, writerImageToDocxImage(img));
+        blob = await renderIRToOdt(pages, odtImages);
       } catch (irErr) {
         console.error('extractFormattedTextFromPDF/renderIRToOdt failed, falling back to pdfToOdt:', irErr);
         blob = await pdfToOdt(file);

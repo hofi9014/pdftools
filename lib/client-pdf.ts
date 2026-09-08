@@ -19,7 +19,7 @@ export async function initPdfjs(): Promise<void> {
   return pdfjsInitPromise;
 }
 
-function pdfjsDocOptions(data: Uint8Array): { data: Uint8Array; cMapUrl: string; cMapPacked: boolean; standardFontDataUrl: string } {
+export function pdfjsDocOptions(data: Uint8Array): { data: Uint8Array; cMapUrl: string; cMapPacked: boolean; standardFontDataUrl: string } {
   return {
     data,
     cMapUrl: '/pdfjs-dist/cmaps/',
@@ -1563,7 +1563,7 @@ const NUMBERED_REGEX = /^\d+[.)]\s*/;
 // and pdfTablesToCells (single source of truth for op/text extraction)
 // ============================================================
 
-interface PdfPageScaffoldImage {
+export interface PdfPageScaffoldImage {
   imageId: string;
   natW: number;
   natH: number;
@@ -1620,11 +1620,24 @@ export function buildPageScaffold(
   // don't use nested save/restore for text formatting.
 
   // --- Image detection: paintImageXObject with accumulated transforms ---
+  // A proper graphics-state STACK is modeled for the CTM: `save` pushes the
+  // current transform, `restore` pops it, and `transform` (cm) right-multiplies.
+  // (A linear "save resets to identity" would drop a nested save before an
+  // embedded image paint, e.g. Allegro page 27.)
+  //
+  // On-page size: pdf.js's painter normalizes each image's intrinsic pixels via
+  // `ctx.scale(1/width)`, so the painted size in page units equals the CTM's
+  // extent (|a,b| x |c,d|) — NOT the image's pixel width x the scale. Verified
+  // empirically (drawImage dest rects) for Allegro pages 1/4/6/27.
   const images: PdfPageScaffoldImage[] = [];
+  const stack: number[][] = [];
   let accumTx = [1, 0, 0, 1, 0, 0];
   for (let i = 0; i < ops.length; i++) {
     const { op, args } = ops[i];
-    if (op === 'save') accumTx = [1, 0, 0, 1, 0, 0];
+    if (op === 'save') stack.push([...accumTx]);
+    if (op === 'restore') {
+      if (stack.length > 0) accumTx = stack.pop() as number[];
+    }
     if (op === 'transform' && Array.isArray(args)) {
       const m = args as number[];
       accumTx = [
@@ -1649,8 +1662,8 @@ export function buildPageScaffold(
         bounds: {
           x: accumTx[4],
           y: accumTx[5],
-          width: natW * sx,
-          height: natH * sy,
+          width: sx,
+          height: sy,
         },
       });
     }
@@ -3054,7 +3067,7 @@ ${htmlParts.join('\n')}
   return new Blob([html], { type: 'text/html;charset=utf-8' });
 }
 
-function parseFilters(fRaw: unknown): string[] {
+export function parseFilters(fRaw: unknown): string[] {
   if (!fRaw || typeof fRaw !== 'object') return [];
   if (typeof (fRaw as { asArray?: () => unknown[] }).asArray === 'function') {
     return (fRaw as { asArray: () => unknown[] }).asArray().map((e: unknown) => String(e));
@@ -3150,7 +3163,9 @@ export async function pdfToWord(file: File): Promise<Blob> {
 
 export async function pdfToWordIR(file: File): Promise<Blob> {
   const pages = await extractFormattedTextFromPDF(file);
-  return renderIRToDocx(pages);
+  const { buildPdfImageMap } = await import('./pdf/extractPdfImages');
+  const imageMap = await buildPdfImageMap(file, []);
+  return renderIRToDocx(pages, imageMap.images);
 }
 
 // ============================================================
