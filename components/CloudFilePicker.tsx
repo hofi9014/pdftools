@@ -31,8 +31,9 @@ function loadScript(src: string, id?: string, attrs?: Record<string, string>): P
   });
 }
 
-async function urlToFile(url: string, name: string): Promise<File> {
-  const res = await fetch(url);
+async function urlToFile(url: string, name: string, token?: string): Promise<File> {
+  const res = await fetch(url, token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
+  if (!res.ok) { throw new Error(`Download failed: ${res.status}`); }
   const blob = await res.blob();
   return new File([blob], name, { type: blob.type || 'application/pdf' });
 }
@@ -52,8 +53,9 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const [offlineMsg, setOfflineMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [showSharePoint, setShowSharePoint] = useState(false);
-  const googleTokenRef = useRef<string>('');
+  const googleWatchdogRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const bcRef = useRef<BroadcastChannel | null>(null);
   const oauthIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
@@ -75,31 +77,62 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
         client_id: GOOGLE_CLIENT_ID,
         scope: 'https://www.googleapis.com/auth/drive.file',
         callback: (resp) => {
-          if (resp.error) { throw new Error(resp.error); }
-          googleTokenRef.current = resp.access_token;
-          const pb = new (gapi.picker.PickerBuilder as any)();
-          pb.addView((gapi.picker.ViewId as any).DOCS);
-          pb.setOAuthToken(resp.access_token);
-          pb.setDeveloperKey(GOOGLE_API_KEY);
-          pb.setCallback((data: any) => {
-            if (data.action === 'picked' && data.docs) {
-              Promise.all(
-                data.docs.map(async (doc: any) => {
-                  const url = `https://www.googleapis.com/drive/v3/files/${doc.id}?alt=media`;
-                  return urlToFile(url, doc.name);
-                })
-              ).then(onFilesPicked).catch(() => {});
+          if (googleWatchdogRef.current) {
+            clearTimeout(googleWatchdogRef.current);
+            googleWatchdogRef.current = undefined;
+          }
+          try {
+            if (resp.error) {
+              setErrorMsg(locale === 'pl' ? 'Nie udało się zalogować do Google Drive.' : 'Google Drive sign-in failed.');
+              setLoading(null);
+              return;
             }
-          });
-          pb.build().setVisible(true);
+            const pb = new google.picker.PickerBuilder();
+            pb.addView(google.picker.ViewId.DOCS);
+            pb.setOAuthToken(resp.access_token);
+            pb.setDeveloperKey(GOOGLE_API_KEY);
+            pb.setCallback((data) => {
+              if (data.action === 'picked' && data.docs) {
+                Promise.all(
+                  data.docs.map(async (doc) => {
+                    const url = `https://www.googleapis.com/drive/v3/files/${doc.id}?alt=media`;
+                    return urlToFile(url, doc.name, resp.access_token);
+                  })
+                )
+                  .then((files) => {
+                    onFilesPicked(files);
+                  })
+                  .catch(() => {
+                    setErrorMsg(locale === 'pl' ? 'Nie udało się pobrać pliku z Google Drive.' : 'Failed to download file from Google Drive.');
+                  })
+                  .finally(() => setLoading(null));
+              } else if (data.action === 'cancel') {
+                setLoading(null);
+              }
+            });
+            pb.build().setVisible(true);
+          } catch (err) {
+            console.error('Google Drive error:', err);
+            setErrorMsg(locale === 'pl' ? 'Nie udało się uruchomić Google Drive.' : 'Could not start Google Drive.');
+            setLoading(null);
+          }
         },
       });
+      googleWatchdogRef.current = setTimeout(() => {
+        setErrorMsg(locale === 'pl' ? 'Logowanie do Google Drive przekroczyło limit czasu.' : 'Google Drive sign-in timed out.');
+        setLoading(null);
+      }, 120000);
       tokenClient.requestAccessToken();
     } catch (e) {
       console.error('Google Drive error:', e);
+      if (googleWatchdogRef.current) {
+        clearTimeout(googleWatchdogRef.current);
+        googleWatchdogRef.current = undefined;
+      }
+      setErrorMsg(locale === 'pl' ? 'Nie udało się uruchomić Google Drive.' : 'Could not start Google Drive.');
       setLoading(null);
     }
-  }, [onFilesPicked]);
+  }, [onFilesPicked, locale]);
 
   const handleDropbox = useCallback(async () => {
     setOpen(false);
@@ -117,7 +150,9 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
               files.map((f) => urlToFile(f.link, f.name))
             );
             onFilesPicked(result);
-          } catch { }
+          } catch {
+            setErrorMsg(locale === 'pl' ? 'Nie udało się pobrać pliku z Dropbox.' : 'Failed to download from Dropbox.');
+          }
           setLoading(null);
         },
         cancel: () => setLoading(null),
@@ -127,9 +162,10 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
       });
     } catch (e) {
       console.error('Dropbox error:', e);
+      setErrorMsg(locale === 'pl' ? 'Nie udało się pobrać pliku z Dropbox.' : 'Failed to download from Dropbox.');
       setLoading(null);
     }
-  }, [onFilesPicked, accept]);
+  }, [onFilesPicked, accept, locale]);
 
   const handleOneDrive = useCallback(async () => {
     setOpen(false);
@@ -211,7 +247,11 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
         bcRef.current.onmessage = (event) => {
           if (event.data?.type === 'onedrive-token') deliverToken(event.data.payload);
         };
-      } catch {}
+      } catch {
+        // BroadcastChannel is only a helper mechanism - the setInterval polling
+        // localStorage below is an independent fallback path, so the lack of
+        // BroadcastChannel support in the browser is not an error.
+      }
 
       oauthIntervalRef.current = setInterval(() => {
         for (let i = 0; i < localStorage.length; i++) {
@@ -313,6 +353,12 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
     return () => clearTimeout(t);
   }, [offlineMsg]);
 
+  useEffect(() => {
+    if (!errorMsg) return;
+    const t = setTimeout(() => setErrorMsg(''), 6000);
+    return () => clearTimeout(t);
+  }, [errorMsg]);
+
   const hasGoogle = !!(GOOGLE_CLIENT_ID && GOOGLE_API_KEY);
   const hasDropbox = !!DROPBOX_KEY;
   const hasOneDrive = !!ONEDRIVE_CLIENT_ID;
@@ -366,6 +412,11 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
       {offlineMsg && (
         <div className="absolute top-full left-0 mt-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2 shadow-lg z-50 whitespace-nowrap">
           ⚠️ {t('cloud.offline', locale)}
+        </div>
+      )}
+      {errorMsg && (
+        <div className="absolute top-full left-0 mt-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2 shadow-lg z-50 max-w-xs">
+          ⚠️ {errorMsg}
         </div>
       )}
 

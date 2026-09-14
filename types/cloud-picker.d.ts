@@ -1,16 +1,6 @@
 declare global {
   const gapi: {
     load: (api: string, opts: { callback: () => void }) => void;
-    picker: {
-      PickerBuilder: new () => {
-        addView: (view: unknown) => unknown;
-        setOAuthToken: (token: string) => unknown;
-        setDeveloperKey: (key: string) => unknown;
-        setCallback: (cb: (data: { action: string; docs?: { id: string; name: string }[] }) => void) => unknown;
-        build: () => { setVisible: (visible: boolean) => void };
-      };
-      ViewId: { DOCS: unknown };
-    };
   };
 
   const google: {
@@ -22,6 +12,16 @@ declare global {
           callback: (resp: { access_token: string; error?: string }) => void;
         }) => { requestAccessToken: () => void };
       };
+    };
+    picker: {
+      PickerBuilder: new () => {
+        addView: (view: unknown) => unknown;
+        setOAuthToken: (token: string) => unknown;
+        setDeveloperKey: (key: string) => unknown;
+        setCallback: (cb: (data: { action: string; docs?: { id: string; name: string }[] }) => void) => unknown;
+        build: () => { setVisible: (visible: boolean) => void };
+      };
+      ViewId: { DOCS: unknown };
     };
   };
 
