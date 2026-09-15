@@ -12,6 +12,15 @@ export default function ContentBlockRenderer({
   blocks: ContentBlock[];
   locale: string;
 }) {
+  // Step blocks are numbered by their own sequence, not by index in the full `blocks` array
+  // — a guide's intro paragraphs/headings/CTAs before the first step must not shift step 1
+  // into "step 4". Computed as a pure derived array (no mutation during render, so React
+  // Compiler can safely memoize this component).
+  const stepNumbers = blocks.reduce<number[]>((acc, block) => {
+    acc.push(block.type === 'step' ? (acc.at(-1) ?? 0) + 1 : acc.at(-1) ?? 0);
+    return acc;
+  }, []);
+
   return (
     <>
       {blocks.map((block, i) => {
@@ -27,7 +36,7 @@ export default function ContentBlockRenderer({
             return (
               <div key={i} className="flex gap-4 mb-5">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold mt-0.5">
-                  {(i + 1).toString()}
+                  {stepNumbers[i].toString()}
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-1">{tls(block.title, locale)}</h4>
