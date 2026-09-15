@@ -180,24 +180,52 @@ dokumentacji Microsoftu (patrz uwaga w tabeli wyżej): nie zawęża scope'u, tyl
 - **Gałąź `fix/google-drive-picker`** — potwierdzona jako w pełni scalona
   (`git merge-base --is-ancestor` zwrócił true), usunięta lokalnie i na origin.
 
-### `/[locale]` — 100% błędów w Observability: potwierdzona przyczyna i naprawa
+### `/[locale]` — 100% błędów w Observability: dwie naprawy, nie jedna
 
-**Przyczyna (potwierdzona, nie założona):** `app/[locale]/layout.tsx` nie walidował
-parametru `locale`. `generateStaticParams` buduje statycznie tylko 16 znanych języków;
-każde inne pojedyncze żądanie ścieżki (boty skanujące `/wp-admin`, `/.env`, `/xx` itp.),
-które nie pasuje do żadnej bardziej specyficznej trasy, trafia w `[locale]` i — poza
-zbiorem prebuildowanym — Next.js renderuje je **na żywo** zamiast serwować gotowy plik.
-Render z niesprawdzonym rzutowaniem `locale as Locale` kończył się wyjątkiem.
+**Pierwsza naprawa (realna, ale niewystarczająca — korekta poniżej):** `app/[locale]/layout.tsx`
+nie walidował parametru `locale`. `generateStaticParams` buduje statycznie tylko 16 znanych
+języków; każde inne pojedyncze żądanie ścieżki (boty skanujące `/wp-admin`, `/.env`, `/xx`
+itp.) trafia w `[locale]` i — poza zbiorem prebuildowanym — Next.js renderuje je **na żywo**.
+Dodano `notFound()` dla nieznanego `locale`. Dobre wzmocnienie samo w sobie, ale **nie było
+prawdziwą przyczyną obserwowanych błędów** — co ujawniło się dopiero po wdrożeniu.
 
-**Dowód, nie deklaracja:** odtworzone bezpośrednio na produkcji podczas tej sesji —
-`GET https://optimapdf.com/xx` → **500**, ~2,3 s (dokładnie wzorzec z Observability: trasa
-`/[locale]` w danych Vercela pokazywała P75 3,21 s i 100% Error Rate na 6 wywołaniach
-w 12 h, `/[locale]/guide` analogicznie). Zwykłe żądania z poprawnym językiem (`/pl`) nie
-są w ogóle widoczne w tych metrykach — obsługuje je statyczny plik, bez wywołania funkcji.
+**Test rozstrzygający po wdrożeniu (zgodnie z zasadą sesji — sprawdzić na produkcji, nie
+zakładać):** `GET https://optimapdf.com/xx` **dalej dawał 500** po wdrożeniu poprawki.
+Sprawdzenie `vercel logs` na tym konkretnym deploymencie (dopasowanym po znaczniku czasu:
+commit 16:02:52, deployment 16:03:00) ujawniło prawdziwy błąd, niezwiązany z `locale`:
 
-**Naprawa:** `app/[locale]/layout.tsx` — nieznany `locale` → `notFound()` (czysty 404
-zamiast renderu z crashem). Zweryfikowane lokalnie przed i po: `/xx` 500→404, `/pl` i
-`/en/merge` bez zmian (200). `tsc`/`build`/`eslint` bez nowych błędów.
+```
+Error: Failed to load external module sharp: ERR_DLOPEN_FAILED:
+libvips-cpp.so.8.18.3: cannot open shared object file
+```
+
+**Prawdziwa przyczyna:** `app/icon.tsx` (mimo że `AGENTS.md` opisywał go jako "PNG,
+statyczny") dynamicznie skalował `public/logo.png` przez `sharp` **przy każdym żądaniu**
+zamiast być czysto statyczny. Natywna biblioteka `sharp` (`libvips`) nie ładowała się
+w runtime Vercela (Linux) dla tej konkretnej ścieżki wykonania — stąd crash, ~2-3 s
+opóźnienia (próba załadowania) i 100% Error Rate na `/[locale]`/`/[locale]/guide`
+(strony z poprawnym językiem nie były dotknięte, bo serwowane statycznie, bez wywołania
+funkcji — stąd nigdy nie trafiały w ten kod). Walidacja `locale` nie miała tu znaczenia,
+bo crash następował wcześniej, przy próbie rozwiązania metadanych ikony.
+
+**Druga naprawa (faktyczna przyczyna):** `app/icon.tsx` zastąpiony w pełni statycznym
+`app/icon.png` (wygenerowanym raz lokalnie z `public/logo.png`, tym samym rozmiarem
+32×32) — konwencja plikowa Next.js, zero kodu, zero zależności runtime. `sharp` usunięty
+z `package.json` (był używany **wyłącznie** w tym jednym pliku — potwierdzone grepem).
+Przy okazji usunięty też `lib/pdf-engine.ts` — martwy kod (zero rzeczywistych importów,
+potwierdzone świeżo; jedyne trafienie grepa to komentarz odsyłający, nie import), który
+też importował `sharp` i zaczął blokować `tsc` po usunięciu pakietu.
+
+**Dowód:** build lokalny w trybie produkcyjnym (`next start`, bliższy runtime'owi Vercela
+niż `next dev`) — `/icon.png` → 200 `image/png`, `/xx` → **404**, `/pl` → 200. `tsc`/`build`
+bez nowych błędów. Build output: `/icon.png` jako `○` (Static) — potwierdza zero
+wywołania funkcji dla ikony.
+
+**Wniosek do zapamiętania:** lokalna weryfikacja (`next dev`, Windows) nie wykryła tego
+problemu, bo `sharp` ładuje się poprawnie na tej platformie — awaria była specyficzna dla
+runtime'u Linux na Vercelu. Sama poprawka `notFound()` — choć słuszna — dawałaby fałszywe
+poczucie zamknięcia tematu, gdyby nie sprawdzono efektu **na żywo na produkcji** po
+wdrożeniu, a nie tylko lokalnie.
 
 ---
 
@@ -205,12 +233,42 @@ zamiast renderu z crashem). Zweryfikowane lokalnie przed i po: `/xx` 500→404, 
 
 ### Drobne obserwacje
 
-- **Azure: „End users cannot grant consent to newly registered multitenant apps without
-  verified publishers"** — obcy użytkownicy mogą nie móc wyrazić zgody na dostęp
-  do OneDrive/SharePoint. **W trakcie sprawdzania** (2026-09-15): logowanie do Azure
-  Portal kontem tenanta `LeszekHofman@OptimaPDF.onmicrosoft.com` napotyka błąd
-  interakcji ("account needs to be added as an external user in the tenant first") —
-  do wyjaśnienia, zanim da się zobaczyć status Publisher domain.
+- **Azure — status wydawcy sprawdzony (2026-09-15): potwierdzone niezweryfikowany,
+  i strukturalnie zablokowane, nie tylko "jeszcze nie zrobione".** (Problem logowania
+  po drodze: konflikt sesji wielu kont Microsoft w jednej przeglądarce — obszedł go
+  incognito + logowanie wyłącznie kontem `LeszekHofman@OptimaPDF.onmicrosoft.com`.)
+  Aplikacja: **"Optimapdf SharePoint"** w dzierżawie `OptimaPDF.onmicrosoft.com`
+  (Znakowanie i właściwości → Domena wydawcy). Portal wprost: *"Domena wydawcy
+  aplikacji jest ustawiona na OptimaPDF.onmicrosoft.com, ale domeny wydawcy
+  onmicrosoft.com nie są dozwolone. W celu kontynuowania użyj domeny
+  niestandardowej."* Ścieżka do weryfikacji (żadna z tych czynności nie została
+  wykonana w tej sesji — wymaga decyzji i czasu poza kodem):
+  1. Dodać i zweryfikować przez DNS domenę `optimapdf.com` w tej dzierżawie Azure AD
+  2. Ustawić ją jako domenę wydawcy aplikacji
+  3. Posiadać konto w Microsoft Partner Network (MPN) z domeną kontaktową zgodną
+     z `optimapdf.com`
+  4. Powiązać identyfikator MPN z aplikacją
+
+  **Praktyczny skutek dziś:** ekran zgody OAuth dla OneDrive/SharePoint pokazuje
+  użytkownikom etykietę "Niezweryfikowane" — obniża zaufanie wizualnie, **nie jest
+  luką bezpieczeństwa**. Dla kont spoza organizacji może to dodatkowo blokować zgodę
+  bez zgody administratora (oryginalne ostrzeżenie Azure, wciąż aktualne).
+  **Decyzja:** odłożone — wymaga biznesowej rejestracji w MPN, poza zakresem sesji
+  technicznej. Do podjęcia osobno, gdy będzie na to czas/potrzeba.
+
+  **Przy okazji zweryfikowane (2026-09-15): rzeczywista konfiguracja "Uprawnienia
+  interfejsu API" tej samej aplikacji potwierdza tabelę scope'ów z SEC-005**, bez
+  niespodzianek. 4 uprawnienia Microsoft Graph, wszystkie typu **Delegated** (nie
+  Application): `offline_access`, `Sites.Read.All`, `Sites.ReadWrite.All` — zgodne
+  z kodem; `User.Read` — domyślne dla każdej rejestracji aplikacji, nieszkodliwe.
+  „Wymagana zgoda administratora": **Nie** dla wszystkich czterech — zgoda jest per-
+  -użytkownik przy logowaniu (zgodnie z projektem: OAuth implicit grant,
+  `prompt=select_account`), stąd pusta kolumna „Stan" jest prawidłowa, nie błędem.
+  **Jedna drobna niezgodność:** kod (`SharePointPickerDialog.tsx`, tryb picker) żąda
+  w URL-u OAuth dodatkowo `Files.Read.All`, którego nie ma w konfiguracji Azure —
+  najpewniej zbędne (`Sites.Read.All` już obejmuje odczyt plików w bibliotekach
+  dokumentów tych witryn), nie rozszerza uprawnień ponad to, co widać w Azure.
+  Niski priorytet — do rozważenia usunięcia z kodu jako kosmetyka, nie luka.
 - **Deployment Storage — trend potwierdzony pozytywny.** Wykres 30-dniowy (sprawdzony
   2026-09-15): spadek z ~40 GB (18 sierpnia) do 13,43 GB (dziś), wyraźnie w dół od
   usunięcia `archiver`/przeniesienia `playwright`. Wciąż nad limitem 10 GB, ale trend
