@@ -126,7 +126,13 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
       </div>
 
       <form onSubmit={handleSubmit} className="tool-card rounded-2xl border p-8 space-y-6">
-        <div className="tool-dropzone rounded-xl p-6 text-center cursor-pointer transition" onClick={() => document.getElementById('file-input')?.click()}>
+        <div
+          className="tool-dropzone rounded-xl p-6 text-center cursor-pointer transition"
+          onClick={() => document.getElementById('file-input')?.click()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('file-input')?.click(); } }}
+        >
           <input id="file-input" type="file" accept=".pdf" className="hidden" onChange={(e) => { setFile(e.target.files?.[0] || null); setError(''); }} />
           {file ? <p className="!text-[var(--coffee-accent)] font-medium">{file.name}</p> : <p className="text-gray-400 dark:text-gray-500">{t('page.edit.click_select', locale)}</p>}
         </div>

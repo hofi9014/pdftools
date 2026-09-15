@@ -56,6 +56,9 @@ export default function EditPdfPage({ locale: forcedLocale }: { locale?: Locale 
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onClick={() => document.getElementById('fileInput')?.click()}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('fileInput')?.click(); } }}
         className={`border-2 border-dashed rounded-2xl p-12 sm:p-16 text-center cursor-pointer transition mb-6
           ${dragOver
             ? 'border-[var(--coffee-accent)] bg-[var(--coffee-accent-subtle)]'

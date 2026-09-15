@@ -83,6 +83,9 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
           onDragOver={(e) => { e.preventDefault(); setDragOverA(true); }}
           onDragLeave={() => setDragOverA(false)}
           onClick={() => document.getElementById('fileInputA')?.click()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('fileInputA')?.click(); } }}
           className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition
             ${dragOverA ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700'}
             ${fileA ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}>
@@ -108,6 +111,9 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
           onDragOver={(e) => { e.preventDefault(); setDragOverB(true); }}
           onDragLeave={() => setDragOverB(false)}
           onClick={() => document.getElementById('fileInputB')?.click()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('fileInputB')?.click(); } }}
           className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition
             ${dragOverB ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700'}
             ${fileB ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}>
