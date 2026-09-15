@@ -8,7 +8,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Opis
 Polskojęzyczna aplikacja webowa do edycji plików PDF (Next.js 16, React 19, Tailwind CSS 4, TypeScript).
-**Wszystkie narzędzia działają w całości po stronie klienta (przeglądarka).** Dwa endpointy: `/api/url-to-pdf` i `/api/exports`.
+**Wszystkie narzędzia działają w całości po stronie klienta (przeglądarka), łącznie z zapisem do wszystkich zintegrowanych chmur.** Dwa endpointy: `/api/url-to-pdf` i `/api/ai`.
 
 ## Strony (50 statycznych, wszystkie ○)
 - `/` — strona główna z listą narzędzi (PL/EN, i18n)
@@ -39,7 +39,7 @@ Polskojęzyczna aplikacja webowa do edycji plików PDF (Next.js 16, React 19, Ta
 
 ## Komponenty
 - `CloudFilePicker` — "☁️ Dodaj z chmury" (merge, compress, rotate-pdf) — Google Drive (Picker API), Dropbox (Chooser), OneDrive (SDK)
-- `CloudFileSaver` — "Zapisz do:" Google Drive, Dropbox (Saver przez /api/exports), OneDrive (Graph API)
+- `CloudFileSaver` — "Zapisz do:" Google Drive, Dropbox, OneDrive — wszystkie: OAuth popup + bezpośredni upload z przeglądarki (Drive/Dropbox/Graph API), bez pośrednictwa serwera
 - `PagePreview` — miniatury PDF (tryby: delete/extract/reorder; 4 strony)
 - `LanguageToggle` — PL/EN (Header)
 - `ThemeToggle`, `MobileMenu`, `Breadcrumbs` (i18n), `SchemaHowTo`, `PwaRegister`
@@ -55,10 +55,9 @@ Polskojęzyczna aplikacja webowa do edycji plików PDF (Next.js 16, React 19, Ta
 
 ## Backend
 - `app/api/url-to-pdf/route.ts` — endpoint do konwersji URL → PDF (CORS)
-- `app/api/exports/route.ts` — POST: przyjmuje plik, zapisuje w pamięci podręcznej (5min TTL), zwraca podpisany HMAC URL (/api/exports/{id}?expiry=&hmac=)
-- `app/api/exports/[id]/route.ts` — GET: weryfikuje HMAC, sprawdza TTL, konsumuje jednorazowo, zwraca plik (używane przez Dropbox Saver)
-- `lib/exports.ts` — `storeFile()`, `signExportUrl()`, `verifyAndConsume()` (Map in-memory, HMAC-SHA256, timingSafeEqual)
-- Tokeny OAuth (Google/Dropbox/OneDrive) przechowywane wyłącznie w pamięci JS (React state/ref), nigdy nie trafiają do backendu ani localStorage
+- `app/api/ai/route.ts` — endpoint do zapytań AI (OpenRouter), z limitem dobowym (`lib/ai-rate-limit.ts`)
+- Tokeny OAuth (Google/Dropbox/OneDrive) przechowywane wyłącznie w pamięci JS (React state/ref, poza Google który cache'uje w sessionStorage), nigdy nie trafiają do backendu
+- **Historyczne:** do 2026-09 istniał trzeci endpoint `/api/exports` + `lib/exports.ts` (magazyn plików w pamięci procesu, podpisane URL-e HMAC) na potrzeby Dropbox Saver. Usunięty w ramach Etap 2 (zob. AUDYT-BEZPIECZENSTWA.md) — Dropbox przeszedł na ten sam wzorzec OAuth + bezpośredni upload co Google Drive/OneDrive
 
 ## System poradników (guides)
 - Lokalizacja: `content/guides/{category}/{slug}.ts` — dane w TS (bez CMS/markdown)
@@ -74,14 +73,12 @@ Polskojęzyczna aplikacja webowa do edycji plików PDF (Next.js 16, React 19, Ta
 
 ## Integracja z chmurą
 - Google Drive: OAuth 2.0 (drive.file) + Picker API do wyboru plików, upload przez Google Drive API (multipart)
-- Dropbox: Chooser API do wyboru plików (direct link); Saver API + /api/exports do zapisu (plik → podpisany URL → Dropbox pobiera)
+- Dropbox: Chooser API do wyboru plików (direct link, bez OAuth); do zapisu OAuth 2.0 implicit grant (popup + postMessage przez `dropbox-oauth.html`, scope `files.content.write`) + Dropbox API v2 `files/upload` bezpośrednio z przeglądarki (`lib/dropbox-upload.ts` — ASCII-escaping nagłówka `Dropbox-API-Arg` per wymóg Dropboksa)
 - OneDrive: SDK (js.live.net) do wyboru plików; OAuth implicit grant (popup + postMessage przez onedrive-oauth.html) + Graph API upload
 
 ## Bezpieczeństwo
 - CSP w next.config.ts: strict (self, tylko zaufane domeny cloud)
-- HMAC-SHA256 + timingSafeEqual dla signed URL-i eksportu
-- Pliki w pamięci serwera: 5 min TTL, jednorazowe użycie, cleanup co 60s
-- Żaden token OAuth nie jest przechowywany po stronie serwera
+- Żaden token OAuth nie jest przechowywany po stronie serwera — serwer w ogóle nie widzi plików użytkownika przy zapisie do chmury (od Etap 2, zob. wyżej)
 
 ## ⚠️ WinAnsi / StandardFonts — NOTATKA 2026-08-27
 - `StandardFonts.Helvetica` (WinAnsi) **nie potrafi zakodować polskich/łacińskich rozszerzonych glifów** — `widthOfTextAtSize()`/`drawText()` rzucają `WinAnsi cannot encode "ś"`, crashując narzędzia albo cicho usuwając słowa.

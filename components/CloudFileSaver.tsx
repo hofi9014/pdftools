@@ -3,6 +3,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { useOnlineStatus } from '@/lib/useOnlineStatus';
+import { buildDropboxAuthUrl, buildDropboxUploadArgHeader } from '@/lib/dropbox-upload';
 import SharePointPickerDialog from './SharePointPickerDialog';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID || '';
@@ -66,6 +67,46 @@ async function getMicrosoftToken(clientId: string): Promise<string> {
     const timeout = setTimeout(() => {
       clearInterval(timer);
       window.removeEventListener('message', handler);
+      popup.close();
+      reject(new Error('Login timeout'));
+    }, 120000);
+  });
+}
+
+async function getDropboxToken(clientId: string): Promise<string> {
+  const redirectUri = window.location.origin + '/dropbox-oauth.html';
+  const authUrl = buildDropboxAuthUrl(clientId, redirectUri);
+
+  const popup = window.open(authUrl, 'dropbox-login', 'width=600,height=700');
+  if (!popup) throw new Error('Popup blocked');
+
+  return new Promise<string>((resolve, reject) => {
+    let settled = false;
+    const cleanup = () => {
+      settled = true;
+      window.removeEventListener('message', handler);
+      clearInterval(timer);
+      clearTimeout(timeout);
+    };
+    const handler = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      if (e.data?.type === 'dropbox-token') {
+        cleanup();
+        resolve(e.data.accessToken);
+      }
+    };
+    window.addEventListener('message', handler);
+
+    const timer = setInterval(() => {
+      if (popup.closed && !settled) {
+        cleanup();
+        reject(new Error('Login cancelled'));
+      }
+    }, 500);
+
+    const timeout = setTimeout(() => {
+      if (settled) return;
+      cleanup();
       popup.close();
       reject(new Error('Login timeout'));
     }, 120000);
@@ -181,22 +222,23 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
     setSaving('dropbox');
     setError('');
     try {
-      await loadScript('https://www.dropbox.com/static/api/2/dropins.js', 'dropboxjs', { 'data-app-key': DROPBOX_KEY });
-
-      const formData = new FormData();
-      formData.append('file', blob, fileName);
-      const res = await fetch('/api/exports', { method: 'POST', body: formData });
-      if (!res.ok) throw new Error('Failed to get export link');
-      const { url } = await res.json();
-
-      window.Dropbox!.save(
-        window.location.origin + url,
-        fileName,
-        {
-          success: () => { setSaving(null); onDone?.(); },
-          cancel: () => { setSaving(null); },
-        }
-      );
+      // Direct OAuth + Dropbox API v2 upload — same pattern as Google Drive/OneDrive
+      // above. Replaces the old Dropbox Saver widget, which required a server to host a
+      // publicly-fetchable URL for Dropbox's servers to fetch (Etap 2): the file now
+      // never leaves the browser for any provider, matching the site's privacy claim.
+      const token = await getDropboxToken(DROPBOX_KEY);
+      const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/octet-stream',
+          'Dropbox-API-Arg': buildDropboxUploadArgHeader(fileName),
+        },
+        body: blob,
+      });
+      if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+      setSaving(null);
+      onDone?.();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Dropbox save failed');
       setSaving(null);
