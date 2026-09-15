@@ -3435,13 +3435,18 @@ export async function editPdfClient(file: File, pageIndex: number, elements: Pdf
   if (pageIndex < 0 || pageIndex >= pages.length) throw new Error('Invalid page number');
 
   const page = pages[pageIndex];
-  const { height: pdfHeight } = page.getSize();
+  // pageWidth/pageHeight are the on-screen preview canvas dimensions the caller placed
+  // annotations against; they must be converted into PDF point space per axis
+  // independently (scaleX from width, scaleY from height) — a page is virtually never
+  // square (A4 is 595x842pt), so reusing one axis' scale for the other silently
+  // mispositions every annotation horizontally.
+  const { width: pdfWidth, height: pdfHeight } = page.getSize();
   const scaleY = pdfHeight / (pageHeight || pdfHeight);
-  const scaleX = pdfHeight / (pageHeight || pdfHeight);
+  const scaleX = pdfWidth / (pageWidth || pdfWidth);
 
   for (const el of elements) {
     const opacity = el.opacity ?? 1;
-    const sx = (pageWidth && pageWidth !== pdfHeight) ? (el.x / (pageWidth || pdfHeight)) * pdfHeight : el.x * scaleX;
+    const sx = el.x * scaleX;
     const sy = pdfHeight - (el.y * scaleY);
     const sColor = el.color || '#000000';
 
@@ -3460,14 +3465,14 @@ export async function editPdfClient(file: File, pageIndex: number, elements: Pdf
         borderColor: rgb(1, 1, 0), borderWidth: 0,
       });
     } else if (el.type === 'line' && el.x2 !== undefined && el.y2 !== undefined) {
-      const sx2 = (pageWidth ? (el.x2 / pageWidth) * pdfHeight : el.x2 * scaleX);
+      const sx2 = el.x2 * scaleX;
       const sy2 = pdfHeight - (el.y2 * scaleY);
       page.drawLine({
         start: { x: sx, y: sy }, end: { x: sx2, y: sy2 },
         color: rgbFromHex(sColor), thickness: (el.size || 2) * scaleY, opacity,
       });
     } else if (el.type === 'arrow' && el.x2 !== undefined && el.y2 !== undefined) {
-      const sx2 = (pageWidth ? (el.x2 / pageWidth) * pdfHeight : el.x2 * scaleX);
+      const sx2 = el.x2 * scaleX;
       const sy2 = pdfHeight - (el.y2 * scaleY);
       page.drawLine({
         start: { x: sx, y: sy }, end: { x: sx2, y: sy2 },
