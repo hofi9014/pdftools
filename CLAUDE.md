@@ -71,13 +71,20 @@ the Google Drive/Dropbox/OneDrive cloud-picker bugs SEC-011/013/014/015/016; **S
 `url-to-pdf` DNS-rebinding TOCTOU, fixed by freezing a validated address list into a custom
 `http(s).request` `lookup` instead of letting `fetch()` re-resolve, see
 [app/api/url-to-pdf/route.ts](app/api/url-to-pdf/route.ts) and
-[tests/url-to-pdf-ssrf.mts](tests/url-to-pdf-ssrf.mts); A4 unused-dependency removal), open
-items (**Etap 2** — decide whether `lib/exports.ts`'s in-memory file store should exist at
-all, since it contradicts the "files never leave the browser" claim for the Dropbox Saver
-path; SEC-005 OneDrive/SharePoint OAuth scope review; QA-001 AI rate limit shouldn't be
-spent on provider errors), and verified infra facts (Vercel Hobby/`iad1`, Upstash env var
-names carry an unexpected `KV` segment — `Redis.fromEnv()` will not find them, exact OAuth
-redirect URIs).
+[tests/url-to-pdf-ssrf.mts](tests/url-to-pdf-ssrf.mts); A4 unused-dependency removal; **QA-001**
+— the AI daily-limit counter incremented before calling OpenRouter with no way to give the
+token back, so a provider outage burned a user's whole quota on error responses; fixed with
+`refundAiRateLimit()` in [lib/ai-rate-limit.ts](lib/ai-rate-limit.ts), called from
+[app/api/ai/route.ts](app/api/ai/route.ts) on a thrown network error or a `>= 500` OpenRouter
+response only — deliberately NOT on other 4xx, since those (e.g. 400 for text exceeding the
+model's context window) can be triggered by the request's own content and refunding them
+would let an attacker retry forever for free; proven by
+[tests/ai-rate-limit-refund.mts](tests/ai-rate-limit-refund.mts)),
+open items (**Etap 2** — decide whether `lib/exports.ts`'s in-memory file store should exist
+at all, since it contradicts the "files never leave the browser" claim for the Dropbox Saver
+path; SEC-005 OneDrive/SharePoint OAuth scope review), and verified infra facts (Vercel
+Hobby/`iad1`, Upstash env var names carry an unexpected `KV` segment — `Redis.fromEnv()`
+will not find them, exact OAuth redirect URIs).
 
 Verification principles from that session, worth reapplying to any future security or
 correctness work here:

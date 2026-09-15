@@ -11,7 +11,8 @@
     "validate:guides": "npx --yes tsx scripts/validate-guides.ts",
     "test:regression": "npx --yes tsx tests/pdf-excel-regression.mts",
     "test:pptx": "npx --yes tsx tests/pptx-orchestrator-c3.mts",
-    "test:url-to-pdf-ssrf": "npx --yes tsx tests/url-to-pdf-ssrf.mts"
+    "test:url-to-pdf-ssrf": "npx --yes tsx tests/url-to-pdf-ssrf.mts",
+    "test:ai-rate-limit-refund": "npx --yes tsx tests/ai-rate-limit-refund.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
