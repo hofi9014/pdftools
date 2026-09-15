@@ -277,20 +277,29 @@ wdrożeniu, a nie tylko lokalnie.
   „Wymagana zgoda administratora": **Nie** dla wszystkich czterech — zgoda jest per-
   -użytkownik przy logowaniu (zgodnie z projektem: OAuth implicit grant,
   `prompt=select_account`), stąd pusta kolumna „Stan" jest prawidłowa, nie błędem.
-  **Jedna drobna niezgodność:** kod (`SharePointPickerDialog.tsx`, tryb picker) żąda
-  w URL-u OAuth dodatkowo `Files.Read.All`, którego nie ma w konfiguracji Azure —
-  najpewniej zbędne (`Sites.Read.All` już obejmuje odczyt plików w bibliotekach
-  dokumentów tych witryn), nie rozszerza uprawnień ponad to, co widać w Azure.
-  Niski priorytet — do rozważenia usunięcia z kodu jako kosmetyka, nie luka.
+  **✅ Naprawione (2026-09-15):** kod (`SharePointPickerDialog.tsx`, tryb picker) żądał
+  w URL-u OAuth dodatkowo `Files.Read.All`, którego nie było w konfiguracji Azure —
+  zbędne (`Sites.Read.All` już obejmuje odczyt plików w bibliotekach dokumentów tych
+  witryn), nie rozszerzało uprawnień ponad to, co widać w Azure — usunięte z kodu.
+  `tsc`/`build`/`eslint` bez nowych błędów (baza porównana przez `git stash`:
+  te same 4 istniejące wcześniej problemy lintera w tym pliku, 0 nowych).
 - **Deployment Storage — trend potwierdzony pozytywny.** Wykres 30-dniowy (sprawdzony
   2026-09-15): spadek z ~40 GB (18 sierpnia) do 13,43 GB (dziś), wyraźnie w dół od
   usunięcia `archiver`/przeniesienia `playwright`. Wciąż nad limitem 10 GB, ale trend
   jednoznaczny — obserwować dalej, nic do zrobienia teraz.
-- **Przy okazji zauważone (2026-09-15):** 83,4% wywołań funkcji Vercel w ciągu 30 dni
-  to "User Error" (357/428) — prawdopodobnie spodziewane przy wielowarstwowych limitach
-  tej aplikacji (rate limit 30/min na `/api/*`, limit AI 15/dobę, blokady SSRF/CSRF,
-  limit 100 MB), ale nie zweryfikowane rozbiciem po kodach/endpointach. Do sprawdzenia,
-  jeśli będzie okazja.
+- **Sprawdzone (2026-09-15): 83,4% "User Error" — brak dowodu na ukryty problem,
+  zamknięte bez dalszej akcji.** Próba rozbicia przez `vercel logs` nie powiodła się —
+  retencja logów na planie Hobby jest zbyt krótka (jedno żądanie złapane mimo okna
+  `--since 24h`; pełna 30-dniowa retencja to funkcja płatnego Pro). Panel Observability
+  dostarczył jednak namacalny dowód pośredni: własne testy z tej sesji (dziesiątki
+  celowych żądań 404 przy diagnozowaniu `sharp` — `/xx`, `/testfreshcheck...` i dwie
+  pętle sprawdzające co 5-8 s przez kilka minut) wywołały widoczny skok wywołań
+  z Error Rate 88-95% na żywo w panelu — dokładnie ten sam wzorzec, co oryginalne
+  357/428. Przy tak niskim całkowitym ruchu (428 wywołań/30 dni) nawet umiarkowany
+  ruch botów/skanerów (typowe ścieżki jak `/wp-admin`, `/.env`, próby łapiące własne
+  limity CSRF/rate-limit na `/api/*`) łatwo dominuje taki procent bez żadnej realnej
+  awarii — zademonstrowane empirycznie, nie tylko założone. Nie warto ścigać dalej bez
+  świeżych danych nieskażonych ruchem testowym z tej sesji.
 
 ---
 
