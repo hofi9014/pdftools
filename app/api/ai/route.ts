@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   }
 
   const clientIp = getClientIp(request);
-  const rateCheck = checkAiRateLimit(clientIp);
+  const rateCheck = await checkAiRateLimit(clientIp);
   if (!rateCheck.allowed) {
     const resetSeconds = Math.ceil((rateCheck.resetAt - Date.now()) / 1000);
     const resetHours = Math.ceil(resetSeconds / 3600);
