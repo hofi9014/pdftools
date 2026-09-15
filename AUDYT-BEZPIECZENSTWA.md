@@ -3,7 +3,8 @@
 **Data sesji:** 15 września 2026
 **Repozytorium:** https://github.com/hofi9014/pdftools
 **Produkcja:** https://optimapdf.com (Vercel, plan Hobby, region `iad1`)
-**Stan na koniec sesji:** `main @ 7a376a1` + niezacommitowana zmiana w `.gitignore`
+**Stan na koniec sesji:** `main @ 7a376a1`. Zaktualizowano w kolejnych sesjach —
+zob. commity `78899c5`, `e828ac7`, `b4221f2` (SEC-003b, A4, dokumentacja).
 
 ---
 
@@ -45,6 +46,7 @@ Warto je utrzymać.
 | SEC-009 | `NEXT_PUBLIC_GOOGLE_DRIVE_API_KEY` bez ograniczeń („Brak") | Ograniczenie do domen optimapdf.com, `*.vercel.app`, localhost |
 | SEC-010 | Nieaktualny OneDrive Client ID i błędny komentarz o adresie przekierowania w `.env.example` | Wyczyszczone, komentarze poprawione z ostrzeżeniem o dopasowaniu `www.` znak po znaku |
 | SEC-012 | Brak `accounts.google.com` w `frame-src` CSP | Dodane |
+| SEC-003b | `url-to-pdf`: `dns.lookup()` walidował jedną rezolucję DNS, `fetch()` wykonywał drugą, niezależną — luka na DNS rebinding z krótkim TTL | Hostname rozwiązywany raz, każdy adres zwalidowany, lista zamrożona jako custom `lookup` przekazany bezpośrednio do `http(s).request` (zamiast `fetch()`, który nie daje sposobu na przypięcie połączenia). `isPrivateOrReservedAddress` przepisany na `net.BlockList`, uzupełniony o CGNAT/`0.0.0.0/8`/benchmarking/reserved i poprawną normalizację rozwiniętego IPv6. Dowód: `tests/url-to-pdf-ssrf.mts` (`npm run test:url-to-pdf-ssrf`) — żądanie do hosta nieistniejącego w DNS kończy się sukcesem wyłącznie dzięki zamrożonemu adresowi (przy starym błędzie: `ENOTFOUND`); empirycznie potwierdzone, że Happy Eyeballs (`autoSelectFamily`) nadal próbuje kolejnych zwalidowanych adresów. Commit `b4221f2` |
 
 ### Błędy funkcjonalne znalezione przy okazji audytu
 
@@ -67,40 +69,16 @@ SharePoint ✅ technicznie (konta firmowe M365; osobiste dostają wyjaśnienie).
 - `archiver` + `@types/archiver` usunięte (zero importów; ZIP robi `jszip` po stronie klienta)
 - `new plik.zip` (6 MB) usunięty z repo
 - `diff-*.txt`, `b3-*.txt` w `.gitignore`
+- **A4:** `flag-icons` i `dommatrix` usunięte — zero importów w kodzie aplikacji (potwierdzone
+  grepem: SVG-i w `public/flags/` to statyczne pliki, `DOMMatrix` w `lib/pdf-engine.ts` pochodzi
+  z `@napi-rs/canvas`, nie z pakietu `dommatrix`). Usuwane pojedynczo z buildem po każdej —
+  build zielony po obu. Commity `78899c5`/`e828ac7`
 
 ---
 
 ## Co zostało do zrobienia
 
-### SEC-003b — właściwa ochrona przed podmianą DNS (priorytet)
-
-**Stan:** częściowo zrobione w commicie `7a376a1`, luka pozostaje.
-
-`app/api/url-to-pdf/route.ts` rozwiązuje nazwę hosta przez `dns.lookup({all:true})`
-i sprawdza adresy, ale potem woła `fetch(normalizedUrl)` — czyli **drugie, niezależne
-zapytanie DNS**. Napastnik z krótkim TTL może zwrócić adres publiczny przy sprawdzeniu
-i prywatny przy połączeniu.
-
-**Co już działa:** domena statycznie wskazująca na adres prywatny jest blokowana
-(zweryfikowane: `localtest.me` → 403, `example.com` → 200). Przekierowania odrzucane
-w całości. Porty ograniczone do 80/443.
-
-**Do zrobienia:** połączenie po zweryfikowanym adresie IP (uwaga na weryfikację certyfikatu
-przy HTTPS) albo biblioteka wpinająca się w warstwę gniazda, np. `ssrf-req-filter`.
-
-**Przy okazji** uzupełnić `isPrivateOrReservedAddress` o brakujące zakresy:
-`100.64.0.0/10` (CGNAT), `0.0.0.0/8` (obecnie tylko dokładny `0.0.0.0`),
-`198.18.0.0/15`, `240.0.0.0/4`. Adres metadanych `169.254.169.254` jest już pokryty.
-Rozważyć też IPv6 w formie rozwiniętej (`0:0:0:0:0:0:0:1` nie jest łapany przez
-porównanie z `::1`).
-
-### A4 — dwie zależności do usunięcia
-
-`flag-icons` i `dommatrix` — brak importów w kodzie aplikacji.
-Usuwać **pojedynczo, z buildem po każdej** — `dommatrix` może być zależnością przechodnią
-`pdfjs-dist`. Jeśli build padnie, cofnąć.
-
-### Etap 2 — magazyn eksportów (większe, wymaga decyzji)
+### Etap 2 — magazyn eksportów (największe, wymaga decyzji)
 
 `lib/exports.ts` trzyma **bufory plików** w `Map` w pamięci procesu:
 
@@ -153,7 +131,6 @@ limitu, gdy wywołanie zakończy się błędem po stronie dostawcy.
   tylko 0,5 GB; problemem jest rozmiar pojedynczego builda. Po przeniesieniu `playwright`
   i usunięciu `archiver` obserwować, czy zejdzie poniżej limitu w miarę wypadania starych
   wdrożeń. Jeśli nie — szukać dalej.
-- **`.gitignore`** ma niezacommitowaną zmianę (wzorce `diff-*.txt`, `b3-*.txt`).
 
 ---
 
@@ -212,10 +189,9 @@ wnioski dało się zweryfikować samodzielnie.
 
 ## Sugerowana kolejność dalszych prac
 
-1. **SEC-003b** — jedyna otwarta luka bezpieczeństwa; wymaga testu, który da się uruchomić
-   lokalnie
-2. **A4** — dwie zależności, szybkie, odciąża Deployment Storage
-3. **QA-001** — mała zmiana, realna poprawa doświadczenia użytkownika
-4. **Etap 2** — największy; zacząć od decyzji, czy ścieżka przez serwer ma istnieć
-5. **SEC-005** — sprawdzić dostępne zakresy w Microsoft Graph, potem zdecydować
-6. Drobne obserwacje przy okazji
+SEC-003b i A4 zamknięte (zob. wyżej). Pozostało:
+
+1. **QA-001** — mała zmiana, realna poprawa doświadczenia użytkownika
+2. **Etap 2** — największy; zacząć od decyzji, czy ścieżka przez serwer ma istnieć
+3. **SEC-005** — sprawdzić dostępne zakresy w Microsoft Graph, potem zdecydować
+4. Drobne obserwacje przy okazji
