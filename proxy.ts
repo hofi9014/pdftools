@@ -78,9 +78,22 @@ export function proxy(request: NextRequest) {
       );
     }
     if (STATE_CHANGING_METHODS.includes(request.method)) {
-      const origin = request.headers.get('origin') || request.headers.get('referer');
-      if (!origin || !ALLOWED_ORIGINS.some(allowed => origin.startsWith(allowed))) {
-        const reportedOrigin = origin || '<none>';
+      const originHeader = request.headers.get('origin') || request.headers.get('referer');
+      // Parse into a real origin and check exact set membership — a substring/prefix
+      // check here (origin.startsWith(allowed)) would let an attacker-controlled domain
+      // like "https://optimapdf.com.evil.com" through, since it starts with an allowed
+      // origin too. new URL(...).origin normalizes both a bare Origin header and a full
+      // Referer URL (which carries a path) to the same comparable form.
+      let originIsAllowed = false;
+      if (originHeader) {
+        try {
+          originIsAllowed = ALLOWED_ORIGINS.includes(new URL(originHeader).origin);
+        } catch {
+          originIsAllowed = false;
+        }
+      }
+      if (!originIsAllowed) {
+        const reportedOrigin = originHeader || '<none>';
         console.warn(`[CSRF] ${method} ${pathname} origin=${reportedOrigin} ip=${ip}`);
         return NextResponse.json(
           { error: 'Nieautoryzowane źródło żądania.' },
