@@ -48,6 +48,9 @@ export default function AiSummary({ locale: forcedLocale }: { locale?: Locale } 
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onClick={() => document.getElementById('file-input')?.click()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('file-input')?.click(); } }}
           className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${dragOver ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-600 hover:border-blue-400'} ${file ? 'border-green-400 dark:border-green-500' : ''}`}>
           <input id="file-input" type="file" accept=".pdf" className="hidden" onChange={(e) => handleFile(e.target.files?.[0] || null)} />
           {file ? <p className="!text-[var(--coffee-accent)] font-medium">{file.name}</p> : <p className="text-gray-400 dark:text-gray-500">{t('page.aisummary.click_to_select', locale)}</p>}
