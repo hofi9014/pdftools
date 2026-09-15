@@ -1,4 +1,5 @@
 import { storeFile, signExportUrl, checkRateLimit } from '@/lib/exports';
+import { MAX_UPLOAD_BYTES } from '@/lib/upload-limit';
 
 function getClientIp(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for');
@@ -37,6 +38,12 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(await file.arrayBuffer());
     if (buffer.length === 0) {
       return Response.json({ error: 'Empty file.' }, { status: 400 });
+    }
+    if (buffer.length > MAX_UPLOAD_BYTES) {
+      return Response.json(
+        { error: `File is too large. Maximum size: ${MAX_UPLOAD_BYTES / 1024 / 1024}MB.` },
+        { status: 413 },
+      );
     }
 
     const id = storeFile(buffer, file.type || 'application/octet-stream', file.name);

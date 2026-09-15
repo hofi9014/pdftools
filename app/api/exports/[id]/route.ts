@@ -1,6 +1,11 @@
 import { verifyAndConsume } from '@/lib/exports';
 import { NextRequest } from 'next/server';
 
+function sanitizeHeaderFileName(name: string): string {
+  const cleaned = name.replace(/[\r\n"\\\u0000-\u001f\u007f]/g, '_').trim();
+  return cleaned === '' ? 'file' : cleaned;
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -24,7 +29,7 @@ export async function GET(
   return new Response(new Uint8Array(file.buffer), {
     headers: {
       'Content-Type': file.contentType,
-      'Content-Disposition': `attachment; filename="${file.fileName}"`,
+      'Content-Disposition': `attachment; filename="${sanitizeHeaderFileName(file.fileName)}"; filename*=UTF-8''${encodeURIComponent(sanitizeHeaderFileName(file.fileName))}`,
       'Cache-Control': 'no-store, max-age=0',
     },
   });

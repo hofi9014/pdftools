@@ -55,6 +55,9 @@ eslint_output.json
 audit-i18n.ps1
 i18n-audit-report.md
 
+# generated/one-off diff artifacts (never commit review dumps)
+diff-*.txt
+
 # scratch diagnostics (one-off probes/testbenches — never formal tests/, never fixtures)
 _diag_*.mts
 _diag_*.js

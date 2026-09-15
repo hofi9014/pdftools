@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer';
 import { URL } from 'url';
 import { isIP } from 'net';
+import { promises as dns } from 'dns';
 
 const BLOCKED_HOSTS = [
   'localhost', '127.0.0.1', '::1', '0.0.0.0',
@@ -16,6 +17,41 @@ function isBlockedHost(hostname: string): boolean {
   const lower = hostname.toLowerCase();
   // Resolve to IP if it's a hostname
   if (BLOCKED_HOSTS.some(h => lower === h || lower.startsWith(h))) return true;
+  return false;
+}
+
+function isPrivateOrReservedAddress(address: string): boolean {
+  let ip = address.trim().toLowerCase();
+  // Strip IPv6 zone id (fe80::1%eth0)
+  const zoneIdx = ip.indexOf('%');
+  if (zoneIdx !== -1) ip = ip.slice(0, zoneIdx);
+  // IPv4-mapped IPv6 (::ffff:127.0.0.1) — evaluate as the embedded IPv4
+  if (ip.startsWith('::ffff:')) {
+    ip = ip.slice('::ffff:'.length);
+  }
+  const version = isIP(ip);
+  if (version === 4) {
+    if (ip === '0.0.0.0') return true;
+    if (ip.startsWith('127.')) return true; // loopback
+    if (ip.startsWith('10.')) return true;
+    if (ip.startsWith('192.168.')) return true;
+    if (ip.startsWith('169.254.')) return true; // link-local / metadata
+    const octets = ip.split('.');
+    if (octets[0] === '172') {
+      const second = parseInt(octets[1] || '0', 10);
+      if (second >= 16 && second <= 31) return true;
+    }
+    return false;
+  }
+  if (version === 6) {
+    if (ip === '::' || ip === '::1') return true; // unspecified / loopback
+    if (ip.startsWith('fc') || ip.startsWith('fd')) return true; // fc00::/7 unique local
+    if (
+      ip.startsWith('fe8') || ip.startsWith('fe9') ||
+      ip.startsWith('fea') || ip.startsWith('feb')
+    ) return true; // fe80::/10 link-local
+    return false;
+  }
   return false;
 }
 
@@ -68,6 +104,28 @@ export async function POST(request: Request) {
     // Restrict to port 80 and 443 only
     if (parsed.port && parsed.port !== '' && parsed.port !== '80' && parsed.port !== '443') {
       return Response.json({ error: 'Dozwolone tylko porty 80 i 443.' }, { status: 400 });
+    }
+
+    // DNS rebinding guard: verify the actual addresses the hostname resolves to,
+    // not just its textual name. Rejects private/loopback/link-local IPv4 and IPv6.
+    try {
+      if (isIP(parsed.hostname)) {
+        if (isPrivateOrReservedAddress(parsed.hostname)) {
+          return Response.json({ error: 'Adres URL jest zablokowany.' }, { status: 403 });
+        }
+      } else {
+        const addresses = await dns.lookup(parsed.hostname, { all: true });
+        if (addresses.length === 0) {
+          return Response.json({ error: 'Nie udało się rozwiązać adresu URL.' }, { status: 400 });
+        }
+        for (const { address } of addresses) {
+          if (isPrivateOrReservedAddress(address)) {
+            return Response.json({ error: 'Adres URL jest zablokowany.' }, { status: 403 });
+          }
+        }
+      }
+    } catch {
+      return Response.json({ error: 'Nie udało się rozwiązać adresu URL.' }, { status: 400 });
     }
 
     const response = await fetch(normalizedUrl, {
