@@ -19,7 +19,8 @@
     "test:edit-pdf-scale": "npx --yes tsx tests/edit-pdf-scale.mts",
     "test:redact-pdf-raster": "npx --yes tsx tests/redact-pdf-raster.mts",
     "test:convert-to-pdfa": "npx --yes tsx tests/convert-to-pdfa.mts",
-    "test:guide-step-numbering": "npx --yes tsx tests/guide-step-numbering.tsx"
+    "test:guide-step-numbering": "npx --yes tsx tests/guide-step-numbering.tsx",
+    "test:page-preview-count-i18n": "npx --yes tsx tests/page-preview-count-i18n.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
