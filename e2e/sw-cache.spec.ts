@@ -72,8 +72,8 @@ async function run() {
   // 3) Confirm forbidden URLs are NOT cached
   // ────────────────────────────────────────────────────────────
   const forbiddenPatterns = [
-    '/api/ai', '/api/exports',
-    'openrouter.ai', 'dropbox.com', 'googleapis.com',
+    '/api/ai',
+    'openrouter.ai', 'dropbox.com', 'dropboxapi.com', 'googleapis.com',
     'live.com', 'microsoftonline.com', 'graph.microsoft.com',
   ];
   let forbiddenViolations = 0;

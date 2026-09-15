@@ -79,10 +79,21 @@ token back, so a provider outage burned a user's whole quota on error responses;
 response only — deliberately NOT on other 4xx, since those (e.g. 400 for text exceeding the
 model's context window) can be triggered by the request's own content and refunding them
 would let an attacker retry forever for free; proven by
-[tests/ai-rate-limit-refund.mts](tests/ai-rate-limit-refund.mts)),
-open items (**Etap 2** — decide whether `lib/exports.ts`'s in-memory file store should exist
-at all, since it contradicts the "files never leave the browser" claim for the Dropbox Saver
-path; SEC-005 OneDrive/SharePoint OAuth scope review), and verified infra facts (Vercel
+[tests/ai-rate-limit-refund.mts](tests/ai-rate-limit-refund.mts); **Etap 2** — the Dropbox
+"save to" flow used to go through a server (`lib/exports.ts`'s in-memory store + a signed
+HMAC URL) only because the old Dropbox Saver widget required a publicly-fetchable URL;
+replaced with the same OAuth-popup + direct-upload pattern already used for Google
+Drive/OneDrive, see `getDropboxToken`/`saveToDropbox` in
+[components/CloudFileSaver.tsx](components/CloudFileSaver.tsx), the pure request-building
+logic in [lib/dropbox-upload.ts](lib/dropbox-upload.ts) (notably ASCII-escaping the
+`Dropbox-API-Arg` header per Dropbox's own requirement, since a raw Polish filename would
+otherwise be invalid), and [public/dropbox-oauth.html](public/dropbox-oauth.html) — `/api/exports`
+and `lib/exports.ts` are gone entirely, proven by
+[tests/dropbox-upload.mts](tests/dropbox-upload.mts); **requires a one-time Dropbox App
+Console change (enable the `files.content.write` scope, register the
+`dropbox-oauth.html` redirect URIs) plus a live manual test before this works in
+production** — not something a sandboxed session can do or verify end-to-end),
+open items (SEC-005 OneDrive/SharePoint OAuth scope review), and verified infra facts (Vercel
 Hobby/`iad1`, Upstash env var names carry an unexpected `KV` segment — `Redis.fromEnv()`
 will not find them, exact OAuth redirect URIs).
 

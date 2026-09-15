@@ -64,6 +64,53 @@ Warto je utrzymać.
 **Stan integracji chmurowych po naprawach:** Google Drive ✅, Dropbox ✅, OneDrive ✅,
 SharePoint ✅ technicznie (konta firmowe M365; osobiste dostają wyjaśnienie).
 
+### Etap 2 — magazyn eksportów usunięty, Dropbox bez pośrednictwa serwera
+
+**Decyzja (2026-09-15, ta sesja):** opcja A z trzech rozważanych — zamiast łatać magazyn
+(np. Vercel Blob) lub usuwać funkcję zapisu do Dropboksa, wyeliminowana została przyczyna:
+Dropbox Saver (wymagający publicznie pobieralnego URL-a — stąd serwer w środku) zastąpiony
+Dropbox API v2 (OAuth 2.0 implicit grant + `POST content.dropboxapi.com/2/files/upload`
+bezpośrednio z przeglądarki), tym samym wzorcem co Google Drive i OneDrive w tym samym pliku
+(`components/CloudFileSaver.tsx`).
+
+**Usunięte całkowicie:** `lib/exports.ts`, `app/api/exports/route.ts`,
+`app/api/exports/[id]/route.ts` — magazyn w `Map` w pamięci procesu (źródło zawodności
+międzyinstancyjnej) oraz mechanizm podpisywania HMAC znikają wraz z całą ścieżką, nie tylko
+symptom.
+
+**Nowe:** `lib/dropbox-upload.ts` (czysta logika: budowa URL-a OAuth, nagłówek
+`Dropbox-API-Arg` — Dropbox wymaga w nim **wyłącznie ASCII**, więc polskie znaki/emoji
+w nazwie pliku są escapowane do `\uXXXX` wg oficjalnej rekomendacji Dropboksa, nie wysyłane
+jako surowe UTF-8), `public/dropbox-oauth.html` (redirect popup+postMessage, analogicznie do
+`onedrive-oauth.html`). Scope żądany przy autoryzacji: **wyłącznie** `files.content.write`
+(najwęższy możliwy do samego zapisu — ta sama filozofia co `drive.file` dla Google).
+
+**Rezultat:** twierdzenie „pliki nigdy nie opuszczają przeglądarki" jest teraz prawdziwe
+bez wyjątku, dla wszystkich czterech dostawców chmury. Powierzchnia ataku zmniejszona
+(dwa endpointy API mniej, brak magazynu plików po stronie serwera do audytowania).
+
+**Dowód:** `tests/dropbox-upload.mts` (`npm run test:dropbox-upload`) — 21 asercji na
+czystej logice: ASCII-only + bajt-dokładny round-trip dla polskich diakrytyków i emoji
+(pary surogatowe) w nagłówku `Dropbox-API-Arg`, sanityzacja nazw plików, poprawność URL-a
+autoryzacji (endpoint, `response_type=token`, `scope=files.content.write`).
+`npx tsc --noEmit`/`npm run build`/`eslint` — bez nowych błędów względem stanu wyjściowego.
+
+**⚠️ Wymaga Twojej akcji przed działaniem na produkcji — nie mam dostępu do Dropbox App
+Console i nie da się tego przetestować bez żywej aplikacji Dropbox i przeglądarki:**
+1. W istniejącej aplikacji Dropbox (ten sam App Key co dla Choosera) → zakładka
+   **Permissions** → włącz scope `files.content.write`.
+2. Zakładka **OAuth 2** → **Redirect URIs** → dodaj dokładnie:
+   `https://optimapdf.com/dropbox-oauth.html` oraz (do lokalnego developmentu)
+   `http://localhost:3000/dropbox-oauth.html`.
+3. Po tej konfiguracji: ręczny test w przeglądarce — dowolne narzędzie → wynik → „Zapisz
+   do: Dropbox" → potwierdzić, że plik faktycznie ląduje w Dropboksie użytkownika.
+
+Do rozważenia później (nieblokujące, osobna decyzja): zawężenie typu dostępu aplikacji
+z „Full Dropbox" na „App folder" — wymagałoby jednak nowej aplikacji/App Key (Dropbox nie
+pozwala zmienić typu dostępu istniejącej aplikacji), więc zerwałoby to obecny Chooser
+współdzielący ten sam klucz. Nie zrobione w tej sesji — brak wystarczającego uzasadnienia
+kosztu/ryzyka wobec korzyści.
+
 ### Higiena
 
 - `playwright` przeniesiony do `devDependencies` (używany wyłącznie w `e2e/`)
@@ -78,29 +125,6 @@ SharePoint ✅ technicznie (konta firmowe M365; osobiste dostają wyjaśnienie).
 ---
 
 ## Co zostało do zrobienia
-
-### Etap 2 — magazyn eksportów (największe, wymaga decyzji)
-
-`lib/exports.ts` trzyma **bufory plików** w `Map` w pamięci procesu:
-
-```js
-const store = new Map<string, StoredFile>();   // buffer, contentType, fileName, expiresAt
-```
-
-Dwa skutki:
-
-1. **Zawodność:** plik zapisany przez jedną instancję serverless jest niewidoczny dla innej.
-   Przy małym ruchu i ciepłej instancji zwykle działa — bywa zawodne.
-2. **Niespójność komunikatu o prywatności:** endpoint obsługuje zapis do Dropboxa
-   (Dropbox Saver potrzebuje publicznego adresu do pobrania pliku), więc w tej ścieżce
-   **plik opuszcza przeglądarkę**. Strona główna deklaruje, że pliki nigdy tego nie robią.
-
-Redis nie jest tu właściwym narzędziem (pliki do 100 MB). Vercel Blob byłby, ale najpierw
-warto rozstrzygnąć, czy ta ścieżka ma w ogóle istnieć, czy da się zapisywać do Dropboxa
-bez pośrednictwa serwera.
-
-Mechanizm podpisywania linków (`HMAC-SHA256`, `timingSafeEqual`, token jednorazowy, TTL 5 min)
-jest zrobiony dobrze i warto go zachować niezależnie od decyzji o magazynie.
 
 ### SEC-005 — zakresy uprawnień Microsoftu (decyzja, nie kod)
 
@@ -184,8 +208,9 @@ wnioski dało się zweryfikować samodzielnie.
 
 ## Sugerowana kolejność dalszych prac
 
-SEC-003b, A4 i QA-001 zamknięte (zob. wyżej). Pozostało:
+SEC-003b, A4, QA-001 i Etap 2 zamknięte (zob. wyżej — Etap 2 wymaga jeszcze Twojej
+konfiguracji w Dropbox App Console + ręcznego testu w przeglądarce przed produkcją).
+Pozostało:
 
-1. **Etap 2** — największy; zacząć od decyzji, czy ścieżka przez serwer ma istnieć
-2. **SEC-005** — sprawdzić dostępne zakresy w Microsoft Graph, potem zdecydować
-3. Drobne obserwacje przy okazji
+1. **SEC-005** — sprawdzić dostępne zakresy w Microsoft Graph, potem zdecydować
+2. Drobne obserwacje przy okazji
