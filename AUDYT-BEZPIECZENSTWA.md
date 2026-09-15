@@ -59,6 +59,7 @@ Warto je utrzymać.
 | SEC-016 | Puste bloki `catch` w ścieżkach Dropbox i OneDrive |
 | — | SharePoint: w Azure zarejestrowano `https://www.optimapdf.com/sharepoint-oauth.html`, a kod wysyła bez `www.` Microsoft porównuje znak po znaku |
 | — | SharePoint dla kont osobistych Microsoft: Graph zwraca „not supported for MSA accounts". To ograniczenie platformy, nie błąd. Dodany czytelny komunikat zamiast surowego JSON |
+| QA-001 | Licznik limitu AI (15/dobę) inkrementował się **przed** wywołaniem OpenRoutera, bez sposobu na zwrot przy błędzie dostawcy — seria awarii OpenRoutera paliła cały dzienny limit na samych błędach | `refundAiRateLimit()` w `lib/ai-rate-limit.ts` (Redis `DECR` + klamra na ujemną wartość jako zabezpieczenie przed race'em przy równoległych zwrotach; fallback in-memory przez `Math.max(0, …)`), podpięte w `app/api/ai/route.ts` przy błędzie sieci (`fetch()` rzuca — wcześniej w ogóle bez `try/catch`) **oraz wyłącznie przy `res.status >= 500`** — pierwsza wersja poprawki refundowała przy każdym `!res.ok`, co obejmowało też 4xx wywoływalne treścią żądania (np. 400 przy tekście przekraczającym kontekst modelu); refundowanie ich otwierałoby furtkę na darmowe, nielimitowane odpytywanie endpointu. Dowód: `tests/ai-rate-limit-refund.mts` (`npm run test:ai-rate-limit-refund`) — realny handler `POST()`: refund przy 5xx/błędzie sieci (kolejne żądanie po awarii nadal się udaje), **brak refundu przy 400** (kolejne żądanie po 400 dostaje 429, a powtórzenie wadliwego żądania po wyczerpaniu limitu w ogóle nie dociera do OpenRoutera). Test świadomie na fallbacku in-memory (tsx nie ładuje `.env.local`), żeby nie dotykać produkcyjnego licznika Redis |
 
 **Stan integracji chmurowych po naprawach:** Google Drive ✅, Dropbox ✅, OneDrive ✅,
 SharePoint ✅ technicznie (konta firmowe M365; osobiste dostają wyjaśnienie).
@@ -112,12 +113,6 @@ jest zrobiony dobrze i warto go zachować niezależnie od decyzji o magazynie.
 Microsoft dostaje nieporównanie szerszy dostęp niż Google. Do sprawdzenia, czy Graph
 oferuje węższy odpowiednik dla samego wyboru/zapisu pliku. Jeśli nie — udokumentować
 jako świadomie zaakceptowane ograniczenie platformy, nie przeoczenie.
-
-### QA-001 — limit AI zjadany przy błędzie dostawcy
-
-Licznik inkrementuje się **przed** wywołaniem OpenRoutera. Przy awarii dostawcy użytkownik
-wypali 15 zapytań na odpowiedziach błędu i usłyszy, że limit wyczerpany. Rozważyć zwrot
-limitu, gdy wywołanie zakończy się błędem po stronie dostawcy.
 
 ### Drobne obserwacje
 
@@ -189,9 +184,8 @@ wnioski dało się zweryfikować samodzielnie.
 
 ## Sugerowana kolejność dalszych prac
 
-SEC-003b i A4 zamknięte (zob. wyżej). Pozostało:
+SEC-003b, A4 i QA-001 zamknięte (zob. wyżej). Pozostało:
 
-1. **QA-001** — mała zmiana, realna poprawa doświadczenia użytkownika
-2. **Etap 2** — największy; zacząć od decyzji, czy ścieżka przez serwer ma istnieć
-3. **SEC-005** — sprawdzić dostępne zakresy w Microsoft Graph, potem zdecydować
-4. Drobne obserwacje przy okazji
+1. **Etap 2** — największy; zacząć od decyzji, czy ścieżka przez serwer ma istnieć
+2. **SEC-005** — sprawdzić dostępne zakresy w Microsoft Graph, potem zdecydować
+3. Drobne obserwacje przy okazji

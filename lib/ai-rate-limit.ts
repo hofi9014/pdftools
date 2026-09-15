@@ -55,6 +55,36 @@ function checkAiRateLimitInMemory(clientIp: string): { allowed: boolean; remaini
   return { allowed: true, remaining: DAILY_LIMIT - entry.count, resetAt: entry.resetAt };
 }
 
+function refundAiRateLimitInMemory(clientIp: string): void {
+  const entry = store.get(clientIp);
+  if (!entry) return;
+  entry.count = Math.max(0, entry.count - 1);
+}
+
+// QA-001: the counter increments before the OpenRouter call, so a provider-side
+// failure (network error or non-2xx response) must give the token back — otherwise
+// a run of provider outages burns through a user's daily quota on nothing but error
+// responses. Best-effort: a failure here is logged and swallowed, never surfaced to
+// the caller, since the AI-call error is already the thing being reported.
+export async function refundAiRateLimit(clientIp: string): Promise<void> {
+  const redis = getRedis();
+  if (!redis) {
+    refundAiRateLimitInMemory(clientIp);
+    return;
+  }
+  try {
+    const key = KEY_PREFIX + clientIp;
+    const newCount = await redis.decr(key);
+    // A burst of refunds (or a refund racing a fresh window reset) must never push
+    // the counter negative — that would silently grant extra requests beyond the
+    // daily limit on the next check.
+    if (newCount < 0) await redis.set(key, 0, { keepTtl: true });
+  } catch (e) {
+    console.error('[ai-rate-limit] Upstash Redis error during refund; falling back to in-memory:', e);
+    refundAiRateLimitInMemory(clientIp);
+  }
+}
+
 export async function checkAiRateLimit(clientIp: string): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
   const redis = getRedis();
   if (!redis) {

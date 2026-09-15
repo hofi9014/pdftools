@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAiRateLimit } from '@/lib/ai-rate-limit';
+import { checkAiRateLimit, refundAiRateLimit } from '@/lib/ai-rate-limit';
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const MODEL = 'openai/gpt-4o-mini';
@@ -65,25 +65,45 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Nieznany typ zadania' }, { status: 400 });
   }
 
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      max_tokens: maxTokens,
-      temperature,
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        max_tokens: maxTokens,
+        temperature,
+      }),
+    });
+  } catch (e) {
+    // QA-001: a provider-side failure (network error reaching OpenRouter) must not
+    // cost the user their daily AI quota — give the token back.
+    await refundAiRateLimit(clientIp);
+    console.error('[ai] OpenRouter request failed:', e);
+    return NextResponse.json(
+      { error: 'Usługa AI tymczasowo niedostępna. Spróbuj ponownie.' },
+      { status: 502 }
+    );
+  }
 
   if (!res.ok) {
+    // QA-001: only refund on a genuine provider-infrastructure failure (5xx). A 4xx
+    // (400/413/422/...) can be triggered by the content of the user's own request (e.g.
+    // text exceeding the model's context window) — refunding those would let an attacker
+    // retry forever for free, defeating the rate limit entirely.
+    if (res.status >= 500) {
+      await refundAiRateLimit(clientIp);
+    }
     const errBody = await res.text();
+    console.error(`[ai] OpenRouter error ${res.status}: ${errBody}`);
     return NextResponse.json(
       { error: `Błąd AI: ${res.status}` },
       { status: 502 }
