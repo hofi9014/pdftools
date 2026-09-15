@@ -113,6 +113,60 @@ pozwala zmienić typu dostępu istniejącej aplikacji), więc zerwałoby to obec
 współdzielący ten sam klucz. Nie zrobione w tej sesji — brak wystarczającego uzasadnienia
 kosztu/ryzyka wobec korzyści.
 
+### SEC-005 — zakresy uprawnień Microsoftu: świadomie zaakceptowane ograniczenie platformy
+
+**Decyzja (2026-09-15, ta sesja):** zakresy zostają bez zmian. Zbadano oficjalną
+dokumentację Microsoft Graph — nie istnieje stabilny, węższy odpowiednik `drive.file`
+Google dla scenariusza „użytkownik wybiera dowolne miejsce zapisu":
+
+| Ścieżka | Scope w kodzie | Uwaga |
+|---|---|---|
+| Google Drive (import+zapis) | `drive.file` | najwęższy możliwy |
+| OneDrive **import** (`js.live.net`, `action:'download'`) | `Files.Read.All` — żądany automatycznie przez SDK Microsoftu | **nie jest węższy** niż scope SharePoint — patrz uwaga niżej |
+| OneDrive **zapis** (`CloudFileSaver.tsx`) | `Files.ReadWrite.All` | pełny dostęp do OneDrive |
+| SharePoint **import** (własny UI przeglądania witryn/bibliotek) | `Sites.Read.All Files.Read.All` | — |
+| SharePoint **zapis** (`CloudFileSaver.tsx`) | `Sites.ReadWrite.All` | **korekta względem poprzedniej wersji tej tabeli** — szerszy niż wcześniej udokumentowano; poprzednia wersja pokazywała tylko scope trybu importu, nie zapisu |
+
+**Poprawka do wcześniejszego ustalenia w tej samej sesji:** wstępnie zapisałem tu, że
+zarządzany widget Microsoftu (`js.live.net`) daje OneDrive importowi „wąską, per-plikową
+zgodę" analogiczną do Google Picker. To było błędne, niezweryfikowane założenie.
+Dokumentacja Microsoftu wprost stwierdza: *„The SDK will automatically request the
+Files.Read.All scope for open flows, and Files.ReadWrite.All scope for save flows."*
+— czyli ten sam poziom szerokiego dostępu (pełny odczyt wszystkich plików), jaki ma już
+dzisiaj własny UI SharePoint. Przepisanie SharePoint importu na ten widget **nie
+zawęziłoby uprawnień** — dałoby tylko inny (i uboższy — bez wyszukiwania witryn po
+nazwie, listy ostatnich witryn, wklejania URL-a, komunikatu dla kont MSA) interfejs.
+Z tego powodu **zrezygnowano z tego przepisania** — nie przynosiłoby obiecanej korzyści
+bezpieczeństwa, tylko koszt (utrata funkcjonalności, nakład pracy).
+
+Sprawdzone alternatywy i dlaczego żadna nie pasuje bez kompromisu:
+1. `Files.ReadWrite.AppFolder` — ogranicza zapis do jednego ukrytego folderu `/Apps/…`;
+   użytkownik traciłby możliwość wyboru miejsca zapisu (regresja UX względem Google
+   Drive/Dropbox/OneDrive). Tylko konta osobiste — nie działa dla SharePoint/OneDrive
+   for Business.
+2. `Files.SelectedOperations.Selected` (najbliższy odpowiednik `drive.file`) — status
+   **preview**, nie GA. Oparcie funkcji produkcyjnej na niestabilnym API odrzucone.
+3. Oficjalny widget Microsoftu do zapisu (`OneDrive.save({action:'save', sourceUri:…})`,
+   architektonicznie ten sam mechanizm co usunięty w Etapie 2 Dropbox Saver) —
+   dokumentacja Microsoftu wprost zaleca te same szerokie scope'y
+   (`Files.ReadWrite.All`/`Sites.ReadWrite.All`) nawet przy jego użyciu. W przeciwieństwie
+   do Dropboksa, u Microsoftu zmiana mechanizmu nie zawęża uprawnień — to ograniczenie
+   platformy, nie naszej implementacji.
+
+Źródła: [Overview of Selected Permissions in OneDrive and SharePoint](https://learn.microsoft.com/en-us/graph/permissions-selected-overview),
+[Using app folder in OneDrive and SharePoint](https://learn.microsoft.com/en-us/graph/onedrive-sharepoint-appfolder),
+[OneDrive File Picker](https://learn.microsoft.com/en-us/onedrive/developer/controls/file-pickers/?view=odsp-graph-online),
+[Open from OneDrive in JavaScript](https://learn.microsoft.com/en-us/onedrive/developer/controls/file-pickers/js-v72/open-file?view=odsp-graph-online)
+(źródło poprawki o `Files.Read.All`/`Files.ReadWrite.All` — sekcja "Advanced options",
+wiersz `scopes`),
+[Save to OneDrive from JavaScript](https://learn.microsoft.com/en-us/onedrive/developer/controls/file-pickers/js-v72/save-file?view=odsp-graph-online),
+[Microsoft Graph permissions reference](https://learn.microsoft.com/en-us/graph/permissions-reference).
+
+**Rozważone i odrzucone:** przepisanie SharePoint importu na zarządzany widget
+`js.live.net` (`sourceTypes: ['Sites']`) — sprawdzone i **odrzucone** po weryfikacji
+dokumentacji Microsoftu (patrz uwaga w tabeli wyżej): nie zawęża scope'u, tylko zmienia
+(i ubożą) interfejs. Żadna zmiana kodu nie jest tu planowana.
+
 ### Higiena
 
 - `playwright` przeniesiony do `devDependencies` (używany wyłącznie w `e2e/`)
@@ -123,35 +177,49 @@ kosztu/ryzyka wobec korzyści.
   grepem: SVG-i w `public/flags/` to statyczne pliki, `DOMMatrix` w `lib/pdf-engine.ts` pochodzi
   z `@napi-rs/canvas`, nie z pakietu `dommatrix`). Usuwane pojedynczo z buildem po każdej —
   build zielony po obu. Commity `78899c5`/`e828ac7`
+- **Gałąź `fix/google-drive-picker`** — potwierdzona jako w pełni scalona
+  (`git merge-base --is-ancestor` zwrócił true), usunięta lokalnie i na origin.
+
+### `/[locale]` — 100% błędów w Observability: potwierdzona przyczyna i naprawa
+
+**Przyczyna (potwierdzona, nie założona):** `app/[locale]/layout.tsx` nie walidował
+parametru `locale`. `generateStaticParams` buduje statycznie tylko 16 znanych języków;
+każde inne pojedyncze żądanie ścieżki (boty skanujące `/wp-admin`, `/.env`, `/xx` itp.),
+które nie pasuje do żadnej bardziej specyficznej trasy, trafia w `[locale]` i — poza
+zbiorem prebuildowanym — Next.js renderuje je **na żywo** zamiast serwować gotowy plik.
+Render z niesprawdzonym rzutowaniem `locale as Locale` kończył się wyjątkiem.
+
+**Dowód, nie deklaracja:** odtworzone bezpośrednio na produkcji podczas tej sesji —
+`GET https://optimapdf.com/xx` → **500**, ~2,3 s (dokładnie wzorzec z Observability: trasa
+`/[locale]` w danych Vercela pokazywała P75 3,21 s i 100% Error Rate na 6 wywołaniach
+w 12 h, `/[locale]/guide` analogicznie). Zwykłe żądania z poprawnym językiem (`/pl`) nie
+są w ogóle widoczne w tych metrykach — obsługuje je statyczny plik, bez wywołania funkcji.
+
+**Naprawa:** `app/[locale]/layout.tsx` — nieznany `locale` → `notFound()` (czysty 404
+zamiast renderu z crashem). Zweryfikowane lokalnie przed i po: `/xx` 500→404, `/pl` i
+`/en/merge` bez zmian (200). `tsc`/`build`/`eslint` bez nowych błędów.
 
 ---
 
 ## Co zostało do zrobienia
 
-### SEC-005 — zakresy uprawnień Microsoftu (decyzja, nie kod)
-
-| Dostawca | Zakres |
-|---|---|
-| Google | `drive.file` — najwęższy możliwy, plikowy |
-| OneDrive (zapis) | `Files.ReadWrite.All` |
-| SharePoint | `Sites.Read.All Files.Read.All` |
-
-Microsoft dostaje nieporównanie szerszy dostęp niż Google. Do sprawdzenia, czy Graph
-oferuje węższy odpowiednik dla samego wyboru/zapisu pliku. Jeśli nie — udokumentować
-jako świadomie zaakceptowane ograniczenie platformy, nie przeoczenie.
-
 ### Drobne obserwacje
 
-- **Trasa `/[locale]` ma 100% błędów** w Observability (4 wywołania, wszystkie nieudane).
-  Nie bezpieczeństwo, ale coś się psuje.
 - **Azure: „End users cannot grant consent to newly registered multitenant apps without
   verified publishers"** — obcy użytkownicy mogą nie móc wyrazić zgody na dostęp
-  do OneDrive/SharePoint. Do sprawdzenia.
-- **Gałąź `fix/google-drive-picker`** scalona, do usunięcia razem z jej podglądem.
-- **Deployment Storage 13,43 GB / 10 GB** — przekroczony. Usunięcie starych wdrożeń dało
-  tylko 0,5 GB; problemem jest rozmiar pojedynczego builda. Po przeniesieniu `playwright`
-  i usunięciu `archiver` obserwować, czy zejdzie poniżej limitu w miarę wypadania starych
-  wdrożeń. Jeśli nie — szukać dalej.
+  do OneDrive/SharePoint. **W trakcie sprawdzania** (2026-09-15): logowanie do Azure
+  Portal kontem tenanta `LeszekHofman@OptimaPDF.onmicrosoft.com` napotyka błąd
+  interakcji ("account needs to be added as an external user in the tenant first") —
+  do wyjaśnienia, zanim da się zobaczyć status Publisher domain.
+- **Deployment Storage — trend potwierdzony pozytywny.** Wykres 30-dniowy (sprawdzony
+  2026-09-15): spadek z ~40 GB (18 sierpnia) do 13,43 GB (dziś), wyraźnie w dół od
+  usunięcia `archiver`/przeniesienia `playwright`. Wciąż nad limitem 10 GB, ale trend
+  jednoznaczny — obserwować dalej, nic do zrobienia teraz.
+- **Przy okazji zauważone (2026-09-15):** 83,4% wywołań funkcji Vercel w ciągu 30 dni
+  to "User Error" (357/428) — prawdopodobnie spodziewane przy wielowarstwowych limitach
+  tej aplikacji (rate limit 30/min na `/api/*`, limit AI 15/dobę, blokady SSRF/CSRF,
+  limit 100 MB), ale nie zweryfikowane rozbiciem po kodach/endpointach. Do sprawdzenia,
+  jeśli będzie okazja.
 
 ---
 
@@ -210,8 +278,9 @@ wnioski dało się zweryfikować samodzielnie.
 
 ## Sugerowana kolejność dalszych prac
 
-SEC-003b, A4, QA-001 i Etap 2 zamknięte, w tym zweryfikowane ręcznie na żywo na produkcji
-(zob. wyżej). Pozostało:
+SEC-003b, A4, QA-001, Etap 2 i SEC-005 zamknięte (Etap 2 zweryfikowane ręcznie na żywo na
+produkcji; SEC-005 to decyzja bez zmiany kodu — rozważone przepisanie SharePoint importu
+na widget `js.live.net` odrzucone po weryfikacji, że nie zawęża scope'u — zob. wyżej).
+Pozostało:
 
-1. **SEC-005** — sprawdzić dostępne zakresy w Microsoft Graph, potem zdecydować
-2. Drobne obserwacje przy okazji
+1. Drobne obserwacje przy okazji
