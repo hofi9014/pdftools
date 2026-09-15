@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { MAX_UPLOAD_BYTES } from '@/lib/upload-limit';
 
 const LOCALES = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'] as const;
 const DEFAULT_LOCALE = 'en';
@@ -17,7 +18,7 @@ const LEGACY_PATHS = new Set([
   'wsparcie', 'nasze-zasady', 'security', 'terms',
 ]);
 
-const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024;
+const MAX_FILE_SIZE_BYTES = MAX_UPLOAD_BYTES;
 const RATE_LIMIT_REQUESTS = 30;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const ALLOWED_ORIGINS = [
@@ -25,6 +26,7 @@ const ALLOWED_ORIGINS = [
   'https://www.optimapdf.com',
   'http://localhost:3000',
 ];
+const STATE_CHANGING_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
 const rateMap = new Map<string, { count: number; resetAt: number }>();
 
 function getClientIp(request: NextRequest): string {
@@ -75,18 +77,18 @@ export function proxy(request: NextRequest) {
         { status: 429, headers: { 'Retry-After': '60' } }
       );
     }
-    if (request.method === 'POST') {
-      const origin = request.headers.get('origin') || request.headers.get('referer') || '';
-      if (origin) {
-        const isAllowed = ALLOWED_ORIGINS.some(allowed => origin.startsWith(allowed));
-        if (!isAllowed) {
-          console.warn(`[CSRF] ${method} ${pathname} origin=${origin} ip=${ip}`);
-          return NextResponse.json(
-            { error: 'Nieautoryzowane źródło żądania.' },
-            { status: 403 }
-          );
-        }
+    if (STATE_CHANGING_METHODS.includes(request.method)) {
+      const origin = request.headers.get('origin') || request.headers.get('referer');
+      if (!origin || !ALLOWED_ORIGINS.some(allowed => origin.startsWith(allowed))) {
+        const reportedOrigin = origin || '<none>';
+        console.warn(`[CSRF] ${method} ${pathname} origin=${reportedOrigin} ip=${ip}`);
+        return NextResponse.json(
+          { error: 'Nieautoryzowane źródło żądania.' },
+          { status: 403 }
+        );
       }
+    }
+    if (request.method === 'POST') {
       const contentLength = request.headers.get('content-length');
       if (contentLength) {
         const size = parseInt(contentLength, 10);
