@@ -1,5 +1,6 @@
 'use client';
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 
 interface GraphSite {
   id: string;
@@ -86,6 +87,16 @@ async function graphFetchSingle<T>(url: string, token: string): Promise<T> {
 interface SearchHit { resource: GraphSite }
 interface HitsContainer { hits: SearchHit[] }
 
+/** Thrown when Graph rejects the SharePoint Search API with the
+ *  "not supported for MSA accounts" error — a platform limitation, not a bug.
+ *  SharePoint exists only in work Microsoft 365 subscriptions. */
+class MSAAccountError extends Error {
+  constructor() {
+    super('MSA_ACCOUNT_ERROR');
+    this.name = 'MSAAccountError';
+  }
+}
+
 async function searchSitesViaPost(token: string, query: string): Promise<GraphSite[]> {
   const res = await fetch('https://graph.microsoft.com/v1.0/search/query', {
     method: 'POST',
@@ -105,6 +116,9 @@ async function searchSitesViaPost(token: string, query: string): Promise<GraphSi
   });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
+    if (body.toLowerCase().includes('not supported for msa accounts')) {
+      throw new MSAAccountError();
+    }
     throw new Error(`Search API error: ${res.status}${body ? ' - ' + body.slice(0, 200) : ''}`);
   }
   const data = await res.json();
@@ -148,6 +162,7 @@ async function fetchSiteByUrl(token: string, hostname: string, path: string): Pr
 export default function SharePointPickerDialog({
   mode, open, onClose, onFilesPicked, onDone, blob, fileName, clientId,
 }: SharePointPickerDialogProps) {
+  const locale = useHydrationSafeLocale();
   const [step, setStep] = useState<Step>('auth');
   const [error, setError] = useState('');
   const [token, setToken] = useState('');
@@ -256,6 +271,17 @@ export default function SharePointPickerDialog({
     }
   }, [open, step, token, startOAuth]);
 
+  // Friendly, localized message for search failures — MSA accounts get a
+  // dedicated explanation instead of the raw Graph error JSON.
+  const searchErrorMessage = useCallback((e: unknown) => {
+    if (e instanceof MSAAccountError) {
+      return locale === 'pl'
+        ? 'SharePoint jest dostępny tylko dla firmowych kont Microsoft 365. Konta osobiste (outlook.com, hotmail.com, live.com) nie mają witryn SharePoint.'
+        : "SharePoint is only available for Microsoft 365 work accounts. Personal accounts (outlook.com, hotmail.com, live.com) don't have SharePoint sites.";
+    }
+    return e instanceof Error ? e.message : 'Failed to search sites';
+  }, [locale]);
+
   // Search sites — POST Search API for wildcard, GET for typed queries
   const searchSites = useCallback(async () => {
     if (!token) return;
@@ -279,12 +305,12 @@ export default function SharePointPickerDialog({
       if (mountedRef.current) setSites(data);
     } catch (e) {
       if (mountedRef.current) {
-        setError(e instanceof Error ? e.message : 'Failed to search sites');
+        setError(searchErrorMessage(e));
       }
     } finally {
       if (mountedRef.current) setSearching(false);
     }
-  }, [token, searchQuery]);
+  }, [token, searchQuery, searchErrorMessage]);
 
   // Auto-search when sites step becomes active with a valid token
   useEffect(() => {
@@ -297,14 +323,14 @@ export default function SharePointPickerDialog({
           if (mountedRef.current) setSites(data);
         } catch (e) {
           if (mountedRef.current) {
-            setError(e instanceof Error ? e.message : 'Failed to search sites');
+            setError(searchErrorMessage(e));
           }
         } finally {
           if (mountedRef.current) setSearching(false);
         }
       })();
     }
-  }, [step, token]);
+  }, [step, token, searchErrorMessage]);
 
   // Select site → load libraries
   const handleSelectSite = useCallback(async (site: GraphSite) => {

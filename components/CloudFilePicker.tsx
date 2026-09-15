@@ -59,9 +59,20 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
   const bcRef = useRef<BroadcastChannel | null>(null);
   const oauthIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
+  // Only one banner at a time — setting one message always clears the other.
+  const showError = useCallback((msg: string) => {
+    setOfflineMsg('');
+    setErrorMsg(msg);
+  }, []);
+
+  const showOffline = useCallback(() => {
+    setErrorMsg('');
+    setOfflineMsg('offline');
+  }, []);
+
   const handleGoogleDrive = useCallback(async () => {
     setOpen(false);
-    if (!navigator.onLine) { setOfflineMsg('offline'); return; }
+    if (!navigator.onLine) { showOffline(); return; }
     setLoading('google');
     try {
       if (!GOOGLE_CLIENT_ID || !GOOGLE_API_KEY) { throw new Error('Google Drive not configured'); }
@@ -83,7 +94,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
           }
           try {
             if (resp.error) {
-              setErrorMsg(locale === 'pl' ? 'Nie udało się zalogować do Google Drive.' : 'Google Drive sign-in failed.');
+              showError(locale === 'pl' ? 'Nie udało się zalogować do Google Drive.' : 'Google Drive sign-in failed.');
               setLoading(null);
               return;
             }
@@ -103,7 +114,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
                     onFilesPicked(files);
                   })
                   .catch(() => {
-                    setErrorMsg(locale === 'pl' ? 'Nie udało się pobrać pliku z Google Drive.' : 'Failed to download file from Google Drive.');
+                    showError(locale === 'pl' ? 'Nie udało się pobrać pliku z Google Drive.' : 'Failed to download file from Google Drive.');
                   })
                   .finally(() => setLoading(null));
               } else if (data.action === 'cancel') {
@@ -113,13 +124,13 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
             pb.build().setVisible(true);
           } catch (err) {
             console.error('Google Drive error:', err);
-            setErrorMsg(locale === 'pl' ? 'Nie udało się uruchomić Google Drive.' : 'Could not start Google Drive.');
+            showError(locale === 'pl' ? 'Nie udało się uruchomić Google Drive.' : 'Could not start Google Drive.');
             setLoading(null);
           }
         },
       });
       googleWatchdogRef.current = setTimeout(() => {
-        setErrorMsg(locale === 'pl' ? 'Logowanie do Google Drive przekroczyło limit czasu.' : 'Google Drive sign-in timed out.');
+        showError(locale === 'pl' ? 'Logowanie do Google Drive przekroczyło limit czasu.' : 'Google Drive sign-in timed out.');
         setLoading(null);
       }, 120000);
       tokenClient.requestAccessToken();
@@ -129,14 +140,14 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
         clearTimeout(googleWatchdogRef.current);
         googleWatchdogRef.current = undefined;
       }
-      setErrorMsg(locale === 'pl' ? 'Nie udało się uruchomić Google Drive.' : 'Could not start Google Drive.');
+      showError(locale === 'pl' ? 'Nie udało się uruchomić Google Drive.' : 'Could not start Google Drive.');
       setLoading(null);
     }
-  }, [onFilesPicked, locale]);
+  }, [onFilesPicked, locale, showError, showOffline]);
 
   const handleDropbox = useCallback(async () => {
     setOpen(false);
-    if (!navigator.onLine) { setOfflineMsg('offline'); return; }
+    if (!navigator.onLine) { showOffline(); return; }
     setLoading('dropbox');
     try {
       if (!DROPBOX_KEY) { throw new Error('Dropbox not configured'); }
@@ -151,7 +162,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
             );
             onFilesPicked(result);
           } catch {
-            setErrorMsg(locale === 'pl' ? 'Nie udało się pobrać pliku z Dropbox.' : 'Failed to download from Dropbox.');
+            showError(locale === 'pl' ? 'Nie udało się pobrać pliku z Dropbox.' : 'Failed to download from Dropbox.');
           }
           setLoading(null);
         },
@@ -162,14 +173,14 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
       });
     } catch (e) {
       console.error('Dropbox error:', e);
-      setErrorMsg(locale === 'pl' ? 'Nie udało się pobrać pliku z Dropbox.' : 'Failed to download from Dropbox.');
+      showError(locale === 'pl' ? 'Nie udało się uruchomić Dropbox.' : 'Could not start Dropbox.');
       setLoading(null);
     }
-  }, [onFilesPicked, accept, locale]);
+  }, [onFilesPicked, accept, locale, showError, showOffline]);
 
   const handleOneDrive = useCallback(async () => {
     setOpen(false);
-    if (!navigator.onLine) { setOfflineMsg('offline'); return; }
+    if (!navigator.onLine) { showOffline(); return; }
     setLoading('onedrive');
     try {
       if (!ONEDRIVE_CLIENT_ID) { throw new Error('OneDrive not configured'); }
@@ -325,14 +336,14 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
       if (oauthIntervalRef.current) { clearInterval(oauthIntervalRef.current); oauthIntervalRef.current = undefined; }
       if (bcRef.current) { bcRef.current.close(); bcRef.current = null; }
     }
-  }, [onFilesPicked]);
+  }, [onFilesPicked, showOffline]);
 
   const handleSharePoint = useCallback(() => {
     setOpen(false);
-    if (!navigator.onLine) { setOfflineMsg('offline'); return; }
+    if (!navigator.onLine) { showOffline(); return; }
     if (!SHAREPOINT_CLIENT_ID) { return; }
     setShowSharePoint(true);
-  }, []);
+  }, [showOffline]);
 
   const handleLocal = useCallback(() => {
     setOpen(false);
@@ -358,6 +369,17 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
     const t = setTimeout(() => setErrorMsg(''), 6000);
     return () => clearTimeout(t);
   }, [errorMsg]);
+
+  // Clear the Google sign-in watchdog when the component unmounts so a stale
+  // 120s timer never sets state on an unmounted component.
+  useEffect(() => {
+    return () => {
+      if (googleWatchdogRef.current) {
+        clearTimeout(googleWatchdogRef.current);
+        googleWatchdogRef.current = undefined;
+      }
+    };
+  }, []);
 
   const hasGoogle = !!(GOOGLE_CLIENT_ID && GOOGLE_API_KEY);
   const hasDropbox = !!DROPBOX_KEY;
