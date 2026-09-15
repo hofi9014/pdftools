@@ -241,20 +241,33 @@ wdrożeniu, a nie tylko lokalnie.
   (Znakowanie i właściwości → Domena wydawcy). Portal wprost: *"Domena wydawcy
   aplikacji jest ustawiona na OptimaPDF.onmicrosoft.com, ale domeny wydawcy
   onmicrosoft.com nie są dozwolone. W celu kontynuowania użyj domeny
-  niestandardowej."* Ścieżka do weryfikacji (żadna z tych czynności nie została
-  wykonana w tej sesji — wymaga decyzji i czasu poza kodem):
-  1. Dodać i zweryfikować przez DNS domenę `optimapdf.com` w tej dzierżawie Azure AD
-  2. Ustawić ją jako domenę wydawcy aplikacji
-  3. Posiadać konto w Microsoft Partner Network (MPN) z domeną kontaktową zgodną
-     z `optimapdf.com`
-  4. Powiązać identyfikator MPN z aplikacją
+  niestandardowej."* Ścieżka do pełnej weryfikacji:
+  1. ✅ **Zrobione (2026-09-15):** dodano i zweryfikowano przez DNS domenę
+     `optimapdf.com` w dzierżawie Azure AD. Rekord TXT `MS=ms12693569` dodany
+     w Vercel DNS (domena `optimapdf.com` jest zarejestrowana w Hostingerze, ale
+     strefa DNS jest delegowana do `ns1/ns2.vercel-dns.com` — Hostinger tu nie
+     służy do niczego poza rejestracją). Weryfikacja w Azure potwierdzona
+     niezależnie: `nslookup -type=TXT optimapdf.com` i zapytanie do `dns.google`
+     zwracają `MS=ms12693569` zgodnie z tym, czego żądał Azure.
+  2. ✅ **Zrobione (2026-09-15):** domena wydawcy aplikacji zmieniona z
+     `OptimaPDF.onmicrosoft.com` na `optimapdf.com` (Azure: "Pomyślnie
+     zaktualizowano domenę wydawcy"). Ostrzeżenie o niedozwolonej domenie
+     `.onmicrosoft.com` zniknęło.
+  3. ⬜ **Pozostało:** posiadać konto w Microsoft Partner Network (MPN) z domeną
+     kontaktową zgodną z `optimapdf.com` — realny proces biznesowy (rejestracja
+     firmy/tożsamości u Microsoftu), nie techniczny, może potrwać dni.
+  4. ⬜ **Pozostało:** powiązać identyfikator MPN z aplikacją (Azure pokazuje już
+     pole "Dodaj identyfikator programu MPN, aby zweryfikować wydawcę").
 
-  **Praktyczny skutek dziś:** ekran zgody OAuth dla OneDrive/SharePoint pokazuje
-  użytkownikom etykietę "Niezweryfikowane" — obniża zaufanie wizualnie, **nie jest
-  luką bezpieczeństwa**. Dla kont spoza organizacji może to dodatkowo blokować zgodę
-  bez zgody administratora (oryginalne ostrzeżenie Azure, wciąż aktualne).
-  **Decyzja:** odłożone — wymaga biznesowej rejestracji w MPN, poza zakresem sesji
-  technicznej. Do podjęcia osobno, gdy będzie na to czas/potrzeba.
+  **Praktyczny skutek dziś:** ekran zgody OAuth dla OneDrive/SharePoint pokaże
+  teraz `optimapdf.com` zamiast `.onmicrosoft.com` jako domenę aplikacji — realna
+  poprawa zaufania, choć plakietka pełnej weryfikacji ("Verified") pojawi się
+  dopiero po kroku 3-4. Brak weryfikacji **nie jest i nigdy nie był luką
+  bezpieczeństwa**, tylko sygnałem zaufania na ekranie zgody.
+  **Decyzja:** kroki 1-2 wykonane w tej sesji na żywo z użytkownikiem (nie tylko
+  kod — realna konfiguracja DNS + Azure Portal, każdy krok zweryfikowany
+  niezależnie przed przejściem dalej). Krok 3 (MPN) pozostaje odłożony — do
+  podjęcia osobno, gdy będzie na to czas/potrzeba biznesowa.
 
   **Przy okazji zweryfikowane (2026-09-15): rzeczywista konfiguracja "Uprawnienia
   interfejsu API" tej samej aplikacji potwierdza tabelę scope'ów z SEC-005**, bez
