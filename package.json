@@ -16,7 +16,8 @@
     "test:dropbox-upload": "npx --yes tsx tests/dropbox-upload.mts",
     "test:proxy-csrf": "npx --yes tsx tests/proxy-csrf.mts",
     "test:office-to-pdf-entities": "npx --yes tsx tests/office-to-pdf-entities.mts",
-    "test:edit-pdf-scale": "npx --yes tsx tests/edit-pdf-scale.mts"
+    "test:edit-pdf-scale": "npx --yes tsx tests/edit-pdf-scale.mts",
+    "test:redact-pdf-raster": "npx --yes tsx tests/redact-pdf-raster.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
