@@ -65,16 +65,19 @@ When adding a feature, default to client-side; a new server route is the excepti
 
 ## Security audit reference
 
-`AUDYT-BEZPIECZENSTWA.md` records the 2026-09-15 security-audit session: closed items
-(SEC-001 AI rate-limit persistence moved to Upstash Redis; SEC-004/006/007/012; the
-Google Drive/Dropbox/OneDrive cloud-picker bugs SEC-011/013/014/015/016), open items
-(**SEC-003b** — `url-to-pdf` SSRF: DNS is checked once but `fetch()` re-resolves,
-so a short-TTL DNS answer can rebind between check and connect; **Etap 2** — decide
-whether `lib/exports.ts`'s in-memory file store should exist at all, since it contradicts
-the "files never leave the browser" claim for the Dropbox Saver path; SEC-005 OneDrive/
-SharePoint OAuth scope review; QA-001 AI rate limit shouldn't be spent on provider errors),
-and verified infra facts (Vercel Hobby/`iad1`, Upstash env var names carry an unexpected
-`KV` segment — `Redis.fromEnv()` will not find them, exact OAuth redirect URIs).
+`AUDYT-BEZPIECZENSTWA.md` records the 2026-09-15 security-audit session and its follow-ups:
+closed items (SEC-001 AI rate-limit persistence moved to Upstash Redis; SEC-004/006/007/012;
+the Google Drive/Dropbox/OneDrive cloud-picker bugs SEC-011/013/014/015/016; **SEC-003b** —
+`url-to-pdf` DNS-rebinding TOCTOU, fixed by freezing a validated address list into a custom
+`http(s).request` `lookup` instead of letting `fetch()` re-resolve, see
+[app/api/url-to-pdf/route.ts](app/api/url-to-pdf/route.ts) and
+[tests/url-to-pdf-ssrf.mts](tests/url-to-pdf-ssrf.mts); A4 unused-dependency removal), open
+items (**Etap 2** — decide whether `lib/exports.ts`'s in-memory file store should exist at
+all, since it contradicts the "files never leave the browser" claim for the Dropbox Saver
+path; SEC-005 OneDrive/SharePoint OAuth scope review; QA-001 AI rate limit shouldn't be
+spent on provider errors), and verified infra facts (Vercel Hobby/`iad1`, Upstash env var
+names carry an unexpected `KV` segment — `Redis.fromEnv()` will not find them, exact OAuth
+redirect URIs).
 
 Verification principles from that session, worth reapplying to any future security or
 correctness work here:
