@@ -89,10 +89,10 @@ logic in [lib/dropbox-upload.ts](lib/dropbox-upload.ts) (notably ASCII-escaping 
 `Dropbox-API-Arg` header per Dropbox's own requirement, since a raw Polish filename would
 otherwise be invalid), and [public/dropbox-oauth.html](public/dropbox-oauth.html) — `/api/exports`
 and `lib/exports.ts` are gone entirely, proven by
-[tests/dropbox-upload.mts](tests/dropbox-upload.mts); **requires a one-time Dropbox App
-Console change (enable the `files.content.write` scope, register the
-`dropbox-oauth.html` redirect URIs) plus a live manual test before this works in
-production** — not something a sandboxed session can do or verify end-to-end),
+[tests/dropbox-upload.mts](tests/dropbox-upload.mts); required a one-time Dropbox App
+Console change (`files.content.write` scope, `dropbox-oauth.html` redirect URIs) that a
+sandboxed session can't do itself — done and confirmed working end-to-end live on both
+`localhost` and production by the user after the fact),
 open items (SEC-005 OneDrive/SharePoint OAuth scope review), and verified infra facts (Vercel
 Hobby/`iad1`, Upstash env var names carry an unexpected `KV` segment — `Redis.fromEnv()`
 will not find them, exact OAuth redirect URIs).

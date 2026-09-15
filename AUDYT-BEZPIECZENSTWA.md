@@ -95,15 +95,17 @@ czystej logice: ASCII-only + bajt-dokładny round-trip dla polskich diakrytyków
 autoryzacji (endpoint, `response_type=token`, `scope=files.content.write`).
 `npx tsc --noEmit`/`npm run build`/`eslint` — bez nowych błędów względem stanu wyjściowego.
 
-**⚠️ Wymaga Twojej akcji przed działaniem na produkcji — nie mam dostępu do Dropbox App
-Console i nie da się tego przetestować bez żywej aplikacji Dropbox i przeglądarki:**
-1. W istniejącej aplikacji Dropbox (ten sam App Key co dla Choosera) → zakładka
-   **Permissions** → włącz scope `files.content.write`.
-2. Zakładka **OAuth 2** → **Redirect URIs** → dodaj dokładnie:
-   `https://optimapdf.com/dropbox-oauth.html` oraz (do lokalnego developmentu)
-   `http://localhost:3000/dropbox-oauth.html`.
-3. Po tej konfiguracji: ręczny test w przeglądarce — dowolne narzędzie → wynik → „Zapisz
-   do: Dropbox" → potwierdzić, że plik faktycznie ląduje w Dropboksie użytkownika.
+**✅ Zweryfikowane ręcznie na żywo (2026-09-15, ta sesja, po stronie użytkownika):**
+scope `files.content.write` włączony w Dropbox App Console, oba redirect URI
+(`https://optimapdf.com/dropbox-oauth.html`, `http://localhost:3000/dropbox-oauth.html`)
+zarejestrowane, `NEXT_PUBLIC_DROPBOX_APP_KEY` był ustawiony **wyłącznie** dla środowiska
+Production w Vercelu (typ „Secret" — wartość odczytana ponownie z App Console, nie z
+Vercela, bo Vercel nie pozwala podejrzeć wartości oznaczonych jako Secret) — dodany też do
+lokalnego `.env.local` do testów. Test end-to-end w przeglądarce, **zarówno lokalnie
+(`localhost:3000`), jak i na produkcji (`optimapdf.com`)**: import przez Dropbox Chooser
+oraz zapis przez nową ścieżkę OAuth + `files/upload` — plik faktycznie wylądował w koncie
+Dropbox użytkownika. Przy okazji usunięty z Vercela osierocony `EXPORT_LINK_HMAC_SECRET`
+(potwierdzone: „No Environment Variables Match Your Filters" po wyszukaniu).
 
 Do rozważenia później (nieblokujące, osobna decyzja): zawężenie typu dostępu aplikacji
 z „Full Dropbox" na „App folder" — wymagałoby jednak nowej aplikacji/App Key (Dropbox nie
@@ -208,9 +210,8 @@ wnioski dało się zweryfikować samodzielnie.
 
 ## Sugerowana kolejność dalszych prac
 
-SEC-003b, A4, QA-001 i Etap 2 zamknięte (zob. wyżej — Etap 2 wymaga jeszcze Twojej
-konfiguracji w Dropbox App Console + ręcznego testu w przeglądarce przed produkcją).
-Pozostało:
+SEC-003b, A4, QA-001 i Etap 2 zamknięte, w tym zweryfikowane ręcznie na żywo na produkcji
+(zob. wyżej). Pozostało:
 
 1. **SEC-005** — sprawdzić dostępne zakresy w Microsoft Graph, potem zdecydować
 2. Drobne obserwacje przy okazji
