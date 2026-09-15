@@ -4133,7 +4133,6 @@ export async function extractImagesFromPdf(
  * - Still useful for most archival/readability purposes
  */
 export async function convertToPdfA(file: File): Promise<Uint8Array> {
-  const { PDFDocument, rgb } = await import('pdf-lib');
   const buf = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(buf, { ignoreEncryption: true });
 
@@ -4144,12 +4143,14 @@ export async function convertToPdfA(file: File): Promise<Uint8Array> {
   } catch { /* no form */ }
 
   // 2. Remove JS actions from catalog
-  const catalog: any = (pdfDoc as any).context?.trailerInfo?.Root;
-  if (catalog) {
-    try { delete catalog.JS; } catch { /* ignore */ }
-    try { delete catalog.AA; } catch { /* ignore */ }
-    try { (catalog as any).MarkInfo = { Marked: true }; } catch { /* ignore */ }
-  }
+  // pdfDoc.catalog is the real PDFDict (a PDFCatalog) backing the document's /Root — its
+  // internal Map is only mutable via .set()/.get()/.delete(PDFName), never raw property
+  // assignment/delete, which used to silently do nothing (the catalog var here previously
+  // came from context.trailerInfo.Root, a PDFRef, not a dict, compounding the same mistake).
+  const catalog = pdfDoc.catalog;
+  catalog.delete(PDFName.of('JS'));
+  catalog.delete(PDFName.of('AA'));
+  catalog.set(PDFName.of('MarkInfo'), pdfDoc.context.obj({ Marked: true }));
 
   // 3. Set metadata
   if (!pdfDoc.getTitle()) pdfDoc.setTitle('PDF Document');
@@ -4179,12 +4180,10 @@ export async function convertToPdfA(file: File): Promise<Uint8Array> {
 
   // 5. Embed XMP metadata
   try {
-    const xmpStream = (pdfDoc as any).context?.obj(new Uint8Array(new TextEncoder().encode(xmp)));
-    const metadataRef = (pdfDoc as any).context?.register(xmpStream);
-    const catalog2: any = (pdfDoc as any).context?.trailerInfo?.Root;
-    if (catalog2) {
-      catalog2.Metadata = metadataRef;
-    }
+    const xmpBytes = new TextEncoder().encode(xmp);
+    const xmpStream = pdfDoc.context.stream(xmpBytes, { Type: 'Metadata', Subtype: 'XML' });
+    const metadataRef = pdfDoc.context.register(xmpStream);
+    catalog.set(PDFName.of('Metadata'), metadataRef);
   } catch { /* metadata embed failed - non-critical */ }
 
   // 6. Add OutputIntent for sRGB
@@ -4197,20 +4196,17 @@ export async function convertToPdfA(file: File): Promise<Uint8Array> {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     ]);
-    const srgbStream = (pdfDoc as any).context?.obj(srgbProfile);
-    const srgbRef = (pdfDoc as any).context?.register(srgbStream);
-    const outputIntent = (pdfDoc as any).context?.obj({
+    const srgbStream = pdfDoc.context.stream(srgbProfile, { N: 3 });
+    const srgbRef = pdfDoc.context.register(srgbStream);
+    const outputIntent = pdfDoc.context.obj({
       Type: 'OutputIntent',
       S: 'GTS_PDFA1',
       OutputConditionIdentifier: 'sRGB IEC61966-2.1',
       DestOutputProfile: srgbRef,
       Info: 'sRGB IEC61966-2.1',
     });
-    const outputIntentRef = (pdfDoc as any).context?.register(outputIntent);
-    const catalog3: any = (pdfDoc as any).context?.trailerInfo?.Root;
-    if (catalog3) {
-      catalog3.OutputIntents = [outputIntentRef];
-    }
+    const outputIntentRef = pdfDoc.context.register(outputIntent);
+    catalog.set(PDFName.of('OutputIntents'), pdfDoc.context.obj([outputIntentRef]));
   } catch { /* output intent failed - non-critical */ }
 
   const bytes = await pdfDoc.save({ useObjectStreams: false });
