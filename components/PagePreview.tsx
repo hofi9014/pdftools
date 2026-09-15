@@ -101,7 +101,7 @@ export default function PagePreview({ file, mode, selectedPages, onSelectionChan
          mode === 'select' ? t('preview.heading.select', locale) :
          t('preview.heading.reorder', locale)}
         <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
-          ({mode === 'reorder' ? `${totalPages} ${t('preview.pages', locale)}` : `${selectedPages.length} z ${totalPages} ${t('preview.selected', locale)}`})
+          ({mode === 'reorder' ? `${totalPages} ${t('preview.pages', locale)}` : `${selectedPages.length}/${totalPages} ${t('preview.selected', locale)}`})
         </span>
       </h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
