@@ -92,10 +92,15 @@ and `lib/exports.ts` are gone entirely, proven by
 [tests/dropbox-upload.mts](tests/dropbox-upload.mts); required a one-time Dropbox App
 Console change (`files.content.write` scope, `dropbox-oauth.html` redirect URIs) that a
 sandboxed session can't do itself — done and confirmed working end-to-end live on both
-`localhost` and production by the user after the fact),
-open items (SEC-005 OneDrive/SharePoint OAuth scope review), and verified infra facts (Vercel
-Hobby/`iad1`, Upstash env var names carry an unexpected `KV` segment — `Redis.fromEnv()`
-will not find them, exact OAuth redirect URIs).
+`localhost` and production by the user after the fact; **SEC-005** — OneDrive/SharePoint's
+broad Graph scopes (`Files.ReadWrite.All`/`Sites.ReadWrite.All`) documented as an accepted
+platform limitation, not an oversight, after checking Microsoft's own docs found no stable
+narrower alternative — note the corrected finding there: the managed `js.live.net` picker
+widget does **not** narrow the scope either (Microsoft's own docs: it requests
+`Files.Read.All`/`Files.ReadWrite.All` internally), so rewriting SharePoint's custom
+import UI onto it was investigated and deliberately not done), and verified infra facts
+(Vercel Hobby/`iad1`, Upstash env var names carry an unexpected `KV` segment —
+`Redis.fromEnv()` will not find them, exact OAuth redirect URIs).
 
 Verification principles from that session, worth reapplying to any future security or
 correctness work here:
