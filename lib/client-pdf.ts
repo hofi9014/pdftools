@@ -3247,6 +3247,24 @@ export async function embedLiberationSans(pdf: PDFDocument): Promise<PDFFont> {
   return pdf.embedFont(new Uint8Array(await fontRes.arrayBuffer()));
 }
 
+// Office XML (docx/odt/xlsx/pptx) and HTML both carry entity-escaped text
+// (&amp;, &lt;, etc., plus numeric refs like &#8217;) — text pulled out via regex
+// must be unescaped once before it's treated as literal display text, or the
+// raw escape sequence shows up in the generated PDF (an "&" typed in the source
+// document is stored in the XML as "&amp;"; without unescaping, the PDF shows
+// the literal 5 characters "&amp;" instead of just "&").
+export function unescapeXmlEntities(s: string): string {
+  return s
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)))
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&'); // must run last — otherwise "&amp;lt;" would wrongly decode to "<"
+}
+
 export async function officeToPdf(file: File): Promise<Blob> {
   const ext = file.name.toLowerCase().split('.').pop() || '';
   const buf = await file.arrayBuffer();
@@ -3311,6 +3329,8 @@ export async function officeToPdf(file: File): Promise<Blob> {
   } else {
     throw new Error(`Format .${ext} nie jest obsługiwany`);
   }
+
+  text = unescapeXmlEntities(text);
 
   const pdf = await PDFDocument.create();
   const font = await embedLiberationSans(pdf);
@@ -3527,7 +3547,7 @@ export async function editPdfClient(file: File, pageIndex: number, elements: Pdf
 }
 
 export async function htmlToPdf(html: string): Promise<Blob> {
-  const text = html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+  const text = unescapeXmlEntities(html.replace(/<[^>]*>/g, ''));
   const lines = text.split('\n').filter(l => l.trim());
   const pdf = await PDFDocument.create();
   const font = await embedLiberationSans(pdf);
