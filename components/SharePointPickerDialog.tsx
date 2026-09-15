@@ -222,8 +222,13 @@ export default function SharePointPickerDialog({
   // Start OAuth flow
   const startOAuth = useCallback(() => {
     setError('');
+    // Files.Read.All was requested here but is redundant: Sites.Read.All already
+    // covers reading files within document libraries of accessible sites (confirmed
+    // against the app's actual Azure AD API permissions, which only have
+    // Sites.Read.All/Sites.ReadWrite.All/offline_access/User.Read configured —
+    // Files.Read.All was never granted or needed). See AUDYT-BEZPIECZENSTWA.md, SEC-005.
     const scopes = mode === 'picker'
-      ? 'Sites.Read.All Files.Read.All offline_access'
+      ? 'Sites.Read.All offline_access'
       : 'Sites.ReadWrite.All offline_access';
     const redirectUri = window.location.origin + '/sharepoint-oauth.html';
     const authUrl = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
