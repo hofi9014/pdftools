@@ -103,7 +103,10 @@ export default function UnlockPDF({ locale: forcedLocale }: { locale?: Locale } 
               className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:border-blue-500 dark:border-blue-400 dark:focus:border-blue-400"
             />
             <button
+              type="button"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={t(showPassword ? 'password.hide' : 'password.show', locale)}
+              aria-pressed={showPassword}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 dark:text-gray-300">
               {showPassword ? '🙈' : '👁️'}
             </button>
