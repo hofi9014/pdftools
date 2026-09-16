@@ -34,7 +34,7 @@ export async function applyTextEdits(pdfDoc: PDFDocument, textEdits: TextEdit[],
   for (const edit of textEdits) {
     if (edit.page < 1 || edit.page > pages.length) continue;
     const page = pages[edit.page - 1];
-    const { height } = page.getSize();
+    const { width, height } = page.getSize();
 
     const pdfY = height - edit.y - edit.height;
 
@@ -44,7 +44,7 @@ export async function applyTextEdits(pdfDoc: PDFDocument, textEdits: TextEdit[],
         if (canvas) {
           const ctx = canvas.getContext('2d');
           if (ctx) {
-            const scaleX = canvas.width / height;
+            const scaleX = canvas.width / width;
             const scaleY = canvas.height / height;
             const cx = Math.min(edit.x * scaleX + (edit.width * scaleX) / 2, canvas.width - 1);
             const cy = Math.min(edit.y * scaleY + (edit.height * scaleY) / 2, canvas.height - 1);

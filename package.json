@@ -22,7 +22,8 @@
     "test:guide-step-numbering": "npx --yes tsx tests/guide-step-numbering.tsx",
     "test:page-preview-count-i18n": "npx --yes tsx tests/page-preview-count-i18n.mts",
     "test:dropzone-keyboard-a11y": "npx --yes tsx tests/dropzone-keyboard-a11y.mts",
-    "test:ocr-multi-file-pdf": "npx --yes tsx tests/ocr-multi-file-pdf.mts"
+    "test:ocr-multi-file-pdf": "npx --yes tsx tests/ocr-multi-file-pdf.mts",
+    "test:export-edited-pdf-scale": "npx --yes tsx tests/export-edited-pdf-scale.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
