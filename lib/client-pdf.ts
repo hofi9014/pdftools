@@ -203,7 +203,7 @@ export async function addBlankPage(file: File, position?: number): Promise<Uint8
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
   if (position !== undefined && position >= 0 && position <= pdf.getPageCount()) {
-    pdf.insertPage(position, pdf.addPage());
+    pdf.insertPage(position);
   } else {
     pdf.addPage();
   }
