@@ -54,7 +54,8 @@
     "test:e2e-pwa-audit": "npx --yes tsx e2e/pwa-audit.mts",
     "test:e2e-sharepoint-flow": "npx --yes tsx e2e/sharepoint-flow.mts",
     "test:e2e-sw-cache": "npx --yes tsx e2e/sw-cache.mts",
-    "test:e2e-sw-offline": "npx --yes tsx e2e/sw-offline.mts"
+    "test:e2e-sw-offline": "npx --yes tsx e2e/sw-offline.mts",
+    "test:low-sev-dead-code-batch": "npx --yes tsx tests/low-sev-dead-code-batch.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

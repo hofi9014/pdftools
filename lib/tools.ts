@@ -2,7 +2,6 @@ export interface ToolDef {
   key: string;
   slug: string;
   category: string;
-  redirectTo?: string;
   disabled?: boolean;
 }
 
@@ -28,7 +27,7 @@ export const tools: ToolDef[] = [
   { key: 'word',         slug: 'pdf-to-word',        category: 'convert' },
   { key: 'wordtopdf',    slug: 'word-to-pdf',        category: 'convert' },
   { key: 'jpgTopdf',     slug: 'jpg-to-pdf',         category: 'convert' },
-  { key: 'jpg',          slug: 'pdf-to-jpg',         category: 'convert', redirectTo: 'images' },
+  { key: 'jpg',          slug: 'pdf-to-jpg',         category: 'convert' },
   { key: 'images',       slug: 'pdf-to-images',      category: 'convert' },
   { key: 'excel',        slug: 'pdf-to-excel',       category: 'convert' },
   { key: 'excel2pdf',    slug: 'excel-to-pdf',       category: 'convert' },

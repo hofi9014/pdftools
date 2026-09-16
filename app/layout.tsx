@@ -7,6 +7,7 @@ import PwaRegister from "@/components/PwaRegister";
 import Magnifier from "@/components/Magnifier";
 import CookieConsent from "@/components/CookieConsent";
 import MetaUpdater from "@/components/MetaUpdater";
+import { tools } from "@/lib/tools";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,12 +25,12 @@ export const metadata: Metadata = {
     default: "OptimaPDF - Free online PDF tools",
     template: "%s | OptimaPDF",
   },
-    description: "Merge, split, compress, convert and edit PDF files online for free. 40 PDF tools, AI Chat, AI Summary, AI Translate, PDF editor, electronic signature, OCR, password protection. No installation, secure and fast.",
+    description: `Merge, split, compress, convert and edit PDF files online for free. ${tools.length} PDF tools, AI Chat, AI Summary, AI Translate, PDF editor, electronic signature, OCR, password protection. No installation, secure and fast.`,
     keywords: ["PDF", "merge PDF", "split PDF", "compress PDF", "convert PDF", "PDF editor", "OCR PDF", "AI PDF", "free PDF tools", "PDF to PowerPoint", "compare PDF", "Excel to PDF", "AI PDF translator"],
   robots: { index: true, follow: true },
   openGraph: {
     title: "OptimaPDF - Free online PDF tools",
-    description: "Merge, split, compress, convert and edit PDFs for free online. 40 PDF tools, AI Chat, AI Summary, AI Translate, PDF editor, electronic signature, OCR, password protection. No installation, secure and fast.",
+    description: `Merge, split, compress, convert and edit PDFs for free online. ${tools.length} PDF tools, AI Chat, AI Summary, AI Translate, PDF editor, electronic signature, OCR, password protection. No installation, secure and fast.`,
     url: "https://optimapdf.com",
     siteName: "OptimaPDF",
     locale: "en_US",
@@ -38,7 +39,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "OptimaPDF - Free online PDF tools",
-    description: "Merge, split, compress, convert and edit PDFs for free online. 40 PDF tools, AI Chat, AI Summary, AI Translate, PDF editor, electronic signature, OCR, password protection.",
+    description: `Merge, split, compress, convert and edit PDFs for free online. ${tools.length} PDF tools, AI Chat, AI Summary, AI Translate, PDF editor, electronic signature, OCR, password protection.`,
   },
   icons: {
     icon: { url: "/icon?v=2", sizes: "32x32", type: "image/png" },
