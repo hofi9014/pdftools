@@ -28,7 +28,8 @@
     "test:font-bold-weight": "npx --yes tsx tests/font-bold-weight.mts",
     "test:rasterize-pages-batch": "npx --yes tsx tests/rasterize-pages-batch.mts",
     "test:pdf-excel-shared-parse": "npx --yes tsx tests/pdf-excel-shared-parse.mts",
-    "test:paragraph-grouping-equivalence": "npx --yes tsx tests/paragraph-grouping-equivalence.mts"
+    "test:paragraph-grouping-equivalence": "npx --yes tsx tests/paragraph-grouping-equivalence.mts",
+    "test:ai-malformed-json": "npx --yes tsx tests/ai-malformed-json.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

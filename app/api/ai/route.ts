@@ -35,7 +35,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { text, task, question, language } = await request.json();
+  let body: { text: string; task: string; question: string; language: string };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Nieprawidłowe żądanie (błędny JSON).' }, { status: 400 });
+  }
+  const { text, task, question, language } = body;
 
   let systemPrompt: string;
   let userPrompt: string;
