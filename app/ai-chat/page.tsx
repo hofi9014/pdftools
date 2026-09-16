@@ -45,7 +45,7 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
       const hint = t('page.aichat.ai_hint', locale);
       setMessages([{
         role: 'assistant',
-        content: `${t('page.aichat.extracted_msg', locale).replace('{wordCount}', String(wordCount)).replace('{mode}', mode)}`
+        content: `${t('page.aichat.extracted_msg', locale, { wordCount, mode })}`
           + `\n${hint}` + (preview ? `\n\n${t('page.aichat.fragment_label', locale)}:\n${preview}${text.length > 300 ? '...' : ''}` : ''),
       }]);
     } catch (err: unknown) { setError(err instanceof Error ? err.message : t('error.generic', locale)); }
@@ -146,7 +146,7 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
           </div>
 
           <button onClick={() => setShowText(!showText)} className="w-full text-left px-4 py-2 text-xs text-gray-500 dark:text-gray-400 hover:bg-[var(--coffee-surface-hover)] border-t border-gray-200 dark:border-gray-600 font-mono">
-            {showText ? `▲ ${t('page.aichat.hide_text', locale)}` : `▼ ${t('page.aichat.show_text', locale)} (${extractedText.trim().split(/\s+/).length} ${t('page.aichat.words', locale)})`}
+            {showText ? `▲ ${t('page.aichat.hide_text', locale)}` : `▼ ${t('page.aichat.show_text', locale)} (${t('page.aichat.words', locale, { count: extractedText.trim().split(/\s+/).length })})`}
           </button>
           {showText && (
             <pre className="max-h-60 overflow-y-auto p-4 text-xs leading-relaxed text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/50 whitespace-pre-wrap font-sans">{extractedText}</pre>
