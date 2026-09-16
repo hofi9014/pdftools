@@ -1,5 +1,7 @@
 import { chromium } from 'playwright';
 
+const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
+
 async function run() {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
@@ -30,7 +32,7 @@ async function run() {
     };
   });
 
-  await page.goto('http://localhost:3000/merge', { waitUntil: 'networkidle' });
+  await page.goto(`${BASE_URL}/merge`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(500);
 
   await page.locator('button:has-text("☁️")').click();
@@ -39,9 +41,11 @@ async function run() {
   await page.waitForTimeout(3000);
 
   console.log(JSON.stringify({ postCalled, getCalled, requests }));
-  console.log(postCalled > 0 && getCalled === 0 ? 'VERIFIED: POST /search/query used' : 'ISSUE: wrong endpoint');
+  const ok = postCalled > 0 && getCalled === 0;
+  console.log(ok ? 'VERIFIED: POST /search/query used' : 'ISSUE: wrong endpoint');
 
   await browser.close();
+  if (!ok) process.exit(1);
 }
 
 run().catch((e) => { console.error(e); process.exit(1); });
