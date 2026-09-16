@@ -24,7 +24,6 @@ async function run() {
   await sleep(1000);
 
   // Register SW from page context
-  let swActivated = false;
   await page.evaluate(() => {
     return navigator.serviceWorker.register('/sw.js').then(reg => {
       return new Promise<void>((resolve) => {
@@ -43,7 +42,6 @@ async function run() {
       });
     });
   });
-  swActivated = true;
   console.log('✓ Service Worker registered and activated\n');
 
   // ────────────────────────────────────────────────────────────

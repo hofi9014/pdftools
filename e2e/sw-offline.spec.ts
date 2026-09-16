@@ -1,8 +1,8 @@
-import { chromium } from 'playwright';
+import { chromium, type Page } from 'playwright';
 
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
-async function countCachedStatic(page: any) {
+async function countCachedStatic(page: Page) {
   return page.evaluate(async () => {
     const cache = await caches.open('optimapdf-v1');
     const requests = await cache.keys();

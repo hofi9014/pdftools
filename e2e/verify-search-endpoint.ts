@@ -24,10 +24,9 @@ async function run() {
   );
 
   await page.addInitScript(() => {
-    const orig = window.open;
     window.open = () => {
       setTimeout(() => window.postMessage({ type: 'sharepoint-token', accessToken: 'test' }, location.origin), 300);
-      return { closed: false, close: () => {}, location: { href: '' } } as any;
+      return { closed: false, close: () => {}, location: { href: '' } } as unknown as Window;
     };
   });
 
