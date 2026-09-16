@@ -6,23 +6,6 @@ import * as http from 'http';
 import * as https from 'https';
 import { MAX_UPLOAD_BYTES } from '@/lib/upload-limit';
 
-const BLOCKED_HOSTS = [
-  'localhost', '127.0.0.1', '::1', '0.0.0.0',
-  '10.', '172.16.', '172.17.', '172.18.', '172.19.',
-  '172.20.', '172.21.', '172.22.', '172.23.', '172.24.',
-  '172.25.', '172.26.', '172.27.', '172.28.', '172.29.',
-  '172.30.', '172.31.', '192.168.', '169.254.',
-  'metadata.google.internal', '100.100.100.204',
-  '100.100.100.205', '100.100.100.206',
-];
-
-function isBlockedHost(hostname: string): boolean {
-  const lower = hostname.toLowerCase();
-  // Resolve to IP if it's a hostname
-  if (BLOCKED_HOSTS.some(h => lower === h || lower.startsWith(h))) return true;
-  return false;
-}
-
 // Built on Node's own SSRF-prevention primitive (net.BlockList, since v15) rather
 // than hand-rolled prefix checks: it normalizes IPv6 (expanded/compressed forms
 // compare equal) and its CIDR matching is exercised by Node's own test suite.
@@ -187,11 +170,6 @@ export async function POST(request: Request) {
     // Only allow http/https
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
       return Response.json({ error: 'Dozwolone tylko protokoły HTTP/HTTPS.' }, { status: 400 });
-    }
-
-    // Block internal/private IPs
-    if (isBlockedHost(parsed.hostname)) {
-      return Response.json({ error: 'Adres URL jest zablokowany.' }, { status: 403 });
     }
 
     // Restrict to port 80 and 443 only
