@@ -59,7 +59,8 @@
     "test:any-type-removal-batch": "npx --yes tsx tests/any-type-removal-batch.mts",
     "test:ai-chat-t-params": "npx --yes tsx tests/ai-chat-t-params.mts",
     "test:tool-slug-single-source": "npx --yes tsx tests/tool-slug-single-source.mts",
-    "test:onedrive-weburl-fallback-removed": "npx --yes tsx tests/onedrive-weburl-fallback-removed.mts"
+    "test:onedrive-weburl-fallback-removed": "npx --yes tsx tests/onedrive-weburl-fallback-removed.mts",
+    "test:pdf-to-images-bloburl-leak": "npx --yes tsx tests/pdf-to-images-bloburl-leak.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
