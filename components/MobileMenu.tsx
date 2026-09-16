@@ -18,6 +18,7 @@ interface CatTool {
 interface Category {
   key: string;
   tools: CatTool[];
+  separatorIndex?: number;
 }
 
 export default function MobileMenu() {
@@ -49,6 +50,10 @@ export default function MobileMenu() {
         ...toolsByCategory('more').map(t => ({ key: t.key, href: toolPath(t.key, locale) })),
         ...infoMore,
       ],
+      // Boundary before the appended info links (nasze-zasady/wsparcie) above — derived from
+      // the actual tool count instead of a hardcoded index, so adding/removing a "more" tool
+      // can't silently shift the separator.
+      separatorIndex: toolsByCategory('more').length,
     },
   ];
 
@@ -104,7 +109,7 @@ export default function MobileMenu() {
                     <div className="bg-[var(--coffee-surface)]">
                       {cat.tools.map((tool, i) => (
                         <div key={tool.href}>
-                          {cat.key === 'more' && i === 7 && (
+                          {cat.key === 'more' && i === cat.separatorIndex && (
                             <div className="border-t border-[var(--coffee-border)] mx-4 py-1">
                               <span className="block px-3 py-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--coffee-text-tertiary)' }}>
                                 {t('footer.info', locale)}

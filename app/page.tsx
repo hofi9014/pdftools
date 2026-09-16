@@ -154,7 +154,7 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
       {/* Stats */}
       <div className="flex justify-center gap-12 sm:gap-16 py-8 px-4">
         <div className="text-center">
-          <div className="text-4xl font-black gradient-text">40</div>
+          <div className="text-4xl font-black gradient-text">{tools.length}</div>
           <div className="text-sm mt-1" style={{ color: 'var(--coffee-text-tertiary)' }}>{t('stats.tools', locale)}</div>
         </div>
         <div className="w-px self-stretch" style={{ backgroundColor: 'var(--coffee-border-strong)' }} />
