@@ -82,6 +82,15 @@ export default function PagePreview({ file, mode, selectedPages, onSelectionChan
     setDraggedIdx(null); setDropIdx(null);
   };
 
+  const moveThumbnail = (displayPos: number, direction: -1 | 1) => {
+    const target = displayPos + direction;
+    if (target < 0 || target >= currentOrder.length) return;
+    const newOrder = [...currentOrder];
+    [newOrder[displayPos], newOrder[target]] = [newOrder[target], newOrder[displayPos]];
+    setCurrentOrder(newOrder);
+    onNewOrder(newOrder);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -135,8 +144,27 @@ export default function PagePreview({ file, mode, selectedPages, onSelectionChan
                 </div>
               )}
               {mode === 'reorder' && (
-                <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition">
-                  <span className="text-xs bg-black/50 text-white px-1.5 py-0.5 rounded">↕</span>
+                <div className="absolute top-1 right-1 flex gap-0.5">
+                  {displayPos > 0 && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); moveThumbnail(displayPos, -1); }}
+                      aria-label={t('preview.move_up', locale)}
+                      className="w-5 h-5 flex items-center justify-center text-xs font-bold bg-black/50 hover:bg-black/70 text-white rounded"
+                    >
+                      ↑
+                    </button>
+                  )}
+                  {displayPos < displayPages.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); moveThumbnail(displayPos, 1); }}
+                      aria-label={t('preview.move_down', locale)}
+                      className="w-5 h-5 flex items-center justify-center text-xs font-bold bg-black/50 hover:bg-black/70 text-white rounded"
+                    >
+                      ↓
+                    </button>
+                  )}
                 </div>
               )}
             </div>
