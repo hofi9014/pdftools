@@ -1,6 +1,6 @@
 import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFRawStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation, type PDFFont } from 'pdf-lib';
 import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
-import { rasterizePage, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
+import { rasterizePages, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
 import { renderIRToDocx, type IRTextRun, type IRImageBlock, type IRTableCell, type IRBlock, type IRRect, type IRPageIR, type IRSpreadsheetCell, type IRSheet, type IRSpreadsheet, type IRConditionalFormattingRule, ptToXlsxCharWidth } from './client-pdf-docx';
 import type { IRSlide, IRSlideElement, IRDeck, IRPtRect, IRTextContent } from './client-pptx';
@@ -870,13 +870,7 @@ export async function redactPdfRaster(file: File, regions: RedactRegion[]): Prom
     cMapPacked: true,
     standardFontDataUrl: '/pdfjs-dist/standard_fonts/',
   };
-  let bytes: Uint8Array = new Uint8Array(buf);
-  const pageIndexes = [...new Set(regions.map(r => r.page))].sort((a, b) => a - b);
-  for (const pageIndex of pageIndexes) {
-    const pageRegions = regions.filter(r => r.page === pageIndex);
-    bytes = await rasterizePage(pdfjsLib as unknown as PdfjsLibLike, canvasFactory, bytes, pageIndex, REDACT_RENDER_SCALE, pageRegions, documentOptions);
-  }
-  return bytes;
+  return await rasterizePages(pdfjsLib as unknown as PdfjsLibLike, canvasFactory, new Uint8Array(buf), regions, REDACT_RENDER_SCALE, documentOptions);
 }
 
 export async function getPageCount(file: File): Promise<number> {

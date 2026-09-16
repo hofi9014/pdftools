@@ -208,3 +208,64 @@ export async function rasterizePage(
   deleteUnreachableRefs(pdfDoc, removedRefs);
   return new Uint8Array(await pdfDoc.save({ useObjectStreams: false }));
 }
+
+/**
+ * Same redaction as rasterizePage, but for every page that needs it in one pass: one pdf.js
+ * load, one pdf-lib load, one save — instead of a caller looping rasterizePage() per page,
+ * which reloads/reparses/resaves the (growing) PDF once per redacted page. A document with
+ * redactions on N pages previously did N full parse+save cycles; this does one.
+ */
+export async function rasterizePages(
+  pdfjsLib: PdfjsLibLike,
+  canvasFactory: RasterCanvasFactory,
+  pdfBytes: Uint8Array,
+  regions: RedactRegion[],
+  scale: number,
+  documentOptions: Record<string, unknown> = {},
+): Promise<Uint8Array> {
+  const renderData = new Uint8Array(pdfBytes);
+  const loadingTask = pdfjsLib.getDocument({ data: renderData, canvasFactory, ...documentOptions });
+  const doc = await loadingTask.promise;
+  const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+
+  const pageIndexes = [...new Set(regions.map((r) => r.page))].sort((a, b) => a - b);
+  const allRemovedRefs: PDFRef[] = [];
+
+  for (const pageIndex of pageIndexes) {
+    const pageRegions = regions.filter((r) => r.page === pageIndex);
+    const page = await doc.getPage(pageIndex + 1);
+    const viewport = page.getViewport({ scale });
+    const vw = Math.max(1, Math.round(viewport.width));
+    const vh = Math.max(1, Math.round(viewport.height));
+    const { canvas, context } = canvasFactory.create(vw, vh);
+    await page.render({ canvasContext: context, viewport, canvasFactory }).promise;
+    context.fillStyle = '#000000';
+    for (const r of pageRegions) {
+      context.fillRect(r.x * vw, r.y * vh, r.width * vw, r.height * vh);
+    }
+    const png = await canvasToPngBytes(canvas);
+
+    const libPage = pdfDoc.getPage(pageIndex);
+    const { width, height } = libPage.getSize();
+    const image = await pdfDoc.embedPng(png);
+    const xObjectKey = libPage.node.newXObject('Image', image.ref);
+    const operators: PDFOperator[] = [
+      pushGraphicsState(),
+      translate(0, 0),
+      scaleOperator(width, height),
+      drawObject(xObjectKey),
+      popGraphicsState(),
+    ];
+    const oldContents = libPage.node.get(PDFName.of('Contents'));
+    const contentDict = pdfDoc.context.obj({});
+    const contentStream = PDFContentStream.of(contentDict, operators);
+    const contentStreamRef = pdfDoc.context.register(contentStream);
+    libPage.node.set(PDFName.of('Contents'), contentStreamRef);
+    allRemovedRefs.push(...collectContentsRefs(pdfDoc, oldContents));
+    allRemovedRefs.push(...pruneResources(libPage.node.Resources(), '/XObject', xObjectKey.toString()));
+  }
+
+  await doc.cleanup();
+  deleteUnreachableRefs(pdfDoc, allRemovedRefs);
+  return new Uint8Array(await pdfDoc.save({ useObjectStreams: false }));
+}
