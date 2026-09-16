@@ -1,5 +1,7 @@
 import { chromium } from 'playwright';
 
+const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
+
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
 async function run() {
@@ -48,7 +50,7 @@ async function run() {
   }
 
   console.log('\n1. Mobile menu hamburger visible...');
-  await page.goto('http://127.0.0.1:3013/', { waitUntil: 'load', timeout: 15000 }).catch(() => {});
+  await page.goto(`${BASE_URL}/`, { waitUntil: 'load', timeout: 15000 }).catch(() => {});
   await sleep(2000);
 
   const hamburger = page.locator('header button[class*="md:hidden"]').first();

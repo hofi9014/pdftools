@@ -1,5 +1,7 @@
 import { chromium } from 'playwright';
 
+const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
+
 async function run() {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
@@ -24,7 +26,7 @@ async function run() {
   page.on('pageerror', (err) => pageErrors.push(err.message));
 
   // Navigate to merge page
-  await page.goto('http://localhost:3000/merge', { waitUntil: 'networkidle' });
+  await page.goto(`${BASE_URL}/merge`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(500);
 
   // ═══════════════════════════════════════════════════════════════

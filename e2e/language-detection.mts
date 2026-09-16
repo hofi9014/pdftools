@@ -1,5 +1,7 @@
 import { chromium } from 'playwright';
 
+const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
+
 async function run() {
   const errors: string[] = [];
 
@@ -9,7 +11,7 @@ async function run() {
     const context = await browser.newContext({ locale: 'de-DE' });
     const page = await context.newPage();
     page.on('pageerror', err => errors.push(err.message));
-    await page.goto('http://localhost:3000/', { waitUntil: 'load' });
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'load' });
     await page.waitForFunction(() => document.documentElement.lang === 'de', { timeout: 5000 });
     console.log('✓ de-DE → lang=de');
     await browser.close();
@@ -21,7 +23,7 @@ async function run() {
     const context = await browser.newContext({ locale: 'ja-JP' });
     const page = await context.newPage();
     page.on('pageerror', err => errors.push(err.message));
-    await page.goto('http://localhost:3000/', { waitUntil: 'load' });
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'load' });
     await page.waitForFunction(() => document.documentElement.lang === 'ja', { timeout: 5000 });
     console.log('✓ ja-JP → lang=ja');
     await browser.close();
@@ -33,7 +35,7 @@ async function run() {
     const context = await browser.newContext({ locale: 'ru-RU' });
     const page = await context.newPage();
     page.on('pageerror', err => errors.push(err.message));
-    await page.goto('http://localhost:3000/', { waitUntil: 'load' });
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'load' });
     await page.waitForFunction(() => document.documentElement.lang === 'en', { timeout: 5000 });
     console.log('✓ ru-RU (unsupported) → lang=en (fallback)');
     await browser.close();
@@ -46,7 +48,7 @@ async function run() {
     const page = await context.newPage();
     page.on('pageerror', err => errors.push(err.message));
     // Set a manual French preference in localStorage BEFORE navigating
-    await page.goto('http://localhost:3000/', { waitUntil: 'load' });
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'load' });
     await page.waitForTimeout(500);
     await page.evaluate(() => localStorage.setItem('locale', 'fr'));
     await page.reload({ waitUntil: 'load' });
@@ -62,10 +64,10 @@ async function run() {
     const context = await browser.newContext({ locale: 'de-DE' });
     const page = await context.newPage();
     page.on('pageerror', err => errors.push(err.message));
-    await page.goto('http://localhost:3000/', { waitUntil: 'load' });
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'load' });
     await page.waitForFunction(() => document.documentElement.lang === 'de', { timeout: 5000 });
     // Navigate to a different page – language should persist
-    await page.goto('http://localhost:3000/merge', { waitUntil: 'load' });
+    await page.goto(`${BASE_URL}/merge`, { waitUntil: 'load' });
     await page.waitForTimeout(500);
     await page.waitForFunction(() => document.documentElement.lang === 'de', { timeout: 5000 });
     console.log('✓ de persists after navigation to /merge');
