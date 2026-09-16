@@ -39,7 +39,8 @@
     "test:ai-text-length-limit": "npx --yes tsx tests/ai-text-length-limit.mts",
     "test:edit-pdf-error-banner": "npx --yes tsx tests/edit-pdf-error-banner.mts",
     "test:password-toggle-aria": "npx --yes tsx tests/password-toggle-aria.mts",
-    "test:breadcrumbs-guide-translation": "npx --yes tsx tests/breadcrumbs-guide-translation.mts"
+    "test:breadcrumbs-guide-translation": "npx --yes tsx tests/breadcrumbs-guide-translation.mts",
+    "test:schema-howto-ai-translate": "npx --yes tsx tests/schema-howto-ai-translate.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
