@@ -2155,27 +2155,65 @@ export async function segmentSlideElements(
 }
 
 // ============================================================
-// extractFormattedTextFromPDF — Phase 1a (no tables)
+// parsePagesForTableExtraction — shared per-page parse for
+// extractFormattedTextFromPDF and pdfTablesToCells. Both used to
+// independently re-read the file, reload it in pdf.js, and recompute the
+// operator list + text-run scaffold + table-rect clustering per page — the
+// most expensive part of parsing a PDF, duplicated for every pdf-to-excel
+// conversion (mergeBandsForRoundtrip calls both). Hoisted here so a caller
+// that needs both outputs (mergeBandsForRoundtrip) can parse once and feed
+// the same per-page scaffold to both downstream builders; each function's
+// own file-based entry point still parses once per call, unchanged for
+// their many independent callers.
 // ============================================================
 
-export async function extractFormattedTextFromPDF(file: File): Promise<IRPageIR[]> {
+interface PageTableScaffold {
+  page: number;
+  pageWidth: number;
+  pageHeight: number;
+  ops: OpEntry[];
+  textRuns: IRTextRun[];
+  images: PdfPageScaffoldImage[];
+  tableClusters: TableCluster[];
+}
+
+async function parsePagesForTableExtraction(file: File): Promise<PageTableScaffold[]> {
   const buf = await file.arrayBuffer();
   const pdfjsLib = await import('pdfjs-dist');
   await initPdfjs();
   const OPS = pdfjsLib.OPS;
   const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
-  const pages: IRPageIR[] = [];
+  const result: PageTableScaffold[] = [];
 
   for (let p = 1; p <= doc.numPages; p++) {
     const page = await doc.getPage(p);
     const vp = page.getViewport({ scale: 1 });
     const pageWidth = vp.width;
     const pageHeight = vp.height;
-
     const opList = await page.getOperatorList();
-
     const { ops, textRuns, images } = buildPageScaffold(opList, OPS);
+    const tableRects = extractRectsFromOps(ops, pageHeight);
+    const tableClusters = buildTableClusters(tableRects);
+    result.push({ page: p, pageWidth, pageHeight, ops, textRuns, images, tableClusters });
+  }
 
+  await doc.cleanup();
+  return result;
+}
+
+// ============================================================
+// extractFormattedTextFromPDF — Phase 1a (no tables)
+// ============================================================
+
+export async function extractFormattedTextFromPDF(file: File): Promise<IRPageIR[]> {
+  const scaffolds = await parsePagesForTableExtraction(file);
+  return extractFormattedTextFromScaffolds(scaffolds);
+}
+
+function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPageIR[] {
+  const pages: IRPageIR[] = [];
+
+  for (const { pageWidth, pageHeight, textRuns, images, tableClusters } of scaffolds) {
     // --- Compute bodyFontSize ---
     const sizeStats: Record<string, number> = {};
     for (const tr of textRuns) {
@@ -2192,9 +2230,7 @@ export async function extractFormattedTextFromPDF(file: File): Promise<IRPageIR[
     const blocks: IRBlock[] = [];
     const used = new Set<number>();
 
-    // --- Table detection: extractRects → cluster → grid → assign → consumedIndices ---
-    const tableRects = extractRectsFromOps(ops, pageHeight);
-    const tableClusters = buildTableClusters(tableRects);
+    // --- Table detection: cluster (from scaffold) → grid → assign → consumedIndices ---
     for (const cluster of tableClusters) {
       const gridCells = buildGridAndDetectMerged(cluster);
       const assignments = assignTextRunsToCells(textRuns, gridCells, cluster.xEdges, cluster.yEdges, pageHeight);
@@ -2391,7 +2427,6 @@ export async function extractFormattedTextFromPDF(file: File): Promise<IRPageIR[
     pages.push({ width: pageWidth, height: pageHeight, blocks });
   }
 
-  await doc.cleanup();
   return pages;
 }
 
@@ -2421,25 +2456,14 @@ export interface PdfTablesToCellsPage {
 }
 
 export async function pdfTablesToCells(file: File): Promise<PdfTablesToCellsPage[]> {
-  const buf = await file.arrayBuffer();
-  const pdfjsLib = await import('pdfjs-dist');
-  await initPdfjs();
-  const OPS = pdfjsLib.OPS;
-  const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
+  const scaffolds = await parsePagesForTableExtraction(file);
+  return pdfTablesToCellsFromScaffolds(scaffolds);
+}
+
+function pdfTablesToCellsFromScaffolds(scaffolds: PageTableScaffold[]): PdfTablesToCellsPage[] {
   const result: PdfTablesToCellsPage[] = [];
 
-  for (let p = 1; p <= doc.numPages; p++) {
-    const page = await doc.getPage(p);
-    const vp = page.getViewport({ scale: 1 });
-    const pageWidth = vp.width;
-    const pageHeight = vp.height;
-
-    const opList = await page.getOperatorList();
-    const { ops, textRuns } = buildPageScaffold(opList, OPS);
-
-    const tableRects = extractRectsFromOps(ops, pageHeight);
-    const tableClusters = buildTableClusters(tableRects);
-
+  for (const { page, pageWidth, pageHeight, textRuns, tableClusters } of scaffolds) {
     const clusters: PdfTableClusterResult[] = [];
     for (const cluster of tableClusters) {
       const cells = detectMergesByTopology(cluster);
@@ -2455,10 +2479,9 @@ export async function pdfTablesToCells(file: File): Promise<PdfTablesToCellsPage
       });
     }
 
-    result.push({ page: p, pageWidth, pageHeight, clusters });
+    result.push({ page, pageWidth, pageHeight, clusters });
   }
 
-  await doc.cleanup();
   return result;
 }
 
@@ -2950,10 +2973,12 @@ function foldFragmentsRight(frags: FragmentGrid[]): {
 // ============================================================
 
 export async function mergeBandsForRoundtrip(file: File): Promise<MergeResult> {
-  const [tables, layout] = await Promise.all([
-    pdfTablesToCells(file),
-    extractFormattedTextFromPDF(file),
-  ]);
+  // Both branches need the same expensive per-page parse (operator list, text-run scaffold,
+  // table-rect clustering) — shared here as one parse instead of pdfTablesToCells and
+  // extractFormattedTextFromPDF each independently re-reading and re-parsing the file.
+  const scaffolds = await parsePagesForTableExtraction(file);
+  const tables = pdfTablesToCellsFromScaffolds(scaffolds);
+  const layout = extractFormattedTextFromScaffolds(scaffolds);
 
   const layoutByPage = new Map<number, IRPageIR>();
   for (const [i, pg] of layout.entries()) layoutByPage.set(i + 1, pg);
