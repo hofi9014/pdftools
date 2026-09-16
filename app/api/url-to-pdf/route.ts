@@ -4,6 +4,7 @@ import { isIP, BlockList } from 'net';
 import { promises as dns, type LookupAddress, type LookupOptions } from 'dns';
 import * as http from 'http';
 import * as https from 'https';
+import { MAX_UPLOAD_BYTES } from '@/lib/upload-limit';
 
 const BLOCKED_HOSTS = [
   'localhost', '127.0.0.1', '::1', '0.0.0.0',
@@ -91,7 +92,8 @@ export function makeFrozenLookup(addresses: LookupAddress[]) {
 type FetchOutcome =
   | { kind: 'ok'; body: string }
   | { kind: 'redirect' }
-  | { kind: 'bad-status' };
+  | { kind: 'bad-status' }
+  | { kind: 'too-large' };
 
 // Replaces the previous fetch()-based request. Node's global fetch (undici)
 // offers no supported way to pin the connection to a pre-validated address, so
@@ -130,9 +132,31 @@ export function fetchViaValidatedAddresses(parsed: URL, addresses: LookupAddress
         return;
       }
       const chunks: Buffer[] = [];
-      res.on('data', (chunk: Buffer) => chunks.push(chunk));
-      res.on('end', () => resolve({ kind: 'ok', body: Buffer.concat(chunks).toString('utf-8') }));
-      res.on('error', reject);
+      let receivedBytes = 0;
+      let tooLarge = false;
+      res.on('data', (chunk: Buffer) => {
+        if (tooLarge) return;
+        receivedBytes += chunk.length;
+        if (receivedBytes > MAX_UPLOAD_BYTES) {
+          // `timeout` above only guards socket IDLE time, not total response size — a
+          // server streaming data continuously (or just serving a huge file) would
+          // otherwise buffer unbounded bytes into memory. Stop reading and tear down
+          // the request as soon as the cap is exceeded.
+          tooLarge = true;
+          req.destroy();
+          resolve({ kind: 'too-large' });
+          return;
+        }
+        chunks.push(chunk);
+      });
+      res.on('end', () => {
+        if (tooLarge) return;
+        resolve({ kind: 'ok', body: Buffer.concat(chunks).toString('utf-8') });
+      });
+      res.on('error', (err) => {
+        if (tooLarge) return;
+        reject(err);
+      });
     });
 
     req.on('timeout', () => req.destroy(new Error('Request timed out')));
@@ -214,6 +238,13 @@ export async function POST(request: Request) {
     }
 
     if (outcome.kind === 'bad-status') throw new Error('Nie udało się pobrać strony');
+
+    if (outcome.kind === 'too-large') {
+      return Response.json(
+        { error: `Strona jest za duża. Maksymalny rozmiar: ${MAX_UPLOAD_BYTES / 1024 / 1024}MB.` },
+        { status: 413 }
+      );
+    }
 
     const html = outcome.body;
     const text = html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/\s+/g, ' ').trim();
