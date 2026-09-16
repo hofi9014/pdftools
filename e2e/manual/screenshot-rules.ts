@@ -1,10 +1,9 @@
 import { chromium } from 'playwright';
 
 const locales = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'];
-const OLD_PORT = 3013;
+const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 
 async function run() {
-  const port = OLD_PORT;
   const browser = await chromium.launch({ headless: true });
 
   console.log('Locale  Title (h1)                                      §1 header                                      §6 header                                     Voluntary header');
@@ -23,7 +22,7 @@ async function run() {
     await page.route('https://www.googletagmanager.com/**', r => r.abort());
     await page.route('https://accounts.google.com/**', r => r.abort());
 
-    await page.goto(`http://localhost:${port}/nasze-zasady`, { waitUntil: 'networkidle', timeout: 20000 }).catch(() => {});
+    await page.goto(`${BASE_URL}/nasze-zasady`, { waitUntil: 'networkidle', timeout: 20000 }).catch(() => {});
     await new Promise(r => setTimeout(r, 2000));
 
     const title = await page.evaluate(() => {

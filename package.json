@@ -62,7 +62,8 @@
     "test:onedrive-weburl-fallback-removed": "npx --yes tsx tests/onedrive-weburl-fallback-removed.mts",
     "test:pdf-to-images-bloburl-leak": "npx --yes tsx tests/pdf-to-images-bloburl-leak.mts",
     "test:page-range-parser-dedup": "npx --yes tsx tests/page-range-parser-dedup.mts",
-    "test:e2e-base-url-env": "npx --yes tsx tests/e2e-base-url-env.mts"
+    "test:e2e-base-url-env": "npx --yes tsx tests/e2e-base-url-env.mts",
+    "test:e2e-manual-tools-exit-codes": "npx --yes tsx tests/e2e-manual-tools-exit-codes.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
