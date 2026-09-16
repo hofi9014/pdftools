@@ -2,7 +2,17 @@ import { chromium, type Page } from 'playwright';
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 
-function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
+// SW cache population has no DOM/network event to hook a selector to from page context —
+// poll the actual cache state and resolve as soon as it's non-empty, bounded by the same
+// ceiling used before, instead of blindly waiting the full duration regardless.
+async function waitForCondition(check: () => Promise<boolean> | boolean, timeoutMs: number, intervalMs = 100): Promise<boolean> {
+  const start = Date.now();
+  for (;;) {
+    if (await check()) return true;
+    if (Date.now() - start >= timeoutMs) return false;
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+}
 
 async function countCachedStatic(page: Page) {
   return page.evaluate(async () => {
@@ -31,7 +41,6 @@ async function run() {
   // ── 1) Register SW first, then navigate ──
   console.log('Step 1: Register SW...');
   await page.goto(`${BASE_URL}/compress`, { waitUntil: 'networkidle' });
-  await sleep(1000);
 
   await page.evaluate(() => {
     return navigator.serviceWorker.register('/sw.js').then(reg => {
@@ -51,7 +60,7 @@ async function run() {
     console.log(`Step 2.${i}: Navigate to /compress (#${i})...`);
     // Reload with full page reload (not client-side nav) so SW intercepts fresh requests
     await page.goto(`${BASE_URL}/compress`, { waitUntil: 'networkidle' });
-    await sleep(800);
+    await waitForCondition(async () => (await countCachedStatic(page)).length > 0, 800);
 
     const cached = await countCachedStatic(page);
     console.log(`  _next/static cached: ${cached.length} entries`);
@@ -68,7 +77,7 @@ async function run() {
     console.log('WARNING: No _next/static assets cached! Navigation may not have gone through SW.');
     // Try forcing the page through SW by navigating once more after claim
     await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-    await sleep(1000);
+    await waitForCondition(async () => (await countCachedStatic(page)).length > 0, 1000);
     const retry = await countCachedStatic(page);
     console.log(`  Retry cached: ${retry.length}`);
     if (retry.length === 0) {
@@ -85,7 +94,13 @@ async function run() {
   await page.goto(`${BASE_URL}/compress`, { waitUntil: 'networkidle', timeout: 10000 }).catch(() => {
     console.log('  Page load completed (possibly via offline.html fallback)');
   });
-  await sleep(1000);
+  // Whether this lands on the cached app shell or the offline.html fallback isn't known in
+  // advance, so there's no single selector to wait on — and this whole step-4 branch only
+  // runs once static assets are actually cached, which next dev never does (confirmed: this
+  // script currently self-aborts at the "no assets cached" check above in dev mode, so this
+  // path is only exercised against a production build). Kept as a settling wait deliberately;
+  // not verified live in this session for that reason.
+  await page.waitForTimeout(1000);
 
   // Check what page we're on — did we get the app or offline.html?
   const title = await page.title().catch(() => '(no title)');
@@ -100,7 +115,8 @@ async function run() {
     console.log('  Interactive element found on page.');
     // Try clicking it
     await anyButton.click().catch(e => console.log('  Click failed:', e.message?.substring(0, 80)));
-    await sleep(300);
+    // Same unreachable-in-dev branch as above — kept as-is, not verified live.
+    await page.waitForTimeout(300);
     // Did anything change?
     const afterClick = await page.evaluate(() => document.activeElement?.tagName || '(no focus change)').catch(() => '(error)');
     console.log(`  Active element after click: ${afterClick}`);

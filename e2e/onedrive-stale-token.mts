@@ -2,6 +2,20 @@ import { chromium } from 'playwright';
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 
+// Some of what this script waits for is a real app-internal setInterval polling loop with
+// no DOM/network signal to hook a selector to (the whole point is verifying cleanup happens
+// SOMETIME within a wall-clock window). Rather than a blind fixed wait regardless of whether
+// the condition already holds, poll the actual condition and resolve as soon as it's true,
+// still bounded by the same timeout used before as a ceiling.
+async function waitForCondition(check: () => Promise<boolean> | boolean, timeoutMs: number, intervalMs = 100): Promise<boolean> {
+  const start = Date.now();
+  for (;;) {
+    if (await check()) return true;
+    if (Date.now() - start >= timeoutMs) return false;
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+}
+
 async function run() {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
@@ -27,7 +41,8 @@ async function run() {
 
   // Navigate to merge page
   await page.goto(`${BASE_URL}/merge`, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(500);
+  const cloudBtn = page.locator('button:has-text("☁️")');
+  await cloudBtn.waitFor({ timeout: 5000 }).catch(() => {});
 
   // ═══════════════════════════════════════════════════════════════
   // TEST 1: Stale keys cleanup
@@ -45,12 +60,18 @@ async function run() {
   }, staleStates);
 
   // Click OneDrive button to trigger handleOneDrive
-  await page.locator('button:has-text("☁️")').click();
-  await page.waitForTimeout(300);
-  await page.locator('button:has-text("OneDrive")').click();
+  await cloudBtn.click();
+  const oneDriveBtn = page.locator('button:has-text("OneDrive")');
+  await oneDriveBtn.waitFor({ timeout: 3000 }).catch(() => {});
+  await oneDriveBtn.click();
 
-  // Wait for cleanup to run + interval ticks
-  await page.waitForTimeout(2000);
+  // Wait for cleanup to run + interval ticks — poll the real condition (both stale keys
+  // gone) instead of blindly waiting the full 2000ms every time; still bounded by the same
+  // 2000ms ceiling if cleanup is ever slower than expected.
+  const staleKeysGone = () => page.evaluate((states) => {
+    return states.every((s) => localStorage.getItem('onedrive-oauth-' + s) === null);
+  }, staleStates);
+  await waitForCondition(staleKeysGone, 2000);
 
   // Check: stale keys removed from localStorage
   const staleRemaining = await page.evaluate((states) => {
@@ -79,8 +100,10 @@ async function run() {
     localStorage.setItem('onedrive-oauth-' + state, payload);
   }, { state: freshState, payload: freshPayload });
 
-  // Wait 3 interval ticks (900ms) + buffer
-  await page.waitForTimeout(1500);
+  // Wait for the interval to find and remove the key (poll instead of a blind fixed
+  // 3-tick-plus-buffer wait), bounded by the same 1500ms ceiling as before.
+  const freshKeyGone = () => page.evaluate((state) => localStorage.getItem('onedrive-oauth-' + state) === null, freshState);
+  await waitForCondition(freshKeyGone, 1500);
 
   // The interval should have found the key, removed it, and called deliverToken
   const freshKeyRemoved = await page.evaluate((state) => {
@@ -104,7 +127,8 @@ async function run() {
     localStorage.setItem('onedrive-oauth-' + state, payload);
   }, { state: lateKeyState, payload: freshPayload });
 
-  await page.waitForTimeout(1500);
+  const lateKeyGone = () => page.evaluate((state) => localStorage.getItem('onedrive-oauth-' + state) === null, lateKeyState);
+  await waitForCondition(lateKeyGone, 1500);
 
   const lateKeyRemoved = await page.evaluate((state) => {
     return localStorage.getItem('onedrive-oauth-' + state) === null;
