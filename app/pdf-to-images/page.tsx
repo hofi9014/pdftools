@@ -150,7 +150,7 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('page.images.format_label', locale)}</label>
-          <select value={format} onChange={e => setFormat(e.target.value as any)}
+          <select value={format} onChange={e => setFormat(e.target.value as 'png' | 'jpeg' | 'webp')}
             className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 tool-heading">
             <option value="png">{t('page.images.png_label', locale)}</option>
             <option value="jpeg">{t('page.images.jpeg_label', locale)}</option>
