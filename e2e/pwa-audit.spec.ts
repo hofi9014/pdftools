@@ -33,7 +33,6 @@ async function run() {
   }
 
   // Fetch and validate manifest
-  let manifestValid = false;
   try {
     const manifestRes = await page.evaluate(async () => {
       const res = await fetch('/manifest.json');
@@ -41,7 +40,6 @@ async function run() {
       return await res.json();
     });
     if (manifestRes) {
-      manifestValid = true;
       check('Manifest is valid JSON', true, 'manifest.json loaded and parsed');
       check('Manifest has name', !!manifestRes.name, 'name: ' + manifestRes.name);
       check('Manifest has short_name', !!manifestRes.short_name, 'short_name: ' + (manifestRes.short_name || 'missing'));
@@ -52,7 +50,7 @@ async function run() {
 
       if (manifestRes.icons && manifestRes.icons.length > 0) {
         check('Manifest has icons', manifestRes.icons.length > 0, manifestRes.icons.length + ' icon(s) defined');
-        const sizes = manifestRes.icons.map((i: any) => i.sizes);
+        const sizes = manifestRes.icons.map((i: { sizes: string }) => i.sizes);
         check('Manifest has 192x192 icon', sizes.some((s: string) => s === '192x192'), 'sizes: ' + sizes.join(', '));
         check('Manifest has 512x512 icon', sizes.some((s: string) => s === '512x512'), 'sizes: ' + sizes.join(', '));
 

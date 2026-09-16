@@ -1,7 +1,6 @@
 import { chromium, type Page } from 'playwright';
 
-const MOCK_TOKEN = 'mock-sharepoint-token-abc123';
-const MOCK_SITE = { id: 'tenant.sharepoint.com,site1,guid1', name: 'EngineeringSite', displayName: 'Engineering Team', webUrl: 'https://contoso.sharepoint.com/sites/engineering' };
+const MOCK_SITE ={ id: 'tenant.sharepoint.com,site1,guid1', name: 'EngineeringSite', displayName: 'Engineering Team', webUrl: 'https://contoso.sharepoint.com/sites/engineering' };
 const MOCK_SITES = [
   { id: 'tenant.sharepoint.com,site1,guid1', name: 'MarketingSite', displayName: 'Marketing Department', webUrl: 'https://contoso.sharepoint.com/sites/marketing' },
   { id: 'tenant.sharepoint.com,site2,guid2', name: 'SalesSite', displayName: 'Sales & CRM', webUrl: 'https://contoso.sharepoint.com/sites/sales' },
