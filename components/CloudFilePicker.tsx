@@ -294,11 +294,11 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
           redirectUri,
           queryParameters: 'select=id,name,content.downloadUrl',
         },
-        success: async (files: any) => {
-          const fileList: any[] = Array.isArray(files) ? files : (files?.value || []);
+        success: async (response) => {
+          const fileList: OneDrivePickerFileItem[] = Array.isArray(response) ? response : (response?.value || []);
           try {
             const result = await Promise.all(
-              fileList.map(async (f: any) => {
+              fileList.map(async (f) => {
                 const url = f.downloadUrl || f.content?.downloadUrl || f.webUrl || f['@microsoft.graph.downloadUrl'] || '';
                 if (!url) { throw new Error('No download URL for ' + f.name); }
                 return urlToFile(url, f.name);
@@ -319,7 +319,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
           if (oauthIntervalRef.current) { clearInterval(oauthIntervalRef.current); oauthIntervalRef.current = undefined; }
           if (bcRef.current) { bcRef.current.close(); bcRef.current = null; }
         },
-        error: (err: any) => {
+        error: (err) => {
           console.error('OneDrive error:', err);
           setLoading(null);
           cleanupOAuthUrl();

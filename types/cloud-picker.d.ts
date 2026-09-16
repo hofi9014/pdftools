@@ -25,6 +25,14 @@ declare global {
     };
   };
 
+  interface OneDrivePickerFileItem {
+    name: string;
+    downloadUrl?: string;
+    webUrl?: string;
+    content?: { downloadUrl?: string };
+    '@microsoft.graph.downloadUrl'?: string;
+  }
+
   interface Window {
     Dropbox?: {
       choose: (opts: {
@@ -44,7 +52,14 @@ declare global {
           queryParameters?: string;
           redirectUri?: string;
         };
-        success: (files: { name: string; content?: { downloadUrl: string } }[]) => void;
+        // The SDK's real success payload is either a bare array or a Graph-style
+        // { value: [...] } wrapper depending on picker version/config, and the actual
+        // download URL can land in any of several fields depending on the requested
+        // queryParameters and API version — CloudFilePicker.tsx checks all of them.
+        // The single-shape `{ name; content: { downloadUrl } }[]` this used to declare
+        // never matched reality (same pattern as the historical SEC-014 Google Picker
+        // mismatch) and was worked around with `any` at the call site instead of fixed.
+        success: (response: OneDrivePickerFileItem[] | { value: OneDrivePickerFileItem[] }) => void;
         cancel?: () => void;
         error?: (error: Error) => void;
       }) => void;
