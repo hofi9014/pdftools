@@ -18,7 +18,7 @@ export interface DropboxUploadArg {
 // a Polish filename) instead of sending raw UTF-8 in an HTTP header.
 export function encodeDropboxApiArg(value: unknown): string {
   return JSON.stringify(value).replace(
-    /[-￿]/g,
+    /[\x7f-\uffff]/g,
     (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'),
   );
 }
