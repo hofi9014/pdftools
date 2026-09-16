@@ -1,9 +1,9 @@
 'use client';
 import { useState, useRef } from 'react';
-import JSZip from 'jszip';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import { downloadZip } from '@/lib/client-pdf';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 
@@ -66,7 +66,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
   const [language, setLanguage] = useState('pol');
   const [recognizedText, setRecognizedText] = useState('');
   const [ocrDone, setOcrDone] = useState(false);
-  const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
+  const [pdfResults, setPdfResults] = useState<{ name: string; data: Uint8Array }[]>([]);
 
   const handleFiles = (newFiles: FileList | File[] | null) => {
     if (!newFiles || newFiles.length === 0) return;
@@ -78,7 +78,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
     setSuccess(false);
     setOcrDone(false);
     setRecognizedText('');
-    setPdfData(null);
+    setPdfResults([]);
   };
 
   const removeFile = (index: number) => {
@@ -86,7 +86,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
     setSuccess(false);
     setOcrDone(false);
     setRecognizedText('');
-    setPdfData(null);
+    setPdfResults([]);
   };
 
   const handleOCR = async () => {
@@ -97,11 +97,12 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
     setProgress(0);
     setOcrDone(false);
     setRecognizedText('');
-    setPdfData(null);
+    setPdfResults([]);
 
     try {
       const { ocrPdfClient } = await import('@/lib/client-ocr');
       const allText: string[] = [];
+      const pdfEntries: { name: string; data: Uint8Array }[] = [];
       let totalPages = 0;
       let completedPages = 0;
 
@@ -116,10 +117,11 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
         });
         completedPages += totalPages;
         allText.push(result.text);
-        if (i === 0) setPdfData(result.pdfData);
+        pdfEntries.push({ name: file.name.replace('.pdf', '_ocr.pdf'), data: result.pdfData });
         setProgress(completedPages);
       }
 
+      setPdfResults(pdfEntries);
       const combinedText = allText.join('\n\n');
       setRecognizedText(combinedText);
       setOcrDone(true);
@@ -133,11 +135,17 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
   };
 
   const downloadPDF = async () => {
-    if (!pdfData) return;
-    const blob = new Blob([pdfData as BlobPart], { type: 'application/pdf' });
+    if (pdfResults.length === 0) return;
+    if (pdfResults.length === 1) {
+      const blob = new Blob([pdfResults[0].data as BlobPart], { type: 'application/pdf' });
+      processedBlobRef.current = blob;
+      downloadFileNameRef.current = pdfResults[0].name;
+      await downloadBlob(blob, downloadFileNameRef.current);
+      return;
+    }
+    const blob = await downloadZip(pdfResults);
     processedBlobRef.current = blob;
-    downloadFileNameRef.current = files.length === 1 ? files[0].name.replace('.pdf', '_ocr.pdf') : 'ocr-wyniki.pdf';
-    await downloadBlob(blob, downloadFileNameRef.current);
+    downloadFileNameRef.current = 'archive.zip';
   };
 
   const downloadTXT = () => {
@@ -198,7 +206,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
         <div className="tool-card rounded-2xl shadow-sm border mb-6">
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
             <p className="font-medium text-gray-700 dark:text-gray-300">{files.length} {t('files.count', locale)}</p>
-            <button onClick={() => { setFiles([]); setSuccess(false); setOcrDone(false); setRecognizedText(''); setPdfData(null); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
+            <button onClick={() => { setFiles([]); setSuccess(false); setOcrDone(false); setRecognizedText(''); setPdfResults([]); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
           </div>
           {files.map((file, i) => (
             <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
