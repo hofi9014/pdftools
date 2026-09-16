@@ -23,8 +23,11 @@ each runnable individually and CI-ready (exit 0/1):
 npx tsx tests/pdf-images-c1.mts     # example: run a single regression script directly
 ```
 
-`tests/` and `scripts/` are excluded from `tsconfig.json` — they're type-checked/run via `tsx`,
-not by `next build`. `e2e/*.spec.ts` are Playwright specs (playwright is a devDependency).
+`tests/`, `scripts/` and `e2e/` are excluded from `tsconfig.json` — they're type-checked/run via
+`tsx`, not by `next build`. `e2e/*.mts` are hand-written browser-automation scripts using the
+`playwright` package's `chromium.launch()` directly (not `@playwright/test`'s `test()`/`describe()`
+runner) — same run-individually-via-tsx convention as `tests/*.mts`, with matching `npm run
+test:e2e-*` scripts, not `npx playwright test`.
 
 ## Architecture
 

@@ -46,7 +46,15 @@
     "test:gitignore-mjs-scope": "npx --yes tsx tests/gitignore-mjs-scope.mts",
     "test:password-roundtrip": "npx --yes tsx tests/password-roundtrip.mts",
     "test:basic-tools-smoke": "npx --yes tsx tests/basic-tools-smoke.mts",
-    "test:e2e-lint-clean": "npx --yes tsx tests/e2e-lint-clean.mts"
+    "test:e2e-lint-clean": "npx --yes tsx tests/e2e-lint-clean.mts",
+    "test:e2e-language-detection": "npx --yes tsx e2e/language-detection.mts",
+    "test:e2e-mobile-menu": "npx --yes tsx e2e/mobile-menu.mts",
+    "test:e2e-offline-guard": "npx --yes tsx e2e/offline-guard.mts",
+    "test:e2e-onedrive-stale-token": "npx --yes tsx e2e/onedrive-stale-token.mts",
+    "test:e2e-pwa-audit": "npx --yes tsx e2e/pwa-audit.mts",
+    "test:e2e-sharepoint-flow": "npx --yes tsx e2e/sharepoint-flow.mts",
+    "test:e2e-sw-cache": "npx --yes tsx e2e/sw-cache.mts",
+    "test:e2e-sw-offline": "npx --yes tsx e2e/sw-offline.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
