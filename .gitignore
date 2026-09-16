@@ -47,9 +47,14 @@ next-env.d.ts
 # generated tesseract assets
 /public/tesseract/
 
+# local stray copy of the pdf.js worker (not imported by app code — the real one resolves
+# from node_modules/pdfjs-dist; kept out of git same as before the *.mjs rule was scoped
+# to the repo root, see AGENTS.md's lint-noise note about this exact file)
+/lib/pdfjs-dist/
+
 # dev/test junk
 *.log
-*.mjs
+/*.mjs
 eslint_output.json
 /*.png
 audit-i18n.ps1
