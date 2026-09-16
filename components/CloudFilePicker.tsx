@@ -368,13 +368,22 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
     return () => clearTimeout(t);
   }, [errorMsg]);
 
-  // Clear the Google sign-in watchdog when the component unmounts so a stale
-  // 120s timer never sets state on an unmounted component.
+  // Clear the Google sign-in watchdog and the OneDrive OAuth polling
+  // interval/BroadcastChannel when the component unmounts, so a stale timer
+  // or open channel never sets state on an unmounted component.
   useEffect(() => {
     return () => {
       if (googleWatchdogRef.current) {
         clearTimeout(googleWatchdogRef.current);
         googleWatchdogRef.current = undefined;
+      }
+      if (oauthIntervalRef.current) {
+        clearInterval(oauthIntervalRef.current);
+        oauthIntervalRef.current = undefined;
+      }
+      if (bcRef.current) {
+        bcRef.current.close();
+        bcRef.current = null;
       }
     };
   }, []);
