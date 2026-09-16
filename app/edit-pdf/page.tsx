@@ -10,17 +10,19 @@ export default function EditPdfPage({ locale: forcedLocale }: { locale?: Locale 
   const locale = forcedLocale ?? useLocale().locale;
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState('');
 
   const handleFile = useCallback((f: File | null) => {
     if (!f) return;
     if (f.type !== 'application/pdf') {
-      alert(t('error.onlypdf', locale));
+      setError(t('error.onlypdf', locale));
       return;
     }
     if (f.size > 100 * 1024 * 1024) {
-      alert(t('edit.max_size', locale));
+      setError(t('edit.max_size', locale));
       return;
     }
+    setError('');
     setFile(f);
   }, [locale]);
 
@@ -50,6 +52,8 @@ export default function EditPdfPage({ locale: forcedLocale }: { locale?: Locale 
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tool-heading mb-3">{t('tool.edit', locale)}</h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">{t('page.edit.desc', locale)}</p>
       </div>
+
+      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
 
       <div
         onDrop={handleDrop}
