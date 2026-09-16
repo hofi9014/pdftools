@@ -183,18 +183,30 @@ export default function SharePointPickerDialog({
   const [loadingFiles, setLoadingFiles] = useState(false);
   const popupRef = useRef<Window | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const watchdogRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const handlerRef = useRef<((e: MessageEvent) => void) | null>(null);
   const mountedRef = useRef(true);
 
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => { mountedRef.current = false; };
-  }, []);
-
+  // Single canonical teardown for the OAuth popup, its polling interval, its 120s
+  // watchdog, and its message listener — used both when the dialog is explicitly
+  // closed (open -> false, below) and on real component unmount, which previously
+  // skipped this entirely if the parent removed the dialog from the tree without
+  // first flipping `open` to false.
   const closePopup = useCallback(() => {
     if (popupRef.current && !popupRef.current.closed) popupRef.current.close();
     popupRef.current = null;
     if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = undefined; }
+    if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = undefined; }
+    if (handlerRef.current) { window.removeEventListener('message', handlerRef.current); handlerRef.current = null; }
   }, []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      closePopup();
+    };
+  }, [closePopup]);
 
   // Reset state when dialog opens
   useEffect(() => {
@@ -247,26 +259,35 @@ export default function SharePointPickerDialog({
     const handler = (e: MessageEvent) => {
       if (e.origin !== window.location.origin) return;
       if (e.data?.type === 'sharepoint-token' && e.data.accessToken) {
-        window.removeEventListener('message', handler);
-        if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = undefined; }
+        closePopup();
         if (mountedRef.current) {
           setToken(e.data.accessToken);
           setStep('sites');
         }
       }
     };
+    handlerRef.current = handler;
     window.addEventListener('message', handler);
 
     intervalRef.current = setInterval(() => {
       if (popup.closed) {
-        clearInterval(intervalRef.current!);
-        intervalRef.current = undefined;
-        window.removeEventListener('message', handler);
+        closePopup();
         if (mountedRef.current && step === 'auth') {
           setError('Login cancelled or window closed');
         }
       }
     }, 500);
+
+    // Watchdog: match the 120s pattern already used for Google/Dropbox/OneDrive
+    // (SEC-013) — a popup that never closes and never posts a token (stuck on a
+    // blank tab, a hung IdP redirect, etc.) previously left the dialog showing
+    // "Signing in..." forever with no way out.
+    watchdogRef.current = setTimeout(() => {
+      closePopup();
+      if (mountedRef.current) {
+        setError('Login timeout');
+      }
+    }, 120000);
   }, [clientId, mode, closePopup, step]);
 
   // Auto-start OAuth when dialog opens and step is auth
