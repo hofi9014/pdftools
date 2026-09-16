@@ -23,7 +23,8 @@
     "test:page-preview-count-i18n": "npx --yes tsx tests/page-preview-count-i18n.mts",
     "test:dropzone-keyboard-a11y": "npx --yes tsx tests/dropzone-keyboard-a11y.mts",
     "test:ocr-multi-file-pdf": "npx --yes tsx tests/ocr-multi-file-pdf.mts",
-    "test:export-edited-pdf-scale": "npx --yes tsx tests/export-edited-pdf-scale.mts"
+    "test:export-edited-pdf-scale": "npx --yes tsx tests/export-edited-pdf-scale.mts",
+    "test:ocr-worker-cleanup": "npx --yes tsx tests/ocr-worker-cleanup.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
