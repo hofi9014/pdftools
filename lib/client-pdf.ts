@@ -462,21 +462,6 @@ export async function downloadZip(buffers: { data: Uint8Array; name: string }[])
   return blob;
 }
 
-export function parsePageRanges(input: string, totalPages?: number): number[] {
-  const parts = input.split(',').map(s => s.trim()).filter(Boolean);
-  const indices: number[] = [];
-  for (const part of parts) {
-    const m = part.match(/^(\d+)(?:-(\d+))?$/);
-    if (!m) continue;
-    const start = parseInt(m[1], 10) - 1;
-    const end = m[2] ? parseInt(m[2], 10) - 1 : start;
-    for (let i = Math.max(0, start); i <= end && (totalPages === undefined || i < totalPages); i++) {
-      indices.push(i);
-    }
-  }
-  return [...new Set(indices)];
-}
-
 export async function splitByRanges(file: File, rangeString: string): Promise<{ data: Uint8Array; name: string }[]> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
