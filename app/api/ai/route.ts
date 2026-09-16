@@ -4,6 +4,17 @@ import { checkAiRateLimit, refundAiRateLimit } from '@/lib/ai-rate-limit';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const MODEL = 'openai/gpt-4o-mini';
 
+// The client (lib/client-ai.ts) already truncates text before sending — 12000 chars for
+// 'chat', 120000 for 'summary'/'translate' — but that only constrains requests made through
+// the app's own UI. A request sent directly to this endpoint bypasses the client entirely, so
+// these same limits must be enforced here too, or an arbitrarily large `text`/`question`/
+// `language` gets forwarded straight into the OpenRouter request body (unbounded OpenRouter
+// input-token cost the app pays for, regardless of the response-side max_tokens cap).
+const MAX_TEXT_LENGTH_CHAT = 12000;
+const MAX_TEXT_LENGTH_BULK = 120000;
+const MAX_QUESTION_LENGTH = 2000;
+const MAX_LANGUAGE_LENGTH = 100;
+
 function getClientIp(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) return forwarded.split(',')[0].trim();
@@ -42,6 +53,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Nieprawidłowe żądanie (błędny JSON).' }, { status: 400 });
   }
   const { text, task, question, language } = body;
+
+  if (typeof text !== 'string' || text.length === 0) {
+    return NextResponse.json({ error: 'Pole text jest wymagane.' }, { status: 400 });
+  }
+  const maxTextLength = task === 'chat' ? MAX_TEXT_LENGTH_CHAT : MAX_TEXT_LENGTH_BULK;
+  if (text.length > maxTextLength) {
+    return NextResponse.json(
+      { error: `Tekst jest za długi. Maksymalna długość: ${maxTextLength} znaków.` },
+      { status: 400 }
+    );
+  }
+  if (task === 'chat' && typeof question === 'string' && question.length > MAX_QUESTION_LENGTH) {
+    return NextResponse.json(
+      { error: `Pytanie jest za długie. Maksymalna długość: ${MAX_QUESTION_LENGTH} znaków.` },
+      { status: 400 }
+    );
+  }
+  if (task === 'translate' && typeof language === 'string' && language.length > MAX_LANGUAGE_LENGTH) {
+    return NextResponse.json(
+      { error: `Nazwa języka jest za długa. Maksymalna długość: ${MAX_LANGUAGE_LENGTH} znaków.` },
+      { status: 400 }
+    );
+  }
 
   let systemPrompt: string;
   let userPrompt: string;
