@@ -299,7 +299,10 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
           try {
             const result = await Promise.all(
               fileList.map(async (f) => {
-                const url = f.downloadUrl || f.content?.downloadUrl || f.webUrl || f['@microsoft.graph.downloadUrl'] || '';
+                // webUrl deliberately excluded: it's a link to the OneDrive web viewer/login
+                // page, not a raw file — fetching it would silently produce an HTML "file"
+                // masquerading as the user's real document instead of failing loudly.
+                const url = f.downloadUrl || f.content?.downloadUrl || f['@microsoft.graph.downloadUrl'] || '';
                 if (!url) { throw new Error('No download URL for ' + f.name); }
                 return urlToFile(url, f.name);
               })
