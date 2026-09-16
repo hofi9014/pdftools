@@ -2282,15 +2282,28 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
     }
 
     // Sort runs by Y (top to bottom in PDF coords = descending Y), then X
+    const Y_TIE_TOLERANCE = 2;
     const sorted = textRuns
       .map((tr, idx) => ({ tr, idx }))
       .sort((a, b) => {
         const yDiff = b.tr.position.y - a.tr.position.y;
-        if (Math.abs(yDiff) > 2) return yDiff;
+        if (Math.abs(yDiff) > Y_TIE_TOLERANCE) return yDiff;
         return a.tr.position.x - b.tr.position.x;
       });
+    // Every position before an outer iteration's own index in `sorted` is guaranteed already
+    // consumed by then (each position is marked used either when it's matched by an earlier
+    // tr's inner scan, or — if never matched — when the outer loop itself reaches it), so both
+    // inner scans below only need to look forward from that index, never from the start.
+    // `sorted` is Y-descending overall, so `other.position.y` trends downward moving forward —
+    // once yDiff/yGap exceed the largest threshold any later run could possibly satisfy, no
+    // match is possible further on and the scan can stop. The comparator above breaks ties
+    // within Y_TIE_TOLERANCE by X instead, so ordering isn't perfectly monotonic at that scale;
+    // padding every break threshold by 2×Y_TIE_TOLERANCE covers that slack with room to spare
+    // (real line gaps run 10+pt, far past this padding) while keeping the scan bounded.
+    const maxRunHeight = textRuns.reduce((m, r) => Math.max(m, r.height), 0);
+    const breakPadding = 2 * Y_TIE_TOLERANCE;
 
-    for (const { tr, idx } of sorted) {
+    for (const [sortedPos, { tr, idx }] of sorted.entries()) {
       if (used.has(idx)) continue;
 
       // --- Image block ---
@@ -2347,7 +2360,10 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
       const groupRuns: IRTextRun[] = [tr];
       used.add(idx);
 
-      for (const { tr: other, idx: oIdx } of sorted) {
+      const sameLineBreakAt = Math.max(tr.height, maxRunHeight) * 0.5 + breakPadding;
+      for (let j = sortedPos + 1; j < sorted.length; j++) {
+        const { tr: other, idx: oIdx } = sorted[j];
+        if (tr.position.y - other.position.y >= sameLineBreakAt) break;
         if (used.has(oIdx)) continue;
         // Same line: Y within lineHeight tolerance
         const yDiff = Math.abs(other.position.y - tr.position.y);
@@ -2361,13 +2377,16 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
       // If single line, try to merge with consecutive lines below (paragraph grouping)
       if (groupRuns.length <= 1) {
         const lineHeight = tr.height || tr.fontSize;
+        const continuationBreakAt = lineHeight * 1.5 + breakPadding;
         let lastY = tr.position.y;
         let changed = true;
         while (changed) {
           changed = false;
-          for (const { tr: next, idx: nIdx } of sorted) {
-            if (used.has(nIdx)) continue;
+          for (let j = sortedPos + 1; j < sorted.length; j++) {
+            const { tr: next, idx: nIdx } = sorted[j];
             const yGap = lastY - next.position.y;
+            if (yGap >= continuationBreakAt) break;
+            if (used.has(nIdx)) continue;
             if (yGap > 0 && yGap < lineHeight * 1.5 &&
                 Math.abs(next.fontSize - tr.fontSize) < 1 &&
                 Math.abs(next.position.x - tr.position.x) < 10 &&
