@@ -2,7 +2,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
-import { useOnlineStatus } from '@/lib/useOnlineStatus';
 import SharePointPickerDialog from './SharePointPickerDialog';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID || '';
@@ -49,7 +48,6 @@ function cleanupOAuthUrl() {
 export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...props }: CloudFilePickerProps) {
   const locale = useHydrationSafeLocale();
   const label = props.label ?? t('cloud.add', locale);
-  const isOnline = useOnlineStatus();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const [offlineMsg, setOfflineMsg] = useState('');
