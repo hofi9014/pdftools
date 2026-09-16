@@ -1,18 +1,10 @@
 import type { Locale } from '@/lib/i18n';
 import { locales } from '@/lib/i18n';
 import type { GuideArticle, ToolSlug } from '@/types/guide';
+import { TOOL_SLUGS } from '@/types/guide';
 import guides from '@/content/guides';
 
-const toolSlugs = new Set<ToolSlug>([
-  'merge', 'split', 'compress', 'word', 'wordtopdf',
-  'jpg', 'jpgTopdf', 'protect', 'unlock', 'rotate',
-  'pagenumbers', 'watermark', 'ocr', 'extract', 'delete',
-  'reorder', 'crop', 'addpage', 'metadata', 'edit', 'sign',
-  'excel', 'excel2pdf', 'txt', 'svg', 'redact', 'epub',
-  'aichat', 'aisummary', 'translate', 'ppt', 'compare',
-  'html', 'url', 'html2pdf', 'flatten', 'openoffice',
-  'pdf2openoffice', 'fillform', 'images', 'pdfa',
-]);
+const toolSlugs = new Set<ToolSlug>(TOOL_SLUGS);
 
 let errors = 0;
 let warnings = 0;
