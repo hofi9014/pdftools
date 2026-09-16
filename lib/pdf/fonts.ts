@@ -41,19 +41,28 @@ const FONT_VERSIONS: Record<string, { family: string; url: (w: number, i: boolea
   },
   'Noto Sans': {
     family: 'notosans',
+    // Regular and bold used to point at the SAME v42 file. Google's css2 endpoint returns a
+    // single shared variable-font blob when 400+700 are requested together (its un-instanced
+    // default renders as regular for both) — the genuinely distinct per-weight static
+    // instances only come back when each weight is queried in isolation. Verified with
+    // fontkit: NotoSans-Regular vs NotoSans-Bold, "AVWMil" advance width 3552 vs 3809 units.
     url: (w, i) => i
       ? `${GF_BASE}/s/notosans/v42/o-0ZIpQlx3QUlC5A4PNr4C5OaxRsfNNlKbCePevtuXOm.woff2`
       : w === 700
-        ? `${GF_BASE}/s/notosans/v42/o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7duw.woff2`
-        : `${GF_BASE}/s/notosans/v42/o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7duw.woff2`,
+        ? `${GF_BASE}/s/notosans/v42/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyAaBO9a6VI.woff2`
+        : `${GF_BASE}/s/notosans/v42/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9a6VI.woff2`,
   },
   'Open Sans': {
     family: 'opensans',
+    // Same shared-variable-blob issue as Noto Sans (regular and bold were identical), plus
+    // the old v40 URLs had aged out entirely (all three returned 404 — Google is now on v44).
+    // Refetched all three isolated by weight/style. Verified with fontkit: OpenSans-Regular vs
+    // OpenSans-Bold, "AVWMil" advance width 7283 vs 7905 units.
     url: (w, i) => i
-      ? `${GF_BASE}/s/opensans/v40/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk5ZkWV4exQ.woff2`
+      ? `${GF_BASE}/s/opensans/v44/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk8ZkWVAewA.woff2`
       : w === 700
-        ? `${GF_BASE}/s/opensans/v40/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsgH1x4gaVI.woff2`
-        : `${GF_BASE}/s/opensans/v40/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsgH1x4gaVI.woff2`,
+        ? `${GF_BASE}/s/opensans/v44/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsg-1x4gaVI.woff2`
+        : `${GF_BASE}/s/opensans/v44/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4gaVI.woff2`,
   },
   'PT Sans': {
     family: 'ptsans',
