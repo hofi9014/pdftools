@@ -1,6 +1,6 @@
 const MAX_TEXT_LENGTH = 12000;
 
-export async function askAI(text: string, question: string, _apiKey?: string): Promise<string> {
+export async function askAI(text: string, question: string): Promise<string> {
   const truncated = text.length > MAX_TEXT_LENGTH
     ? text.slice(0, MAX_TEXT_LENGTH) + `\n\n[... tekst przyciety, pelna wersja ma ${text.length} znakow]`
     : text;
@@ -19,7 +19,7 @@ export async function askAI(text: string, question: string, _apiKey?: string): P
   return data.content;
 }
 
-export async function summarizeText(text: string, _apiKey?: string): Promise<string> {
+export async function summarizeText(text: string): Promise<string> {
   const res = await fetch('/api/ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -34,7 +34,7 @@ export async function summarizeText(text: string, _apiKey?: string): Promise<str
   return data.content;
 }
 
-export async function translateText(text: string, targetLang: string, _apiKey?: string): Promise<string> {
+export async function translateText(text: string, targetLang: string): Promise<string> {
   const res = await fetch('/api/ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -2,7 +2,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
-import { useOnlineStatus } from '@/lib/useOnlineStatus';
 import { buildDropboxAuthUrl, buildDropboxUploadArgHeader } from '@/lib/dropbox-upload';
 import SharePointPickerDialog from './SharePointPickerDialog';
 
@@ -137,7 +136,6 @@ async function getGoogleToken(): Promise<string> {
 
 export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSaverProps) {
   const locale = useHydrationSafeLocale();
-  const isOnline = useOnlineStatus();
   const [saving, setSaving] = useState<string | null>(null);
   const [showSharePoint, setShowSharePoint] = useState(false);
   const [error, setError] = useState('');
