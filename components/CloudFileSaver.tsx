@@ -46,26 +46,32 @@ async function getMicrosoftToken(clientId: string): Promise<string> {
   if (!popup) throw new Error('Popup blocked');
 
   return new Promise<string>((resolve, reject) => {
+    let settled = false;
+    const cleanup = () => {
+      settled = true;
+      window.removeEventListener('message', handler);
+      clearInterval(timer);
+      clearTimeout(timeout);
+    };
     const handler = (e: MessageEvent) => {
       if (e.origin !== window.location.origin) return;
       if (e.data?.type === 'onedrive-token') {
-        window.removeEventListener('message', handler);
+        cleanup();
         resolve(e.data.accessToken);
       }
     };
     window.addEventListener('message', handler);
 
     const timer = setInterval(() => {
-      if (popup.closed) {
-        clearInterval(timer);
-        window.removeEventListener('message', handler);
+      if (popup.closed && !settled) {
+        cleanup();
         reject(new Error('Login cancelled'));
       }
     }, 500);
 
     const timeout = setTimeout(() => {
-      clearInterval(timer);
-      window.removeEventListener('message', handler);
+      if (settled) return;
+      cleanup();
       popup.close();
       reject(new Error('Login timeout'));
     }, 120000);
