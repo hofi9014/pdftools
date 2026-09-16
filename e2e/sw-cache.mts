@@ -2,7 +2,17 @@ import { chromium } from 'playwright';
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 
-function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
+// The OneDrive-token-cleanup interval this file exercises has no DOM/network signal to hook
+// a selector to (it's an app-internal setInterval polling loop). Poll the actual localStorage
+// condition and resolve as soon as it's true, bounded by the same ceiling used before.
+async function waitForCondition(check: () => Promise<boolean> | boolean, timeoutMs: number, intervalMs = 100): Promise<boolean> {
+  const start = Date.now();
+  for (;;) {
+    if (await check()) return true;
+    if (Date.now() - start >= timeoutMs) return false;
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+}
 
 async function run() {
   const browser = await chromium.launch({ headless: true });
@@ -23,7 +33,6 @@ async function run() {
 
   console.log('Navigating to /merge...');
   await page.goto(`${BASE_URL}/merge`, { waitUntil: 'networkidle' });
-  await sleep(1000);
 
   // Register SW from page context
   await page.evaluate(() => {
@@ -99,9 +108,14 @@ async function run() {
   await odBtn.waitFor({ timeout: 5000 }).catch(() => {});
   if (await odBtn.isVisible()) {
     await odBtn.click();
-    await sleep(300);
-    await page.locator('button:has-text("OneDrive")').click();
-    await sleep(2000);
+    const oneDriveBtn = page.locator('button:has-text("OneDrive")');
+    await oneDriveBtn.waitFor({ timeout: 3000 }).catch(() => {});
+    await oneDriveBtn.click();
+    // No DOM/network signal marks "the token-cleanup interval has started" — it's an
+    // app-internal setInterval with nothing observable until it actually finds a key.
+    // Genuine settling wait, kept deliberately (see waitForCondition's doc comment above
+    // for the parts of this flow that DO have a real condition to poll instead).
+    await page.waitForTimeout(2000);
 
     // Inject a fake oauth key simulating a successful popup
     const state = 'sw-test-state-999';
@@ -109,7 +123,11 @@ async function run() {
       type: 'success', accessToken: 'sw-test-token-999', idToken: '', state,
     });
     await page.evaluate(({ s, p }) => localStorage.setItem('onedrive-oauth-' + s, p), { s: state, p: payload });
-    await sleep(2000);
+
+    // Wait for the interval to find and remove the key (poll instead of a blind fixed
+    // wait), bounded by the same 2000ms ceiling as before.
+    const keyGone = () => page.evaluate((s) => localStorage.getItem('onedrive-oauth-' + s) === null, state);
+    await waitForCondition(keyGone, 2000);
 
     // Verify the key was consumed (removed from localStorage)
     const consumed = await page.evaluate((s) => {

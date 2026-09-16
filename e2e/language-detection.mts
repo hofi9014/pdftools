@@ -100,9 +100,9 @@ async function run() {
     page.on('pageerror', err => errors.push(err.message));
     await page.goto(`${BASE_URL}/`, { waitUntil: 'load' });
     await page.waitForFunction(() => document.documentElement.lang === 'de', { timeout: 5000 });
-    // Navigate to a different page – language should persist
+    // Navigate to a different page – language should persist. No fixed delay needed:
+    // waitForFunction itself already polls until the condition holds or times out.
     await page.goto(`${BASE_URL}/merge`, { waitUntil: 'load' });
-    await page.waitForTimeout(500);
     await page.waitForFunction(() => document.documentElement.lang === 'de', { timeout: 5000 });
     console.log('✓ de persists after navigation to /merge');
     await browser.close();

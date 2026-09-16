@@ -1,6 +1,17 @@
-import { chromium, type Page } from 'playwright';
+import { chromium, type Page, type Locator } from 'playwright';
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
+
+// Locator.isVisible({ timeout }) is a documented no-op — Playwright's own types mark that
+// option deprecated and ignored: "does not wait for the element to become visible and
+// returns immediately." Every isVisible({ timeout: N }) call throughout this file only
+// ever appeared to work because of a waitForTimeout(...) immediately before it, blindly
+// blocking for a guessed duration first. This is the real replacement: an isVisible check
+// that actually polls up to `timeout`, so the preceding blind wait can be removed instead
+// of just deleted (which would have made these checks fire before the UI updates).
+function isVisibleWithin(locator: Locator, timeout: number): Promise<boolean> {
+  return locator.waitFor({ state: 'visible', timeout }).then(() => true).catch(() => false);
+}
 
 const MOCK_SITE ={ id: 'tenant.sharepoint.com,site1,guid1', name: 'EngineeringSite', displayName: 'Engineering Team', webUrl: 'https://contoso.sharepoint.com/sites/engineering' };
 const MOCK_SITES = [
@@ -82,8 +93,14 @@ async function run() {
   page.on('pageerror', (err) => pageErrors.push(err.message));
 
   await setupMocks(page);
-  await page.goto(`${BASE_URL}/merge`, { waitUntil: 'networkidle', timeout: 15000 });
-  await page.waitForTimeout(2000);
+  // Navigate to the explicit /pl/merge route rather than the bare, locale-auto-detected
+  // '/merge' — this script asserts on Polish button text ("Dodaj z chmury"), and relying on
+  // detectLocale()'s Accept-Language/cookie-based redirect target for a fresh context is not
+  // reliable in this dev environment (confirmed: a brand-new context's redirect target for
+  // '/merge' varied between runs in this session, most likely due to Next.js dev-server
+  // response caching for that path being warmed by earlier, unrelated locale testing).
+  // Navigating straight to /pl/merge sidesteps that ambiguity entirely.
+  await page.goto(`${BASE_URL}/pl/merge`, { waitUntil: 'networkidle', timeout: 15000 });
 
   console.log('\n=== SHAREPOINT FLOW TESTS ===\n');
   let allPassed = true;
@@ -93,13 +110,13 @@ async function run() {
   // ─────────────────────────────────────────────────────────
   console.log('[TEST 1] Opening SharePoint picker from dropdown...');
 
+  // .click() already auto-waits for the target to be actionable — no fixed delay needed
+  // between opening the dropdown and clicking the next item in it.
   await page.locator('button:has-text("Dodaj z chmury")').click();
-  await page.waitForTimeout(300);
   await page.locator('button:has-text("SharePoint")').click();
-  await page.waitForTimeout(500);
 
   const dialogTitle = page.locator('h2:has-text("SharePoint")');
-  if (await dialogTitle.isVisible({ timeout: 3000 }).catch(() => false)) {
+  if (await isVisibleWithin(dialogTitle, 3000)) {
     console.log('  ✓ SharePoint dialog opened');
   } else {
     console.log('  ✗ SharePoint dialog did not open');
@@ -108,16 +125,15 @@ async function run() {
     allPassed = false;
   }
 
-  // Wait for OAuth mock to deliver token (300ms) + auto-search to complete
-  await page.waitForTimeout(2000);
-
   // ─────────────────────────────────────────────────────────
   // Test 2: Auto-search shows site tiles after OAuth
   // ─────────────────────────────────────────────────────────
   console.log('[TEST 2] Auto-search shows site tiles after OAuth...');
 
+  // Waits for the OAuth mock to deliver the token and auto-search to complete by polling
+  // for the actual resulting tile, instead of blindly waiting 2000ms regardless.
   const firstTile = page.locator('button:has-text("Marketing Department")');
-  if (await firstTile.isVisible({ timeout: 5000 }).catch(() => false)) {
+  if (await isVisibleWithin(firstTile, 5000)) {
     console.log('  ✓ Site tiles visible after auto-search');
   } else {
     console.log('  ✗ Site tiles not visible');
@@ -132,15 +148,14 @@ async function run() {
   console.log('[TEST 3] Click a site tile to see libraries...');
 
   const engTile = page.locator('button:has-text("Engineering Team")');
-  if (await engTile.isVisible({ timeout: 3000 }).catch(() => false)) {
+  if (await isVisibleWithin(engTile, 3000)) {
     await engTile.click();
-    await page.waitForTimeout(1000);
   } else {
     // Fall back to first visible site tile
     await firstTile.click();
-    await page.waitForTimeout(1000);
   }
 
+  // page.waitForSelector already polls for real — no fixed delay needed beforehand.
   try {
     await page.waitForSelector('text=Documents', { timeout: 5000 });
     console.log('  ✓ Library list loaded after tile click');
@@ -157,9 +172,8 @@ async function run() {
   console.log('[TEST 4] Selecting a library shows file browser...');
 
   const firstLib = page.locator('button:has-text("Shared Assets")');
-  if (await firstLib.isVisible({ timeout: 3000 }).catch(() => false)) {
+  if (await isVisibleWithin(firstLib, 3000)) {
     await firstLib.click();
-    await page.waitForTimeout(800);
 
     try {
       await page.waitForSelector('text=report.pdf', { timeout: 4000 });
@@ -184,8 +198,8 @@ async function run() {
   if (await fileRow.count() > 0) {
     const fileCheckbox = fileRow.locator('input[type="checkbox"]');
     if (await fileCheckbox.isVisible().catch(() => false)) {
+      // .check() already auto-waits for the checkbox to be actionable before checking it.
       await fileCheckbox.check();
-      await page.waitForTimeout(200);
       console.log('  ✓ File checkbox selected');
     } else {
       console.log('  ✗ File checkbox not found in row');
@@ -206,7 +220,6 @@ async function run() {
     }
 
     await downloadBtn.click();
-    await page.waitForTimeout(1000);
     try {
       await page.waitForSelector('text=successfully', { timeout: 5000 });
       console.log('  ✓ Files downloaded successfully');
@@ -225,9 +238,10 @@ async function run() {
   console.log('[TEST 6] Closing dialog...');
 
   const closeBtn = page.locator('button:has-text("Close")');
-  if (await closeBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+  if (await isVisibleWithin(closeBtn, 2000)) {
     await closeBtn.click();
-    await page.waitForTimeout(300);
+    // Wait for the dialog to actually finish closing instead of guessing a fixed delay.
+    await dialogTitle.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
     if (!(await dialogTitle.isVisible().catch(() => false))) {
       console.log('  ✓ Dialog closed successfully');
     } else {
@@ -245,12 +259,10 @@ async function run() {
   console.log('[TEST 7] Recent sites chip visible after dialog reopen...');
 
   await page.locator('button:has-text("Dodaj z chmury")').click();
-  await page.waitForTimeout(300);
   await page.locator('button:has-text("SharePoint")').click();
-  await page.waitForTimeout(1500);
 
   const recentChip = page.locator('button:has-text("Engineering Team")');
-  if (await recentChip.isVisible({ timeout: 3000 }).catch(() => false)) {
+  if (await isVisibleWithin(recentChip, 3000)) {
     console.log('  ✓ Recent site chip "Engineering Team" visible');
   } else {
     console.log('  ✗ Recent site chip not visible');
@@ -261,7 +273,6 @@ async function run() {
 
   // Click recent site chip and verify it connects to libraries
   await recentChip.click();
-  await page.waitForTimeout(1000);
   try {
     await page.waitForSelector('text=Documents', { timeout: 5000 });
     console.log('  ✓ Recent site chip navigated to libraries');
@@ -274,9 +285,8 @@ async function run() {
 
   // Go back to sites
   const backBtn = page.locator('button:has-text("Back")');
-  if (await backBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+  if (await isVisibleWithin(backBtn, 2000)) {
     await backBtn.click();
-    await page.waitForTimeout(300);
   }
 
   // ─────────────────────────────────────────────────────────
@@ -286,24 +296,22 @@ async function run() {
 
   // Expand manual options to reveal URL input
   const manualToggle = page.locator('button:has-text("Nie widzisz swojej witryny")');
-  if (await manualToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
+  if (await isVisibleWithin(manualToggle, 2000)) {
     await manualToggle.click();
-    await page.waitForTimeout(300);
   } else {
     console.log('  [DEBUG] manualToggle not visible');
   }
 
-  await page.waitForTimeout(500);
-
+  // .fill()/.click() already auto-wait for their target to appear and become actionable —
+  // including waiting for the URL input to appear after the toggle reveals it, and for the
+  // Connect button to become actionable — so no fixed delays are needed between these steps.
   const urlInput = page.locator('input[placeholder*="https://tenant.sharepoint.com"]');
   await urlInput.fill('not-a-url');
-  await page.waitForTimeout(200);
 
   await page.locator('button:has-text("Connect")').first().click();
-  await page.waitForTimeout(1500);
 
   const errorDiv = page.locator('div:has-text("Invalid SharePoint URL")');
-  if (await errorDiv.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+  if (await isVisibleWithin(errorDiv.first(), 2000)) {
     console.log('  ✓ Invalid URL correctly rejected');
   } else {
     console.log('  ✗ Error not shown for invalid URL');
@@ -317,10 +325,9 @@ async function run() {
 
   await urlInput.fill('https://example.com/some-page');
   await page.locator('button:has-text("Connect")').click();
-  await page.waitForTimeout(500);
 
   const errorDiv2 = page.locator('div:has-text("Invalid SharePoint URL")');
-  if (await errorDiv2.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+  if (await isVisibleWithin(errorDiv2.first(), 2000)) {
     console.log('  ✓ Non-SharePoint URL correctly rejected');
   } else {
     console.log('  ✗ Non-SharePoint URL not rejected');
@@ -333,10 +340,9 @@ async function run() {
   console.log('[TEST 10] Explicit search still works as fallback...');
 
   const searchInput = page.locator('input[placeholder*="Search"]');
-  if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+  if (await isVisibleWithin(searchInput, 2000)) {
     await page.locator('button:has-text("Search")').click();
-    await page.waitForTimeout(800);
-    if (await page.locator('text=Marketing Department').isVisible({ timeout: 4000 }).catch(() => false)) {
+    if (await isVisibleWithin(page.locator('text=Marketing Department'), 4000)) {
       console.log('  ✓ Search results visible (fallback works)');
     } else {
       console.log('  ✗ Search results not visible');
