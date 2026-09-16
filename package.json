@@ -63,7 +63,8 @@
     "test:pdf-to-images-bloburl-leak": "npx --yes tsx tests/pdf-to-images-bloburl-leak.mts",
     "test:page-range-parser-dedup": "npx --yes tsx tests/page-range-parser-dedup.mts",
     "test:e2e-base-url-env": "npx --yes tsx tests/e2e-base-url-env.mts",
-    "test:e2e-manual-tools-exit-codes": "npx --yes tsx tests/e2e-manual-tools-exit-codes.mts"
+    "test:e2e-manual-tools-exit-codes": "npx --yes tsx tests/e2e-manual-tools-exit-codes.mts",
+    "test:excel-to-pdf-direction": "npx --yes tsx tests/excel-to-pdf-direction.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
