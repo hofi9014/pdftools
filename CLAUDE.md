@@ -23,6 +23,11 @@ each runnable individually and CI-ready (exit 0/1):
 npx tsx tests/pdf-images-c1.mts     # example: run a single regression script directly
 ```
 
+Most of these also have a matching `npm run test:<name>` entry (e.g. `npm run
+test:url-to-pdf-ssrf`, `npm run test:dropbox-upload`) — `package.json`'s `scripts` section is the
+up-to-date source of truth for the full list; it isn't duplicated here since it changes every
+time a fix in this repo adds a new regression test.
+
 `tests/`, `scripts/` and `e2e/` are excluded from `tsconfig.json` — they're type-checked/run via
 `tsx`, not by `next build`. `e2e/*.mts` are hand-written browser-automation scripts using the
 `playwright` package's `chromium.launch()` directly (not `@playwright/test`'s `test()`/`describe()`

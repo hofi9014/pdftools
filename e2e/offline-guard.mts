@@ -1,5 +1,7 @@
 import { chromium } from 'playwright';
 
+const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
+
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
 async function run() {
@@ -23,7 +25,7 @@ async function run() {
   page.on('console', msg => consoleMsgs.push(`${msg.type()}: ${msg.text()}`));
 
   console.log('1. Navigating to /merge...');
-  await page.goto('http://localhost:3000/merge', { waitUntil: 'networkidle' });
+  await page.goto(`${BASE_URL}/merge`, { waitUntil: 'networkidle' });
   await sleep(1000);
 
   // Set offline
@@ -96,7 +98,7 @@ async function run() {
   console.log('\n5. Testing CloudFileSaver offline guard...');
   // The saver only appears after processing, but we can test on /merge
   // by checking if the saver buttons exist and click them offline
-  await page.goto('http://localhost:3000/compress', { waitUntil: 'networkidle' });
+  await page.goto(`${BASE_URL}/compress`, { waitUntil: 'networkidle' });
   await sleep(1000);
 
   // Check if saver buttons are visible (they appear after processing, so might not be)

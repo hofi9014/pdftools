@@ -1,5 +1,7 @@
 import { chromium } from 'playwright';
 
+const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
+
 async function run() {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
@@ -17,7 +19,7 @@ async function run() {
     results.push({ check: name, status: 'WARN', detail });
   }
 
-  await page.goto('http://localhost:3000/', { waitUntil: 'networkidle' });
+  await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
   await new Promise(r => setTimeout(r, 2000));
 
   // ── 1. Manifest ──

@@ -1,5 +1,7 @@
 import { chromium } from 'playwright';
 
+const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
+
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
 async function run() {
@@ -20,7 +22,7 @@ async function run() {
   page.on('pageerror', err => pageErrors.push(err.message));
 
   console.log('Navigating to /merge...');
-  await page.goto('http://localhost:3000/merge', { waitUntil: 'networkidle' });
+  await page.goto(`${BASE_URL}/merge`, { waitUntil: 'networkidle' });
   await sleep(1000);
 
   // Register SW from page context
