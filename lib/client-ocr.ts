@@ -124,48 +124,53 @@ export async function ocrPdfClient(
   const font = await embedLiberationSans(newPdf);
   const dropStats = { count: 0, samples: new Set<string>() };
 
-  for (let i = 0; i < totalPages; i++) {
-    onProgress?.(i + 1, totalPages);
-    try {
-      const page = await doc.getPage(i + 1);
-      const viewport = page.getViewport({ scale: 2.0 });
+  try {
+    for (let i = 0; i < totalPages; i++) {
+      onProgress?.(i + 1, totalPages);
+      try {
+        const page = await doc.getPage(i + 1);
+        const viewport = page.getViewport({ scale: 2.0 });
 
-      const canvas = document.createElement('canvas');
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
-      await page.render({ canvas, canvasContext: ctx, viewport }).promise;
-      preprocessCanvas(canvas);
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+        await page.render({ canvas, canvasContext: ctx, viewport }).promise;
+        preprocessCanvas(canvas);
 
-      const { data } = await tessWorker.recognize(canvas.toDataURL('image/png'));
-      const words = extractWords(data);
-      const { dropped, samples } = await createOcrPage(newPdf, origPdf, i, words, font);
-      if (dropped > 0) {
-        dropStats.count += dropped;
-        samples.forEach(s => dropStats.samples.add(s));
-        console.warn(`[OCR] Page ${i + 1}/${totalPages} — skipped ${dropped} words from unsupported scripts (e.g. ${samples.slice(0, 3).join(', ')}...)`);
+        const { data } = await tessWorker.recognize(canvas.toDataURL('image/png'));
+        const words = extractWords(data);
+        const { dropped, samples } = await createOcrPage(newPdf, origPdf, i, words, font);
+        if (dropped > 0) {
+          dropStats.count += dropped;
+          samples.forEach(s => dropStats.samples.add(s));
+          console.warn(`[OCR] Page ${i + 1}/${totalPages} — skipped ${dropped} words from unsupported scripts (e.g. ${samples.slice(0, 3).join(', ')}...)`);
+        }
+
+        const pageText = extractFullText(data);
+        if (pageText) {
+          fullText += (fullText ? '\n\n' : '') + pageText;
+        }
+
+        console.log(`[OCR] Page ${i + 1}/${totalPages} — ${words.length} words`);
+      } catch (e) {
+        const err = e as Error;
+        console.error('========== OCR ERROR ==========');
+        console.error('Page:', i + 1, '/', totalPages);
+        console.error('Name:', err.name);
+        console.error('Message:', err.message);
+        console.error('Stack:', err.stack);
+        console.error('===============================');
+        throw new Error(`Błąd OCR na stronie ${i + 1}: ${err.message}`);
       }
-
-      const pageText = extractFullText(data);
-      if (pageText) {
-        fullText += (fullText ? '\n\n' : '') + pageText;
-      }
-
-      console.log(`[OCR] Page ${i + 1}/${totalPages} — ${words.length} words`);
-    } catch (e) {
-      const err = e as Error;
-      console.error('========== OCR ERROR ==========');
-      console.error('Page:', i + 1, '/', totalPages);
-      console.error('Name:', err.name);
-      console.error('Message:', err.message);
-      console.error('Stack:', err.stack);
-      console.error('===============================');
-      throw new Error(`Błąd OCR na stronie ${i + 1}: ${err.message}`);
     }
+  } finally {
+    // A page-level error above throws out of the loop — without this finally, the pdf.js
+    // document and (worse) the Tesseract worker (a Web Worker holding WASM memory) would
+    // leak, since the code that used to clean them up right after the loop never ran.
+    await doc.cleanup();
+    await tessWorker.terminate();
   }
-
-  await doc.cleanup();
-  await tessWorker.terminate();
 
   if (dropStats.count > 0) {
     console.warn(`[OCR] Total: ${dropStats.count} words from unsupported scripts could not be added to the searchable text layer: ${[...dropStats.samples].slice(0, 5).join(', ')}...`);
