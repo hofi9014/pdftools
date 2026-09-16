@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { extractImagesFromPdf } from '@/lib/client-pdf';
 import JSZip from 'jszip';
 import { useLocale } from '@/lib/locale-context';
@@ -22,6 +22,20 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
   const downloadFileNameRef = useRef('');
+  const imagesRef = useRef<{ url: string }[]>([]);
+  useEffect(() => { imagesRef.current = images; }, [images]);
+  // Revoke every Blob URL still alive when this page is left, not just when images is cleared
+  // while mounted — otherwise navigating away mid-preview leaks whatever was last extracted.
+  useEffect(() => () => { imagesRef.current.forEach(img => URL.revokeObjectURL(img.url)); }, []);
+
+  // Revokes from the `images` closed over by this render, not inside the setState updater —
+  // revokeObjectURL is a side effect, and updater functions must stay pure (React may invoke
+  // them more than once, e.g. under StrictMode, which would double-revoke harmlessly but
+  // incorrectly).
+  const clearImages = () => {
+    images.forEach(img => URL.revokeObjectURL(img.url));
+    setImages([]);
+  };
 
   const handleFiles = (newFiles: FileList | File[] | null) => {
     if (!newFiles || newFiles.length === 0) return;
@@ -30,13 +44,13 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
     if (pdfs.length !== arr.length) setError(t('page.jpg.skipped_nonpdf', locale));
     else setError('');
     setFiles(prev => [...prev, ...pdfs]);
-    setImages([]);
+    clearImages();
     setSuccess(false);
   };
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
-    setImages([]);
+    clearImages();
     setSuccess(false);
   };
 
@@ -44,7 +58,7 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
     if (files.length === 0) { setError(t('page.jpg.no_files', locale)); return; }
     setLoading(true);
     setError('');
-    setImages([]);
+    clearImages();
     setSuccess(false);
     setProgress(0);
 
@@ -120,7 +134,7 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
         <div className="tool-card rounded-2xl shadow-sm border mb-6">
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
             <p className="font-medium text-gray-700 dark:text-gray-300">{`${files.length} ${t('files.count', locale)}`}</p>
-            <button onClick={() => { setFiles([]); setImages([]); setSuccess(false); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
+            <button onClick={() => { setFiles([]); clearImages(); setSuccess(false); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
           </div>
           {files.map((file, i) => (
             <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
