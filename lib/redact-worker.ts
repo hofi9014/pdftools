@@ -1,5 +1,5 @@
 import 'pdfjs-dist/build/pdf.worker.min.mjs';
-import { rasterizePage, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvas, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
+import { rasterizePages, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvas, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 
 export type RedactWorkerRequest = {
   id: number;
@@ -53,20 +53,14 @@ function workerDocumentOptions(): Record<string, unknown> {
 async function runRedact(buf: ArrayBuffer, regions: RedactRegion[]): Promise<ArrayBuffer> {
   const pdfjsLib = await import('pdfjs-dist');
   const canvasFactory = new WorkerCanvasFactory();
-  let bytes: Uint8Array = new Uint8Array(buf);
-  const pageIndexes = [...new Set(regions.map(r => r.page))].sort((a, b) => a - b);
-  for (const pageIndex of pageIndexes) {
-    const pageRegions = regions.filter(r => r.page === pageIndex);
-    bytes = await rasterizePage(
-      pdfjsLib as unknown as PdfjsLibLike,
-      canvasFactory,
-      bytes,
-      pageIndex,
-      REDACT_RENDER_SCALE,
-      pageRegions,
-      workerDocumentOptions(),
-    );
-  }
+  const bytes = await rasterizePages(
+    pdfjsLib as unknown as PdfjsLibLike,
+    canvasFactory,
+    new Uint8Array(buf),
+    regions,
+    REDACT_RENDER_SCALE,
+    workerDocumentOptions(),
+  );
   return bytes.buffer as ArrayBuffer;
 }
 
