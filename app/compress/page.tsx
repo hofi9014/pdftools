@@ -131,7 +131,13 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
             <button onClick={() => { setFiles([]); setResults([]); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
           </div>
           {files.map((file, i) => {
-            const fileResult = results.find(r => r.name.startsWith(file.name.replace('.pdf', '')));
+            // Matched by INDEX, not by name prefix: `results` is always either empty or a
+            // direct 1:1, same-order map of `files` (both handleFiles/removeFile reset it to
+            // [] whenever files changes, and handleCompressAll rebuilds it by iterating
+            // `files` in order) — matching by name prefix instead let two files sharing a
+            // prefix (e.g. "report.pdf" and "report2.pdf") swap results, since
+            // "report2_skompresowany.pdf".startsWith("report") is also true.
+            const fileResult = results.length === files.length ? results[i] : undefined;
             const savingsRatio = fileResult ? 1 - fileResult.compressedSize / fileResult.originalSize : 0;
             return (
               <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
