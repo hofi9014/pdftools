@@ -63,7 +63,7 @@ console.log('\n=== tools.length used instead of a hardcoded count ===');
   check(pageSrc.includes('{tools.length}'), 'app/page.tsx renders {tools.length} instead');
   check(!layoutSrc.includes('40 PDF tools'), 'app/layout.tsx no longer hardcodes "40 PDF tools" in any metadata description');
   check((layoutSrc.match(/\$\{tools\.length\} PDF tools/g) || []).length === 3, 'all 3 metadata description strings now interpolate ${tools.length}');
-  check(tools.length === 41, `tools.length is actually 41 (matches what the audit's own i18n text already said) — got ${tools.length}`);
+  check(tools.length === 40, `tools.length is 40 after removing the duplicate 'jpg' (PDF do JPG) entry — got ${tools.length}`);
 }
 
 console.log('\n=== dead redirectTo field removed from lib/tools.ts ===');
