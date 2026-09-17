@@ -9,6 +9,18 @@
 // the same class of bug — obj() has no Uint8Array overload; the correct primitive is
 // context.stream().
 //
+// Follow-up finding (WCAG 2.2 / PDF-UA audit) — the fix above made convertToPdfA
+// unconditionally set MarkInfo/Marked=true on every conversion. MarkInfo/Marked is a formal
+// declaration that the document is a Tagged PDF (has a real /StructTreeRoot describing
+// reading order, headings, alt-text — the thing screen readers and PDF/UA validators rely
+// on). convertToPdfA builds no structure tree of its own, so claiming Marked:true
+// unconditionally was a false claim on every untagged input (the overwhelming majority of
+// real-world PDFs) — worse than not claiming it, since it tells assistive tech to expect
+// structure that isn't there. Fixed: MarkInfo is only set (Marked:true) when the source PDF
+// already had a real /StructTreeRoot of its own (which pdf-lib's load/save preserves
+// untouched, since nothing in this function reads or writes it) — otherwise MarkInfo is
+// deleted/omitted, matching the PDF spec's convention that its absence means "not tagged".
+//
 // This test builds a synthetic PDF that already has real /JS and /AA catalog entries (the
 // exact kind of PDF/A-invalidating content this function exists to strip), runs it through
 // convertToPdfA(), then reloads the OUTPUT with a fresh pdf-lib load and inspects
@@ -58,12 +70,10 @@ const catalog = outDoc.catalog;
 check(catalog.get(PDFName.of('JS')) === undefined, '/JS actually removed from the saved catalog');
 check(catalog.get(PDFName.of('AA')) === undefined, '/AA actually removed from the saved catalog');
 
+// This synthetic input has no /StructTreeRoot (just a page with drawText) — it is not a
+// Tagged PDF, so convertToPdfA must NOT claim MarkInfo/Marked=true on the output.
 const markInfo = catalog.lookupMaybe(PDFName.of('MarkInfo'), PDFDict);
-check(!!markInfo, '/MarkInfo actually present on the saved catalog');
-if (markInfo) {
-  const marked = markInfo.get(PDFName.of('Marked'));
-  check(marked?.toString() === 'true', `/MarkInfo/Marked is true (got: ${marked?.toString()})`);
-}
+check(!markInfo, `/MarkInfo absent on an untagged input — no false "tagged" claim (got: ${markInfo ? 'present' : 'absent'})`);
 
 const metadataStream = catalog.lookupMaybe(PDFName.of('Metadata'), PDFRawStream);
 check(!!metadataStream, '/Metadata actually present and resolves to a real stream object (not a dangling/absent ref)');
@@ -90,6 +100,38 @@ if (outputIntents && outputIntents.size() === 1) {
 // convertToPdfA even runs — that's expected pdf-lib behavior, not something this fix touches.
 check(outDoc.getAuthor() === 'OptimaPDF', `getAuthor() still set correctly (got: ${outDoc.getAuthor()})`);
 check(outDoc.getCreator() === 'OptimaPDF PDF/A Converter', `getCreator() still set correctly (got: ${outDoc.getCreator()})`);
+
+console.log('\n=== E2: convertToPdfA preserves a genuine MarkInfo/Marked=true claim on an already-tagged input ===');
+
+const taggedSrcDoc = await PDFDocument.create();
+taggedSrcDoc.addPage([200, 200]).drawText('hello', { x: 20, y: 100 });
+// Minimal but real /StructTreeRoot — a single StructElem child, per the PDF spec's structure-
+// tree shape (Type /StructTreeRoot, K = kids). Not a full PDF/UA-conformant tree (no
+// ParentTree, no role map) — this test only proves convertToPdfA correctly detects and
+// preserves *some* genuine existing structure, not that it builds or validates one itself.
+const structElem = taggedSrcDoc.context.obj({ Type: 'StructElem', S: 'P' });
+const structElemRef = taggedSrcDoc.context.register(structElem);
+const structTreeRoot = taggedSrcDoc.context.obj({ Type: 'StructTreeRoot', K: [structElemRef] });
+const structTreeRootRef = taggedSrcDoc.context.register(structTreeRoot);
+taggedSrcDoc.catalog.set(PDFName.of('StructTreeRoot'), structTreeRootRef);
+
+const taggedSrcBytes = await taggedSrcDoc.save();
+const taggedOutBytes = await convertToPdfA(toFile(taggedSrcBytes, 'tagged.pdf'));
+const taggedOutDoc = await PDFDocument.load(taggedOutBytes, { ignoreEncryption: true });
+const taggedCatalog = taggedOutDoc.catalog;
+
+const taggedMarkInfo = taggedCatalog.lookupMaybe(PDFName.of('MarkInfo'), PDFDict);
+check(!!taggedMarkInfo, '/MarkInfo present on an already-tagged input');
+if (taggedMarkInfo) {
+  const marked = taggedMarkInfo.get(PDFName.of('Marked'));
+  check(marked?.toString() === 'true', `/MarkInfo/Marked is true for a genuinely tagged input (got: ${marked?.toString()})`);
+}
+const outStructTreeRoot = taggedCatalog.lookupMaybe(PDFName.of('StructTreeRoot'), PDFDict);
+check(!!outStructTreeRoot, '/StructTreeRoot itself survives the round-trip untouched');
+if (outStructTreeRoot) {
+  const kids = outStructTreeRoot.lookupMaybe(PDFName.of('K'), PDFArray);
+  check(!!kids && kids.size() === 1, `/StructTreeRoot/K still has its 1 StructElem child (got: ${kids?.size() ?? 'missing'})`);
+}
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);
