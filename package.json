@@ -50,6 +50,7 @@
     "test:e2e-language-detection": "npx --yes tsx e2e/language-detection.mts",
     "test:e2e-mobile-menu": "npx --yes tsx e2e/mobile-menu.mts",
     "test:e2e-offline-guard": "npx --yes tsx e2e/offline-guard.mts",
+    "test:e2e-rtl-layout": "npx --yes tsx e2e/rtl-layout.mts",
     "test:e2e-onedrive-stale-token": "npx --yes tsx e2e/onedrive-stale-token.mts",
     "test:e2e-pwa-audit": "npx --yes tsx e2e/pwa-audit.mts",
     "test:e2e-sharepoint-flow": "npx --yes tsx e2e/sharepoint-flow.mts",
