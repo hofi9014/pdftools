@@ -12,6 +12,12 @@ export function localeToHtmlLang(locale: Locale): string {
   return htmlLangMap[locale] ?? locale;
 }
 
+const rtlLocales: readonly Locale[] = ['ar', 'fa'];
+
+export function isRtlLocale(locale: Locale): boolean {
+  return rtlLocales.includes(locale);
+}
+
 const pl: Record<string, string> = {
   'back.to_home': '← Powrót do strony głównej',
   'breadcrumb.home': 'Strona główna',
