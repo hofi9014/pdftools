@@ -23,6 +23,7 @@ export interface IRTextRun {
   italic: boolean;
   rotation: number;
   link?: string;
+  underline?: boolean;
 }
 
 export interface IRParagraphBlock {
@@ -833,6 +834,7 @@ function irRunsToTextRuns(TRC: any, runs: IRTextRun[], ExtLink?: any): any[] {
       text: run.text,
       bold: run.bold || undefined,
       italics: run.italic || undefined,
+      underline: run.underline ? {} : undefined,
       color: run.color.replace('#', ''),
       size: Math.round(run.fontSize * 2),
       font: run.fontName || undefined,
@@ -3204,7 +3206,7 @@ function odtRenderScanStyles(): {
       bold: !!r.bold,
       italic: !!r.italic,
       color: r.link ? '#0563C1' : odtRenderColorHex(r.color),
-      underline: !!r.link,
+      underline: !!r.link || !!r.underline,
     };
     const key = odtRenderStyleKey(props);
     let name = map.get(key);
