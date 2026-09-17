@@ -52,6 +52,23 @@
 // each one individually: correct anchor text, correct destination URL, nothing spurious. The
 // other 4 fixtures have no Link annotations reaching this code and are unaffected (unchanged
 // hashes). See applyLinkAnnotations in lib/client-pdf.ts.
+//
+// Hashes updated a fourth time 2026-09-17 (same day, unrelated feature addition, gpw-ebook.pdf
+// only) — added underline detection: a genuine PDF underline has no dedicated construct, it is
+// just an ordinary thin rect drawn under the text by the producing software, indistinguishable
+// at the operator level from a table border or a decorative rule. Matched by requiring the
+// rect's width to closely track the specific run's own width (ratio ~0.9-1.1), not just
+// overlap it — a table/row border spans a whole column/row width regardless of the text near
+// it (ratio 3-6x wider), so this discriminator cleanly separates the two; verified this drops
+// a naive "any thin rect below the text" match from 909 false positives on
+// epz_pptx_table_fixture.pdf's dense schedule table to exactly 0, while keeping all 68 genuine
+// underlines on gpw-ebook.pdf. Confirmed visually by rendering pages 2-6: every matched run
+// (the whole hyperlinked/underlined table of contents, the "kliknij tutaj" link, publisher
+// contact info) is in fact underlined in the source. Field-by-field diff against the pre-fix
+// output confirms exactly 68 new `underline: true` fields and zero other changes (text,
+// position, size, color, bold, italic, rotation, link all byte-identical). The other 4
+// fixtures have no qualifying rects and are unaffected (unchanged hashes). See
+// applyUnderlineFromRects in lib/client-pdf.ts.
 
 import { register } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -92,7 +109,7 @@ console.log('=== extractFormattedTextFromPDF: O(n^2) grouping optimization chang
 const EXPECTED: Record<string, [string, number]> = {
   'allegro-raport.pdf': ['0d97cca5cf57c003b0965cd9ab2a8499299de2834467fa1b4f9e53b7ed9b772b', 27],
   'epz_pptx_table_fixture.pdf': ['7a269513327161a15d2b07f95cee0d96a14878a62595394704e10198db82255b', 3],
-  'gpw-ebook.pdf': ['44eebe3d7b2c715eddca13f70c2d0c4a56a8adb6116d4175a1d96b0a5e187e5e', 12],
+  'gpw-ebook.pdf': ['0397d62bee51da6d0ebde281680d0e2ce8112a3789223f1515773511fc02edef', 12],
   'Raport - 12 rzeczy, które robią skuteczni handlarze w Internecie_na Allegro.pdf': ['941a7cc50d336d2f2586f5dd808e53a1d772f5b6cd3e719d401f0cae29118b4f', 27],
   'epz-report-variant2.pdf': ['d6ba02a9749fa38e5f083a782e5f9a69f399085e4dde51abd8f4d98c80711d69', 3],
 };

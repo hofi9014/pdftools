@@ -2334,6 +2334,49 @@ function applyLinkAnnotations(textRuns: IRTextRun[], annotations: PdfjsLinkAnnot
   }
 }
 
+// FINDING (underline detection from drawn geometry, 2026-09-17) — a PDF has no dedicated
+// "underline" construct outside a Link annotation's own default appearance: a genuine
+// underline is drawn by the producing software as an ordinary thin filled/stroked rect
+// positioned just under the text, indistinguishable at the operator level from a table
+// border, a horizontal rule, or a decorative line. Verified against every real fixture in
+// test-real-pdfs/: naively matching "any thin rect below a run with some X-overlap" fires
+// 909 false positives on epz_pptx_table_fixture.pdf alone — every table row's bottom border
+// happens to sit a few points below the cell text above it. The discriminator that actually
+// separates the two cases cleanly: a genuine underline is drawn sized to the specific text
+// run it decorates (rect width tracks run width almost exactly, ratio ~0.93–1.05 measured),
+// while a table/row border spans a whole column or row regardless of what text happens to
+// sit near it (ratio 3–6x wider than the run in the false-positive cases). Requiring the
+// rect's width to closely match the run's own width, on top of the existing "thin + close
+// below + high X-overlap" checks, drops the table false positives to exactly 0 while keeping
+// all 68 genuine underlines found on gpw-ebook.pdf (confirmed visually by rendering the pages
+// — every matched run, e.g. its whole hyperlinked/underlined table of contents, is in fact
+// underlined in the source). No other fixture has any qualifying rect at all. Strikethrough
+// was investigated with the same rigor (crossing the run's vertical midpoint instead of
+// sitting below it) but found zero clean matches on any real fixture under this discriminator
+// — not implemented, since there's no positive evidence to validate it against, only a single
+// ambiguous visual candidate that could equally be an unrelated overlapping table border.
+function applyUnderlineFromRects(textRuns: IRTextRun[], rects: RawRect[], pageHeight: number): void {
+  const thin = rects.filter((r) => r.height <= 2 && r.width >= 3 && (r.fill || r.stroke));
+  if (thin.length === 0) return;
+
+  for (const run of textRuns) {
+    if (!run.text.trim()) continue;
+    const runTop = pageHeight - run.position.y - run.height;
+    const runBottom = runTop + run.height;
+    for (const r of thin) {
+      const xOverlap = Math.min(r.x + r.width, run.position.x + run.width) - Math.max(r.x, run.position.x);
+      if (xOverlap <= 0 || xOverlap / Math.max(1, run.width) < 0.6) continue;
+      const widthRatio = r.width / Math.max(1, run.width);
+      if (widthRatio < 0.7 || widthRatio > 1.4) continue;
+      const distBelowBottom = r.y - runBottom;
+      if (distBelowBottom >= -1 && distBelowBottom <= 3) {
+        run.underline = true;
+        break;
+      }
+    }
+  }
+}
+
 async function parsePagesForTableExtraction(file: File): Promise<PageTableScaffold[]> {
   const buf = await file.arrayBuffer();
   const pdfjsLib = await import('pdfjs-dist');
@@ -2353,6 +2396,7 @@ async function parsePagesForTableExtraction(file: File): Promise<PageTableScaffo
     const annotations = await page.getAnnotations() as PdfjsLinkAnnotation[];
     applyLinkAnnotations(textRuns, annotations);
     const tableRects = extractRectsFromOps(ops, pageHeight);
+    applyUnderlineFromRects(textRuns, tableRects, pageHeight);
     const tableClusters = buildTableClusters(tableRects);
     result.push({ page: p, pageWidth, pageHeight, ops, textRuns, images, tableClusters });
   }
