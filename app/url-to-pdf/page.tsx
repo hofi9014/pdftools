@@ -70,6 +70,10 @@ export default function UrlToPdf({ locale: forcedLocale }: { locale?: Locale } =
         </div>
       </div>
 
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 rounded-xl p-3 mb-6 text-xs leading-relaxed">
+        ⚠️ {t('page.url_warning', locale)}
+      </div>
+
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
       {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">✅ {t('page.url.success', locale)}</div>}
       {success && processedBlobRef.current && (

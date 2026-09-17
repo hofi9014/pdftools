@@ -1,15 +1,27 @@
 import type { NextConfig } from "next";
 
+// Kept as tight as the app's actual runtime behavior allows — every origin listed here must be
+// one the browser can genuinely reach from some real code path. `unpkg.com` (only ever used by
+// an orphaned, unlinked public/icon-demo.html, now deleted), `fonts.googleapis.com`/
+// `fonts.gstatic.com` (edit-pdf's fonts are self-hosted now, see lib/pdf/fonts.ts), and
+// `openrouter.ai` in connect-src (the browser never calls it directly — only our own
+// /api/ai server route does) were removed: none of them were reachable from the browser, so
+// they only widened where an XSS could exfiltrate data to, with no functional upside.
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.google-analytics.com https://unpkg.com https://apis.google.com https://accounts.google.com https://www.dropbox.com https://js.live.net",
-  "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com",
-  "style-src-elem 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com",
-  "font-src 'self' data: https://unpkg.com https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https://www.google.com https://www.dropbox.com https://p.sfx.ms https://*.microsoftpersonalcontent.com https://*.sharepoint.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.google-analytics.com https://apis.google.com https://accounts.google.com https://www.dropbox.com https://js.live.net",
+  "style-src 'self' 'unsafe-inline'",
+  "style-src-elem 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
+  // https://www.googletagmanager.com here (not just in script-src/connect-src) is required for
+  // GA4's own image-beacon fallback ping (gtag.js's consent/init signal) — pre-existing gap
+  // found live: after a visitor accepts cookies, that beacon was silently CSP-blocked, so
+  // consented analytics never actually reached Google. Found while verifying the
+  // load-GA-only-after-consent fix (components/CookieConsent.tsx), not introduced by it.
+  "img-src 'self' data: blob: https://www.google.com https://www.googletagmanager.com https://www.dropbox.com https://p.sfx.ms https://*.microsoftpersonalcontent.com https://*.sharepoint.com",
   "media-src 'self' data: blob:",
   "worker-src 'self' blob:",
-  "connect-src 'self' https://openrouter.ai https://www.googletagmanager.com https://*.google-analytics.com https://analytics.google.com https://apis.google.com https://accounts.google.com https://www.googleapis.com https://content.dropboxapi.com https://*.dropboxusercontent.com https://api.onedrive.com https://graph.microsoft.com https://my.microsoftpersonalcontent.com https://*.microsoftpersonalcontent.com https://*.sharepoint.com",
+  "connect-src 'self' https://www.googletagmanager.com https://*.google-analytics.com https://analytics.google.com https://apis.google.com https://accounts.google.com https://www.googleapis.com https://content.dropboxapi.com https://*.dropboxusercontent.com https://api.onedrive.com https://graph.microsoft.com https://my.microsoftpersonalcontent.com https://*.microsoftpersonalcontent.com https://*.sharepoint.com",
   "frame-src https://onedrive.live.com https://docs.google.com https://www.dropbox.com https://*.dropboxusercontent.com https://login.microsoftonline.com https://accounts.google.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
