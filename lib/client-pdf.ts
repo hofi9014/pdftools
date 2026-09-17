@@ -4259,7 +4259,20 @@ export async function convertToPdfA(file: File): Promise<Uint8Array> {
   const catalog = pdfDoc.catalog;
   catalog.delete(PDFName.of('JS'));
   catalog.delete(PDFName.of('AA'));
-  catalog.set(PDFName.of('MarkInfo'), pdfDoc.context.obj({ Marked: true }));
+  // MarkInfo/Marked=true is a formal declaration that this document is a Tagged PDF (has a
+  // real /StructTreeRoot describing reading order, headings, alt-text, etc.) — screen readers
+  // and PDF/UA validators trust it at face value. This function builds no structure tree of
+  // its own, so claiming Marked:true unconditionally (as this used to) was a false claim on
+  // every untagged input, which is worse than no claim at all: it tells assistive tech to
+  // expect structure that isn't there. Only keep the claim when the source PDF already had
+  // real structure of its own (preserved by pdf-lib's load/save since nothing here touches
+  // /StructTreeRoot) — never fabricate it.
+  const hasStructTree = !!catalog.lookupMaybe(PDFName.of('StructTreeRoot'), PDFDict);
+  if (hasStructTree) {
+    catalog.set(PDFName.of('MarkInfo'), pdfDoc.context.obj({ Marked: true }));
+  } else {
+    catalog.delete(PDFName.of('MarkInfo'));
+  }
 
   // 3. Set metadata
   if (!pdfDoc.getTitle()) pdfDoc.setTitle('PDF Document');
