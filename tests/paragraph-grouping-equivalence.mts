@@ -29,6 +29,19 @@
 // text, position, size, color and rotation are byte-identical — including a real, previously-
 // undetected bold heading ("PSWIZS+Gotham-Bold") now correctly flagged bold:true. See the
 // FINDING comment on buildFontNameMap/buildPageScaffold in lib/client-pdf.ts.
+//
+// Hashes updated again 2026-09-17 (same day, second unrelated fix) — buildGridAndDetectMerged's
+// "most specific owner" merge heuristic wrongly treated a column-divider border line (which
+// naturally spans a table's full height) as owning every cell in its column whenever no more
+// specific shape existed to out-rank it — exactly the case on epz_pptx_table_fixture.pdf,
+// gpw-ebook.pdf and epz-report-variant2.pdf, all real, densely-packed ~105-row tables with pure
+// border-line cells. Confirmed via a before/after IR diff: e.g. epz_pptx_table_fixture.pdf page
+// 2 went from 1 table + 110 STRAY PARAGRAPHS (real content that fell out of the table because
+// the false merges' insane spans like "94x1"/"85x1" left assignTextRunsToCells nowhere valid to
+// route it) to 1 table + 1 paragraph, with sane spans like "3x1"/"4x1"/"1x7". allegro-raport.pdf
+// and the other Allegro report fixture have no tables reaching this code path and are
+// unaffected (same hash as the font-name fix above). See the FINDING comment on
+// buildGridAndDetectMerged in lib/client-pdf.ts.
 
 import { register } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -65,13 +78,13 @@ console.log('=== extractFormattedTextFromPDF: O(n^2) grouping optimization chang
 
 // {fixture: [expectedHash, expectedPageCount]} — captured from the fixed code and
 // cross-checked byte-for-byte against the pre-optimization code before being hard-coded here.
-// (Updated 2026-09-17 for the font-name-resolution fix — see the comment above.)
+// (Updated 2026-09-17 twice, for two unrelated fixes — see the comments above.)
 const EXPECTED: Record<string, [string, number]> = {
   'allegro-raport.pdf': ['0d97cca5cf57c003b0965cd9ab2a8499299de2834467fa1b4f9e53b7ed9b772b', 27],
-  'epz_pptx_table_fixture.pdf': ['fc246ce18c43b5427a787884933d78f2b5980ee5ad0ccd01ae7b98d5104d3b05', 3],
-  'gpw-ebook.pdf': ['8c359476feec542e9bb9ca514747b3c3e35cff935bc9b7463695e2180e04c335', 12],
+  'epz_pptx_table_fixture.pdf': ['7a269513327161a15d2b07f95cee0d96a14878a62595394704e10198db82255b', 3],
+  'gpw-ebook.pdf': ['27b4594485bcf55b511b1b33ca5f7b21a62bec625cff352d47f29915b4a512a9', 12],
   'Raport - 12 rzeczy, które robią skuteczni handlarze w Internecie_na Allegro.pdf': ['941a7cc50d336d2f2586f5dd808e53a1d772f5b6cd3e719d401f0cae29118b4f', 27],
-  'epz-report-variant2.pdf': ['97b40d5d2800f50b2bb4a0be5fd0db1593b6b7b54f874b3ff8744afff8fb39c2', 3],
+  'epz-report-variant2.pdf': ['d6ba02a9749fa38e5f083a782e5f9a69f399085e4dde51abd8f4d98c80711d69', 3],
 };
 
 for (const [fname, [expectedHash, expectedPages]] of Object.entries(EXPECTED)) {
