@@ -8,11 +8,13 @@ import { signPdfClient } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import PadesSignForm from '@/components/sign-pdf/PadesSignForm';
 
 
 
 export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  const [mode, setMode] = useState<'visual' | 'digital'>('visual');
 
   const presets = [
     { id: 'top-left', label: t('page.sign.preset_top_left', locale) },
@@ -125,6 +127,21 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
         <p className="text-gray-500 dark:text-gray-400 mt-2">{t('page.sign.desc', locale)}</p>
       </div>
 
+      <div className="flex justify-center gap-2 mb-8">
+        <button type="button" onClick={() => setMode('visual')}
+          className={`px-5 py-2 rounded-full font-medium text-sm transition ${mode === 'visual' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+          ✍️ {t('page.sign.mode_visual', locale)}
+        </button>
+        <button type="button" onClick={() => setMode('digital')}
+          className={`px-5 py-2 rounded-full font-medium text-sm transition ${mode === 'digital' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+          🔐 {t('page.sign.mode_digital', locale)}
+        </button>
+      </div>
+
+      {mode === 'digital' && <PadesSignForm locale={locale} />}
+
+      {mode === 'visual' && (
+      <>
       <form onSubmit={handleSubmit} className="tool-card rounded-2xl border p-8 space-y-6">
         <div
           className="tool-dropzone rounded-xl p-6 text-center cursor-pointer transition"
@@ -237,6 +254,8 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
           <li>{t('page.sign.step5', locale)}</li>
         </ul>
       </div>
+      </>
+      )}
     </div>
   );
 }
