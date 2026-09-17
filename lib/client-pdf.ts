@@ -1605,9 +1605,38 @@ export interface PdfPageScaffold {
   images: PdfPageScaffoldImage[];
 }
 
+interface PdfjsFontCommonObjs {
+  get(id: string): { name?: string } | undefined;
+}
+
+/** Resolves each setFont (Tf) operator's internal loadedName alias (e.g. "g_d0_f1") to the
+ *  PDF's real /BaseFont name (e.g. "Helvetica-Bold") via page.commonObjs — see the FINDING
+ *  comment in buildPageScaffold for why this matters (bold/italic detection). Every font
+ *  referenced in an already-resolved operator list is guaranteed present in commonObjs. */
+function buildFontNameMap(
+  commonObjs: PdfjsFontCommonObjs,
+  opList: { fnArray: number[]; argsArray: unknown[] },
+  OPS: Record<string, number>,
+): Map<string, string> {
+  const map = new Map<string, string>();
+  const setFontOp = OPS['setFont'];
+  for (let i = 0; i < opList.fnArray.length; i++) {
+    if (opList.fnArray[i] !== setFontOp) continue;
+    const args = opList.argsArray[i] as unknown[];
+    const loadedName = args[0] as string;
+    if (map.has(loadedName)) continue;
+    try {
+      const realName = commonObjs.get(loadedName)?.name;
+      if (realName) map.set(loadedName, realName);
+    } catch { /* not (yet) resolvable — falls back to the raw alias in buildPageScaffold */ }
+  }
+  return map;
+}
+
 export function buildPageScaffold(
   opList: { fnArray: number[]; argsArray: unknown[] },
   OPS: Record<string, number>,
+  fontNameMap?: Map<string, string>,
 ): PdfPageScaffold {
   // --- Build operator name map ---
   const OPS_MAP: Record<number, string> = {};
@@ -1629,11 +1658,28 @@ export function buildPageScaffold(
   }
 
   // For each setTextMatrix index, find the font set before it
+  //
+  // FINDING (font name resolution, supersedes the narrower 2026-09-03 "subsetted font names
+  // lose weight signal" note): args[0] of the setFont (Tf) operator is pdf.js's own internal
+  // *loadedName* alias for the font resource (e.g. "g_d0_f1"), used to look up cached glyph
+  // data — it is NOT the PDF's real /BaseFont name (e.g. "Helvetica-Bold", "ArialMT-Bold").
+  // Using it directly as `fontName`, and feeding it to parseFontStyle() to detect bold/italic,
+  // meant bold/italic detection was broken for EVERY PDF (not just self-generated ones with
+  // subsetted embedded fonts, as previously documented) — an alias like "g_d0_f1" never
+  // contains "Bold"/"Italic" regardless of the actual font. Verified directly: a plain pdf-lib
+  // PDF using the unsubsetted standard font StandardFonts.HelveticaBold still produced
+  // fontName="g_d0_f1" and bold=false end to end into a real .docx (no <w:b/>). Fixed by
+  // resolving through fontNameMap (built by the caller from page.commonObjs.get(loadedName),
+  // which pdf.js guarantees is already resolved for any font referenced in an operator list
+  // that has finished loading) when available; falls back to the raw alias only if the map
+  // wasn't built or doesn't have this specific font.
   const textOpFonts: Map<number, { name: string; size: number }> = new Map();
   let currentFont = { name: '', size: 12 };
   for (const [i, { op, args }] of ops.entries()) {
     if (op === 'setFont' && Array.isArray(args)) {
-      currentFont = { name: args[0] as string, size: args[1] as number };
+      const loadedName = args[0] as string;
+      const realName = fontNameMap?.get(loadedName) ?? loadedName;
+      currentFont = { name: realName, size: args[1] as number };
     }
     if (op === 'setTextMatrix' || op === 'showText') textOpFonts.set(i, { ...currentFont });
   }
@@ -2066,7 +2112,8 @@ export async function segmentSlideElements(
   const pageHeight = viewport.height;
 
   const opList = await page.getOperatorList();
-  const scaffold = buildPageScaffold(opList, pdfjsLib.OPS);
+  const fontNameMap = buildFontNameMap(page.commonObjs, opList, pdfjsLib.OPS);
+  const scaffold = buildPageScaffold(opList, pdfjsLib.OPS, fontNameMap);
   const rawRects = extractRectsFromOps(scaffold.ops, pageHeight);
 
   // --- Table detection FIRST (C5): cell text must never reach the textbox
@@ -2241,7 +2288,8 @@ async function parsePagesForTableExtraction(file: File): Promise<PageTableScaffo
     const pageWidth = vp.width;
     const pageHeight = vp.height;
     const opList = await page.getOperatorList();
-    const { ops, textRuns, images } = buildPageScaffold(opList, OPS);
+    const fontNameMap = buildFontNameMap(page.commonObjs, opList, OPS);
+    const { ops, textRuns, images } = buildPageScaffold(opList, OPS, fontNameMap);
     const tableRects = extractRectsFromOps(ops, pageHeight);
     const tableClusters = buildTableClusters(tableRects);
     result.push({ page: p, pageWidth, pageHeight, ops, textRuns, images, tableClusters });
