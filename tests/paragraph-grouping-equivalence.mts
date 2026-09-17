@@ -42,6 +42,16 @@
 // and the other Allegro report fixture have no tables reaching this code path and are
 // unaffected (same hash as the font-name fix above). See the FINDING comment on
 // buildGridAndDetectMerged in lib/client-pdf.ts.
+//
+// Hashes updated a third time 2026-09-17 (same day, unrelated feature addition, gpw-ebook.pdf
+// only) — added hyperlink extraction: PDF Link annotations (/Annots, entirely separate from the
+// text content stream) are now matched by position onto the IRTextRun(s) they cover and tagged
+// with run.link, so Word/ODT output gets a real clickable hyperlink instead of silently losing
+// it. gpw-ebook.pdf is a real e-book with 6 genuine embedded links (publisher site, terms page,
+// two promotional links including literal "kliknij tutaj"/"click here" anchor text) — verified
+// each one individually: correct anchor text, correct destination URL, nothing spurious. The
+// other 4 fixtures have no Link annotations reaching this code and are unaffected (unchanged
+// hashes). See applyLinkAnnotations in lib/client-pdf.ts.
 
 import { register } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -78,11 +88,11 @@ console.log('=== extractFormattedTextFromPDF: O(n^2) grouping optimization chang
 
 // {fixture: [expectedHash, expectedPageCount]} — captured from the fixed code and
 // cross-checked byte-for-byte against the pre-optimization code before being hard-coded here.
-// (Updated 2026-09-17 twice, for two unrelated fixes — see the comments above.)
+// (Updated 2026-09-17 three times, for three unrelated fixes/features — see the comments above.)
 const EXPECTED: Record<string, [string, number]> = {
   'allegro-raport.pdf': ['0d97cca5cf57c003b0965cd9ab2a8499299de2834467fa1b4f9e53b7ed9b772b', 27],
   'epz_pptx_table_fixture.pdf': ['7a269513327161a15d2b07f95cee0d96a14878a62595394704e10198db82255b', 3],
-  'gpw-ebook.pdf': ['27b4594485bcf55b511b1b33ca5f7b21a62bec625cff352d47f29915b4a512a9', 12],
+  'gpw-ebook.pdf': ['44eebe3d7b2c715eddca13f70c2d0c4a56a8adb6116d4175a1d96b0a5e187e5e', 12],
   'Raport - 12 rzeczy, które robią skuteczni handlarze w Internecie_na Allegro.pdf': ['941a7cc50d336d2f2586f5dd808e53a1d772f5b6cd3e719d401f0cae29118b4f', 27],
   'epz-report-variant2.pdf': ['d6ba02a9749fa38e5f083a782e5f9a69f399085e4dde51abd8f4d98c80711d69', 3],
 };

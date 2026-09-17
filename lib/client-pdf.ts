@@ -2297,6 +2297,43 @@ interface PageTableScaffold {
   tableClusters: TableCluster[];
 }
 
+interface PdfjsLinkAnnotation {
+  subtype: string;
+  url?: string;
+  unsafeUrl?: string;
+  rect?: [number, number, number, number];
+}
+
+/** Tags each text run whose position falls inside a Link annotation's rect with that link's
+ *  URL — PDF hyperlinks live in the page's /Annots, entirely separate from the text content
+ *  stream, so there is no other way to recover "this text is a clickable link" than matching
+ *  geometry. Both annotation rects and IRTextRun.position are in the same native PDF
+ *  bottom-left-origin space at this point (before assignTextRunsToCells's top-left conversion),
+ *  so no coordinate conversion is needed here. Only http(s) URI actions are honored — GoTo
+ *  (internal navigation) and other action types have no meaningful equivalent to carry into a
+ *  Word/ODT hyperlink run and are silently skipped, matching this function's "never guess
+ *  wrong" convention elsewhere.
+ */
+function applyLinkAnnotations(textRuns: IRTextRun[], annotations: PdfjsLinkAnnotation[]): void {
+  const links = annotations
+    .filter((a): a is PdfjsLinkAnnotation & { rect: [number, number, number, number] } =>
+      a.subtype === 'Link' && !!a.rect && /^https?:\/\//i.test(a.url || a.unsafeUrl || ''))
+    .map((a) => ({ rect: a.rect, url: (a.url || a.unsafeUrl)! }));
+  if (links.length === 0) return;
+
+  for (const run of textRuns) {
+    const cx = run.position.x + run.width / 2;
+    const cy = run.position.y + run.height / 2;
+    for (const { rect, url } of links) {
+      const [x0, y0, x1, y1] = rect;
+      if (cx >= x0 && cx <= x1 && cy >= y0 && cy <= y1) {
+        run.link = url;
+        break;
+      }
+    }
+  }
+}
+
 async function parsePagesForTableExtraction(file: File): Promise<PageTableScaffold[]> {
   const buf = await file.arrayBuffer();
   const pdfjsLib = await import('pdfjs-dist');
@@ -2313,6 +2350,8 @@ async function parsePagesForTableExtraction(file: File): Promise<PageTableScaffo
     const opList = await page.getOperatorList();
     const fontNameMap = buildFontNameMap(page.commonObjs, opList, OPS);
     const { ops, textRuns, images } = buildPageScaffold(opList, OPS, fontNameMap);
+    const annotations = await page.getAnnotations() as PdfjsLinkAnnotation[];
+    applyLinkAnnotations(textRuns, annotations);
     const tableRects = extractRectsFromOps(ops, pageHeight);
     const tableClusters = buildTableClusters(tableRects);
     result.push({ page: p, pageWidth, pageHeight, ops, textRuns, images, tableClusters });

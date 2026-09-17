@@ -22,6 +22,7 @@ export interface IRTextRun {
   bold: boolean;
   italic: boolean;
   rotation: number;
+  link?: string;
 }
 
 export interface IRParagraphBlock {
@@ -808,15 +809,35 @@ const IR_HEADING_MAP: Record<number, string> = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function irRunsToTextRuns(TRC: any, runs: IRTextRun[]): any[] {
-  return runs.map(run => new TRC({
-    text: run.text,
-    bold: run.bold || undefined,
-    italics: run.italic || undefined,
-    color: run.color.replace('#', ''),
-    size: Math.round(run.fontSize * 2),
-    font: run.fontName || undefined,
-  }));
+function irRunsToTextRuns(TRC: any, runs: IRTextRun[], ExtLink?: any): any[] {
+  return runs.map(run => {
+    // A run tagged with .link (from a PDF /Annots Link matched onto it — see
+    // applyLinkAnnotations in client-pdf.ts) becomes a real, clickable ExternalHyperlink
+    // instead of plain text, styled the conventional Word hyperlink blue+underline so it's
+    // visually recognizable as a link too, not just functionally one.
+    if (run.link && ExtLink) {
+      return new ExtLink({
+        link: run.link,
+        children: [new TRC({
+          text: run.text,
+          bold: run.bold || undefined,
+          italics: run.italic || undefined,
+          color: '0563C1',
+          underline: {},
+          size: Math.round(run.fontSize * 2),
+          font: run.fontName || undefined,
+        })],
+      });
+    }
+    return new TRC({
+      text: run.text,
+      bold: run.bold || undefined,
+      italics: run.italic || undefined,
+      color: run.color.replace('#', ''),
+      size: Math.round(run.fontSize * 2),
+      font: run.fontName || undefined,
+    });
+  });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -846,7 +867,7 @@ function irRunsToTextRunsRotated(TRC: any, runs: IRTextRun[], rotation: number):
 export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, WriterImage>): Promise<Blob> {
   const {
     Document, Packer, Paragraph, HeadingLevel, TextRun, ImageRun,
-    Table, TableRow, TableCell, WidthType, BorderStyle,
+    Table, TableRow, TableCell, WidthType, BorderStyle, ExternalHyperlink,
   } = await import('docx');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -861,7 +882,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
             children: row.map(cell => {
               if (!cell) return new TableCell({ children: [new Paragraph('')] });
               const paragraphs = cell.runs.length > 0
-                ? [new Paragraph({ children: irRunsToTextRuns(TextRun, cell.runs) })]
+                ? [new Paragraph({ children: irRunsToTextRuns(TextRun, cell.runs, ExternalHyperlink) })]
                 : [new Paragraph('')];
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const opts: any = { children: paragraphs };
@@ -928,7 +949,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
         } else {
           allChildren.push(new Paragraph({
             heading: HeadingLevel[headingKey],
-            children: irRunsToTextRuns(TextRun, h.runs),
+            children: irRunsToTextRuns(TextRun, h.runs, ExternalHyperlink),
           }));
         }
       } else if (block.kind === 'list-item') {
@@ -941,7 +962,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
         } else {
           allChildren.push(new Paragraph({
             bullet: { level },
-            children: irRunsToTextRuns(TextRun, li.runs),
+            children: irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink),
           }));
         }
       } else {
@@ -952,7 +973,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
           }));
         } else {
           allChildren.push(new Paragraph({
-            children: irRunsToTextRuns(TextRun, p.runs),
+            children: irRunsToTextRuns(TextRun, p.runs, ExternalHyperlink),
           }));
         }
       }
@@ -3160,10 +3181,10 @@ function odtRenderUniqueFile(target: string, index: number): string {
 }
 
 // ---- style dedup ----
-interface OdtRunStyle { font: string; size: number; bold: boolean; italic: boolean; color: string; }
+interface OdtRunStyle { font: string; size: number; bold: boolean; italic: boolean; color: string; underline: boolean; }
 
 function odtRenderStyleKey(s: OdtRunStyle): string {
-  return `${s.font}|${s.size}|${s.bold ? 'b' : ''}|${s.italic ? 'i' : ''}|${s.color}`;
+  return `${s.font}|${s.size}|${s.bold ? 'b' : ''}|${s.italic ? 'i' : ''}|${s.color}|${s.underline ? 'u' : ''}`;
 }
 
 function odtRenderScanStyles(): {
@@ -3174,12 +3195,16 @@ function odtRenderScanStyles(): {
   const styles: { name: string; props: OdtRunStyle }[] = [];
   let n = 0;
   const nameFor = (r: IRTextRun): string => {
+    // A linked run (see applyLinkAnnotations in client-pdf.ts) is styled the conventional
+    // ODF/Word hyperlink blue+underline, same treatment as the docx writer, so it's visually
+    // recognizable as a link and not just functionally clickable.
     const props: OdtRunStyle = {
       font: r.fontName || '',
       size: r.fontSize,
       bold: !!r.bold,
       italic: !!r.italic,
-      color: odtRenderColorHex(r.color),
+      color: r.link ? '#0563C1' : odtRenderColorHex(r.color),
+      underline: !!r.link,
     };
     const key = odtRenderStyleKey(props);
     let name = map.get(key);
@@ -3206,6 +3231,7 @@ function odtRenderAutoStylesXml(styles: { name: string; props: OdtRunStyle }[]):
         ` fo:font-size="${s.props.size}pt"` +
         ` fo:font-weight="${fw}"` +
         (s.props.italic ? ` fo:font-style="italic"` : '') +
+        (s.props.underline ? ` style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color"` : '') +
         ` fo:color="${s.props.color}"/>` +
         `</style:style>`
       );
@@ -3216,7 +3242,13 @@ function odtRenderAutoStylesXml(styles: { name: string; props: OdtRunStyle }[]):
 
 function odtRenderRunsXml(runs: IRTextRun[], nameFor: (r: IRTextRun) => string): string {
   return runs
-    .map((r) => (r.text ? `<text:span text:style-name="${nameFor(r)}">${odtXmlEsc(r.text)}</text:span>` : ''))
+    .map((r) => {
+      if (!r.text) return '';
+      const span = `<text:span text:style-name="${nameFor(r)}">${odtXmlEsc(r.text)}</text:span>`;
+      // Only http(s) links reach here (see applyLinkAnnotations' own filter in client-pdf.ts),
+      // so no scheme check is needed before writing xlink:href.
+      return r.link ? `<text:a xlink:type="simple" xlink:href="${odtXmlEsc(r.link)}">${span}</text:a>` : span;
+    })
     .join('');
 }
 
