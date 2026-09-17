@@ -11,7 +11,7 @@
 // purely from their dimensions — a cheap, reliable "which page is this" signal without needing
 // to read page content.
 
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, PDFName, PDFDict } from 'pdf-lib';
 import {
   mergePDFs, splitPDF, splitByRanges, rotatePDF, addPageNumbers, addWatermark,
   deletePages, extractPages, reorderPages, cropPages, addBlankPage, flattenPDF,
@@ -172,6 +172,97 @@ console.log('\n--- flattenPDF (plain PDF, no AcroForm) ---');
   const result = await flattenPDF(file);
   const doc = await PDFDocument.load(result);
   check(doc.getPageCount() === 2, `flattening a form-less PDF leaves the page count unchanged — got ${doc.getPageCount()}`);
+}
+
+// --- WCAG/PDF-UA follow-up ---------------------------------------------------------------
+// A /StructTreeRoot describes reading order/headings/alt-text for screen readers and PDF/UA
+// validators, via structure elements that reference specific page objects (/Pg). Functions
+// that build a brand-new PDFDocument via copyPages() (mergePDFs, splitPDF, extractPages,
+// reorderPages) never copy the source's StructTreeRoot at all — pdf-lib's copyPages() only
+// carries over page content, not structure — so the output correctly has none (safe by
+// omission: no false "this is tagged" claim). Functions that mutate the SAME loaded document
+// in place (rotatePDF, addWatermark, addPageNumbers, cropPages) leave an existing structure
+// tree's page references valid, since no pages are added/removed. deletePages() is the one
+// exception: pdf.removePage() detaches a page while leaving any StructTreeRoot pointing at
+// it completely untouched, so without the fix in lib/client-pdf.ts the output would keep
+// claiming MarkInfo/Marked=true while its structure tree dangles references to a page that no
+// longer exists — this section pins both halves of that behavior as a permanent regression
+// guard, since correctly rewriting the tree to prune the dangling entries is out of scope
+// (real structure-tree surgery, not this fix's job) and silently doing nothing would put back
+// the exact "claims tagged, isn't" bug fixed in convertToPdfA (see tests/convert-to-pdfa.mts).
+console.log('\n--- StructTreeRoot / MarkInfo: preserved when safe, dropped when no longer valid ---');
+
+async function makeTaggedPdf(pageCount: number): Promise<File> {
+  const doc = await PDFDocument.create();
+  const structElems = [];
+  for (let i = 0; i < pageCount; i++) {
+    const page = doc.addPage([100, 150]);
+    const structElem = doc.context.obj({ Type: 'StructElem', S: 'P', Pg: page.ref });
+    structElems.push(doc.context.register(structElem));
+  }
+  const structTreeRootRef = doc.context.register(doc.context.obj({ Type: 'StructTreeRoot', K: structElems }));
+  doc.catalog.set(PDFName.of('StructTreeRoot'), structTreeRootRef);
+  doc.catalog.set(PDFName.of('MarkInfo'), doc.context.obj({ Marked: true }));
+  const bytes = await doc.save();
+  return new File([bytes as BlobPart], `tagged-${pageCount}p.pdf`, { type: 'application/pdf' });
+}
+
+async function structInfo(bytes: Uint8Array): Promise<{ structTreeRoot: boolean; markInfo: boolean }> {
+  const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
+  return {
+    structTreeRoot: !!doc.catalog.lookupMaybe(PDFName.of('StructTreeRoot'), PDFDict),
+    markInfo: !!doc.catalog.lookupMaybe(PDFName.of('MarkInfo'), PDFDict),
+  };
+}
+
+{
+  const tagged = await makeTaggedPdf(3);
+  const before = await structInfo(new Uint8Array(await tagged.arrayBuffer()));
+  check(before.structTreeRoot && before.markInfo, 'sanity: the synthetic tagged fixture really has /StructTreeRoot + /MarkInfo');
+}
+
+{
+  const merged = await mergePDFs([await makeTaggedPdf(2), await makeTaggedPdf(2)]);
+  const info = await structInfo(merged);
+  check(!info.structTreeRoot && !info.markInfo, `mergePDFs on tagged inputs: no false claim carried into the new document (got: ${JSON.stringify(info)})`);
+}
+{
+  const parts = await splitPDF(await makeTaggedPdf(2));
+  const info = await structInfo(parts[0]!);
+  check(!info.structTreeRoot && !info.markInfo, `splitPDF on a tagged input: no false claim in the split-out document (got: ${JSON.stringify(info)})`);
+}
+{
+  const extracted = await extractPages(await makeTaggedPdf(3), [0, 2]);
+  const info = await structInfo(extracted);
+  check(!info.structTreeRoot && !info.markInfo, `extractPages on a tagged input: no false claim in the new document (got: ${JSON.stringify(info)})`);
+}
+{
+  const reordered = await reorderPages(await makeTaggedPdf(3), [2, 0, 1]);
+  const info = await structInfo(reordered);
+  check(!info.structTreeRoot && !info.markInfo, `reorderPages on a tagged input: no false claim in the new document (got: ${JSON.stringify(info)})`);
+}
+{
+  const rotated = await rotatePDF(await makeTaggedPdf(2), 90);
+  const info = await structInfo(rotated);
+  check(info.structTreeRoot && info.markInfo, `rotatePDF (page count unchanged): existing structure correctly preserved (got: ${JSON.stringify(info)})`);
+}
+{
+  const cropped = await cropPages(await makeTaggedPdf(2), { top: 5, right: 5, bottom: 5, left: 5 });
+  const info = await structInfo(cropped);
+  check(info.structTreeRoot && info.markInfo, `cropPages (page count unchanged): existing structure correctly preserved (got: ${JSON.stringify(info)})`);
+}
+{
+  const deleted = await deletePages(await makeTaggedPdf(3), [1]);
+  const info = await structInfo(deleted);
+  check(!info.structTreeRoot && !info.markInfo, `deletePages on a tagged input: dangling structure claim dropped, not carried forward (got: ${JSON.stringify(info)})`);
+}
+{
+  // Negative control on deletePages' own guard: when no page index actually matches (all out
+  // of range), nothing is removed, so an existing structure tree is still fully valid and must
+  // be left alone — proves the strip is conditioned on an actual removal, not unconditional.
+  const untouched = await deletePages(await makeTaggedPdf(2), [99]);
+  const info = await structInfo(untouched);
+  check(info.structTreeRoot && info.markInfo, `deletePages with an out-of-range index (nothing actually removed): structure left untouched (got: ${JSON.stringify(info)})`);
 }
 
 globalThis.fetch = realFetch;

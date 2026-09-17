@@ -19,7 +19,7 @@ import { register } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { PDFDocument, PDFDict } from 'pdf-lib';
+import { PDFDocument, PDFDict, PDFName } from 'pdf-lib';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, '..');
@@ -34,7 +34,7 @@ const pdfjsLib = (await import('pdfjs-dist/legacy/build/pdf.mjs')) as PdfJsModul
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   new URL('../node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs', import.meta.url).href;
 
-import { rasterizePage, REDACT_RENDER_SCALE, type RasterCanvasFactory, type RasterCanvas, type RasterContext, type RedactRegion, type PdfjsLibLike } from '../lib/pdf-raster';
+import { rasterizePage, rasterizePages, REDACT_RENDER_SCALE, type RasterCanvasFactory, type RasterCanvas, type RasterContext, type RedactRegion, type PdfjsLibLike } from '../lib/pdf-raster';
 
 let fails = 0;
 function check(cond: boolean, msg: string): void {
@@ -225,6 +225,50 @@ const inR2 = await renderPng(inputBytes, 2, REDACT_RENDER_SCALE);
 const outR2 = await renderPng(output, 2, REDACT_RENDER_SCALE);
 const page2Diff = pixelBinaryDiffOutside(inR2, outR2, { page: 0, x: 0, y: 0, width: 0, height: 0 }, 0);
 check(page2Diff.diff === 0, `page 2 (untouched) renders pixel-identical to the input (${page2Diff.diff}/${page2Diff.checked} differing)`);
+
+// --- WCAG/PDF-UA follow-up: rasterizePages() (the batch function client-pdf.ts's
+// redactPdfRaster() and redact-worker.ts actually call — distinct from rasterizePage() above,
+// which is a lower-level per-page primitive used only by this test) must not carry forward a
+// MarkInfo/Marked=true "this is a Tagged PDF" claim once redaction has replaced a page's real
+// content with a flat image. A synthetic doc here (not the token fixture, which has no
+// structure tree) with a genuine minimal /StructTreeRoot proves the claim is dropped exactly
+// when a page is actually rasterized, and left alone when it isn't. ---
+console.log('\n=== StructTreeRoot/MarkInfo dropped when rasterizePages() actually rewrites a page ===');
+
+async function buildTaggedTwoPagePdf(): Promise<Uint8Array> {
+  const doc = await PDFDocument.create();
+  const structElems = [];
+  for (let i = 0; i < 2; i++) {
+    const page = doc.addPage([200, 200]);
+    page.drawText(`page ${i}`, { x: 20, y: 100 });
+    const structElem = doc.context.obj({ Type: 'StructElem', S: 'P', Pg: page.ref });
+    structElems.push(doc.context.register(structElem));
+  }
+  const structTreeRootRef = doc.context.register(doc.context.obj({ Type: 'StructTreeRoot', K: structElems }));
+  doc.catalog.set(PDFName.of('StructTreeRoot'), structTreeRootRef);
+  doc.catalog.set(PDFName.of('MarkInfo'), doc.context.obj({ Marked: true }));
+  return doc.save();
+}
+
+function hasStructure(bytes: Uint8Array): Promise<{ structTreeRoot: boolean; markInfo: boolean }> {
+  return PDFDocument.load(bytes, { ignoreEncryption: true }).then((d) => ({
+    structTreeRoot: !!d.catalog.lookupMaybe(PDFName.of('StructTreeRoot'), PDFDict),
+    markInfo: !!d.catalog.lookupMaybe(PDFName.of('MarkInfo'), PDFDict),
+  }));
+}
+
+const taggedSrc = await buildTaggedTwoPagePdf();
+const taggedBefore = await hasStructure(taggedSrc);
+check(taggedBefore.structTreeRoot && taggedBefore.markInfo, 'sanity: the synthetic input really has /StructTreeRoot + /MarkInfo before redaction');
+
+const redactedPage0 = await rasterizePages(pdfjsLib as unknown as PdfjsLibLike, canvasFactory, taggedSrc, [{ page: 0, x: 0.1, y: 0.1, width: 0.2, height: 0.2 }], REDACT_RENDER_SCALE, { standardFontDataUrl });
+const redactedResult = await hasStructure(redactedPage0);
+check(!redactedResult.structTreeRoot, `/StructTreeRoot dropped once a page was actually rasterized (got: ${redactedResult.structTreeRoot ? 'present' : 'absent'})`);
+check(!redactedResult.markInfo, `/MarkInfo dropped once a page was actually rasterized (got: ${redactedResult.markInfo ? 'present' : 'absent'})`);
+
+const untouched = await rasterizePages(pdfjsLib as unknown as PdfjsLibLike, canvasFactory, taggedSrc, [], REDACT_RENDER_SCALE, { standardFontDataUrl });
+const untouchedResult = await hasStructure(untouched);
+check(untouchedResult.structTreeRoot && untouchedResult.markInfo, 'structure is left untouched when no regions are given (nothing was actually rasterized)');
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);

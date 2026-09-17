@@ -267,5 +267,19 @@ export async function rasterizePages(
 
   await doc.cleanup();
   deleteUnreachableRefs(pdfDoc, allRemovedRefs);
+
+  // Rasterizing a page replaces its /Contents with a flat image, destroying any marked-content
+  // (text runs, MCIDs) that a /StructTreeRoot's structure elements point into. The catalog
+  // itself is untouched, so a source PDF that had real structure would otherwise carry a
+  // MarkInfo/Marked=true claim forward while pointing into content that no longer exists on
+  // the redacted page(s) — the same "claims tagged, isn't" problem fixed in convertToPdfA
+  // (lib/client-pdf.ts). Correctly pruning just the affected structure elements would require
+  // full structure-tree surgery (out of scope here); the honest, safe choice is to drop the
+  // claim entirely rather than ship a tree that no longer matches the content.
+  if (pageIndexes.length > 0 && pdfDoc.catalog.lookupMaybe(PDFName.of('StructTreeRoot'), PDFDict)) {
+    pdfDoc.catalog.delete(PDFName.of('StructTreeRoot'));
+    pdfDoc.catalog.delete(PDFName.of('MarkInfo'));
+  }
+
   return new Uint8Array(await pdfDoc.save({ useObjectStreams: false }));
 }
