@@ -18,6 +18,17 @@
 // hashes were captured by running the SAME fixtures through the OLD O(n^2) code (git stash)
 // and the NEW optimized code side by side: all five matched byte-for-byte before this test was
 // written, proving the optimization changed nothing.
+//
+// Hashes updated 2026-09-17 (unrelated to the grouping optimization above) — buildPageScaffold
+// used to read the setFont (Tf) operator's pdf.js-internal loadedName alias (e.g. "g_d0_f1")
+// directly as the font name, including for parseFontStyle()'s bold/italic detection, instead of
+// resolving it to the PDF's real /BaseFont name via page.commonObjs. An alias never contains
+// "Bold"/"Italic", so this broke bold/italic detection for EVERY PDF, not just self-generated
+// ones (the previously-documented, narrower explanation). Verified the new hashes' diff against
+// the old ones touches ONLY fontName/bold/italic on all 483 text runs of allegro-raport.pdf —
+// text, position, size, color and rotation are byte-identical — including a real, previously-
+// undetected bold heading ("PSWIZS+Gotham-Bold") now correctly flagged bold:true. See the
+// FINDING comment on buildFontNameMap/buildPageScaffold in lib/client-pdf.ts.
 
 import { register } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -54,12 +65,13 @@ console.log('=== extractFormattedTextFromPDF: O(n^2) grouping optimization chang
 
 // {fixture: [expectedHash, expectedPageCount]} — captured from the fixed code and
 // cross-checked byte-for-byte against the pre-optimization code before being hard-coded here.
+// (Updated 2026-09-17 for the font-name-resolution fix — see the comment above.)
 const EXPECTED: Record<string, [string, number]> = {
-  'allegro-raport.pdf': ['8de47d2a65aef07149db902b7aad55555d3d5681db44d576cf07c0c2c47e662b', 27],
-  'epz_pptx_table_fixture.pdf': ['e6fe3d246394ad4d6aafc205dae0328a0cc2650d91dcb93437763e492f240578', 3],
-  'gpw-ebook.pdf': ['dd200121aa9590bb6d6655d594ad2bf4e384d2a6d7e292f9e7f961889f403585', 12],
-  'Raport - 12 rzeczy, które robią skuteczni handlarze w Internecie_na Allegro.pdf': ['9e4932a0f2ec0ad5660e18d77cc85ef953cf4f2060943d04de87ead66349327b', 27],
-  'epz-report-variant2.pdf': ['e63b78358b4f024243c66d1d5f4689bcf8f35c3a7e208b78acaf9b3c15a445cd', 3],
+  'allegro-raport.pdf': ['0d97cca5cf57c003b0965cd9ab2a8499299de2834467fa1b4f9e53b7ed9b772b', 27],
+  'epz_pptx_table_fixture.pdf': ['fc246ce18c43b5427a787884933d78f2b5980ee5ad0ccd01ae7b98d5104d3b05', 3],
+  'gpw-ebook.pdf': ['8c359476feec542e9bb9ca514747b3c3e35cff935bc9b7463695e2180e04c335', 12],
+  'Raport - 12 rzeczy, które robią skuteczni handlarze w Internecie_na Allegro.pdf': ['941a7cc50d336d2f2586f5dd808e53a1d772f5b6cd3e719d401f0cae29118b4f', 27],
+  'epz-report-variant2.pdf': ['97b40d5d2800f50b2bb4a0be5fd0db1593b6b7b54f874b3ff8744afff8fb39c2', 3],
 };
 
 for (const [fname, [expectedHash, expectedPages]] of Object.entries(EXPECTED)) {
