@@ -78,6 +78,14 @@ const content = {
           'Mozilla Observatory — dążymy do oceny A+ w teście bezpieczeństwa nagłówków HTTP.',
         ],
       },
+      {
+        h: '13. Szyfrowanie danych w spoczynku i certyfikaty ISO 27001 / SOC 2',
+        p: 'Większość operacji na Twoich plikach odbywa się wyłącznie w przeglądarce i nigdy nie trafia na żaden serwer — nie istnieją więc po naszej stronie żadne "dane w spoczynku" do zaszyfrowania. Dla nielicznych narzędzi wymagających przetwarzania serwerowego (patrz punkty 4 i 11) plik istnieje wyłącznie w pamięci RAM serwera przez kilka sekund i jest usuwany natychmiast po zakończeniu operacji — nigdy nie trafia na dysk, do kopii zapasowej ani do bazy danych, więc pojęcie "szyfrowania danych w spoczynku" w praktyce nie ma tu zastosowania. Nie posiadamy formalnych certyfikatów ISO 27001 ani SOC 2. Są to kosztowne, wieloletnie procesy audytowe zaprojektowane przede wszystkim dla organizacji utrzymujących trwałe magazyny danych klientów, procesy operacyjne i wieloosobowe zespoły — w architekturze, w której serwer w ogóle nie przechowuje danych użytkownika, większość kontroli objętych tymi certyfikatami traci swój przedmiot. Zamiast tego stosujemy alternatywne, możliwe do zweryfikowania w kodzie źródłowym gwarancje opisane w punktach 1–12 powyżej (zero przechowywania, szyfrowana transmisja, CSP, ochrona przed atakami, jawny proces zgłaszania podatności).',
+      },
+      {
+        h: '14. eIDAS i kwalifikowany podpis elektroniczny (QES)',
+        p: 'Narzędzie "Podpisz PDF" oferuje tryb podpisu cyfrowego PAdES (zaawansowany podpis elektroniczny) z wykorzystaniem własnego certyfikatu użytkownika (.p12/.pfx) — cała operacja odbywa się lokalnie w przeglądarce, a plik i certyfikat nigdy nie są przesyłane na serwer. To prawdziwy podpis kryptograficzny, a nie tylko wizualny obrazek. Ważne zastrzeżenie: taki podpis NIE jest automatycznie kwalifikowanym podpisem elektronicznym (QES) w rozumieniu unijnego rozporządzenia eIDAS (910/2014) — status QES zależy wyłącznie od tego, czy Twój certyfikat został wydany przez kwalifikowanego dostawcę usług zaufania (QTSP) na kwalifikowanym urządzeniu do składania podpisu. Wystawienie takiego certyfikatu i weryfikacja tożsamości jego posiadacza z definicji wymaga zewnętrznego, licencjonowanego podmiotu — to jedyny element tego procesu, którego nie da się zrealizować w 100% lokalnie, bez serwera. Jeśli Twój certyfikat ma status kwalifikowany, złożony nim podpis PAdES spełnia wymogi QES; jeśli używasz certyfikatu self-signed lub firmowego, tworzysz ważny prawnie zaawansowany podpis elektroniczny, ale nie kwalifikowany. Sprawdź wymogi prawne właściwe dla Twojego zastosowania.',
+      },
     ],
   },
   de: {
@@ -153,6 +161,14 @@ const content = {
           'CERT Polska-Richtlinien — Befolgung der Empfehlungen des polnischen CERT-Teams.',
           'Mozilla Observatory — wir streben eine A+-Bewertung im HTTP-Header-Sicherheitstest an.',
         ],
+      },
+      {
+        h: '13. Verschlüsselung ruhender Daten und ISO-27001-/SOC-2-Zertifizierung',
+        p: 'Die meisten Vorgänge mit Ihren Dateien finden ausschließlich in Ihrem Browser statt und erreichen niemals einen Server — auf unserer Seite gibt es also gar keine "ruhenden Daten", die verschlüsselt werden müssten. Bei den wenigen Werkzeugen, die eine serverseitige Verarbeitung erfordern (siehe Punkte 4 und 11), existiert die Datei nur wenige Sekunden im Arbeitsspeicher (RAM) des Servers und wird unmittelbar nach Abschluss des Vorgangs gelöscht — sie wird niemals auf Festplatte geschrieben, gesichert oder in einer Datenbank gespeichert, sodass der Begriff "Verschlüsselung ruhender Daten" hier praktisch nicht greift. Wir verfügen nicht über eine formale ISO-27001- oder SOC-2-Zertifizierung. Dabei handelt es sich um kostspielige, mehrjährige Auditprogramme, die vor allem für Organisationen konzipiert sind, die dauerhafte Kundendatenspeicher, Betriebsprozesse und mehrköpfige Teams unterhalten — in einer Architektur, in der der Server überhaupt keine Nutzerdaten dauerhaft speichert, laufen die meisten der von diesen Zertifizierungen abgedeckten Kontrollen ins Leere. Stattdessen setzen wir auf die alternativen, im Quellcode nachprüfbaren Garantien aus den Punkten 1–12 oben (keine Speicherung, verschlüsselte Übertragung, CSP, Angriffsschutz, öffentlicher Prozess zur Meldung von Schwachstellen).',
+      },
+      {
+        h: '14. eIDAS und qualifizierte elektronische Signatur (QES)',
+        p: 'Das Werkzeug "PDF signieren" bietet einen PAdES-Signaturmodus (eine fortgeschrittene elektronische Signatur) mit Ihrem eigenen Zertifikat (.p12/.pfx) — der gesamte Vorgang läuft lokal in Ihrem Browser ab; Ihre Datei und Ihr Zertifikat werden niemals auf einen Server hochgeladen. Dies ist eine echte kryptografische Signatur, kein bloßes Bild einer Unterschrift. Wichtiger Hinweis: Diese Signatur ist NICHT automatisch eine qualifizierte elektronische Signatur (QES) im Sinne der EU-Verordnung eIDAS (910/2014) — der QES-Status hängt ausschließlich davon ab, ob Ihr Zertifikat von einem qualifizierten Vertrauensdiensteanbieter (QTSP) auf einer qualifizierten Signaturerstellungseinheit ausgestellt wurde. Die Ausstellung eines solchen Zertifikats und die Identitätsprüfung seines Inhabers erfordern zwangsläufig einen externen, lizenzierten Dritten — das ist der einzige Teil dieses Prozesses, der nicht zu 100 % lokal, ohne Server, erledigt werden kann. Ist Ihr Zertifikat qualifiziert, erfüllt eine damit erstellte PAdES-Signatur die Anforderungen einer QES; verwenden Sie ein selbstsigniertes oder firmeneigenes Zertifikat, erstellen Sie eine rechtsgültige fortgeschrittene elektronische Signatur, jedoch keine qualifizierte. Prüfen Sie die für Ihren Anwendungsfall geltenden rechtlichen Anforderungen.',
       },
     ],
   },
@@ -230,6 +246,14 @@ const content = {
           'Mozilla Observatory — aspiramos a una calificación A+ en la prueba de seguridad de cabeceras HTTP.',
         ],
       },
+      {
+        h: '13. Cifrado de datos en reposo y certificaciones ISO 27001 / SOC 2',
+        p: 'La mayoría de las operaciones sobre tus archivos se realizan íntegramente en tu navegador y nunca llegan a ningún servidor, por lo que no existen "datos en reposo" en nuestro lado que cifrar. Para las pocas herramientas que sí requieren procesamiento en servidor (véanse los puntos 4 y 11), el archivo existe únicamente en la memoria RAM del servidor durante unos segundos y se elimina inmediatamente después de la operación — nunca se escribe en disco, ni se realiza copia de seguridad, ni se almacena en una base de datos, por lo que el concepto de "cifrado de datos en reposo" no resulta aplicable en la práctica. No contamos con certificación formal ISO 27001 ni SOC 2. Se trata de procesos de auditoría costosos y plurianuales, diseñados principalmente para organizaciones que mantienen almacenes de datos de clientes persistentes, procesos operativos y equipos de varias personas; en una arquitectura donde el servidor nunca conserva datos del usuario, la mayoría de los controles que cubren estas certificaciones carecen de objeto. En su lugar, aplicamos las garantías alternativas, verificables en el propio código fuente, descritas en los puntos 1 a 12 anteriores (cero almacenamiento, transmisión cifrada, CSP, protección frente a ataques, un proceso público de notificación de vulnerabilidades).',
+      },
+      {
+        h: '14. eIDAS y firma electrónica cualificada (QES)',
+        p: 'La herramienta "Firmar PDF" ofrece un modo de firma digital PAdES (firma electrónica avanzada) utilizando tu propio certificado (.p12/.pfx) — toda la operación se ejecuta localmente en tu navegador; tu archivo y tu certificado nunca se suben a un servidor. Se trata de una firma criptográfica real, no solo de una imagen visual de una firma. Aviso importante: esta firma NO es automáticamente una firma electrónica cualificada (QES) conforme al Reglamento eIDAS de la UE (910/2014) — el estatus de QES depende exclusivamente de si tu certificado fue emitido por un prestador cualificado de servicios de confianza (QTSP) en un dispositivo cualificado de creación de firmas. La emisión de dicho certificado y la verificación de la identidad de su titular requieren necesariamente a un tercero externo y autorizado — es la única parte de este proceso que no puede realizarse al 100% de forma local, sin servidor. Si tu certificado es cualificado, una firma PAdES creada con él cumple los requisitos de una QES; si utilizas un certificado autofirmado o corporativo, creas una firma electrónica avanzada legalmente válida, pero no cualificada. Verifica los requisitos legales aplicables a tu caso de uso concreto.',
+      },
     ],
   },
   pt: {
@@ -305,6 +329,14 @@ const content = {
           'Diretrizes do CERT Polska — seguimento das recomendações da equipa CERT polaca.',
           'Mozilla Observatory — pretendemos uma classificação A+ no teste de segurança de cabeçalhos HTTP.',
         ],
+      },
+      {
+        h: '13. Cifragem de dados em repouso e certificações ISO 27001 / SOC 2',
+        p: 'A maioria das operações sobre os seus ficheiros ocorre inteiramente no seu navegador e nunca chega a qualquer servidor — não existem, portanto, "dados em repouso" do nosso lado para cifrar. Para as poucas ferramentas que exigem processamento no servidor (ver pontos 4 e 11), o ficheiro existe apenas na memória RAM do servidor durante alguns segundos e é eliminado imediatamente após a conclusão da operação — nunca é escrito em disco, copiado para backup nem guardado numa base de dados, pelo que o conceito de "cifragem de dados em repouso" não se aplica na prática. Não possuímos certificação formal ISO 27001 nem SOC 2. Trata-se de processos de auditoria dispendiosos e plurianuais, concebidos sobretudo para organizações que mantêm repositórios persistentes de dados de clientes, processos operacionais e equipas de várias pessoas — numa arquitetura em que o servidor nunca retém dados do utilizador, a maioria dos controlos abrangidos por estas certificações perde o seu objeto. Em vez disso, aplicamos as garantias alternativas, verificáveis no próprio código-fonte, descritas nos pontos 1 a 12 acima (zero armazenamento, transmissão cifrada, CSP, proteção contra ataques, um processo público de divulgação de vulnerabilidades).',
+      },
+      {
+        h: '14. eIDAS e assinatura eletrónica qualificada (QES)',
+        p: 'A ferramenta "Assinar PDF" oferece um modo de assinatura digital PAdES (assinatura eletrónica avançada) utilizando o seu próprio certificado (.p12/.pfx) — toda a operação decorre localmente no seu navegador; o seu ficheiro e o certificado nunca são enviados para um servidor. Trata-se de uma assinatura criptográfica real, não apenas de uma imagem visual de uma assinatura. Aviso importante: esta assinatura NÃO é automaticamente uma assinatura eletrónica qualificada (QES) nos termos do Regulamento eIDAS da UE (910/2014) — o estatuto de QES depende exclusivamente de o seu certificado ter sido emitido por um prestador qualificado de serviços de confiança (QTSP) num dispositivo qualificado de criação de assinaturas. A emissão de tal certificado e a verificação da identidade do seu titular exigem necessariamente um terceiro externo e licenciado — esta é a única parte do processo que não pode ser realizada a 100% localmente, sem servidor. Se o seu certificado for qualificado, uma assinatura PAdES criada com ele cumpre os requisitos de uma QES; se utilizar um certificado autoassinado ou empresarial, cria uma assinatura eletrónica avançada juridicamente válida, mas não qualificada. Verifique os requisitos legais aplicáveis ao seu caso de utilização.',
       },
     ],
   },
@@ -382,6 +414,14 @@ const content = {
           'Mozilla Observatory — vi sikter mot en A+-vurdering i HTTP-hodenesikkerhetstesten.',
         ],
       },
+      {
+        h: '13. Kryptering av data i hvile og ISO 27001-/SOC 2-sertifisering',
+        p: 'De fleste operasjoner på filene dine skjer utelukkende i nettleseren din og når aldri en server — det finnes derfor ingen "data i hvile" på vår side å kryptere. For de få verktøyene som krever serverbehandling (se punkt 4 og 11), eksisterer filen kun i serverens RAM i noen sekunder og slettes umiddelbart etter at operasjonen er fullført — den skrives aldri til disk, sikkerhetskopieres ikke og lagres ikke i en database, så begrepet "kryptering av data i hvile" har i praksis ingen anvendelse her. Vi har ikke formell ISO 27001- eller SOC 2-sertifisering. Dette er kostbare, flerårige revisjonsprogrammer utformet primært for organisasjoner som opprettholder permanente kundedatalagre, driftsprosesser og team med mange ansatte — i en arkitektur der serveren aldri beholder brukerdata i det hele tatt, mister de fleste kontrollene disse sertifiseringene dekker sitt formål. I stedet bruker vi de alternative, kildekode-verifiserbare garantiene beskrevet i punkt 1–12 ovenfor (null lagring, kryptert overføring, CSP, angrepsbeskyttelse, en offentlig prosess for sårbarhetsrapportering).',
+      },
+      {
+        h: '14. eIDAS og kvalifisert elektronisk signatur (QES)',
+        p: 'Verktøyet "Signer PDF" tilbyr en PAdES-signaturmodus (en avansert elektronisk signatur) med ditt eget sertifikat (.p12/.pfx) — hele operasjonen kjører lokalt i nettleseren din; filen og sertifikatet ditt lastes aldri opp til en server. Dette er en ekte kryptografisk signatur, ikke bare et visuelt bilde av en signatur. Viktig forbehold: denne signaturen er IKKE automatisk en kvalifisert elektronisk signatur (QES) etter EUs eIDAS-forordning (910/2014) — QES-status avhenger utelukkende av om sertifikatet ditt er utstedt av en kvalifisert tillitstjenesteleverandør (QTSP) på en kvalifisert signaturopprettelsesenhet. Utstedelse av et slikt sertifikat og identitetsverifisering av innehaveren krever nødvendigvis en ekstern, lisensiert tredjepart — dette er den eneste delen av prosessen som ikke kan gjøres 100 % lokalt, uten server. Hvis sertifikatet ditt er kvalifisert, oppfyller en PAdES-signatur laget med det kravene til QES; bruker du et selvsignert eller firmasertifikat, oppretter du en juridisk gyldig avansert elektronisk signatur, men ikke en kvalifisert en. Sjekk de juridiske kravene som gjelder for ditt bruksområde.',
+      },
     ],
   },
   sv: {
@@ -457,6 +497,14 @@ const content = {
           'CERT Polska-riktlinjer — efterlevnad av rekommendationerna från det polska CERT-teamet.',
           'Mozilla Observatory — vi strävar efter ett A+-betyg i HTTP-huvuden:säkerhetstest.',
         ],
+      },
+      {
+        h: '13. Kryptering av data i vila samt ISO 27001-/SOC 2-certifiering',
+        p: 'De flesta åtgärder på dina filer sker uteslutande i din webbläsare och når aldrig någon server — det finns därför ingen "data i vila" på vår sida att kryptera. För de få verktyg som kräver serverbehandling (se punkt 4 och 11) finns filen enbart i serverns RAM-minne under några sekunder och raderas omedelbart efter att åtgärden slutförts — den skrivs aldrig till disk, säkerhetskopieras inte och lagras inte i någon databas, så begreppet "kryptering av data i vila" saknar i praktiken tillämpning här. Vi innehar ingen formell ISO 27001- eller SOC 2-certifiering. Det är kostsamma, fleråriga revisionsprogram som i första hand är utformade för organisationer som upprätthåller permanenta kunddatalager, driftsprocesser och team med flera anställda — i en arkitektur där servern aldrig behåller användardata alls saknar de flesta kontroller som dessa certifieringar omfattar sitt egentliga syfte. Istället tillämpar vi de alternativa, i källkoden verifierbara garantier som beskrivs i punkt 1–12 ovan (ingen lagring, krypterad överföring, CSP, attackskydd, en offentlig process för rapportering av sårbarheter).',
+      },
+      {
+        h: '14. eIDAS och kvalificerad elektronisk underskrift (QES)',
+        p: 'Verktyget "Signera PDF" erbjuder ett PAdES-signaturläge (en avancerad elektronisk underskrift) med ditt eget certifikat (.p12/.pfx) — hela åtgärden körs lokalt i din webbläsare; din fil och ditt certifikat laddas aldrig upp till någon server. Det här är en riktig kryptografisk signatur, inte bara en visuell bild av en underskrift. Viktigt förbehåll: denna signatur är INTE automatiskt en kvalificerad elektronisk underskrift (QES) enligt EU:s eIDAS-förordning (910/2014) — QES-status beror uteslutande på om ditt certifikat utfärdats av en kvalificerad betrodd tjänsteleverantör (QTSP) på en kvalificerad anordning för skapande av underskrifter. Utfärdande av ett sådant certifikat och identitetskontroll av innehavaren kräver med nödvändighet en extern, licensierad tredje part — det är den enda delen av processen som inte kan göras till 100 % lokalt, utan server. Om ditt certifikat är kvalificerat uppfyller en PAdES-signatur som skapats med det kraven för QES; använder du ett självsignerat eller företagscertifikat skapar du en juridiskt giltig avancerad elektronisk underskrift, men inte en kvalificerad sådan. Kontrollera de juridiska krav som gäller för ditt specifika användningsfall.',
       },
     ],
   },
@@ -534,6 +582,14 @@ const content = {
           'Mozilla Observatory — nous visons une note A+ au test de sécurité des en-têtes HTTP.',
         ],
       },
+      {
+        h: '13. Chiffrement des données au repos et certifications ISO 27001 / SOC 2',
+        p: 'La plupart des opérations sur vos fichiers s\'effectuent entièrement dans votre navigateur et n\'atteignent jamais aucun serveur — il n\'existe donc, de notre côté, aucune « donnée au repos » à chiffrer. Pour les quelques outils nécessitant un traitement côté serveur (voir points 4 et 11), le fichier n\'existe que dans la mémoire RAM du serveur pendant quelques secondes et est supprimé immédiatement après l\'opération — il n\'est jamais écrit sur disque, sauvegardé ni stocké dans une base de données, si bien que la notion de « chiffrement des données au repos » ne s\'applique pas réellement ici. Nous ne détenons pas de certification formelle ISO 27001 ni SOC 2. Ce sont des programmes d\'audit coûteux et pluriannuels, conçus avant tout pour des organisations qui conservent des entrepôts de données clients persistants, des processus opérationnels et des équipes de plusieurs personnes — dans une architecture où le serveur ne conserve jamais aucune donnée utilisateur, la plupart des contrôles couverts par ces certifications n\'ont tout simplement plus d\'objet. Nous appliquons à la place les garanties alternatives, vérifiables dans le code source, décrites aux points 1 à 12 ci-dessus (zéro stockage, transmission chiffrée, CSP, protections contre les attaques, un processus public de signalement des vulnérabilités).',
+      },
+      {
+        h: '14. eIDAS et signature électronique qualifiée (QES)',
+        p: 'L\'outil « Signer PDF » propose un mode de signature numérique PAdES (une signature électronique avancée) utilisant votre propre certificat (.p12/.pfx) — l\'ensemble de l\'opération s\'exécute localement dans votre navigateur ; votre fichier et votre certificat ne sont jamais envoyés à un serveur. Il s\'agit d\'une véritable signature cryptographique, et non d\'une simple image visuelle de signature. Avertissement important : cette signature n\'est PAS automatiquement une signature électronique qualifiée (QES) au sens du règlement eIDAS de l\'UE (910/2014) — le statut QES dépend exclusivement du fait que votre certificat ait été délivré par un prestataire de services de confiance qualifié (QTSP) sur un dispositif qualifié de création de signature. La délivrance d\'un tel certificat et la vérification de l\'identité de son titulaire nécessitent par nature un tiers externe et agréé — c\'est le seul élément de ce processus qui ne peut pas être réalisé à 100 % localement, sans serveur. Si votre certificat est qualifié, une signature PAdES réalisée avec celui-ci répond aux exigences d\'une QES ; si vous utilisez un certificat auto-signé ou d\'entreprise, vous créez une signature électronique avancée juridiquement valable, mais non qualifiée. Vérifiez les exigences légales applicables à votre cas d\'usage.',
+      },
     ],
   },
   ar: {
@@ -609,6 +665,14 @@ const content = {
           'إرشادات CERT Polska — اتباع توصيات فريق CERT البولندي.',
           'Mozilla Observatory — نهدف إلى الحصول على تقييم A+ في اختبار أمان ترويسات HTTP.',
         ],
+      },
+      {
+        h: '13. تشفير البيانات الساكنة وشهادات ISO 27001 / SOC 2',
+        p: 'تتم معظم العمليات على ملفاتك بالكامل داخل متصفحك ولا تصل أبداً إلى أي خادم — لذلك لا توجد من جانبنا أي "بيانات ساكنة" لتشفيرها أصلاً. بالنسبة للأدوات القليلة التي تتطلب معالجة على الخادم (انظر البندين 4 و11)، لا يوجد الملف إلا في ذاكرة الوصول العشوائي (RAM) للخادم لبضع ثوانٍ ويُحذف فوراً بعد اكتمال العملية — لا يُكتب أبداً على القرص، ولا يُنسخ احتياطياً، ولا يُخزَّن في أي قاعدة بيانات، لذا فإن مفهوم "تشفير البيانات الساكنة" لا ينطبق عملياً هنا. لا نملك شهادة رسمية ISO 27001 أو SOC 2. هذه برامج تدقيق مكلفة ومتعددة السنوات، مصممة بالأساس للمؤسسات التي تحتفظ بمخازن بيانات عملاء دائمة، وعمليات تشغيلية، وفرق عمل متعددة الأفراد — وفي بنية لا يحتفظ فيها الخادم بأي بيانات للمستخدم على الإطلاق، تفقد معظم الضوابط التي تغطيها هذه الشهادات موضوعها أصلاً. بدلاً من ذلك، نعتمد الضمانات البديلة القابلة للتحقق من الكود المصدري، الموضحة في البنود من 1 إلى 12 أعلاه (عدم التخزين، النقل المشفر، سياسة أمان المحتوى CSP، الحماية من الهجمات، عملية علنية للإبلاغ عن الثغرات).',
+      },
+      {
+        h: '14. eIDAS والتوقيع الإلكتروني المؤهل (QES)',
+        p: 'توفر أداة "توقيع PDF" وضع توقيع رقمي PAdES (توقيع إلكتروني متقدم) باستخدام شهادتك الخاصة (.p12/.pfx) — تتم العملية بأكملها محلياً داخل متصفحك؛ لا يُرفع ملفك ولا شهادتك أبداً إلى أي خادم. هذا توقيع تشفيري حقيقي، وليس مجرد صورة مرئية لتوقيع. ملاحظة مهمة: هذا التوقيع لا يُعد تلقائياً توقيعاً إلكترونياً مؤهلاً (QES) بموجب لائحة eIDAS الأوروبية (910/2014) — فحالة QES تعتمد كلياً على ما إذا كانت شهادتك صادرة عن مزوّد خدمات ثقة مؤهل (QTSP) على جهاز إنشاء توقيع مؤهل. إصدار مثل هذه الشهادة والتحقق من هوية حاملها يتطلبان بالضرورة طرفاً ثالثاً خارجياً مرخصاً — وهذا هو الجزء الوحيد من هذه العملية الذي لا يمكن إنجازه محلياً بنسبة 100% دون خادم. إذا كانت شهادتك مؤهلة، فإن توقيع PAdES المُنشأ بها يستوفي متطلبات QES؛ أما إذا استخدمت شهادة موقعة ذاتياً أو شهادة شركة، فإنك تُنشئ توقيعاً إلكترونياً متقدماً صالحاً قانونياً، لكنه غير مؤهل. تحقق من المتطلبات القانونية المطبقة على حالة استخدامك.',
       },
     ],
   },
@@ -686,6 +750,14 @@ const content = {
           'Mozilla Observatory — ما به دنبال رتبه A+ در تست امنیت هدرهای HTTP هستیم.',
         ],
       },
+      {
+        h: '۱۳. رمزگذاری داده‌های در حالت سکون و گواهی‌نامه‌های ISO 27001 / SOC 2',
+        p: 'بیشتر عملیات روی فایل‌های شما به‌طور کامل در مرورگرتان انجام می‌شود و هرگز به هیچ سروری نمی‌رسد — بنابراین اصلاً هیچ "داده‌ای در حالت سکون" در سمت ما وجود ندارد که رمزگذاری شود. برای معدود ابزارهایی که به پردازش سمت سرور نیاز دارند (بند ۴ و ۱۱ را ببینید)، فایل فقط برای چند ثانیه در حافظه RAM سرور وجود دارد و بلافاصله پس از پایان عملیات حذف می‌شود — هرگز روی دیسک نوشته نمی‌شود، پشتیبان‌گیری نمی‌شود و در هیچ پایگاه‌داده‌ای ذخیره نمی‌شود، بنابراین مفهوم "رمزگذاری داده‌های در حالت سکون" در عمل در اینجا کاربردی ندارد. ما گواهی‌نامه رسمی ISO 27001 یا SOC 2 نداریم. این‌ها فرآیندهای ممیزی پرهزینه و چندساله‌ای هستند که عمدتاً برای سازمان‌هایی طراحی شده‌اند که انبارهای داده دائمی مشتریان، فرآیندهای عملیاتی و تیم‌های چندنفره را نگه می‌دارند — در معماری‌ای که سرور اصلاً هیچ داده‌ای از کاربر را نگه نمی‌دارد، بیشتر کنترل‌های تحت پوشش این گواهی‌نامه‌ها اصلاً موضوعی برای اعمال شدن ندارند. در عوض، ما از تضمین‌های جایگزین و قابل‌راستی‌آزمایی در کد منبع که در بندهای ۱ تا ۱۲ بالا توضیح داده شد استفاده می‌کنیم (ذخیره‌سازی صفر، انتقال رمزگذاری‌شده، CSP، محافظت در برابر حملات، فرآیندی عمومی برای گزارش آسیب‌پذیری‌ها).',
+      },
+      {
+        h: '۱۴. eIDAS و امضای الکترونیکی واجد شرایط (QES)',
+        p: 'ابزار "امضا کردن PDF" حالت امضای دیجیتال PAdES (امضای الکترونیکی پیشرفته) را با استفاده از گواهی خودتان (.p12/.pfx) ارائه می‌دهد — کل عملیات به‌صورت محلی در مرورگر شما اجرا می‌شود؛ فایل و گواهی شما هرگز در هیچ سروری بارگذاری نمی‌شوند. این یک امضای رمزنگاری‌شده واقعی است، نه صرفاً یک تصویر بصری از امضا. نکته مهم: این امضا به‌طور خودکار یک امضای الکترونیکی واجد شرایط (QES) طبق مقررات eIDAS اتحادیه اروپا (۹۱۰/۲۰۱۴) محسوب نمی‌شود — وضعیت QES کاملاً به این بستگی دارد که آیا گواهی شما توسط یک ارائه‌دهنده خدمات اعتماد واجد شرایط (QTSP) روی یک دستگاه ایجاد امضای واجد شرایط صادر شده باشد یا خیر. صدور چنین گواهی‌ای و تأیید هویت دارنده آن ذاتاً به یک شخص ثالث خارجی و دارای مجوز نیاز دارد — این تنها بخشی از این فرآیند است که نمی‌توان آن را صد در صد به‌صورت محلی و بدون سرور انجام داد. اگر گواهی شما واجد شرایط باشد، امضای PAdES ایجادشده با آن الزامات QES را برآورده می‌کند؛ اگر از گواهی خوداِمضا یا سازمانی استفاده کنید، یک امضای الکترونیکی پیشرفته و از نظر قانونی معتبر ایجاد می‌کنید، اما واجد شرایط نیست. الزامات قانونی قابل‌اجرا برای مورد استفاده خاص خود را بررسی کنید.',
+      },
     ],
   },
   hi: {
@@ -761,6 +833,14 @@ const content = {
           'CERT Polska दिशानिर्देश — पोलिश CERT टीम की सिफारिशों का पालन करना।',
           'Mozilla Observatory — हम HTTP हेडर सुरक्षा परीक्षण में A+ रेटिंग का लक्ष्य रखते हैं।',
         ],
+      },
+      {
+        h: '13. निष्क्रिय डेटा एन्क्रिप्शन और ISO 27001 / SOC 2 प्रमाणन',
+        p: 'आपकी फ़ाइलों पर अधिकांश कार्रवाइयाँ पूरी तरह आपके ब्राउज़र में होती हैं और कभी किसी सर्वर तक नहीं पहुँचतीं — इसलिए हमारी ओर से एन्क्रिप्ट करने के लिए कोई "निष्क्रिय डेटा" (data at rest) मौजूद ही नहीं है। सर्वर-साइड प्रोसेसिंग की आवश्यकता वाले कुछ गिने-चुने टूल्स के लिए (बिंदु 4 और 11 देखें), फ़ाइल केवल कुछ सेकंड के लिए सर्वर की RAM में मौजूद रहती है और कार्रवाई पूरी होते ही तुरंत हटा दी जाती है — यह कभी डिस्क पर लिखी नहीं जाती, बैकअप नहीं ली जाती, और न ही किसी डेटाबेस में संग्रहीत होती है, इसलिए "निष्क्रिय डेटा एन्क्रिप्शन" की अवधारणा यहाँ व्यावहारिक रूप से लागू नहीं होती। हमारे पास औपचारिक ISO 27001 या SOC 2 प्रमाणन नहीं है। ये महंगी, बहु-वर्षीय ऑडिट प्रक्रियाएँ मुख्य रूप से उन संगठनों के लिए बनाई गई हैं जो स्थायी ग्राहक डेटा स्टोर, परिचालन प्रक्रियाएँ और बहु-सदस्यीय टीमें बनाए रखते हैं — ऐसी वास्तुकला में जहाँ सर्वर कभी भी उपयोगकर्ता डेटा नहीं रखता, इन प्रमाणनों के अधिकांश नियंत्रणों का वास्तव में कोई विषय ही नहीं बचता। इसके बजाय, हम ऊपर बिंदु 1–12 में वर्णित वैकल्पिक, स्रोत कोड में सत्यापन योग्य गारंटी लागू करते हैं (शून्य भंडारण, एन्क्रिप्टेड ट्रांसमिशन, CSP, हमलों से सुरक्षा, भेद्यता रिपोर्टिंग की सार्वजनिक प्रक्रिया)।',
+      },
+      {
+        h: '14. eIDAS और योग्य इलेक्ट्रॉनिक हस्ताक्षर (QES)',
+        p: '"PDF हस्ताक्षर करें" टूल आपके अपने सर्टिफिकेट (.p12/.pfx) का उपयोग करके PAdES डिजिटल हस्ताक्षर मोड (एडवांस्ड इलेक्ट्रॉनिक सिग्नेचर) प्रदान करता है — पूरी प्रक्रिया आपके ब्राउज़र में स्थानीय रूप से चलती है; आपकी फ़ाइल और सर्टिफिकेट कभी सर्वर पर अपलोड नहीं होते। यह केवल हस्ताक्षर की एक दृश्य छवि नहीं, बल्कि एक वास्तविक क्रिप्टोग्राफ़िक हस्ताक्षर है। महत्वपूर्ण चेतावनी: यह हस्ताक्षर EU के eIDAS विनियमन (910/2014) के तहत स्वतः योग्य इलेक्ट्रॉनिक हस्ताक्षर (QES) नहीं बन जाता — QES का दर्जा पूरी तरह इस बात पर निर्भर करता है कि आपका सर्टिफिकेट किसी योग्य ट्रस्ट सेवा प्रदाता (QTSP) द्वारा योग्य हस्ताक्षर निर्माण उपकरण पर जारी किया गया था या नहीं। ऐसा सर्टिफिकेट जारी करना और उसके धारक की पहचान सत्यापित करना, स्वभावतः किसी बाहरी, लाइसेंस-प्राप्त तीसरे पक्ष की आवश्यकता रखता है — प्रक्रिया का यही एकमात्र हिस्सा है जिसे सर्वर के बिना, 100% स्थानीय रूप से पूरा नहीं किया जा सकता। यदि आपका सर्टिफिकेट योग्य है, तो उससे बनाया गया PAdES हस्ताक्षर QES की आवश्यकताओं को पूरा करता है; यदि आप स्व-हस्ताक्षरित या कॉर्पोरेट सर्टिफिकेट का उपयोग करते हैं, तो आप कानूनी रूप से वैध एडवांस्ड इलेक्ट्रॉनिक हस्ताक्षर बनाते हैं, लेकिन योग्य नहीं। अपने विशिष्ट उपयोग के लिए लागू कानूनी आवश्यकताओं की जाँच करें।',
       },
     ],
   },
@@ -838,6 +918,14 @@ const content = {
           'Mozilla Observatory — við stefnum á einkunn A+ í HTTP-öryggisprófunum.',
         ],
       },
+      {
+        h: '13. Dulkóðun gagna í hvíld og ISO 27001 / SOC 2 vottun',
+        p: 'Flestar aðgerðir á skránum þínum eiga sér stað eingöngu í vafranum þínum og ná aldrei til neins netþjóns — því eru engin „gögn í hvíld" okkar megin til að dulkóða. Fyrir þau fáu verkfæri sem krefjast vinnslu á netþjóni (sjá lið 4 og 11) er skráin einungis til í vinnsluminni (RAM) netþjónsins í nokkrar sekúndur og er eytt strax að lokinni aðgerðinni — hún er aldrei skrifuð á disk, afrituð né geymd í gagnagrunni, svo hugtakið „dulkóðun gagna í hvíld" á í reynd ekki við hér. Við höfum ekki formlega ISO 27001 eða SOC 2 vottun. Þetta eru kostnaðarsöm, margra ára úttektarferli sem eru fyrst og fremst hönnuð fyrir stofnanir sem viðhalda varanlegum gagnageymslum viðskiptavina, rekstrarferlum og fjölmennum teymum — í kerfi þar sem netþjónninn geymir aldrei nein notandagögn missa flestar þær eftirlitsaðgerðir sem þessar vottanir ná yfir einfaldlega tilgang sinn. Þess í stað notum við þær staðgengilsábyrgðir sem lýst er í liðum 1–12 hér að ofan og hægt er að sannreyna í frumkóðanum sjálfum (engin geymsla, dulkóðuð sending, CSP, árásarvarnir, opinbert ferli fyrir tilkynningu veikleika).',
+      },
+      {
+        h: '14. eIDAS og fullgild rafræn undirskrift (QES)',
+        p: 'Verkfærið „Undirrita PDF" býður upp á PAdES stafræna undirskrift (þróaða rafræna undirskrift) með þínu eigin skilríki (.p12/.pfx) — öll aðgerðin fer fram á staðnum í vafranum þínum; skráin þín og skilríkið eru aldrei send til netþjóns. Þetta er alvöru dulkóðuð undirskrift, ekki bara sjónræn mynd af undirskrift. Mikilvægur fyrirvari: þessi undirskrift telst EKKI sjálfkrafa fullgild rafræn undirskrift (QES) samkvæmt eIDAS reglugerð ESB (910/2014) — QES-staða veltur eingöngu á því hvort skilríkið þitt hafi verið gefið út af fullgildum traustþjónustuveitanda (QTSP) á fullgildum undirskriftarbúnaði. Útgáfa slíks skilríkis og staðfesting á auðkenni handhafa þess krefst óhjákvæmilega utanaðkomandi, löggilts þriðja aðila — það er eini hluti þessa ferlis sem ekki er hægt að framkvæma að fullu á staðnum, án netþjóns. Ef skilríkið þitt er fullgilt uppfyllir PAdES undirskrift gerð með því kröfur QES; ef þú notar sjálfundirritað eða fyrirtækjaskilríki býrðu til lagalega gilda þróaða rafræna undirskrift, en ekki fullgilda. Kannaðu lagalegar kröfur sem eiga við um þitt notkunartilvik.',
+      },
     ],
   },
   it: {
@@ -913,6 +1001,14 @@ const content = {
           'Linee guida CERT Polska — seguendo le raccomandazioni del team CERT polacco.',
           'Mozilla Observatory — puntiamo a una valutazione A+ nel test di sicurezza degli header HTTP.',
         ],
+      },
+      {
+        h: '13. Crittografia dei dati a riposo e certificazioni ISO 27001 / SOC 2',
+        p: 'La maggior parte delle operazioni sui tuoi file avviene interamente nel tuo browser e non raggiunge mai alcun server — non esistono quindi, da parte nostra, "dati a riposo" da cifrare. Per i pochi strumenti che richiedono un\'elaborazione lato server (vedi punti 4 e 11), il file esiste solo nella RAM del server per pochi secondi e viene eliminato immediatamente al termine dell\'operazione — non viene mai scritto su disco, sottoposto a backup né memorizzato in un database, quindi il concetto di "crittografia dei dati a riposo" non trova qui reale applicazione. Non disponiamo di certificazioni formali ISO 27001 o SOC 2. Si tratta di programmi di audit costosi e pluriennali, pensati soprattutto per organizzazioni che mantengono archivi permanenti di dati dei clienti, processi operativi e team composti da più persone — in un\'architettura in cui il server non conserva mai alcun dato dell\'utente, la maggior parte dei controlli coperti da queste certificazioni perde semplicemente il proprio oggetto. Applichiamo invece le garanzie alternative, verificabili nel codice sorgente, descritte nei punti 1-12 precedenti (zero conservazione, trasmissione cifrata, CSP, protezioni dagli attacchi, un processo pubblico di segnalazione delle vulnerabilità).',
+      },
+      {
+        h: '14. eIDAS e firma elettronica qualificata (QES)',
+        p: 'Lo strumento "Firmare PDF" offre una modalità di firma digitale PAdES (una firma elettronica avanzata) che utilizza il tuo certificato personale (.p12/.pfx) — l\'intera operazione viene eseguita localmente nel tuo browser; il file e il certificato non vengono mai caricati su un server. Si tratta di una vera firma crittografica, non di una semplice immagine visiva di una firma. Avvertenza importante: questa firma NON è automaticamente una firma elettronica qualificata (QES) ai sensi del regolamento UE eIDAS (910/2014) — lo status di QES dipende esclusivamente dal fatto che il tuo certificato sia stato rilasciato da un prestatore di servizi fiduciari qualificato (QTSP) su un dispositivo qualificato per la creazione di firme. Il rilascio di tale certificato e la verifica dell\'identità del suo titolare richiedono necessariamente una terza parte esterna e autorizzata — è l\'unico elemento di questo processo che non può essere svolto al 100% localmente, senza server. Se il tuo certificato è qualificato, una firma PAdES creata con esso soddisfa i requisiti di una QES; se utilizzi un certificato autofirmato o aziendale, crei una firma elettronica avanzata legalmente valida, ma non qualificata. Verifica i requisiti legali applicabili al tuo caso d\'uso specifico.',
       },
     ],
   },
@@ -990,6 +1086,14 @@ const content = {
           'Mozilla Observatory — HTTPヘッダーセキュリティテストでA+評価を目指しています。',
         ],
       },
+      {
+        h: '13. 保存データの暗号化とISO 27001 / SOC 2認証について',
+        p: 'ファイルに対するほとんどの操作はブラウザ内で完結し、サーバーに送信されることはありません。そのため、当社側で暗号化すべき「保存データ」はそもそも存在しません。サーバー側処理が必要なごく一部のツール（項目4・11を参照)では、ファイルはサーバーのRAM上に数秒間だけ存在し、処理完了後ただちに削除されます — ディスクへの書き込み、バックアップ、データベースへの保存は一切行われないため、「保存データの暗号化」という概念は実質的に当てはまりません。当社はISO 27001またはSOC 2の正式な認証を取得していません。これらは主に、永続的な顧客データストア、運用プロセス、多人数のチームを維持する組織向けに設計された、費用と年月を要する監査プログラムです — サーバーがユーザーデータを一切保持しないアーキテクチャでは、これらの認証が対象とする管理策の大半はそもそも適用対象がありません。代わりに、上記の項目1〜12で説明した、ソースコードで検証可能な代替の保証（ゼロ保存、暗号化された通信、CSP、攻撃対策、公開された脆弱性報告プロセス)を採用しています。',
+      },
+      {
+        h: '14. eIDASと適格電子署名（QES）について',
+        p: '「PDFに署名」ツールでは、ご自身の証明書（.p12/.pfx）を使用したPAdESデジタル署名モード（高度電子署名）を提供しています — 処理はすべてブラウザ内でローカルに実行され、ファイルと証明書がサーバーにアップロードされることはありません。これは単なる署名の視覚的な画像ではなく、本物の暗号署名です。重要な注意点：この署名はEUのeIDAS規則（910/2014）における適格電子署名（QES）に自動的に該当するものではありません — QESとしての地位は、ご使用の証明書が適格信頼サービス提供者（QTSP）により適格署名作成装置上で発行されたものであるかどうかにのみ依存します。そのような証明書の発行および所有者の本人確認には、本質的に外部の認可された第三者が必要です — これがこのプロセスの中で、サーバーなしで100%ローカルに実行できない唯一の部分です。証明書が適格なものであれば、それを用いて作成されたPAdES署名はQESの要件を満たします。自己署名証明書や企業証明書を使用する場合、法的に有効な高度電子署名は作成されますが、適格電子署名にはなりません。ご自身の用途に適用される法的要件をご確認ください。',
+      },
     ],
   },
   tr: {
@@ -1065,6 +1169,14 @@ const content = {
           'CERT Polska kılavuzları — Polonya CERT ekibinin tavsiyelerine uyarak.',
           'Mozilla Observatory — HTTP başlık güvenlik testinde A+ derecesi hedefliyoruz.',
         ],
+      },
+      {
+        h: '13. Bekleyen verilerin şifrelenmesi ve ISO 27001 / SOC 2 sertifikasyonu',
+        p: 'Dosyalarınız üzerindeki işlemlerin çoğu tamamen tarayıcınızda gerçekleşir ve hiçbir zaman bir sunucuya ulaşmaz — bu nedenle bizim tarafımızda şifrelenecek herhangi bir "bekleyen veri" bulunmaz. Sunucu tarafı işlem gerektiren birkaç araç için (bkz. madde 4 ve 11), dosya yalnızca birkaç saniye boyunca sunucunun RAM belleğinde bulunur ve işlem tamamlanır tamamlanmaz hemen silinir — hiçbir zaman diske yazılmaz, yedeklenmez veya bir veritabanında saklanmaz, bu nedenle "bekleyen veri şifrelemesi" kavramı burada pratikte geçerli değildir. Resmi ISO 27001 veya SOC 2 sertifikasyonuna sahip değiliz. Bunlar, öncelikle kalıcı müşteri veri depoları, operasyonel süreçler ve çok kişili ekipler bulunduran kuruluşlar için tasarlanmış, maliyetli ve çok yıllı denetim programlarıdır — sunucunun kullanıcı verilerini hiçbir zaman tutmadığı bir mimaride, bu sertifikaların kapsadığı kontrollerin çoğunun üzerine uygulanacağı bir konu kalmaz. Bunun yerine, yukarıdaki 1-12. maddelerde açıklanan, kaynak kodundan doğrulanabilir alternatif güvenceleri uyguluyoruz (sıfır depolama, şifreli iletim, CSP, saldırı korumaları, herkese açık bir güvenlik açığı bildirim süreci).',
+      },
+      {
+        h: '14. eIDAS ve nitelikli elektronik imza (QES)',
+        p: '"PDF İmzala" aracı, kendi sertifikanızı (.p12/.pfx) kullanan bir PAdES dijital imza modu (gelişmiş elektronik imza) sunar — işlemin tamamı tarayıcınızda yerel olarak çalışır; dosyanız ve sertifikanız hiçbir zaman bir sunucuya yüklenmez. Bu, yalnızca görsel bir imza resmi değil, gerçek bir kriptografik imzadır. Önemli uyarı: bu imza, AB eIDAS Tüzüğü (910/2014) kapsamında otomatik olarak nitelikli elektronik imza (QES) sayılmaz — QES statüsü yalnızca sertifikanızın nitelikli bir güven hizmeti sağlayıcısı (QTSP) tarafından nitelikli bir imza oluşturma cihazında düzenlenip düzenlenmediğine bağlıdır. Böyle bir sertifikanın düzenlenmesi ve sahibinin kimliğinin doğrulanması, doğası gereği harici, lisanslı bir üçüncü tarafı gerektirir — bu, sürecin %100 yerel olarak, sunucusuz gerçekleştirilemeyen tek parçasıdır. Sertifikanız nitelikliyse, onunla oluşturulan bir PAdES imzası QES gereksinimlerini karşılar; kendinden imzalı veya kurumsal bir sertifika kullanıyorsanız, yasal olarak geçerli bir gelişmiş elektronik imza oluşturursunuz, ancak nitelikli bir imza değil. Kullanım durumunuz için geçerli yasal gereklilikleri kontrol edin.',
       },
     ],
   },
@@ -1142,6 +1254,14 @@ const content = {
           'Mozilla Observatory——我们旨在HTTP标头安全测试中获得A+评级。',
         ],
       },
+      {
+        h: '13. 静态数据加密与ISO 27001 / SOC 2认证',
+        p: '对文件的大多数操作完全在您的浏览器中完成，从不会到达任何服务器——因此我们这边根本不存在需要加密的"静态数据"。对于少数确实需要服务器端处理的工具（参见第4点和第11点），文件仅在服务器的内存（RAM）中存在几秒钟，操作完成后立即删除——它从不写入磁盘、不进行备份，也不存储在数据库中，因此"静态数据加密"这一概念在此实际上并不适用。我们没有正式的ISO 27001或SOC 2认证。这些是耗资巨大、历时多年的审计项目，主要面向那些维护持久性客户数据存储、运营流程和多人团队的组织——在服务器从不保留任何用户数据的架构下，这些认证所涵盖的大多数控制措施根本没有适用对象。相反，我们采用上文第1至12点所述的、可在源代码中验证的替代性保障措施（零存储、加密传输、CSP、攻击防护、公开的漏洞报告流程)。',
+      },
+      {
+        h: '14. eIDAS与合格电子签名（QES）',
+        p: '"PDF签名"工具提供使用您自己的证书（.p12/.pfx）的PAdES数字签名模式（高级电子签名)——整个操作在您的浏览器本地完成；您的文件和证书永远不会上传到服务器。这是真正的加密签名，而不仅仅是签名的可视化图像。重要提示：根据欧盟eIDAS法规（910/2014），此签名并不自动构成合格电子签名（QES)——QES资格完全取决于您的证书是否由合格信任服务提供商（QTSP）在合格签名创建设备上签发。签发此类证书并验证持有人身份，本质上需要一个外部的、持牌的第三方机构——这是整个流程中唯一无法百分之百在本地、无需服务器完成的部分。如果您的证书是合格证书，用它创建的PAdES签名即满足QES的要求；如果您使用自签名证书或企业证书，则会创建一个具有法律效力的高级电子签名，但并非合格签名。请核实适用于您具体使用场景的法律要求。',
+      },
     ],
   },
   en: {
@@ -1217,6 +1337,14 @@ const content = {
           'CERT Polska guidelines — following recommendations from the Polish CERT team.',
           'Mozilla Observatory — we aim for an A+ rating in HTTP headers security test.',
         ],
+      },
+      {
+        h: '13. Encryption at rest and ISO 27001 / SOC 2 certification',
+        p: 'Most operations on your files happen entirely in your browser and never reach any server — so there is no "data at rest" on our side to encrypt in the first place. For the few tools that do require server-side processing (see points 4 and 11), the file exists only in the server\'s RAM for a few seconds and is deleted immediately after the operation completes — it is never written to disk, backed up, or stored in a database, so "encryption at rest" doesn\'t meaningfully apply here. We do not hold formal ISO 27001 or SOC 2 certification. These are expensive, multi-year audit programs designed primarily for organizations that maintain persistent customer data stores, operational processes, and multi-person teams; in an architecture where the server never retains user data at all, most of the controls these certifications cover simply have no subject to apply to. Instead, we rely on the alternative, source-verifiable guarantees described in points 1–12 above (zero storage, encrypted transit, CSP, attack protections, a public vulnerability-disclosure process).',
+      },
+      {
+        h: '14. eIDAS and Qualified Electronic Signatures (QES)',
+        p: 'The "Sign PDF" tool offers a PAdES digital-signature mode (an Advanced Electronic Signature) using your own certificate (.p12/.pfx) — the entire operation runs locally in your browser; your file and certificate are never uploaded to a server. This is a real cryptographic signature, not just a visual image of one. Important caveat: this signature is NOT automatically a Qualified Electronic Signature (QES) under the EU eIDAS regulation (910/2014) — QES status depends entirely on whether your certificate was issued by a Qualified Trust Service Provider (QTSP) on a Qualified Signature Creation Device. Issuing such a certificate and verifying its holder\'s identity inherently requires an external, licensed third party — this is the one part of the process that cannot be done 100% locally, without a server. If your certificate is qualified, a PAdES signature made with it meets the requirements of QES; if you use a self-signed or corporate certificate, you create a legally valid advanced electronic signature, but not a qualified one. Check the legal requirements that apply to your specific use case.',
       },
     ],
   },
