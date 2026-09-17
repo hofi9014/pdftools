@@ -21,10 +21,15 @@ function groupIntoLines(items: { text: string; x: number; y: number; width: numb
   });
 
   const blocks: TextBlock[] = [];
-  let currentLine: typeof sorted = [];
-  let lineY = sorted[0].y;
+  // Seed with the first item directly (rather than starting currentLine empty and letting
+  // the loop's "continue current line" branch run on it) — that branch reads
+  // currentLine[currentLine.length - 1], which is undefined the very first time through and
+  // crashes on `lastOnLine.x`. Every subsequent flush already re-seeds currentLine to
+  // [item] before falling through, so this special case only matters once, up front.
+  let currentLine: typeof sorted = [sorted[0]!];
+  let lineY = sorted[0]!.y;
 
-  for (const item of sorted) {
+  for (const item of sorted.slice(1)) {
     if (Math.abs(item.y - lineY) > 3) {
       if (currentLine.length > 0) {
         blocks.push(mergeLine(currentLine, pageHeight));
@@ -32,7 +37,9 @@ function groupIntoLines(items: { text: string; x: number; y: number; width: numb
       currentLine = [item];
       lineY = item.y;
     } else {
-      const lastOnLine = currentLine[currentLine.length - 1];
+      // Safe: currentLine is seeded with 1 element above and every branch that reassigns it
+      // sets it to a new non-empty [item] array, so it's never empty here.
+      const lastOnLine = currentLine[currentLine.length - 1]!;
       const spaceWidth = item.fontSize * 0.3;
       const gap = item.x - (lastOnLine.x + lastOnLine.width);
       if (gap > spaceWidth * 3) {

@@ -55,7 +55,7 @@ export default function RedactPdf({ locale: forcedLocale }: { locale?: Locale } 
         <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">{t('page.redact.desc', locale)}</p>
       </div>
 
-      <div onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+      <div onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0] ?? null); }}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onClick={() => document.getElementById('fileInput')?.click()}

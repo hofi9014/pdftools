@@ -36,7 +36,8 @@ export default function ContentBlockRenderer({
             return (
               <div key={i} className="flex gap-4 mb-5">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold mt-0.5">
-                  {stepNumbers[i].toString()}
+                  {/* Safe: stepNumbers has exactly one entry per block (built via reduce above). */}
+                  {stepNumbers[i]!.toString()}
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-1">{tls(block.title, locale)}</h4>

@@ -120,7 +120,8 @@ export async function renderIRToPptx(deck: IRDeck): Promise<Blob> {
             const tabRow: { text: string; options?: object }[] = [];
             for (let c = 0; c < el.cols; c++) {
               if (covered.has(`${r}:${c}`)) continue;
-              const cell = el.cells[r][c];
+              // Safe: el.cells is a [el.rows][el.cols] grid by construction; r < el.rows, c < el.cols.
+              const cell = el.cells[r]![c]!;
               const colspan = cell.colspan ?? 1;
               const rowspan = cell.rowspan ?? 1;
               for (let rr = r; rr < r + rowspan; rr++) {

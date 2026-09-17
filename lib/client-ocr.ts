@@ -28,10 +28,11 @@ function preprocessCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
 
+  // Safe: i+2 < i+4 <= data.length by the loop bound (RGBA quads, i increments by 4).
   for (let i = 0; i < data.length; i += 4) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
+    const r = data[i]!;
+    const g = data[i + 1]!;
+    const b = data[i + 2]!;
     const gray = 0.299 * r + 0.587 * g + 0.114 * b;
     const contrast = 1.3;
     const adjusted = 128 + (gray - 128) * contrast;

@@ -2205,15 +2205,16 @@ export default function SchemaHowTo({ locale: forcedLocale }: { locale?: Locale 
   const pathname = usePathname();
   const locale = forcedLocale ?? useHydrationSafeLocale();
   const parts = pathname.split('/').filter(Boolean);
-  const hasLocale = parts.length > 0 && (locales as readonly string[]).includes(parts[0]);
+  const hasLocale = parts.length > 0 && (locales as readonly string[]).includes(parts[0]!);
   const segment = hasLocale ? parts[1] : parts[0];
+  if (!segment) return null;
   const key = keyBySlug[segment];
-  if (!key || !toolSteps[segment]) return null;
+  const steps = toolSteps[segment];
+  if (!key || !steps) return null;
 
   const name = t(`tool.${key}`, locale);
   const description = t(`desc.${key}`, locale);
   const url = hasLocale ? `https://optimapdf.com/${parts[0]}/${segment}` : `https://optimapdf.com/${segment}`;
-  const steps = toolSteps[segment];
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -2226,7 +2227,8 @@ export default function SchemaHowTo({ locale: forcedLocale }: { locale?: Locale 
     supply: { '@type': 'HowToSupply', name: tr({ pl: 'Plik PDF', en: 'PDF file' }, locale) },
     tool: { '@type': 'HowToTool', name: 'OptimaPDF' },
     step: steps.map((refs, i) => {
-      const text = refs.map(ref => tr(L[ref], locale)).join(' ');
+      // Safe: every StepRef used in toolSteps corresponds to an entry in L.
+      const text = refs.map(ref => tr(L[ref]!, locale)).join(' ');
       return {
         '@type': 'HowToStep',
         position: i + 1,

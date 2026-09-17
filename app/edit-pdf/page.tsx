@@ -30,7 +30,7 @@ export default function EditPdfPage({ locale: forcedLocale }: { locale?: Locale 
     e.preventDefault();
     setDragOver(false);
     const f = e.dataTransfer.files?.[0];
-    handleFile(f);
+    handleFile(f ?? null);
   }, [handleFile]);
 
   const handleReset = useCallback(() => {

@@ -192,9 +192,10 @@ export async function cropPages(file: File, margins: { top: number; right: numbe
   const allPages = pdf.getPages();
   const indices = pages || allPages.map((_, i) => i);
   for (const idx of indices) {
-    if (idx < 0 || idx >= allPages.length) continue;
-    const { width, height } = allPages[idx].getSize();
-    allPages[idx].setMediaBox(margins.left, margins.bottom, width - margins.left - margins.right, height - margins.bottom - margins.top);
+    const page = allPages[idx];
+    if (!page) continue;
+    const { width, height } = page.getSize();
+    page.setMediaBox(margins.left, margins.bottom, width - margins.left - margins.right, height - margins.bottom - margins.top);
   }
   return pdf.save();
 }
@@ -273,12 +274,8 @@ function updateXmpField(doc: Document, nsUri: string, localName: string, value: 
     return;
   }
   if (containerTag) {
-    const liNodes = node.getElementsByTagNameNS(RDF_NS, 'li');
-    let targetLi: Element | null = null;
-    for (let i = 0; i < liNodes.length; i++) {
-      if (liNodes[i].getAttributeNS(XML_NS, 'lang') === 'x-default') { targetLi = liNodes[i]; break; }
-    }
-    if (!targetLi && liNodes.length > 0) targetLi = liNodes[0];
+    const liArray = Array.from(node.getElementsByTagNameNS(RDF_NS, 'li'));
+    const targetLi = liArray.find(li => li.getAttributeNS(XML_NS, 'lang') === 'x-default') ?? liArray[0] ?? null;
     if (targetLi) targetLi.textContent = value;
   } else {
     node.textContent = value;
@@ -468,10 +465,13 @@ export async function splitByRanges(file: File, rangeString: string): Promise<{ 
   const total = pdf.getPageCount();
   const parts = rangeString.split(',').map(s => s.trim()).filter(Boolean);
   const results: { data: Uint8Array; name: string }[] = [];
-  for (let r = 0; r < parts.length; r++) {
-    const m = parts[r].match(/^(\d+)(?:-(\d+))?$/);
+  for (const part of parts) {
+    const m = part.match(/^(\d+)(?:-(\d+))?$/);
     if (!m) continue;
-    const start = parseInt(m[1], 10) - 1;
+    // m[1] is guaranteed present whenever m matches: the first capture group (\d+) has no
+    // trailing ? , unlike the second (-(\d+))?, which m[2]'s own optional-chained check below
+    // already treats as possibly absent.
+    const start = parseInt(m[1]!, 10) - 1;
     const end = m[2] ? parseInt(m[2], 10) - 1 : start;
     const indices: number[] = [];
     for (let i = start; i <= end && i < total; i++) indices.push(i);
@@ -525,7 +525,9 @@ interface StructuredBlock {
 function median(values: number[]): number {
   if (values.length === 0) return 0;
   const s = [...values].sort((a, b) => a - b);
-  return s[Math.floor(s.length / 2)];
+  // Safe: length > 0 is guaranteed by the check above, and floor(length/2) is always a valid
+  // index into a non-empty array (at most length-1).
+  return s[Math.floor(s.length / 2)]!;
 }
 
 function isBoldFont(fontName: string): boolean {
@@ -560,8 +562,12 @@ function classifyBlocks(blocks: TextBlock[]): StructuredBlock[] {
 
   const lineGaps: number[] = [];
   for (let i = 1; i < blocks.length; i++) {
-    if (blocks[i].page === blocks[i - 1].page) {
-      const gap = blocks[i - 1].y - blocks[i].y;
+    // Safe: i ranges over [1, blocks.length-1], so both blocks[i] and blocks[i-1] are always
+    // in bounds.
+    const cur = blocks[i]!;
+    const prev = blocks[i - 1]!;
+    if (cur.page === prev.page) {
+      const gap = prev.y - cur.y;
       if (gap > 0 && gap < 200) lineGaps.push(gap);
     }
   }
@@ -908,16 +914,21 @@ function rgbToHex(r: number, g: number, b: number): string {
   return `#${h(r)}${h(g)}${h(b)}`;
 }
 
+// A PDF 2D affine transform matrix [a, b, c, d, e, f] — always exactly 6 elements. Using a
+// fixed-length tuple instead of number[] lets TypeScript track every element's type
+// individually, so indexing m[0]..m[5] never needs a runtime guard.
+type Mat2D = [number, number, number, number, number, number];
+
 export function extractRectsFromOps(ops: OpEntry[], pageHeight: number): RawRect[] {
   const rects: RawRect[] = [];
   let currentFill = '#000000';
   let currentStroke = '#000000';
 
   // Accumulate transforms since last save, compose them
-  const transformStack: number[][] = [];
-  let composedMatrix = [1, 0, 0, 1, 0, 0]; // identity
+  const transformStack: Mat2D[] = [];
+  let composedMatrix: Mat2D = [1, 0, 0, 1, 0, 0]; // identity
 
-  function composeMatrix(prev: number[], next: number[]): number[] {
+  function composeMatrix(prev: Mat2D, next: Mat2D): Mat2D {
     // Matrix multiply: next * prev (apply prev first, then next)
     return [
       next[0] * prev[0] + next[1] * prev[2],
@@ -929,14 +940,14 @@ export function extractRectsFromOps(ops: OpEntry[], pageHeight: number): RawRect
     ];
   }
 
-  function applyMatrix(m: number[], x: number, y: number): { x: number; y: number } {
+  function applyMatrix(m: Mat2D, x: number, y: number): { x: number; y: number } {
     return {
       x: m[0] * x + m[2] * y + m[4],
       y: m[1] * x + m[3] * y + m[5],
     };
   }
 
-  function applyMatrixToSize(m: number[], w: number, h: number): { w: number; h: number } {
+  function applyMatrixToSize(m: Mat2D, w: number, h: number): { w: number; h: number } {
     // Apply matrix to width/height vector (0,0)→(w,0) and (0,0)→(0,h)
     const p1 = applyMatrix(m, 0, 0);
     const p2 = applyMatrix(m, w, 0);
@@ -947,16 +958,16 @@ export function extractRectsFromOps(ops: OpEntry[], pageHeight: number): RawRect
     };
   }
 
-  for (let i = 0; i < ops.length; i++) {
-    const { op, args } = ops[i];
-
+  for (const { op, args } of ops) {
     if (op === 'save') {
       transformStack.push([...composedMatrix]);
     } else if (op === 'restore') {
       composedMatrix = transformStack.pop() || [1, 0, 0, 1, 0, 0];
-    } else if (op === 'transform' && Array.isArray(args)) {
+    } else if (op === 'transform' && Array.isArray(args) && args.length === 6) {
       const t = args as number[];
-      composedMatrix = composeMatrix(composedMatrix, [t[0], t[1], t[2], t[3], t[4], t[5]]);
+      // Guarded by the args.length === 6 check above — a PDF "transform" (cm) operator
+      // always has exactly 6 numeric operands.
+      composedMatrix = composeMatrix(composedMatrix, [t[0]!, t[1]!, t[2]!, t[3]!, t[4]!, t[5]!]);
     } else if (op === 'setFillRGBColor') {
       const a = args as unknown;
       if (typeof a === 'string') {
@@ -1035,16 +1046,20 @@ class UnionFind {
     this.parent = Array.from({ length: n }, (_, i) => i);
     this.rank = new Array(n).fill(0);
   }
+  // Safe throughout this class: every index used (the constructor's own 0..n-1, and every
+  // value returned by find()/stored in parent[]) is always another valid index into the same
+  // parent/rank arrays by construction — path compression never introduces an out-of-range
+  // value.
   find(x: number): number {
-    if (this.parent[x] !== x) this.parent[x] = this.find(this.parent[x]);
-    return this.parent[x];
+    if (this.parent[x] !== x) this.parent[x] = this.find(this.parent[x]!);
+    return this.parent[x]!;
   }
   union(a: number, b: number): void {
     const ra = this.find(a), rb = this.find(b);
     if (ra === rb) return;
-    if (this.rank[ra] < this.rank[rb]) { this.parent[ra] = rb; }
-    else if (this.rank[ra] > this.rank[rb]) { this.parent[rb] = ra; }
-    else { this.parent[rb] = ra; this.rank[ra]++; }
+    if (this.rank[ra]! < this.rank[rb]!) { this.parent[ra] = rb; }
+    else if (this.rank[ra]! > this.rank[rb]!) { this.parent[rb] = ra; }
+    else { this.parent[rb] = ra; this.rank[ra]!++; }
   }
 }
 
@@ -1064,7 +1079,8 @@ export function buildTableClusters(rects: RawRect[]): TableCluster[] {
   const uf = new UnionFind(rects.length);
   for (let i = 0; i < rects.length; i++) {
     for (let j = i + 1; j < rects.length; j++) {
-      const a = rects[i], b = rects[j];
+      // Safe: i and j are always in [0, rects.length-1] by the loop bounds above.
+      const a = rects[i]!, b = rects[j]!;
       const aLeft = a.x, aRight = a.x + a.width;
       const aTop = a.y, aBottom = a.y + a.height;
       const bLeft = b.x, bRight = b.x + b.width;
@@ -1084,7 +1100,7 @@ export function buildTableClusters(rects: RawRect[]): TableCluster[] {
   for (let i = 0; i < rects.length; i++) {
     const root = uf.find(i);
     const arr = groups.get(root) || [];
-    arr.push(rects[i]);
+    arr.push(rects[i]!); // safe: i is always in [0, rects.length-1]
     groups.set(root, arr);
   }
 
@@ -1113,8 +1129,9 @@ export function buildTableClusters(rects: RawRect[]): TableCluster[] {
       const sorted = [...vals].sort((a, b) => a - b);
       const merged: number[] = [];
       for (const v of sorted) {
-        if (merged.length > 0 && edgesClose(merged[merged.length - 1], v)) {
-          merged[merged.length - 1] = (merged[merged.length - 1] + v) / 2;
+        const last = merged.length > 0 ? merged[merged.length - 1]! : undefined;
+        if (last !== undefined && edgesClose(last, v)) {
+          merged[merged.length - 1] = (last + v) / 2;
         } else {
           merged.push(v);
         }
@@ -1149,14 +1166,17 @@ export function buildTableClusters(rects: RawRect[]): TableCluster[] {
       const isVLine = r.width < 0.5;  // vertical border line (near-zero width)
 
       // --- Area coverage (non-degenerate rects) ---
+      // Throughout this block: ri ranges over [0, rows-1] where rows = yEdges.length-1, and
+      // ci over [0, cols-1] where cols = xEdges.length-1 — so yEdges[ri]/[ri+1] and
+      // xEdges[ci]/[ci+1] are always in bounds.
       if (!isHLine && !isVLine) {
         for (let ri = 0; ri < rows; ri++) {
-          const rowTop = yEdges[ri];
-          const rowBottom = yEdges[ri + 1];
+          const rowTop = yEdges[ri]!;
+          const rowBottom = yEdges[ri + 1]!;
           if (r.y + r.height <= rowTop || r.y >= rowBottom) continue;
           for (let ci = 0; ci < cols; ci++) {
-            const colLeft = xEdges[ci];
-            const colRight = xEdges[ci + 1];
+            const colLeft = xEdges[ci]!;
+            const colRight = xEdges[ci + 1]!;
             if (r.x + r.width <= colLeft || r.x >= colRight) continue;
             areaCovered.add(`${ri},${ci}`);
           }
@@ -1168,13 +1188,13 @@ export function buildTableClusters(rects: RawRect[]): TableCluster[] {
       if (isHLine) {
         // horizontal line: x-range [r.x, r.x+r.width] at y=r.y
         for (let ri = 0; ri < rows; ri++) {
-          const rowTop = yEdges[ri], rowBottom = yEdges[ri + 1];
+          const rowTop = yEdges[ri]!, rowBottom = yEdges[ri + 1]!;
           // line lies on this row's top or bottom edge
           const isTop = edgesClose(r.y, rowTop);
           const isBottom = edgesClose(r.y, rowBottom);
           if (!isTop && !isBottom) continue;
           for (let ci = 0; ci < cols; ci++) {
-            const colLeft = xEdges[ci], colRight = xEdges[ci + 1];
+            const colLeft = xEdges[ci]!, colRight = xEdges[ci + 1]!;
             // cell column overlaps the line's x-span (inclusive)
             if (r.x < colRight + EDGE_TOLERANCE && r.x + r.width > colLeft - EDGE_TOLERANCE) {
               const cell = `${ri},${ci}`;
@@ -1186,12 +1206,12 @@ export function buildTableClusters(rects: RawRect[]): TableCluster[] {
       } else if (isVLine) {
         // vertical line: y-range [r.y, r.y+r.height] at x=r.x
         for (let ci = 0; ci < cols; ci++) {
-          const colLeft = xEdges[ci], colRight = xEdges[ci + 1];
+          const colLeft = xEdges[ci]!, colRight = xEdges[ci + 1]!;
           const isLeft = edgesClose(r.x, colLeft);
           const isRight = edgesClose(r.x, colRight);
           if (!isLeft && !isRight) continue;
           for (let ri = 0; ri < rows; ri++) {
-            const rowTop = yEdges[ri], rowBottom = yEdges[ri + 1];
+            const rowTop = yEdges[ri]!, rowBottom = yEdges[ri + 1]!;
             if (r.y < rowBottom + EDGE_TOLERANCE && r.y + r.height > rowTop - EDGE_TOLERANCE) {
               const cell = `${ri},${ci}`;
               if (isLeft) hasLeft.add(cell);
@@ -1251,18 +1271,21 @@ export function buildGridAndDetectMerged(cluster: TableCluster): GridCell[] {
   const { rects, xEdges, yEdges, cols, rows } = cluster;
 
   // Count how many cells each rect spans (for specificity ranking)
+  // Safe throughout this function: a TableCluster is only ever produced by
+  // buildTableClusters(), which already guarantees cols >= 2 and rows >= 2 (so xEdges/yEdges
+  // have at least 3 entries), and every ri/ci loop below stays within [0, rows-1]/[0, cols-1].
   const rectCellCounts = new Array(rects.length).fill(0);
-  const clusterW = xEdges[xEdges.length - 1] - xEdges[0];
-  const clusterH = yEdges[yEdges.length - 1] - yEdges[0];
+  const clusterW = xEdges[xEdges.length - 1]! - xEdges[0]!;
+  const clusterH = yEdges[yEdges.length - 1]! - yEdges[0]!;
   for (let ri2 = 0; ri2 < rects.length; ri2++) {
-    const r = rects[ri2];
+    const r = rects[ri2]!;
     // Skip rects that exactly span the full cluster — they're outer borders
     if (Math.abs(r.width - clusterW) < 1 && Math.abs(r.height - clusterH) < 1) continue;
     for (let ri = 0; ri < rows; ri++) {
-      const cellTop = yEdges[ri], cellBottom = yEdges[ri + 1];
+      const cellTop = yEdges[ri]!, cellBottom = yEdges[ri + 1]!;
       if (r.y + r.height <= cellTop || r.y >= cellBottom) continue;
       for (let ci = 0; ci < cols; ci++) {
-        const cellLeft = xEdges[ci], cellRight = xEdges[ci + 1];
+        const cellLeft = xEdges[ci]!, cellRight = xEdges[ci + 1]!;
         // Non-zero width: half-open [x, x+w) must overlap [cellLeft, cellRight)
         // Zero width (line): point x must be within [cellLeft, cellRight)
         if (r.width > 0) {
@@ -1280,11 +1303,11 @@ export function buildGridAndDetectMerged(cluster: TableCluster): GridCell[] {
   const cellOwner: number[][] = Array.from({ length: rows }, () => new Array(cols).fill(-1));
   for (let ri = 0; ri < rows; ri++) {
     for (let ci = 0; ci < cols; ci++) {
-      const cellLeft = xEdges[ci], cellRight = xEdges[ci + 1];
-      const cellTop = yEdges[ri], cellBottom = yEdges[ri + 1];
+      const cellLeft = xEdges[ci]!, cellRight = xEdges[ci + 1]!;
+      const cellTop = yEdges[ri]!, cellBottom = yEdges[ri + 1]!;
       let bestIdx = -1, bestCount = Infinity, bestArea = -1;
       for (let ri2 = 0; ri2 < rects.length; ri2++) {
-        const r = rects[ri2];
+        const r = rects[ri2]!;
         if (r.width > 0) {
           if (r.x + r.width <= cellLeft || r.x >= cellRight) continue;
         } else {
@@ -1294,14 +1317,15 @@ export function buildGridAndDetectMerged(cluster: TableCluster): GridCell[] {
         // Skip rects that exactly span the full cluster — they're outer borders
         if (Math.abs(r.width - clusterW) < 1 && Math.abs(r.height - clusterH) < 1) continue;
         const area = r.width * r.height;
-        if (rectCellCounts[ri2] < bestCount ||
-            (rectCellCounts[ri2] === bestCount && area > bestArea)) {
-          bestCount = rectCellCounts[ri2];
+        const count = rectCellCounts[ri2]!;
+        if (count < bestCount ||
+            (count === bestCount && area > bestArea)) {
+          bestCount = count;
           bestArea = area;
           bestIdx = ri2;
         }
       }
-      cellOwner[ri][ci] = bestIdx;
+      cellOwner[ri]![ci] = bestIdx;
     }
   }
 
@@ -1314,7 +1338,7 @@ export function buildGridAndDetectMerged(cluster: TableCluster): GridCell[] {
     const ownedCells: { r: number; c: number }[] = [];
     for (let ri = 0; ri < rows; ri++) {
       for (let ci = 0; ci < cols; ci++) {
-        if (cellOwner[ri][ci] === ri2) ownedCells.push({ r: ri, c: ci });
+        if (cellOwner[ri]![ci] === ri2) ownedCells.push({ r: ri, c: ci });
       }
     }
     if (ownedCells.length === 0) continue;
@@ -1335,17 +1359,20 @@ export function buildGridAndDetectMerged(cluster: TableCluster): GridCell[] {
       col: topLeft.c,
       rowspan,
       colspan,
-      rect: rects[ri2],
+      rect: rects[ri2]!,
     });
   }
 
   return cells;
 }
-    function binarySearchClosest(sorted: number[], val: number): number {
+
+function binarySearchClosest(sorted: number[], val: number): number {
   let lo = 0, hi = sorted.length - 1;
   while (lo < hi) {
     const mid = (lo + hi) >> 1;
-    if (sorted[mid] < val) lo = mid + 1; else hi = mid;
+    // Safe: the loop only runs while lo < hi (so sorted has at least 2 elements), and mid is
+    // always between lo and hi inclusive, hence within [0, sorted.length-1].
+    if (sorted[mid]! < val) lo = mid + 1; else hi = mid;
   }
   return lo;
 }
@@ -1366,7 +1393,7 @@ export function assignTextRunsToCells(
   const assignments: CellTextAssignment[] = [];
 
   for (let i = 0; i < runs.length; i++) {
-    const run = runs[i];
+    const run = runs[i]!; // safe: i is always in [0, runs.length-1]
     // Skip rotated runs — they won't align with grid
     if (run.rotation && Math.abs(run.rotation) > 0.1) continue;
 
@@ -1391,10 +1418,12 @@ export function assignTextRunsToCells(
     let bestDist = Infinity;
     for (const ri of rowCandidates) {
       for (const ci of colCandidates) {
-        const cellTop = yEdges[ri];
-        const cellBottom = yEdges[ri + 1];
-        const cellLeft = xEdges[ci];
-        const cellRight = xEdges[ci + 1];
+        // Safe: rowCandidates/colCandidates were already filtered to r/c < yEdges.length-1 /
+        // xEdges.length-1 above, so ri, ri+1, ci, ci+1 are all in bounds.
+        const cellTop = yEdges[ri]!;
+        const cellBottom = yEdges[ri + 1]!;
+        const cellLeft = xEdges[ci]!;
+        const cellRight = xEdges[ci + 1]!;
 
         if (runCenterY + CELL_TOLERANCE_Y < cellTop || runCenterY - CELL_TOLERANCE_Y > cellBottom) continue;
         if (runX + CELL_TOLERANCE_X < cellLeft || runX - CELL_TOLERANCE_X > cellRight) continue;
@@ -1430,58 +1459,65 @@ function detectMergesByTopology(cluster: TableCluster): GridCell[] {
   const EDGE_T = 1.0; // pt tolerance for edge-line alignment
   const hasBottom = Array.from({ length: rows }, () => new Array(cols).fill(false));
   const hasRight = Array.from({ length: rows }, () => new Array(cols).fill(false));
+  // Safe: rows/cols come from a TableCluster (guaranteed >= 2 each, so xEdges/yEdges have at
+  // least 3 entries), and every ri/ci loop below stays within [0, rows-1]/[0, cols-1].
   for (const r of rects) {
     const isH = r.height < 0.5;
     const isV = r.width < 0.5;
     if (isH && !isV && r.width > 0.5) {
       for (let ri = 0; ri < rows; ri++) {
-        if (Math.abs(r.y - yEdges[ri + 1]) > EDGE_T) continue;
+        if (Math.abs(r.y - yEdges[ri + 1]!) > EDGE_T) continue;
         for (let ci = 0; ci < cols; ci++) {
-          const cl = xEdges[ci], cr = xEdges[ci + 1];
-          if (r.x <= cl + EDGE_T && r.x + r.width >= cr - EDGE_T) hasBottom[ri][ci] = true;
+          const cl = xEdges[ci]!, cr = xEdges[ci + 1]!;
+          if (r.x <= cl + EDGE_T && r.x + r.width >= cr - EDGE_T) hasBottom[ri]![ci] = true;
         }
       }
     }
     if (isV && !isH && r.height > 0.5) {
       for (let ci = 0; ci < cols; ci++) {
-        if (Math.abs(r.x - xEdges[ci + 1]) > EDGE_T) continue;
+        if (Math.abs(r.x - xEdges[ci + 1]!) > EDGE_T) continue;
         for (let ri = 0; ri < rows; ri++) {
-          const ct = yEdges[ri], cb = yEdges[ri + 1];
-          if (r.y <= ct + EDGE_T && r.y + r.height >= cb - EDGE_T) hasRight[ri][ci] = true;
+          const ct = yEdges[ri]!, cb = yEdges[ri + 1]!;
+          if (r.y <= ct + EDGE_T && r.y + r.height >= cb - EDGE_T) hasRight[ri]![ci] = true;
         }
       }
     }
   }
 
+  // Safe throughout this block: r2/rn stay within [0, rows-1] (the while loop's own
+  // r2+rn<rows guard), c/cn within [0, cols-1], and r2-1/c-1 are only read after the
+  // r2===0/c===0 short-circuit above already ruled out the boundary case.
   const cells: GridCell[] = [];
   const cellSpanRow = Array.from({ length: rows }, () => new Array(cols).fill(1));
   const cellSpanCol = Array.from({ length: rows }, () => new Array(cols).fill(1));
   for (let r2 = rows - 1; r2 >= 0; r2--) {
     for (let c = 0; c < cols; c++) {
       let rn = 1;
-      while (r2 + rn < rows && !hasBottom[r2 + rn - 1][c]) rn++;
-      cellSpanRow[r2][c] = rn;
+      while (r2 + rn < rows && !hasBottom[r2 + rn - 1]![c]) rn++;
+      cellSpanRow[r2]![c] = rn;
     }
   }
   for (let c = cols - 1; c >= 0; c--) {
     for (let r2 = 0; r2 < rows; r2++) {
       let cn = 1;
-      while (c + cn < cols && !hasRight[r2][c + cn - 1]) cn++;
-      cellSpanCol[r2][c] = cn;
+      while (c + cn < cols && !hasRight[r2]![c + cn - 1]) cn++;
+      cellSpanCol[r2]![c] = cn;
     }
   }
 
   for (let r2 = 0; r2 < rows; r2++) {
     for (let c = 0; c < cols; c++) {
-      const rowspan = cellSpanRow[r2][c];
-      const colspan = cellSpanCol[r2][c];
-      const isRowTop = r2 === 0 || hasBottom[r2 - 1][c];
-      const isColLeft = c === 0 || hasRight[r2][c - 1];
+      const rowspan = cellSpanRow[r2]![c];
+      const colspan = cellSpanCol[r2]![c];
+      const isRowTop = r2 === 0 || hasBottom[r2 - 1]![c];
+      const isColLeft = c === 0 || hasRight[r2]![c - 1];
       const cellRsp = isRowTop && isColLeft ? rowspan : 1;
       const cellCsp = isRowTop && isColLeft ? colspan : 1;
       if (!isRowTop && rowspan > 1) continue;
       if (!isColLeft && colspan > 1) continue;
-      cells.push({ row: r2, col: c, rowspan: cellRsp, colspan: cellCsp, rect: rects[0] });
+      // rects[0] is safe: this function is only ever called on a TableCluster produced by
+      // buildTableClusters(), which already requires rects.length >= 3.
+      cells.push({ row: r2, col: c, rowspan: cellRsp, colspan: cellCsp, rect: rects[0]! });
     }
   }
 
@@ -1492,9 +1528,9 @@ function detectMergesByTopology(cluster: TableCluster): GridCell[] {
 // IR HELPERS
 // ============================================================
 
-function getRotation(t: number[]): number {
-  const [a, b] = t;
-  if (Math.abs(b) < 0.01 && Math.abs(t[2]) < 0.01) return 0;
+function getRotation(t: Mat2D): number {
+  const [a, b, c] = t;
+  if (Math.abs(b) < 0.01 && Math.abs(c) < 0.01) return 0;
   return Math.atan2(b, a) * 180 / Math.PI;
 }
 
@@ -1518,7 +1554,7 @@ function computeBounds(runs: IRTextRun[]): IRRect {
     const rad = (r.rotation || 0) * Math.PI / 180;
     const cosR = Math.cos(rad);
     const sinR = Math.sin(rad);
-    const corners = [
+    const corners: [number, number][] = [
       [r.position.x, r.position.y],
       [r.position.x + r.width * cosR, r.position.y + r.width * sinR],
       [r.position.x - r.height * sinR, r.position.y - r.height * cosR],
@@ -1566,14 +1602,14 @@ export function buildPageScaffold(
   // --- State machine: walk opList to build per-showText color context ---
   const ops: OpEntry[] = [];
   for (let i = 0; i < opList.fnArray.length; i++) {
-    ops.push({ op: OPS_MAP[opList.fnArray[i]] || '', args: opList.argsArray[i] });
+    // Safe: i is always in [0, opList.fnArray.length-1].
+    ops.push({ op: OPS_MAP[opList.fnArray[i]!] || '', args: opList.argsArray[i] });
   }
 
   // For each setTextMatrix index, find the fill color that was set before it
   const textOpColors: Map<number, string> = new Map();
   let currentFill = '#000000';
-  for (let i = 0; i < ops.length; i++) {
-    const { op, args } = ops[i];
+  for (const [i, { op, args }] of ops.entries()) {
     if (op === 'setFillRGBColor') currentFill = Array.isArray(args) ? (args[0] as string) : (args as string);
     if (op === 'setTextMatrix' || op === 'showText') textOpColors.set(i, currentFill);
   }
@@ -1581,8 +1617,7 @@ export function buildPageScaffold(
   // For each setTextMatrix index, find the font set before it
   const textOpFonts: Map<number, { name: string; size: number }> = new Map();
   let currentFont = { name: '', size: 12 };
-  for (let i = 0; i < ops.length; i++) {
-    const { op, args } = ops[i];
+  for (const [i, { op, args }] of ops.entries()) {
     if (op === 'setFont' && Array.isArray(args)) {
       currentFont = { name: args[0] as string, size: args[1] as number };
     }
@@ -1609,23 +1644,25 @@ export function buildPageScaffold(
   // extent (|a,b| x |c,d|) — NOT the image's pixel width x the scale. Verified
   // empirically (drawImage dest rects) for Allegro pages 1/4/6/27.
   const images: PdfPageScaffoldImage[] = [];
-  const stack: number[][] = [];
-  let accumTx = [1, 0, 0, 1, 0, 0];
-  for (let i = 0; i < ops.length; i++) {
-    const { op, args } = ops[i];
+  const stack: Mat2D[] = [];
+  let accumTx: Mat2D = [1, 0, 0, 1, 0, 0];
+  for (const { op, args } of ops) {
     if (op === 'save') stack.push([...accumTx]);
     if (op === 'restore') {
-      if (stack.length > 0) accumTx = stack.pop() as number[];
+      if (stack.length > 0) accumTx = stack.pop() || [1, 0, 0, 1, 0, 0];
     }
-    if (op === 'transform' && Array.isArray(args)) {
+    if (op === 'transform' && Array.isArray(args) && args.length === 6) {
+      // Guarded by args.length === 6: a PDF "transform" (cm) operator always has exactly 6
+      // numeric operands.
       const m = args as number[];
+      const [m0, m1, m2, m3, m4, m5] = m as [number, number, number, number, number, number];
       accumTx = [
-        accumTx[0] * m[0] + accumTx[2] * m[1],
-        accumTx[1] * m[0] + accumTx[3] * m[1],
-        accumTx[0] * m[2] + accumTx[2] * m[3],
-        accumTx[1] * m[2] + accumTx[3] * m[3],
-        accumTx[0] * m[4] + accumTx[2] * m[5] + accumTx[4],
-        accumTx[1] * m[4] + accumTx[3] * m[5] + accumTx[5],
+        accumTx[0] * m0 + accumTx[2] * m1,
+        accumTx[1] * m0 + accumTx[3] * m1,
+        accumTx[0] * m2 + accumTx[2] * m3,
+        accumTx[1] * m2 + accumTx[3] * m3,
+        accumTx[0] * m4 + accumTx[2] * m5 + accumTx[4],
+        accumTx[1] * m4 + accumTx[3] * m5 + accumTx[5],
       ];
     }
     if (op === 'paintImageXObject' && Array.isArray(args)) {
@@ -1654,10 +1691,11 @@ export function buildPageScaffold(
   const textRuns: IRTextRun[] = [];
 
   for (let i = 0; i < ops.length; i++) {
-    if (ops[i].op !== 'setTextMatrix') continue;
+    // Safe: i is always in [0, ops.length-1] by the loop bound.
+    if (ops[i]!.op !== 'setTextMatrix') continue;
 
     // Extract setTextMatrix values
-    const rawTm = ops[i].args;
+    const rawTm = ops[i]!.args;
     const tmObj = (Array.isArray(rawTm) ? rawTm[0] : rawTm) as PDFTmObj;
     if (!tmObj || typeof tmObj !== 'object') continue;
     const tmX = tmObj[4] ?? tmObj['4'] ?? 0;
@@ -1673,18 +1711,19 @@ export function buildPageScaffold(
     let accDy = 0;
 
     for (let j = i + 1; j < ops.length; j++) {
-      const op = ops[j].op;
+      // Safe: j is always in [i+1, ops.length-1] by the loop bounds.
+      const op = ops[j]!.op;
       if (op === 'endText' || op === 'setTextMatrix') break; // end of BT block or new Tm
 
-      if (op === 'moveText' && Array.isArray(ops[j].args)) {
-        const delta = ops[j].args as number[];
+      if (op === 'moveText' && Array.isArray(ops[j]!.args)) {
+        const delta = ops[j]!.args as number[];
         accDx += Number(delta[0]) || 0;
         accDy += Number(delta[1]) || 0;
         continue;
       }
 
       if (op === 'showText') {
-        const rawSt = ops[j].args;
+        const rawSt = ops[j]!.args;
         const glyphArr = (Array.isArray(rawSt)
           ? (Array.isArray(rawSt[0]) ? rawSt[0] : rawSt)
           : []) as PDFGlyph[];
@@ -1744,7 +1783,8 @@ export function buildPageScaffold(
   // exact same code path as before, so the two branches are disjoint by
   // construction and the change is behavior-neutral for prior inputs.
   for (let i = 0; i < ops.length; i++) {
-    if (ops[i].op !== 'beginText') continue;
+    // Safe: i is always in [0, ops.length-1] by the loop bound.
+    if (ops[i]!.op !== 'beginText') continue;
 
     // Inspect the BT…ET block up front: any setTextMatrix inside means the Tm
     // loop above already owns that block — bail out to avoid duplicate runs.
@@ -1752,7 +1792,7 @@ export function buildPageScaffold(
     let blockHasShowText = false;
     let blockEnd = i + 1;
     for (; blockEnd < ops.length; blockEnd++) {
-      const bop = ops[blockEnd].op;
+      const bop = ops[blockEnd]!.op; // safe: blockEnd is always in [0, ops.length-1]
       if (bop === 'endText') break;
       if (bop === 'setTextMatrix') blockHasTm = true;
       if (bop === 'showText') blockHasShowText = true;
@@ -1767,7 +1807,8 @@ export function buildPageScaffold(
     let accDy = 0;
 
     for (let j = i + 1; j < blockEnd; j++) {
-      const { op, args } = ops[j];
+      // Safe: j is always in [i+1, blockEnd-1], and blockEnd <= ops.length.
+      const { op, args } = ops[j]!;
       if (op === 'moveText' && Array.isArray(args)) {
         const delta = args as number[];
         accDx += Number(delta[0]) || 0;
@@ -1839,11 +1880,12 @@ function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
   // --- Phase 1: group runs into horizontal LINES (same Y-band, 3 pt) ---
   const Y_GAP = 3;
   const lines: IRTextRun[][] = [];
-  let curLine: IRTextRun[] = [sorted[0]];
-  let lineY = sorted[0].position.y;
+  // Safe: sorted is a same-length copy of runs, and runs.length === 0 already returned above.
+  let curLine: IRTextRun[] = [sorted[0]!];
+  let lineY = sorted[0]!.position.y;
 
   for (let i = 1; i < sorted.length; i++) {
-    const r = sorted[i];
+    const r = sorted[i]!;
     if (Math.abs(r.position.y - lineY) > Y_GAP) {
       lines.push(curLine);
       curLine = [r];
@@ -1877,13 +1919,16 @@ function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
     lineRuns.every(r => r.text.trim().length === 0);
 
   const summarizeLine = (lineRuns: IRTextRun[]) => {
-    const run = lineRuns[0];
+    // Safe: every entry in `lines` (this function's only caller, via lineDescs) is built from
+    // curLine above, which always starts with at least one run and is only ever appended to —
+    // never empty.
+    const run = lineRuns[0]!;
     const minX = Math.min(...lineRuns.map(r => r.position.x));
     const maxX = Math.max(...lineRuns.map(r => r.position.x + r.width));
     const minY = Math.min(...lineRuns.map(r => r.position.y));
     const maxY = Math.max(...lineRuns.map(r => r.position.y + r.height));
     const fs = lineRuns.reduce((m, r) => r.fontSize > m ? r.fontSize : m, 0);
-    const color = lineRuns[0].color;
+    const color = lineRuns[0]!.color;
     const runFontName = run.fontName;
     return {
       lineRuns, minX, maxX, minY, maxY, fs, color, runFontName,
@@ -1917,7 +1962,7 @@ function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
   };
 
   for (let li = 0; li < lineDescs.length; li++) {
-    const cur = lineDescs[li];
+    const cur = lineDescs[li]!; // safe: li is always in [0, lineDescs.length-1]
 
     // Blank lines are hard separators: skip entirely. They break the current
     // paragraph (next real line opens a new one) but are never emitted.
@@ -1932,7 +1977,9 @@ function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
       continue;
     }
 
-    const para = paragraphs[paragraphs.length - 1];
+    // Safe: this branch only runs once prevReal !== null, which is only set right after an
+    // openParagraph() call, so paragraphs.length > 0 here.
+    const para = paragraphs[paragraphs.length - 1]!;
 
     // Baseline-to-baseline distance between this line and the previous line.
     // PDF Y grows UP, so previous baseline > current baseline (line below).
@@ -2040,16 +2087,20 @@ export async function segmentSlideElements(
     const cellGrid: (IRTableCell | null)[][] =
       Array.from({ length: cluster.rows }, () => new Array(cluster.cols).fill(null));
 
+    // Safe throughout: cell.row/cell.col are always within [0, cluster.rows-1]/
+    // [0, cluster.cols-1] by GridCell's own construction, and runIndex is always a valid
+    // index into scaffold.textRuns (assignTextRunsToCells sets it from that same array's
+    // indices). cluster.xEdges/yEdges have at least 2 entries (TableCluster's own contract).
     for (const { cell, runIndex } of assignments) {
       tableConsumedRuns.add(runIndex);
-      if (!cellGrid[cell.row][cell.col]) {
-        cellGrid[cell.row][cell.col] = {
+      if (!cellGrid[cell.row]![cell.col]) {
+        cellGrid[cell.row]![cell.col] = {
           runs: [],
           colspan: cell.colspan,
           rowspan: cell.rowspan,
         };
       }
-      cellGrid[cell.row][cell.col]!.runs.push(scaffold.textRuns[runIndex]);
+      cellGrid[cell.row]![cell.col]!.runs.push(scaffold.textRuns[runIndex]!);
     }
 
     const irCells: IRTableCell[][] = cellGrid.map(row =>
@@ -2058,7 +2109,7 @@ export async function segmentSlideElements(
 
     const columnWidths: number[] = [];
     for (let ci = 0; ci < cluster.xEdges.length - 1; ci++) {
-      columnWidths.push(cluster.xEdges[ci + 1] - cluster.xEdges[ci]);
+      columnWidths.push(cluster.xEdges[ci + 1]! - cluster.xEdges[ci]!);
     }
 
     // Cluster edges are already top-origin (extractRectsFromOps normalizes Y),
@@ -2067,10 +2118,10 @@ export async function segmentSlideElements(
     tableElements.push({
       kind: 'table',
       bounds: {
-        x: cluster.xEdges[0],
-        y: cluster.yEdges[0],
-        width: cluster.xEdges[cluster.xEdges.length - 1] - cluster.xEdges[0],
-        height: cluster.yEdges[cluster.yEdges.length - 1] - cluster.yEdges[0],
+        x: cluster.xEdges[0]!,
+        y: cluster.yEdges[0]!,
+        width: cluster.xEdges[cluster.xEdges.length - 1]! - cluster.xEdges[0]!,
+        height: cluster.yEdges[cluster.yEdges.length - 1]! - cluster.yEdges[0]!,
       },
       rows: cluster.rows,
       cols: cluster.cols,
@@ -2227,16 +2278,19 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
         const cellGrid: (IRTableCell | null)[][] =
           Array.from({ length: rows }, () => new Array(cols).fill(null));
 
+        // Safe throughout: cell.row/cell.col are always within [0, rows-1]/[0, cols-1] by
+        // GridCell's own construction, runIndex is always a valid index into textRuns, and
+        // cluster.xEdges/yEdges have at least 2 entries (TableCluster's own contract).
         for (const { cell, runIndex } of assignments) {
           used.add(runIndex);
-          if (!cellGrid[cell.row][cell.col]) {
-            cellGrid[cell.row][cell.col] = {
+          if (!cellGrid[cell.row]![cell.col]) {
+            cellGrid[cell.row]![cell.col] = {
               runs: [],
               colspan: cell.colspan,
               rowspan: cell.rowspan,
             };
           }
-          cellGrid[cell.row][cell.col]!.runs.push(textRuns[runIndex]);
+          cellGrid[cell.row]![cell.col]!.runs.push(textRuns[runIndex]!);
         }
 
         // Convert null cells to empty placeholders
@@ -2246,7 +2300,7 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
 
         const columnWidths = [];
         for (let ci = 0; ci < cluster.xEdges.length - 1; ci++) {
-          columnWidths.push(cluster.xEdges[ci + 1] - cluster.xEdges[ci]);
+          columnWidths.push(cluster.xEdges[ci + 1]! - cluster.xEdges[ci]!);
         }
 
         // Compute bounds from cluster
@@ -2256,10 +2310,10 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
           kind: 'table',
           cells: irCells,
           bounds: {
-            x: allX[0],
-            y: allY[0],
-            width: allX[allX.length - 1] - allX[0],
-            height: allY[allY.length - 1] - allY[0],
+            x: allX[0]!,
+            y: allY[0]!,
+            width: allX[allX.length - 1]! - allX[0]!,
+            height: allY[allY.length - 1]! - allY[0]!,
           },
           columnWidths,
         });
@@ -2347,7 +2401,7 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
 
       const sameLineBreakAt = Math.max(tr.height, maxRunHeight) * 0.5 + breakPadding;
       for (let j = sortedPos + 1; j < sorted.length; j++) {
-        const { tr: other, idx: oIdx } = sorted[j];
+        const { tr: other, idx: oIdx } = sorted[j]!; // safe: j is always in [0, sorted.length-1]
         if (tr.position.y - other.position.y >= sameLineBreakAt) break;
         if (used.has(oIdx)) continue;
         // Same line: Y within lineHeight tolerance
@@ -2368,7 +2422,7 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
         while (changed) {
           changed = false;
           for (let j = sortedPos + 1; j < sorted.length; j++) {
-            const { tr: next, idx: nIdx } = sorted[j];
+            const { tr: next, idx: nIdx } = sorted[j]!; // safe: j is always in [0, sorted.length-1]
             const yGap = lastY - next.position.y;
             if (yGap >= continuationBreakAt) break;
             if (used.has(nIdx)) continue;
@@ -2420,7 +2474,7 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
       const imgY = img.bounds.y;
       let insertIdx = blocks.length;
       for (let i = 0; i < blocks.length; i++) {
-        if (imgY > blocks[i].bounds.y) {
+        if (imgY > blocks[i]!.bounds.y) {
           insertIdx = i;
           break;
         }
@@ -2616,9 +2670,14 @@ interface FragmentGrid {
 
 /** Map a page column (by local x span) onto the canonical column index. */
 function clusterColIndex(xEdges: number[], localXEdges: number[], localCol: number): number {
+  // Safe: localCol is always a valid column index into localXEdges (callers only ever pass a
+  // c < cl.cols, and localXEdges always has cl.cols+1 entries), so localXEdges[localCol] and
+  // [localCol+1] are in bounds; k/k+1 are bounded by the loop condition k+1 < xEdges.length.
+  const loLeft = localXEdges[localCol]!;
+  const loRight = localXEdges[localCol + 1]!;
   for (let k = 0; k + 1 < xEdges.length; k++) {
-    if (Math.abs(xEdges[k] - localXEdges[localCol]) < EDGE_SIG_PRECISION &&
-        Math.abs(xEdges[k + 1] - localXEdges[localCol + 1]) < EDGE_SIG_PRECISION) {
+    if (Math.abs(xEdges[k]! - loLeft) < EDGE_SIG_PRECISION &&
+        Math.abs(xEdges[k + 1]! - loRight) < EDGE_SIG_PRECISION) {
       return k;
     }
   }
@@ -2663,12 +2722,17 @@ function canonicalRowTexts(cl: PdfTableClusterResult, localXEdges: number[], xEd
 
 function buildFragmentGrid(pages: MergeBandPage[]): { grid: FragmentGrid; warnings: MergeWarning[] } {
   const warnings: MergeWarning[] = [];
-  const first = pages[0];
   // Canonical columns = the WIDEST xEdges across the pages' clusters (all
   // pages share the same left edge). Empty trailing columns may vanish from a
   // continuation page (no strokes/text), so the first page's width may exceed a
   // later page's measured width; we align every page to the widest.
-  let xEdges = first.clusters[0].xEdges;
+  //
+  // Starting from [] instead of assuming pages[0].clusters[0] exists: previously this would
+  // throw if the very first page happened to have zero clusters (a real, if rare, edge case —
+  // every OTHER page's clusters are already defensively checked for emptiness in the loop
+  // below). The loop finds the actual widest xEdges from whichever page has one, same result
+  // for the normal case (at least one page has a cluster) and no crash for the degenerate one.
+  let xEdges: number[] = [];
   for (const p of pages) {
     for (const cl of p.clusters) {
       if (cl.xEdges.length > xEdges.length) xEdges = cl.xEdges;
@@ -2680,6 +2744,10 @@ function buildFragmentGrid(pages: MergeBandPage[]): { grid: FragmentGrid; warnin
   const merges: FragmentGrid['merges'] = [];
 
   let anchorRowTexts: string[] | null = null;
+  // Page number of whichever page actually seeds the fragment (the first one with
+  // clusters) — callers only ever pass fragments built from titledPages (already
+  // filtered to clusters.length > 0), so this is always set once the loop below runs.
+  let firstPage: number | undefined;
   // Columns whose last page-body merge reached the very bottom body row of the
   // PRECEDING page. A rowspan crossing a page break is drawn (clipped) as two
   // pieces: a bottom piece ending at the last body row of page N and a top
@@ -2695,7 +2763,8 @@ function buildFragmentGrid(pages: MergeBandPage[]): { grid: FragmentGrid; warnin
       warnings.push({ kind: 'zero-cluster-skipped', page: page.page, text: page.pageText ?? '' });
       continue;
     }
-    const cl = page.clusters[0];
+    // Safe: page.clusters.length === 0 already continued above.
+    const cl = page.clusters[0]!;
     const localX = cl.xEdges;
     const rowTexts = canonicalRowTexts(cl, localX, xEdges, cols);
 
@@ -2730,6 +2799,7 @@ function buildFragmentGrid(pages: MergeBandPage[]): { grid: FragmentGrid; warnin
         }
       }
       anchorRowTexts = rowTexts;
+      firstPage = page.page;
       prevBottomCols = bottomRowspanCols(cl, xEdges, localX);
       continue;
     }
@@ -2797,7 +2867,7 @@ function buildFragmentGrid(pages: MergeBandPage[]): { grid: FragmentGrid; warnin
     sig: xEdges.join(','),
     xEdges,
     cols,
-    firstPage: first.page,
+    firstPage: firstPage!,
     cells,
     text,
     merges,
@@ -2848,11 +2918,12 @@ export function assembleSheets(bands: MergeBandPage[]): MergeResult {
     // fragment. Empty trailing columns may disappear from a continuation page,
     // so we key on the left edge only (buildFragmentGrid collapses to the
     // widest column set).
-    const fragKey = (cl: PdfTableClusterResult): string => cl.xEdges[0].toFixed(1);
+    // Safe: titledPages is filtered to p.clusters.length > 0 (line above), so p.clusters[0] exists.
+    const fragKey = (cl: PdfTableClusterResult): string => cl.xEdges[0]!.toFixed(1);
     const fragMap = new Map<string, MergeBandPage[]>();
     const fragOrder: string[] = [];
     for (const p of titledPages) {
-      const key = fragKey(p.clusters[0]);
+      const key = fragKey(p.clusters[0]!);
       if (!fragMap.has(key)) { fragMap.set(key, []); fragOrder.push(key); }
       fragMap.get(key)!.push(p);
     }
@@ -2860,8 +2931,8 @@ export function assembleSheets(bands: MergeBandPage[]): MergeResult {
     // Order fragments left→right (by left edge, then widest right edge).
     const sigBounds = new Map<string, { left: number; right: number; cols: number }>();
     for (const key of fragOrder) {
-      const c = fragMap.get(key)![0].clusters[0];
-      sigBounds.set(key, { left: c.xEdges[0], right: c.xEdges[c.xEdges.length - 1], cols: c.cols });
+      const c = fragMap.get(key)![0]!.clusters[0]!;
+      sigBounds.set(key, { left: c.xEdges[0]!, right: c.xEdges[c.xEdges.length - 1]!, cols: c.cols });
     }
     fragOrder.sort((a, b) => {
       const ba = sigBounds.get(a)!;
@@ -2871,7 +2942,7 @@ export function assembleSheets(bands: MergeBandPage[]): MergeResult {
     });
 
     // Build fragment grids (down-merging each fragment's chunk pages).
-    const fragmentGrids = fragOrder.map(sig => {
+    const fragmentGrids: FragmentGrid[] = fragOrder.map(sig => {
       const r = buildFragmentGrid(fragMap.get(sig)!);
       for (const w of r.warnings) warnings.push(w);
       return r.grid;
@@ -2884,12 +2955,14 @@ export function assembleSheets(bands: MergeBandPage[]): MergeResult {
     // fragment is dual-direction (R2) or header-mismatch (R4) → it opens a new
     // sheet, never a silent merge.
     const sheetsForGroup: { name: string; fragments: FragmentGrid[] }[] = [];
-    let current = { name: title, fragments: [fragmentGrids[0]] };
+    // Safe: fragOrder/fragmentGrids is non-empty here (titledPages.length === 0 already
+    // continued above), so fragmentGrids[0] and current.fragments[0] always exist.
+    let current = { name: title, fragments: [fragmentGrids[0]!] };
 
     for (let i = 1; i < fragmentGrids.length; i++) {
-      const fg = fragmentGrids[i];
-      const anchor = current.fragments[0];
-      const abuts = Math.abs(fg.xEdges[0] - anchor.xEdges[anchor.xEdges.length - 1]) < EDGE_SIG_PRECISION;
+      const fg = fragmentGrids[i]!;
+      const anchor = current.fragments[0]!;
+      const abuts = Math.abs(fg.xEdges[0]! - anchor.xEdges[anchor.xEdges.length - 1]!) < EDGE_SIG_PRECISION;
 
       if (abuts) {
         // Clear right band of the same sheet (R1 already grouped them) → join.
@@ -2929,17 +3002,19 @@ function foldFragmentsRight(frags: FragmentGrid[]): {
   columnWidths: number[];
   merges: { row: number; col: number; rowspan: number; colspan: number }[];
 } {
-  let outCells: (IRSpreadsheetCell | undefined)[][] = frags[0].cells.map(r => [...r]);
-  let outMerges: FragmentGrid['merges'] = [...frags[0].merges];
-  let nColsTotal = frags[0].cols;
+  // Safe: every caller (buildFragmentGrid's sheetsForGroup, assembleSheets) only ever builds
+  // `frags` from a non-empty fragment list, so frags[0] always exists.
+  let outCells: (IRSpreadsheetCell | undefined)[][] = frags[0]!.cells.map(r => [...r]);
+  let outMerges: FragmentGrid['merges'] = [...frags[0]!.merges];
+  let nColsTotal = frags[0]!.cols;
   const columnWidths: number[] = [];
 
-  for (let ci = 0; ci < Math.max(0, frags[0].xEdges.length - 1); ci++) {
-    columnWidths.push(frags[0].xEdges[ci + 1] - frags[0].xEdges[ci]);
+  for (let ci = 0; ci < Math.max(0, frags[0]!.xEdges.length - 1); ci++) {
+    columnWidths.push(frags[0]!.xEdges[ci + 1]! - frags[0]!.xEdges[ci]!);
   }
 
   for (let i = 1; i < frags.length; i++) {
-    const fg = frags[i];
+    const fg = frags[i]!;
     const hA = outCells.length;
     const hB = fg.cells.length;
     const H = Math.max(hA, hB);
@@ -2949,14 +3024,16 @@ function foldFragmentsRight(frags: FragmentGrid[]): {
     for (let r = 0; r < H; r++) {
       const row: (IRSpreadsheetCell | undefined)[] = [];
       for (let c = 0; c < newCols; c++) row.push(undefined);
-      if (r < hA) for (let c = 0; c < nColsTotal; c++) row[c] = outCells[r][c];
-      if (r < hB) for (let c = 0; c < fg.cols; c++) row[nColsTotal + c] = fg.cells[r][c];
+      // Safe: c < nColsTotal <= outCells[r].length by construction (outCells rows are always
+      // built to nColsTotal width), and similarly c < fg.cols <= fg.cells[r].length.
+      if (r < hA) for (let c = 0; c < nColsTotal; c++) row[c] = outCells[r]![c];
+      if (r < hB) for (let c = 0; c < fg.cols; c++) row[nColsTotal + c] = fg.cells[r]![c];
       merged.push(row);
     }
     const nextMerges: FragmentGrid['merges'] = [...outMerges];
     for (const m of fg.merges) nextMerges.push({ ...m, col: m.col + nColsTotal });
     for (let ci = 0; ci < Math.max(0, fg.xEdges.length - 1); ci++) {
-      columnWidths.push(fg.xEdges[ci + 1] - fg.xEdges[ci]);
+      columnWidths.push(fg.xEdges[ci + 1]! - fg.xEdges[ci]!);
     }
 
     outCells = merged;
@@ -3230,7 +3307,8 @@ export async function pdfToIRDeck(file: File): Promise<PdfToIRDeckResult> {
   await doc.cleanup();
 
   const warnings: PdfToIRDeckWarning[] = [];
-  const first = dims[0];
+  // Safe: a loaded PDF always has pageCount >= 1, so dims[0] was always pushed above.
+  const first = dims[0]!;
   const deckWidth = first.widthPt;
   const deckHeight = first.heightPt;
 
@@ -3315,7 +3393,7 @@ export async function officeToPdf(file: File): Promise<Blob> {
       const siMatches = ssXml.match(/<si>[\s\S]*?<\/si>/g) || [];
       for (const si of siMatches) {
         const tMatch = si.match(/<t[^>]*>([^<]*)<\/t>/);
-        strings.push(tMatch ? tMatch[1] : '');
+        strings.push(tMatch ? tMatch[1]! : '');
       }
     }
     const sheetFiles = Object.keys(zip.files).filter(k => k.startsWith('xl/worksheets/sheet') && k.endsWith('.xml'));
@@ -3329,11 +3407,11 @@ export async function officeToPdf(file: File): Promise<Blob> {
           const vMatch = cell.match(/<v>([^<]*)<\/v>/);
           const tMatch = cell.match(/<t[^>]*>([^<]*)<\/t>/);
           if (vMatch) {
-            const idx = parseInt(vMatch[1], 10);
-            if (!isNaN(idx) && idx < strings.length) return strings[idx];
-            return vMatch[1];
+            const idx = parseInt(vMatch[1]!, 10);
+            if (!isNaN(idx) && idx < strings.length) return strings[idx]!;
+            return vMatch[1]!;
           }
-          return tMatch ? tMatch[1] : '';
+          return tMatch ? tMatch[1]! : '';
         }).filter(Boolean).join('\t');
         if (rowText) lines.push(rowText);
       }
@@ -3457,7 +3535,8 @@ export async function editPdfClient(file: File, pageIndex: number, elements: Pdf
   const pages = pdfDoc.getPages();
   if (pageIndex < 0 || pageIndex >= pages.length) throw new Error('Invalid page number');
 
-  const page = pages[pageIndex];
+  // Safe: bounds already checked above (pageIndex < 0 || pageIndex >= pages.length throws).
+  const page = pages[pageIndex]!;
   // pageWidth/pageHeight are the on-screen preview canvas dimensions the caller placed
   // annotations against; they must be converted into PDF point space per axis
   // independently (scaleX from width, scaleY from height) — a page is virtually never
@@ -3511,6 +3590,7 @@ export async function editPdfClient(file: File, pageIndex: number, elements: Pdf
     } else if (el.type === 'image' && el.imageDataUrl) {
       try {
         const imgData = el.imageDataUrl.split(',')[1];
+        if (!imgData) throw new Error('Malformed image data URL');
         const imgBytes = Uint8Array.from(atob(imgData), c => c.charCodeAt(0));
         const isPng = el.imageDataUrl.startsWith('data:image/png');
         const img = isPng ? await pdfDoc.embedPng(imgBytes) : await pdfDoc.embedJpg(imgBytes);
@@ -3528,9 +3608,10 @@ export async function editPdfClient(file: File, pageIndex: number, elements: Pdf
       fCtx.lineCap = 'round';
       fCtx.lineJoin = 'round';
       fCtx.beginPath();
-      fCtx.moveTo(el.points[0].x, el.points[0].y);
+      // Safe: this branch's guard requires el.points.length > 1.
+      fCtx.moveTo(el.points[0]!.x, el.points[0]!.y);
       for (let i = 1; i < el.points.length; i++) {
-        fCtx.lineTo(el.points[i].x, el.points[i].y);
+        fCtx.lineTo(el.points[i]!.x, el.points[i]!.y);
       }
       fCtx.stroke();
       const fBlob = await new Promise<Blob>(resolve => fCanvas.toBlob(b => resolve(b!), 'image/png'));
@@ -3659,23 +3740,25 @@ export async function comparePdfTextClient(fileA: File, fileB: File): Promise<{ 
           for (let k = 0; k < a - Math.min(a, b); k++) removed.push(w);
         }
       } else {
+        // Safe: lcs is sized (n+1) x (m+1); every index used below (i/i+1 in [0,n], j/j+1 in
+        // [0,m]) is within those bounds by the loop conditions and the a<n/b<m while-guards.
         const lcs: Int32Array[] = [];
         for (let i = 0; i <= n; i++) lcs.push(new Int32Array(m + 1));
         for (let i = n - 1; i >= 0; i--) {
           for (let j = m - 1; j >= 0; j--) {
-            lcs[i][j] = wordsA[i] === wordsB[j]
-              ? lcs[i + 1][j + 1] + 1
-              : Math.max(lcs[i + 1][j], lcs[i][j + 1]);
+            lcs[i]![j] = wordsA[i] === wordsB[j]
+              ? lcs[i + 1]![j + 1]! + 1
+              : Math.max(lcs[i + 1]![j]!, lcs[i]![j + 1]!);
           }
         }
         let a = 0, b = 0;
         while (a < n && b < m) {
           if (wordsA[a] === wordsB[b]) { a++; b++; }
-          else if (lcs[a + 1][b] >= lcs[a][b + 1]) { removed.push(wordsA[a]); a++; }
-          else { added.push(wordsB[b]); b++; }
+          else if (lcs[a + 1]![b]! >= lcs[a]![b + 1]!) { removed.push(wordsA[a]!); a++; }
+          else { added.push(wordsB[b]!); b++; }
         }
-        while (a < n) { removed.push(wordsA[a]); a++; }
-        while (b < m) { added.push(wordsB[b]); b++; }
+        while (a < n) { removed.push(wordsA[a]!); a++; }
+        while (b < m) { added.push(wordsB[b]!); b++; }
       }
 
       if (added.length > 0) differences.push({ page: i + 1, type: 'added', content: added.slice(0, 20).join(' ') });
@@ -3773,7 +3856,8 @@ function parsePageRangeClient(input: string, total: number): number[] {
   for (const part of parts) {
     const trimmed = part.trim();
     if (trimmed.includes('-')) {
-      const [a, b] = trimmed.split('-').map(s => parseInt(s.trim(), 10));
+      // Safe: trimmed.includes('-') guarantees split('-') yields at least 2 parts.
+      const [a, b] = trimmed.split('-').map(s => parseInt(s.trim(), 10)) as [number, number];
       if (!isNaN(a) && !isNaN(b)) {
         const start = Math.max(1, Math.min(a, b));
         const end = Math.min(total, Math.max(a, b));
@@ -3978,14 +4062,16 @@ function canvasDiff(canvasA: HTMLCanvasElement, canvasB: HTMLCanvasElement): { d
     const idx = i * 4;
     const idxA = x < canvasA.width && y < canvasA.height ? (y * canvasA.width + x) * 4 : -1;
     const idxB = x < canvasB.width && y < canvasB.height ? (y * canvasB.width + x) * 4 : -1;
-    const rA = idxA >= 0 ? imgA.data[idxA] : 255;
-    const gA = idxA >= 0 ? imgA.data[idxA + 1] : 255;
-    const bA = idxA >= 0 ? imgA.data[idxA + 2] : 255;
-    const aA = idxA >= 0 ? imgA.data[idxA + 3] : 0;
-    const rB = idxB >= 0 ? imgB.data[idxB] : 255;
-    const gB = idxB >= 0 ? imgB.data[idxB + 1] : 255;
-    const bB = idxB >= 0 ? imgB.data[idxB + 2] : 255;
-    const aB = idxB >= 0 ? imgB.data[idxB + 3] : 0;
+    // Safe: idxA/idxB are only >= 0 when (x,y) is within that canvas's own bounds, so the
+    // computed byte offset is always within its ImageData.data (4 bytes/pixel) range.
+    const rA = idxA >= 0 ? imgA.data[idxA]! : 255;
+    const gA = idxA >= 0 ? imgA.data[idxA + 1]! : 255;
+    const bA = idxA >= 0 ? imgA.data[idxA + 2]! : 255;
+    const aA = idxA >= 0 ? imgA.data[idxA + 3]! : 0;
+    const rB = idxB >= 0 ? imgB.data[idxB]! : 255;
+    const gB = idxB >= 0 ? imgB.data[idxB + 1]! : 255;
+    const bB = idxB >= 0 ? imgB.data[idxB + 2]! : 255;
+    const aB = idxB >= 0 ? imgB.data[idxB + 3]! : 0;
 
     if (aA === 0 && aB === 0) {
       out.data[idx] = 0; out.data[idx + 1] = 0; out.data[idx + 2] = 0; out.data[idx + 3] = 0;

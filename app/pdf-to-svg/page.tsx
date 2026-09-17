@@ -50,13 +50,13 @@ export default function PdfToSvg({ locale: forcedLocale }: { locale?: Locale } =
     try {
       const svgs = await pdfToSvgPages(file);
       if (svgs.length === 1) {
-        const blob = new Blob([svgs[0].svg], { type: 'image/svg+xml' });
+        const blob = new Blob([svgs[0]!.svg], { type: 'image/svg+xml' });
         processedBlobRef.current = blob;
-        downloadFileNameRef.current = svgs[0].name;
+        downloadFileNameRef.current = svgs[0]!.name;
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = svgs[0].name;
+        a.download = svgs[0]!.name;
         a.click();
         URL.revokeObjectURL(url);
       } else {
@@ -80,7 +80,7 @@ export default function PdfToSvg({ locale: forcedLocale }: { locale?: Locale } =
         <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">{t('page.svg.desc', locale)}</p>
       </div>
 
-      <div onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+      <div onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0] ?? null); }}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onClick={() => document.getElementById('fileInput')?.click()}

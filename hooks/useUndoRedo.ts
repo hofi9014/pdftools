@@ -38,7 +38,8 @@ export function useUndoRedo<T>(initial: T, maxHistory: number = 50) {
   const undo = useCallback(() => {
     setState(s => {
       if (s.past.length === 0) return s;
-      const previous = s.past[s.past.length - 1];
+      // Safe: s.past.length === 0 already returned above.
+      const previous = s.past[s.past.length - 1]!;
       return {
         past: s.past.slice(0, -1),
         present: previous,
@@ -50,7 +51,8 @@ export function useUndoRedo<T>(initial: T, maxHistory: number = 50) {
   const redo = useCallback(() => {
     setState(s => {
       if (s.future.length === 0) return s;
-      const next = s.future[0];
+      // Safe: s.future.length === 0 already returned above.
+      const next = s.future[0]!;
       return {
         past: [...s.past, s.present],
         present: next,

@@ -75,8 +75,9 @@ export default function PagePreview({ file, mode, selectedPages, onSelectionChan
       setDraggedIdx(null); setDropIdx(null); return;
     }
     const newOrder = [...currentOrder];
+    // Safe: draggedIdx comes from handleDragStart(idx), always a valid index into currentOrder.
     const [removed] = newOrder.splice(draggedIdx, 1);
-    newOrder.splice(dropIdx, 0, removed);
+    newOrder.splice(dropIdx, 0, removed!);
     setCurrentOrder(newOrder);
     onNewOrder(newOrder);
     setDraggedIdx(null); setDropIdx(null);
@@ -86,7 +87,8 @@ export default function PagePreview({ file, mode, selectedPages, onSelectionChan
     const target = displayPos + direction;
     if (target < 0 || target >= currentOrder.length) return;
     const newOrder = [...currentOrder];
-    [newOrder[displayPos], newOrder[target]] = [newOrder[target], newOrder[displayPos]];
+    // Safe: displayPos and target are both bounds-checked above (target < 0 || >= length returns).
+    [newOrder[displayPos], newOrder[target]] = [newOrder[target]!, newOrder[displayPos]!];
     setCurrentOrder(newOrder);
     onNewOrder(newOrder);
   };

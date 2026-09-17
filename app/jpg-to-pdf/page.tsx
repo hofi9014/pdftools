@@ -38,8 +38,10 @@ export default function JPGToPDF({ locale: forcedLocale }: { locale?: Locale } =
   const moveFile = (from: number, to: number) => {
     setFiles(prev => {
       const arr = [...prev];
+      // Safe: from is always a valid index into arr (a drag-reorder source), so splice(from, 1)
+      // always removes and returns exactly one element.
       const [moved] = arr.splice(from, 1);
-      arr.splice(to, 0, moved);
+      arr.splice(to, 0, moved!);
       return arr;
     });
   };

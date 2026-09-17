@@ -51,7 +51,7 @@ export default function PDFToPowerPoint({ locale: forcedLocale }: { locale?: Loc
     try {
       let warnCount = 0;
       for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+        const file = files[i]!;
         const { deck, warnings } = await pdfToIRDeck(file);
         warnCount += warnings.length;
         const blob = await renderIRToPptx(deck);
@@ -61,7 +61,7 @@ export default function PDFToPowerPoint({ locale: forcedLocale }: { locale?: Loc
       setWarnings(warnCount);
 
       if (batchResults.length === 1) {
-        const r = batchResults[0];
+        const r = batchResults[0]!;
         processedBlobRef.current = r.data;
         downloadFileNameRef.current = r.name;
         const url = URL.createObjectURL(r.data);

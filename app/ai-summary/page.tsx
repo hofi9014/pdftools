@@ -44,7 +44,7 @@ export default function AiSummary({ locale: forcedLocale }: { locale?: Locale } 
       </div>
 
       <form onSubmit={handleSubmit} className="tool-card rounded-2xl border p-8 space-y-6">
-          <div onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+          <div onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0] ?? null); }}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onClick={() => document.getElementById('file-input')?.click()}

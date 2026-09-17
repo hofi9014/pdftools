@@ -9,7 +9,7 @@ import SchemaHowTo from './SchemaHowTo';
 
 function extractLocaleFromPath(pathname: string): Locale | undefined {
   const segments = pathname.split('/').filter(Boolean);
-  if (segments.length > 0 && (locales as readonly string[]).includes(segments[0])) {
+  if (segments.length > 0 && (locales as readonly string[]).includes(segments[0]!)) {
     return segments[0] as Locale;
   }
   return undefined;

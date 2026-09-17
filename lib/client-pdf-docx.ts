@@ -170,14 +170,15 @@ function parseBoolAttr(el: Element | null, attr: string): boolean | undefined {
 function parseRPr(rPr: Element | null): RunProps | undefined {
   if (!rPr) return undefined;
   const props: RunProps = {};
+  // Safe throughout: every `xs[0]` below is guarded by the matching `xs.length > 0` check.
   const rFonts = rPr.getElementsByTagNameNS(WORD_NS, 'rFonts');
   if (rFonts.length > 0) {
-    const font = getLocal(rFonts[0], 'ascii') || getLocal(rFonts[0], 'hAnsi');
+    const font = getLocal(rFonts[0]!, 'ascii') || getLocal(rFonts[0]!, 'hAnsi');
     if (font) props.font = font;
   }
   const sz = rPr.getElementsByTagNameNS(WORD_NS, 'sz');
   if (sz.length > 0) {
-    const v = getLocal(sz[0], 'val');
+    const v = getLocal(sz[0]!, 'val');
     if (v) props.size = v;
   }
   const bold = parseBoolAttr(rPr.getElementsByTagNameNS(WORD_NS, 'b')[0] || null, 'val');
@@ -186,7 +187,7 @@ function parseRPr(rPr: Element | null): RunProps | undefined {
   if (italic !== undefined) props.italic = italic;
   const color = rPr.getElementsByTagNameNS(WORD_NS, 'color');
   if (color.length > 0) {
-    const v = getLocal(color[0], 'val');
+    const v = getLocal(color[0]!, 'val');
     if (v) props.color = v;
   }
   return Object.keys(props).length > 0 ? props : undefined;
@@ -212,26 +213,27 @@ export function parseStylesXml(xml: string): { styles: Map<string, StyleDef>; do
 
   const defaults = doc.getElementsByTagNameNS(WORD_NS, 'docDefaults');
   if (defaults.length > 0) {
-    const rPrDefault = defaults[0].getElementsByTagNameNS(WORD_NS, 'rPrDefault');
+    const rPrDefault = defaults[0]!.getElementsByTagNameNS(WORD_NS, 'rPrDefault');
     if (rPrDefault.length > 0) {
-      const rPr = rPrDefault[0].getElementsByTagNameNS(WORD_NS, 'rPr');
-      if (rPr.length > 0) result.docDefaults = parseRPr(rPr[0]) || {};
+      const rPr = rPrDefault[0]!.getElementsByTagNameNS(WORD_NS, 'rPr');
+      if (rPr.length > 0) result.docDefaults = parseRPr(rPr[0]!) || {};
     }
   }
 
+  // Safe: for-loop bound by styleEls.length, so styleEls[i] always exists.
   const styleEls = doc.getElementsByTagNameNS(WORD_NS, 'style');
   for (let i = 0; i < styleEls.length; i++) {
-    const el = styleEls[i];
+    const el = styleEls[i]!;
     const styleId = getLocal(el, 'styleId');
     if (!styleId) continue;
     const basedOn = el.getElementsByTagNameNS(WORD_NS, 'basedOn');
     const rPr = el.getElementsByTagNameNS(WORD_NS, 'rPr');
     const def: StyleDef = {};
     if (basedOn.length > 0) {
-      const v = getLocal(basedOn[0], 'val');
+      const v = getLocal(basedOn[0]!, 'val');
       if (v) def.basedOn = v;
     }
-    if (rPr.length > 0) def.rPr = parseRPr(rPr[0]);
+    if (rPr.length > 0) def.rPr = parseRPr(rPr[0]!);
     result.styles.set(styleId, def);
   }
 
@@ -312,11 +314,12 @@ export function parseRels(xml: string): Map<string, { type: string; target: stri
   const doc = parser.parseFromString(xml, 'application/xml');
   const relsNs = 'http://schemas.openxmlformats.org/package/2006/relationships';
   const map = new Map<string, { type: string; target: string }>();
+  // Safe: for-loops below are bound by the matching NodeList's own .length.
   const rels = doc.getElementsByTagNameNS(relsNs, 'Relationship');
   for (let i = 0; i < rels.length; i++) {
-    const id = rels[i].getAttribute('Id');
-    const type = rels[i].getAttribute('Type');
-    const target = rels[i].getAttribute('Target');
+    const id = rels[i]!.getAttribute('Id');
+    const type = rels[i]!.getAttribute('Type');
+    const target = rels[i]!.getAttribute('Target');
     if (id && type && target) map.set(id, { type, target });
   }
   return map;
@@ -334,20 +337,20 @@ export function extractImagesFromXml(
   // DrawingML: <a:blip r:embed="rIdX"/>
   const blips = doc.getElementsByTagNameNS(DRAWINGML_NS, 'blip');
   for (let i = 0; i < blips.length; i++) {
-    const embed = blips[i].getAttributeNS(REL_NS, 'embed');
+    const embed = blips[i]!.getAttributeNS(REL_NS, 'embed');
     if (!embed) continue;
     const rel = rels.get(embed);
     if (!rel || rel.type !== IMAGE_REL) continue;
 
     // Walk up to find <wp:extent>
-    let parent = blips[i].parentElement;
+    let parent = blips[i]!.parentElement;
     let cx = 0, cy = 0;
     while (parent) {
       if (parent.localName === 'anchor' || parent.localName === 'inline') {
         const ext = parent.getElementsByTagNameNS(WP_NS, 'extent');
         if (ext.length > 0) {
-          cx = parseInt(ext[0].getAttribute('cx') || '0', 10);
-          cy = parseInt(ext[0].getAttribute('cy') || '0', 10);
+          cx = parseInt(ext[0]!.getAttribute('cx') || '0', 10);
+          cy = parseInt(ext[0]!.getAttribute('cy') || '0', 10);
         }
         break;
       }
@@ -362,9 +365,9 @@ export function extractImagesFromXml(
   // VML: <v:imagedata r:id="rIdX"/> or <v:imagedata o:relid="rIdX"/>
   const vImagedata = doc.getElementsByTagNameNS(VML_NS, 'imagedata');
   for (let i = 0; i < vImagedata.length; i++) {
-    const rid = vImagedata[i].getAttributeNS(REL_NS, 'id')
-      || vImagedata[i].getAttribute('o:relid')
-      || vImagedata[i].getAttribute('r:id');
+    const rid = vImagedata[i]!.getAttributeNS(REL_NS, 'id')
+      || vImagedata[i]!.getAttribute('o:relid')
+      || vImagedata[i]!.getAttribute('r:id');
     if (!rid) continue;
     const rel = rels.get(rid);
     if (!rel || rel.type !== IMAGE_REL) continue;
@@ -372,15 +375,15 @@ export function extractImagesFromXml(
     seen.add(rid);
 
     // Walk up to <v:shape> for CSS dimensions
-    let parent = vImagedata[i].parentElement;
+    let parent = vImagedata[i]!.parentElement;
     let wPt = 0, hPt = 0;
     while (parent) {
       const style = parent.getAttribute('style');
       if (style) {
         const wMatch = style.match(/width:\s*([\d.]+)pt/);
         const hMatch = style.match(/height:\s*([\d.]+)pt/);
-        if (wMatch) wPt = parseFloat(wMatch[1]);
-        if (hMatch) hPt = parseFloat(hMatch[1]);
+        if (wMatch) wPt = parseFloat(wMatch[1]!);
+        if (hMatch) hPt = parseFloat(hMatch[1]!);
         if (wPt && hPt) break;
       }
       parent = parent.parentElement;
@@ -464,8 +467,9 @@ const UNSUPPORTED_SCRIPT_RANGES: Array<[number, number]> = [
 ];
 
 function isUnsupportedCodePoint(cp: number): boolean {
+  // Safe: for-loop bound by the array's own length.
   for (let i = 0; i < UNSUPPORTED_SCRIPT_RANGES.length; i++) {
-    const [lo, hi] = UNSUPPORTED_SCRIPT_RANGES[i];
+    const [lo, hi] = UNSUPPORTED_SCRIPT_RANGES[i]!;
     if (cp >= lo && cp <= hi) return true;
   }
   return false;
@@ -503,8 +507,9 @@ const DXA_PER_PT = 20;
 function getText(el: Element): string {
   let s = '';
   const children = el.childNodes;
+  // Safe: for-loop bound by children.length throughout this file's DOM-walking loops.
   for (let i = 0; i < children.length; i++) {
-    const node = children[i];
+    const node = children[i]!;
     if (node.nodeType !== 1) continue;
     const child = node as Element;
     if (child.localName === 't' && child.namespaceURI === WORD_NS) {
@@ -524,14 +529,14 @@ function parseRuns(
   // Only direct children <w:r> — skip <w:r> inside <w:txbxContent> (textboxes)
   const children = pEl.childNodes;
   for (let i = 0; i < children.length; i++) {
-    const node = children[i];
+    const node = children[i]!;
     if (node.nodeType !== 1) continue;
     const el = node as Element;
     if (el.localName !== 'r' || el.namespaceURI !== WORD_NS) continue;
     const text = getText(el);
     if (!text) continue;
     const rPrEl = el.getElementsByTagNameNS(WORD_NS, 'rPr');
-    const rPr = rPrEl.length > 0 ? parseRPr(rPrEl[0]) : undefined;
+    const rPr = rPrEl.length > 0 ? parseRPr(rPrEl[0]!) : undefined;
     const resolved = resolveRunProps(
       resolvedStyles.styles, resolvedStyles.docDefaults,
       pStyleId, pPrRunProps, rPr,
@@ -555,7 +560,7 @@ function parseRuns(
 function parseHeadingLevel(pStyleId: string | null): number | null {
   if (!pStyleId) return null;
   const m = pStyleId.match(/^Heading(\d)$/i);
-  return m ? parseInt(m[1]) : null;
+  return m ? parseInt(m[1]!) : null;
 }
 
 function processParagraph(
@@ -571,27 +576,27 @@ function processParagraph(
   let pPrRPr: Partial<RunProps> | undefined;
 
   if (pPr.length > 0) {
-    const styleEls = pPr[0].getElementsByTagNameNS(WORD_NS, 'pStyle');
-    if (styleEls.length > 0) pStyleId = getLocal(styleEls[0], 'val') || undefined;
-    const numPr = pPr[0].getElementsByTagNameNS(WORD_NS, 'numPr');
-    if (numPr.length > 0) numPrEl = numPr[0];
-    const rPr = pPr[0].getElementsByTagNameNS(WORD_NS, 'rPr');
-    if (rPr.length > 0) pPrRPr = parseRPr(rPr[0]) || undefined;
+    const styleEls = pPr[0]!.getElementsByTagNameNS(WORD_NS, 'pStyle');
+    if (styleEls.length > 0) pStyleId = getLocal(styleEls[0]!, 'val') || undefined;
+    const numPr = pPr[0]!.getElementsByTagNameNS(WORD_NS, 'numPr');
+    if (numPr.length > 0) numPrEl = numPr[0]!;
+    const rPr = pPr[0]!.getElementsByTagNameNS(WORD_NS, 'rPr');
+    if (rPr.length > 0) pPrRPr = parseRPr(rPr[0]!) || undefined;
   }
 
   // Check for images in this paragraph (direct children only — skip textboxes)
   const pChildren = pEl.childNodes;
   for (let i = 0; i < pChildren.length; i++) {
-    const node = pChildren[i];
+    const node = pChildren[i]!;
     if (node.nodeType !== 1) continue;
     const el = node as Element;
     if (el.localName === 'r' && el.namespaceURI === WORD_NS) {
       // Check <w:drawing> direct children of this <w:r>
       const drvs = el.getElementsByTagNameNS(WORD_NS, 'drawing');
       for (let d = 0; d < drvs.length; d++) {
-        const blips = drvs[d].getElementsByTagNameNS(DRAWINGML_NS, 'blip');
+        const blips = drvs[d]!.getElementsByTagNameNS(DRAWINGML_NS, 'blip');
         for (let j = 0; j < blips.length; j++) {
-          const embed = blips[j].getAttributeNS(REL_NS, 'embed');
+          const embed = blips[j]!.getAttributeNS(REL_NS, 'embed');
           if (embed && imageMap.has(embed) && !seenRids.has(embed)) {
             seenRids.add(embed);
             const img = imageMap.get(embed)!;
@@ -610,8 +615,8 @@ function processParagraph(
       // Check <w:pict> direct children of this <w:r>
       const picts = el.getElementsByTagNameNS(VML_NS, 'imagedata');
       for (let j = 0; j < picts.length; j++) {
-        const rid = picts[j].getAttributeNS(REL_NS, 'id')
-          || picts[j].getAttribute('r:id');
+        const rid = picts[j]!.getAttributeNS(REL_NS, 'id')
+          || picts[j]!.getAttribute('r:id');
         if (rid && imageMap.has(rid) && !seenRids.has(rid)) {
           seenRids.add(rid);
           const img = imageMap.get(rid)!;
@@ -639,7 +644,7 @@ function processParagraph(
 
   if (numPrEl) {
     const ilvl = numPrEl.getElementsByTagNameNS(WORD_NS, 'ilvl');
-    const level = ilvl.length > 0 ? parseInt(getLocal(ilvl[0], 'val') || '0') : 0;
+    const level = ilvl.length > 0 ? parseInt(getLocal(ilvl[0]!, 'val') || '0') : 0;
     blocks.unshift({
       kind: 'list-item',
       marker: '•',
@@ -686,20 +691,20 @@ function processTable(
 
   for (let r = 0; r < trEls.length; r++) {
     const row: IRTableCell[] = [];
-    const tcEls = trEls[r].getElementsByTagNameNS(WORD_NS, 'tc');
+    const tcEls = trEls[r]!.getElementsByTagNameNS(WORD_NS, 'tc');
     for (let c = 0; c < tcEls.length; c++) {
-      const tc = tcEls[c];
+      const tc = tcEls[c]!;
       const tcPr = tc.getElementsByTagNameNS(WORD_NS, 'tcPr');
       let colspan = 1;
       if (tcPr.length > 0) {
-        const gs = tcPr[0].getElementsByTagNameNS(WORD_NS, 'gridSpan');
-        if (gs.length > 0) colspan = parseInt(getLocal(gs[0], 'val') || '1');
+        const gs = tcPr[0]!.getElementsByTagNameNS(WORD_NS, 'gridSpan');
+        if (gs.length > 0) colspan = parseInt(getLocal(gs[0]!, 'val') || '1');
       }
       // Collect all text runs from paragraphs inside this cell
       const cellRuns: IRTextRun[] = [];
       const pEls = tc.getElementsByTagNameNS(WORD_NS, 'p');
       for (let p = 0; p < pEls.length; p++) {
-        const pRuns = parseRuns(pEls[p], resolvedStyles, undefined, undefined);
+        const pRuns = parseRuns(pEls[p]!, resolvedStyles, undefined, undefined);
         cellRuns.push(...pRuns);
       }
       row.push({ runs: cellRuns, colspan, rowspan: 1 });
@@ -711,7 +716,7 @@ function processTable(
   const gridCols = tblEl.getElementsByTagNameNS(WORD_NS, 'gridCol');
   const colWidths: number[] = [];
   for (let i = 0; i < gridCols.length; i++) {
-    const w = parseInt(getLocal(gridCols[i], 'w') || '0');
+    const w = parseInt(getLocal(gridCols[i]!, 'w') || '0');
     colWidths.push(Math.round(w / DXA_PER_PT));
   }
 
@@ -764,12 +769,13 @@ export async function docxToIR(file: File): Promise<DocxIRResult> {
 
   // Page size from last <w:sectPr>/<w:pgSz>
   let pageW = 595, pageH = 842;
-  const sectPr = body[0].getElementsByTagNameNS(WORD_NS, 'sectPr');
+  // Safe: body.length === 0 already returned above.
+  const sectPr = body[0]!.getElementsByTagNameNS(WORD_NS, 'sectPr');
   if (sectPr.length > 0) {
-    const pgSz = sectPr[sectPr.length - 1].getElementsByTagNameNS(WORD_NS, 'pgSz');
+    const pgSz = sectPr[sectPr.length - 1]!.getElementsByTagNameNS(WORD_NS, 'pgSz');
     if (pgSz.length > 0) {
-      const w = parseInt(getLocal(pgSz[0], 'w') || '0');
-      const h = parseInt(getLocal(pgSz[0], 'h') || '0');
+      const w = parseInt(getLocal(pgSz[0]!, 'w') || '0');
+      const h = parseInt(getLocal(pgSz[0]!, 'h') || '0');
       if (w && h) { pageW = Math.round(w / DXA_PER_PT); pageH = Math.round(h / DXA_PER_PT); }
     }
   }
@@ -777,9 +783,9 @@ export async function docxToIR(file: File): Promise<DocxIRResult> {
   // Traverse body children in document order
   const blocks: IRBlock[] = [];
   const seenRids = new Set<string>();
-  const children = body[0].childNodes;
+  const children = body[0]!.childNodes;
   for (let i = 0; i < children.length; i++) {
-    const node = children[i];
+    const node = children[i]!;
     if (node.nodeType !== 1) continue;
     const el = node as Element;
     if (el.localName === 'p') {
@@ -1197,14 +1203,17 @@ export async function renderIRToPdf(
 
     // Assign every top-left cell to a (row, gridCol) position, honouring the
     // footprint left by previous colspan/rowspan cells above/left of it.
+    // Safe throughout this function: activeRowspan/drawActive/newlyOwned/colX/baseH/rowHeights
+    // are all sized exactly nCols or nRows and indexed only by loop variables bounded by
+    // those same sizes (g < nCols, r/rr/spanEnd < nRows via Math.min(...,  nRows-1)).
     const starts: { r: number; g: number; cell: IRTableCell }[] = [];
     const activeRowspan: number[] = new Array(nCols).fill(0);
     for (let r = 0; r < nRows; r++) {
-      const row = table.cells[r];
+      const row = table.cells[r]!;
       let g = 0;
       const newlyOwned: number[] = new Array(nCols).fill(0);
       for (let k = 0; k < row.length && g < nCols; k++) {
-        while (g < nCols && activeRowspan[g] > 0) g++;
+        while (g < nCols && activeRowspan[g]! > 0) g++;
         const cell: IRTableCell | undefined = row[k];
         if (!cell) { g++; continue; }
         const cs = Math.min(Math.max(cell.colspan || 1, 1), nCols - g);
@@ -1214,7 +1223,7 @@ export async function renderIRToPdf(
           if (rs > 1) {
             // A rowspan cell covers EVERY spanned column in the following rows,
             // not just its first column — mark them all so later rows skip them.
-            activeRowspan[g] = Math.max(activeRowspan[g], rs - 1);
+            activeRowspan[g] = Math.max(activeRowspan[g]!, rs - 1);
             newlyOwned[g] = 1;
           }
           g++;
@@ -1222,7 +1231,7 @@ export async function renderIRToPdf(
       }
       // Consume one row of occupancy only for spans started in earlier rows;
       // a span begun in this row must still cover the following rows.
-      for (let c = 0; c < nCols; c++) if (!newlyOwned[c]) activeRowspan[c] = Math.max(0, activeRowspan[c] - 1);
+      for (let c = 0; c < nCols; c++) if (!newlyOwned[c]) activeRowspan[c] = Math.max(0, activeRowspan[c]! - 1);
     }
 
     // Pass 1: row heights — base from non-rowspan cells in each row, then grow
@@ -1238,7 +1247,7 @@ export async function renderIRToPdf(
       const cs = Math.min(Math.max(cell.colspan || 1, 1), nCols - g);
       const rs = Math.max(cell.rowspan || 1, 1);
       if (rs > 1) continue; // handled below
-      baseH[r] = Math.max(baseH[r], cellHeight(g, cs, cell));
+      baseH[r] = Math.max(baseH[r]!, cellHeight(g, cs, cell));
     }
     for (const { r, g, cell } of starts) {
       const cs = Math.min(Math.max(cell.colspan || 1, 1), nCols - g);
@@ -1247,8 +1256,8 @@ export async function renderIRToPdf(
       const H = cellHeight(g, cs, cell);
       const spanEnd = Math.min(r + rs - 1, nRows - 1);
       let occupied = 0;
-      for (let rr = r; rr <= spanEnd; rr++) occupied += baseH[rr];
-      if (H > occupied) baseH[spanEnd] += H - occupied;
+      for (let rr = r; rr <= spanEnd; rr++) occupied += baseH[rr]!;
+      if (H > occupied) baseH[spanEnd] = baseH[spanEnd]! + (H - occupied);
     }
     const rowHeights = baseH;
     const totalH = rowHeights.reduce((a, b) => a + b, 0);
@@ -1259,8 +1268,8 @@ export async function renderIRToPdf(
     // consumed the occupancy once; use a dedicated copy here).
     const drawActive: number[] = new Array(nCols).fill(0);
     for (let r = 0; r < nRows; r++) {
-      const row = table.cells[r];
-      const rh = rowHeights[r];
+      const row = table.cells[r]!;
+      const rh = rowHeights[r]!;
       const newlyOwned: number[] = new Array(nCols).fill(0);
 
       // Force a page break before this row when it does not fit below the
@@ -1274,7 +1283,7 @@ export async function renderIRToPdf(
 
       let g = 0;
       for (let k = 0; k < row.length && g < nCols; k++) {
-        while (g < nCols && drawActive[g] > 0) g++;
+        while (g < nCols && drawActive[g]! > 0) g++;
         const cell: IRTableCell | undefined = row[k];
         if (!cell) { g++; continue; }
         const cs = Math.min(Math.max(cell.colspan || 1, 1), nCols - g);
@@ -1283,8 +1292,8 @@ export async function renderIRToPdf(
         const spanEnd = Math.min(r + rs - 1, nRows - 1);
         const cellY2 = tableY;
         let cellH = 0;
-        for (let rr = r; rr <= spanEnd; rr++) cellH += rowHeights[rr];
-        const cellXX = colX[g];
+        for (let rr = r; rr <= spanEnd; rr++) cellH += rowHeights[rr]!;
+        const cellXX = colX[g]!;
 
         currentPage!.drawRectangle({
           x: cellXX, y: cellY2 - cellH, width: cellW, height: cellH,
@@ -1314,14 +1323,14 @@ export async function renderIRToPdf(
 
         for (let cc = 0; cc < cs; cc++) {
           if (rs > 1) {
-            drawActive[g] = Math.max(drawActive[g], rs - 1);
+            drawActive[g] = Math.max(drawActive[g]!, rs - 1);
             newlyOwned[g] = 1;
           }
           g++;
         }
       }
       // Consume one row of occupancy only for spans started in earlier rows.
-      for (let c = 0; c < nCols; c++) if (!newlyOwned[c]) drawActive[c] = Math.max(0, drawActive[c] - 1);
+      for (let c = 0; c < nCols; c++) if (!newlyOwned[c]) drawActive[c] = Math.max(0, drawActive[c]! - 1);
       tableY -= rh;
     }
     cursorY = tableY - 5;
@@ -1329,7 +1338,8 @@ export async function renderIRToPdf(
 
   // ── MAIN RENDER LOOP ──
   for (let i = 0; i < pages.length; i++) {
-    const page = pages[i];
+    // Safe: for-loop bound by pages.length.
+    const page = pages[i]!;
     pageW = page.width;
     pageH = page.height;
 
@@ -1419,7 +1429,7 @@ function odfParseLenPt(v: string | null): number | undefined {
   if (!v) return undefined;
   const m = v.match(/^([-+]?[0-9]*\.?[0-9]+)\s*(pt|mm|cm|in|px)?$/i);
   if (!m) return undefined;
-  const n = parseFloat(m[1]);
+  const n = parseFloat(m[1]!);
   const unit = (m[2] || 'pt').toLowerCase();
   switch (unit) {
     case 'pt': return n;
@@ -1724,7 +1734,7 @@ function odfCollectRuns(
 ): void {
   const children = containerEl.childNodes;
   for (let i = 0; i < children.length; i++) {
-    const node = children[i];
+    const node = children[i]!;
     if (node.nodeType === 3) {
       const txt = (node as unknown as { data: string }).data || '';
       if (txt.trim()) {
@@ -1758,7 +1768,7 @@ function odfCollectRuns(
 function odfFrameToIRImage(frameEl: Element, imageMap: Map<string, DocxImage>): IRImageBlock | null {
   const imgs = frameEl.getElementsByTagNameNS(ODF_DRAW, 'image');
   if (imgs.length === 0) return null;
-  const href = odfAttrNS(imgs[0], XLINK, 'href');
+  const href = odfAttrNS(imgs[0]!, XLINK, 'href');
   if (!href) return null;
   if (odfAttrNS(frameEl, ODF_TEXT, 'anchor-type') === 'page') return null; // skip decorative bg
   // imageMap is the single source of truth for dimensions. Fallback to the frame's raw
@@ -1837,11 +1847,11 @@ function odfProcessList(
 ): void {
   const items = listEl.getElementsByTagNameNS(ODF_TEXT, 'list-item');
   for (let i = 0; i < items.length; i++) {
-    const li = items[i] as unknown as Element;
+    const li = items[i]! as unknown as Element;
     if (li.parentNode !== listEl) continue; // direct children only
     const liChildren = li.childNodes;
     for (let c = 0; c < liChildren.length; c++) {
-      const nc = liChildren[c];
+      const nc = liChildren[c]!;
       if (nc.nodeType !== 1) continue;
       const el = nc as Element;
       if (el.localName === 'p' || el.localName === 'h') {
@@ -1909,7 +1919,7 @@ function odfTraverseOfficeText(
   // Block-level <draw:frame> -> IRImageBlock. Caption text inside frames is dropped.
   const children = root.childNodes;
   for (let i = 0; i < children.length; i++) {
-    const node = children[i];
+    const node = children[i]!;
     if (node.nodeType !== 1) continue;
     const el = node as Element;
     const local = el.localName;
@@ -2019,7 +2029,7 @@ function xlsxResolveThemeHex(clrScheme: Element | null, themeIdx: number): strin
   if (!tag) return '';
   const els = clrScheme.getElementsByTagNameNS(T, tag);
   if (els.length === 0) return '';
-  const srgb = els[0].getElementsByTagNameNS(T, 'srgbClr');
+  const srgb = els[0]!.getElementsByTagNameNS(T, 'srgbClr');
   if (srgb.length > 0) return (xlsxGetAttr(srgb[0] as Element, 'val') || '').toUpperCase();
   return '';
 }
@@ -2103,7 +2113,7 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
       const si = siEls[i] as Element;
       const ts = si.getElementsByTagNameNS(XLSX_NS, 't');
       let text = '';
-      for (let j = 0; j < ts.length; j++) text += ts[j].textContent || '';
+      for (let j = 0; j < ts.length; j++) text += ts[j]!.textContent || '';
       sharedStrings.push(text);
     }
   }
@@ -2125,7 +2135,7 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
   const clrScheme = styleDoc.getElementsByTagNameNS('http://schemas.openxmlformats.org/drawingml/2006/main', 'clrScheme');
   const themeEl = clrScheme.length ? clrScheme[0] as Element : null;
   if (cellXfsEl.length > 0) {
-    const xfEls = cellXfsEl[0].getElementsByTagNameNS(XLSX_NS, 'xf');
+    const xfEls = cellXfsEl[0]!.getElementsByTagNameNS(XLSX_NS, 'xf');
     for (let i = 0; i < xfEls.length; i++) {
       const xf = xfEls[i] as Element;
       const numFmtId = parseInt(xlsxGetAttr(xf, 'numFmtId') || '0', 10);
@@ -2156,7 +2166,7 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
       if (fill) {
         const pf = fill.getElementsByTagNameNS(XLSX_NS, 'patternFill');
         if (pf.length > 0) {
-          const fg = pf[0].getElementsByTagNameNS(XLSX_NS, 'fgColor');
+          const fg = pf[0]!.getElementsByTagNameNS(XLSX_NS, 'fgColor');
           if (fg.length > 0) {
             const c = fg[0] as Element;
             const rgb = xlsxGetAttr(c, 'rgb');
@@ -2252,7 +2262,7 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
     // Build a coverage map: (row,col) -> merged top-left index for spanned slots.
     const mergedTopLeftByCell = new Map<string, number>();
     for (let m = 0; m < mergedRanges.length; m++) {
-      const rg = mergedRanges[m];
+      const rg = mergedRanges[m]!;
       for (let r = 0; r < rg.rowspan; r++) {
         for (let c = 0; c < rg.colspan; c++) {
           mergedTopLeftByCell.set(`${rg.row + r},${rg.col + c}`, m);
@@ -2289,13 +2299,13 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
     const gridRows: Element[] = [];
     const sheetData = sDoc.getElementsByTagNameNS(XLSX_NS, 'sheetData');
     if (sheetData.length > 0) {
-      const rowEls = sheetData[0].getElementsByTagNameNS(XLSX_NS, 'row');
+      const rowEls = sheetData[0]!.getElementsByTagNameNS(XLSX_NS, 'row');
       for (let r = 0; r < rowEls.length; r++) gridRows.push(rowEls[r] as Element);
     }
 
     const rawCells = new Map<string, IRSpreadsheetCell>();
     for (let r = 0; r < gridRows.length; r++) {
-      const rowEl = gridRows[r];
+      const rowEl = gridRows[r]!;
       const cellEls = rowEl.getElementsByTagNameNS(XLSX_NS, 'c');
       for (let c = 0; c < cellEls.length; c++) {
         const cellEl = cellEls[c] as Element;
@@ -2311,12 +2321,12 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
 
         const formulaEl = cellEl.getElementsByTagNameNS(XLSX_NS, 'f');
         if (formulaEl.length > 0) {
-          formula = formulaEl[0].textContent || '';
+          formula = formulaEl[0]!.textContent || '';
           type = 'formula';
         }
 
         const vEl = cellEl.getElementsByTagNameNS(XLSX_NS, 'v');
-        const v = vEl.length > 0 ? vEl[0].textContent || '' : '';
+        const v = vEl.length > 0 ? vEl[0]!.textContent || '' : '';
 
         if (t === 's') {
           const idx = parseInt(v, 10);
@@ -2339,8 +2349,8 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
           const isEl = cellEl.getElementsByTagNameNS(XLSX_NS, 'is');
           let text = '';
           if (isEl.length > 0) {
-            const ts = isEl[0].getElementsByTagNameNS(XLSX_NS, 't');
-            for (let k = 0; k < ts.length; k++) text += ts[k].textContent || '';
+            const ts = isEl[0]!.getElementsByTagNameNS(XLSX_NS, 't');
+            for (let k = 0; k < ts.length; k++) text += ts[k]!.textContent || '';
           }
           raw = text;
           display = text;
@@ -2419,7 +2429,7 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
     }
 
     const rowsCount = gridRows.length > 0
-      ? parseInt(xlsxGetAttr(gridRows[gridRows.length - 1], 'r') || '0', 10)
+      ? parseInt(xlsxGetAttr(gridRows[gridRows.length - 1]!, 'r') || '0', 10)
       : (gridRows.length || 1);
 
     for (let r = 0; r < rowsCount; r++) {
@@ -2429,7 +2439,7 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
         const merged = mergedTopLeftByCell.get(key);
         const own = rawCells.get(key);
         if (merged !== undefined) {
-          const rg = mergedRanges[merged];
+          const rg = mergedRanges[merged]!;
           // Install the top-left cell (with spans) only at the anchor.
           if (r === rg.row && c === rg.col) {
             const base = rawCells.get(key);
@@ -2698,21 +2708,23 @@ export function spreadsheetRowHeightsPt(
   const baseH: number[] = new Array(nRows).fill(minH);
   const rowspanNeeds: Array<{ r: number; spanEnd: number; h: number }> = [];
 
+  // Safe: baseH is sized exactly nRows and only ever indexed by r/rr/spanEnd, each bounded
+  // to [0, nRows) by the loop condition or Math.min(..., nRows - 1).
   for (let r = 0; r < nRows; r++) {
-    const row = sheet.cells[r];
+    const row = sheet.cells[r]!;
     for (let c = 0; c < row.length; c++) {
       const cell = row[c];
       if (!cell) continue;
       const rs = Math.max(cell.rowspan || 1, 1);
       const h = cellHeight(r, c, cell);
-      if (rs <= 1) baseH[r] = Math.max(baseH[r], h);
+      if (rs <= 1) baseH[r] = Math.max(baseH[r]!, h);
       else rowspanNeeds.push({ r, spanEnd: Math.min(r + rs - 1, nRows - 1), h });
     }
   }
   for (const { r, spanEnd, h } of rowspanNeeds) {
     let occupied = 0;
-    for (let rr = r; rr <= spanEnd; rr++) occupied += baseH[rr];
-    if (h > occupied) baseH[spanEnd] += h - occupied;
+    for (let rr = r; rr <= spanEnd; rr++) occupied += baseH[rr]!;
+    if (h > occupied) baseH[spanEnd] = baseH[spanEnd]! + (h - occupied);
   }
   return baseH;
 }
@@ -2744,8 +2756,9 @@ export function spreadsheetColFragments(
   const fragments: SpreadsheetColFragment[] = [];
   let runStart = G;
   let runWidth = 0;
+  // Safe: c is bounded to [G, nCols) by the loop condition, matching colWidthsPt.length.
   for (let c = G; c < nCols; c++) {
-    const cw = colWidthsPt[c];
+    const cw = colWidthsPt[c]!;
     if (runWidth > 0 && runWidth + cw > budget) {
       fragments.push({ start: runStart, end: c });
       runStart = c;
@@ -2779,8 +2792,9 @@ export function spreadsheetRowChunks(
   const chunks: SpreadsheetRowChunk[] = [];
   let runStart = H;
   let runH = 0;
+  // Safe: r is bounded to [H, nRows) by the loop condition, matching rowHeightsPt.length.
   for (let r = H; r < nRows; r++) {
-    const rh = rowHeightsPt[r];
+    const rh = rowHeightsPt[r]!;
     if (runH > 0 && runH + rh > availableH) {
       chunks.push({ start: runStart, end: r });
       runStart = r;
@@ -3038,14 +3052,15 @@ export async function renderSpreadsheetIRToPdf(
     let firstPageOfSheet = true;
 
     for (let fi = 0; fi < fragments.length; fi++) {
-      const frag = fragments[fi];
+      // Safe: fi/ci are bound by fragments.length/chunks.length respectively.
+      const frag = fragments[fi]!;
       const bodyColsX = spreadsheetFragmentColsX(colPt, frag);
       const bodyXOf = new Map<number, number>();
       const bodyLeft = MARGIN + headerW;
       for (const e of bodyColsX) bodyXOf.set(e.c, bodyLeft + e.x);
 
       for (let ci = 0; ci < chunks.length; ci++) {
-        const ch = chunks[ci];
+        const ch = chunks[ci]!;
         const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
         let y = PAGE_H - MARGIN;
 
@@ -3220,14 +3235,15 @@ function odtRenderReconstructList(items: IRListItemBlock[]): OdtListT {
     const depth = Math.min(it.level, currentDepth + 1);
     while (stack.length - 1 > depth) stack.pop();
     while (stack.length - 1 < depth) {
-      const parentList = stack[stack.length - 1];
+      // Safe: stack[0] = root is set above and only ever pop()'d down to length 1, never 0.
+      const parentList = stack[stack.length - 1]!;
       const parentItem = parentList.children[parentList.children.length - 1];
       if (!parentItem) break; // cannot nest without a parent item
       const nested: OdtListT = { children: [] };
       parentItem.nested.push(nested);
       stack.push(nested);
     }
-    stack[stack.length - 1].children.push({ runs: it.runs, nested: [] });
+    stack[stack.length - 1]!.children.push({ runs: it.runs, nested: [] });
   }
   return root;
 }

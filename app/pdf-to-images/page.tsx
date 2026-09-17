@@ -68,7 +68,7 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
       const allResults: { fileIdx: number; page: number; blob: Blob; url: string }[] = [];
 
       for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+        const file = files[i]!;
         const qualityVal = format === 'jpeg' || format === 'webp' ? (isNaN(q) ? 0.9 : q / 100) : undefined;
         const results = await extractImagesFromPdf(file, { format, scale: s, quality: qualityVal });
         results.forEach(r => allResults.push({ fileIdx: i, ...r }));
@@ -80,12 +80,13 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
 
       const zip = new JSZip();
       allResults.forEach(img => {
-        const baseName = files[img.fileIdx].name.replace(/\.pdf$/i, '');
+        // Safe: fileIdx is always the loop index i from the files array above.
+        const baseName = files[img.fileIdx]!.name.replace(/\.pdf$/i, '');
         zip.file(`${baseName}_strona${img.page}.${format}`, img.blob);
       });
       const zipBlob = await zip.generateAsync({ type: 'blob' });
       processedBlobRef.current = zipBlob;
-      downloadFileNameRef.current = files.length === 1 ? files[0].name.replace('.pdf', '_obrazy.zip') : 'obrazy.zip';
+      downloadFileNameRef.current = files.length === 1 ? files[0]!.name.replace('.pdf', '_obrazy.zip') : 'obrazy.zip';
       const url = URL.createObjectURL(zipBlob);
       const a = document.createElement('a');
       a.href = url;
@@ -208,7 +209,7 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
               <div key={idx} className="border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden">
                 <img src={img.url} alt={`${t('page.images.page_label', locale)} ${img.page}`} className="w-full h-auto" />
                 <div className="p-2 text-center">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{files[img.fileIdx].name.replace(/\.pdf$/i, '')} — {t('page.images.page_label', locale)} {img.page}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{files[img.fileIdx]!.name.replace(/\.pdf$/i, '')} — {t('page.images.page_label', locale)} {img.page}</p>
                 </div>
               </div>
             ))}
