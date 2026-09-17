@@ -2,7 +2,6 @@
 import { useState, useMemo, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import CloudFileSaver from '@/components/CloudFileSaver';
-import { htmlToPdf } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -22,7 +21,8 @@ export default function HtmlToPdf({ locale: forcedLocale }: { locale?: Locale } 
     setSuccess(false);
 
     try {
-      const blob = await htmlToPdf(html);
+      const { htmlToTaggedPdf } = await import('@/lib/pdf/htmlToTaggedPdf');
+      const blob = await htmlToTaggedPdf(html);
       processedBlobRef.current = blob;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -84,7 +84,7 @@ export default function HtmlToPdf({ locale: forcedLocale }: { locale?: Locale } 
         </div>
       )}
 
-      <button onClick={handleConvert} disabled={loading || !html.trim()}
+      <button data-testid="html-to-pdf-submit" onClick={handleConvert} disabled={loading || !html.trim()}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition
           ${loading || !html.trim() ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
         {loading ? <span>⏳ {t('page.html.loading', locale)}</span> : <span>🌐 {t('page.html.btn', locale)}</span>}

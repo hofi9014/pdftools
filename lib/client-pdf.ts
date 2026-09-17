@@ -3669,50 +3669,6 @@ export async function editPdfClient(file: File, pageIndex: number, elements: Pdf
   return new Blob([await pdfDoc.save() as BlobPart], { type: 'application/pdf' });
 }
 
-export async function htmlToPdf(html: string): Promise<Blob> {
-  const text = unescapeXmlEntities(html.replace(/<[^>]*>/g, ''));
-  const lines = text.split('\n').filter(l => l.trim());
-  const pdf = await PDFDocument.create();
-  const font = await embedLiberationSans(pdf);
-  const fontSize = 11;
-  const margin = 50;
-  const lineHeight = fontSize * 1.5;
-  const pageWidth = 595.28;
-  const pageHeight = 841.89;
-  const maxWidth = pageWidth - margin * 2;
-  let page = pdf.addPage([pageWidth, pageHeight]);
-  let y = pageHeight - margin;
-
-  for (const line of lines) {
-    if (y < margin + 20) {
-      page = pdf.addPage([pageWidth, pageHeight]);
-      y = pageHeight - margin;
-    }
-    const words = line.split(' ');
-    let currentLine = '';
-    for (const word of words) {
-      const testLine = currentLine ? currentLine + ' ' + word : word;
-      if (font.widthOfTextAtSize(testLine, fontSize) > maxWidth && currentLine) {
-        page.drawText(currentLine, { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) });
-        y -= lineHeight;
-        if (y < margin + 20) {
-          page = pdf.addPage([pageWidth, pageHeight]);
-          y = pageHeight - margin;
-        }
-        currentLine = word;
-      } else {
-        currentLine = testLine;
-      }
-    }
-    if (currentLine) {
-      page.drawText(currentLine, { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) });
-      y -= lineHeight;
-    }
-  }
-
-  return new Blob([await pdf.save() as BlobPart], { type: 'application/pdf' });
-}
-
 export async function comparePdfTextClient(fileA: File, fileB: File): Promise<{ differences: { page: number; type: 'added' | 'removed'; content: string }[] }> {
   const textA = await extractTextFromPDF(fileA);
   const textB = await extractTextFromPDF(fileB);
