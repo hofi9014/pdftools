@@ -128,8 +128,22 @@ export async function deletePages(file: File, pageIndices: number[]): Promise<Ui
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
   const sorted = [...new Set(pageIndices)].sort((a, b) => b - a);
+  let removedAny = false;
   for (const idx of sorted) {
-    if (idx >= 0 && idx < pdf.getPageCount()) pdf.removePage(idx);
+    if (idx >= 0 && idx < pdf.getPageCount()) {
+      pdf.removePage(idx);
+      removedAny = true;
+    }
+  }
+  // Removing a page leaves any /StructTreeRoot pointing at a page object that no longer
+  // exists in the page tree — pdf.removePage() only detaches the page, it has no knowledge of
+  // (and cannot safely renumber/prune) a structure tree describing it. Rather than carry
+  // forward a MarkInfo/Marked=true claim over dangling references (same "claims tagged,
+  // isn't" problem as convertToPdfA and rasterizePages), drop the claim on any deletion of an
+  // already-tagged document.
+  if (removedAny && pdf.catalog.lookupMaybe(PDFName.of('StructTreeRoot'), PDFDict)) {
+    pdf.catalog.delete(PDFName.of('StructTreeRoot'));
+    pdf.catalog.delete(PDFName.of('MarkInfo'));
   }
   return pdf.save();
 }
