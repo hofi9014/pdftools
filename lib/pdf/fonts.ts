@@ -4,40 +4,48 @@ export interface FontFamilyOption {
   weights: { weight: number; italic: boolean; url: string }[]
 }
 
-const GF_BASE = 'https://fonts.gstatic.com';
+// Self-hosted under public/fonts/ — downloaded once from Google Fonts and served from our own
+// domain from then on. Previously these were fetched live from fonts.gstatic.com on every
+// edit-pdf session (and fonts.googleapis.com for the live preview, see loadGoogleFontsCSS
+// below), which silently sent the visitor's IP to Google before they ever clicked anything.
+// Self-hosting also fixes a real, separate bug this uncovered: two of the old hardcoded
+// fonts.gstatic.com hashes (PT Sans regular/italic) had already rotted and returned 404 —
+// exporting an edit-pdf document with that font would have thrown "Font fetch failed". A
+// self-hosted copy can't rot from under us the way a hash-versioned CDN URL can.
+const FONTS_BASE = '/fonts';
 
 const FONT_VERSIONS: Record<string, { family: string; url: (w: number, i: boolean) => string }> = {
   'Arial': {
     family: 'arimo',
-    url: (w, i) => `${GF_BASE}/s/arimo/v36/P5sMzZCDf9_T_10ZxCE.woff2`,
+    url: () => `${FONTS_BASE}/arimo-regular.woff2`,
   },
   'Arimo': {
     family: 'arimo',
-    url: (w, i) => `${GF_BASE}/s/arimo/v36/P5sMzZCDf9_T_10ZxCE.woff2`,
+    url: () => `${FONTS_BASE}/arimo-regular.woff2`,
   },
   'Cousine': {
     family: 'cousine',
     url: (w, i) => i
-      ? `${GF_BASE}/l/font?kit=d6lKkaiiRdih4SpP_SEvzAzqlpon5wcS&skey=411d53aa792d7323&v=v31`
+      ? `${FONTS_BASE}/cousine-italic.woff2`
       : w === 700
-        ? `${GF_BASE}/s/cousine/v31/d6lNkaiiRdih4SpP9Z8K2TnM0g.woff2`
-        : `${GF_BASE}/s/cousine/v31/d6lIkaiiRdih4SpP_SQvzA.woff2`,
+        ? `${FONTS_BASE}/cousine-bold.woff2`
+        : `${FONTS_BASE}/cousine-regular.woff2`,
   },
   'Georgia': {
     family: 'georgia',
     url: (w, i) => i
-      ? `${GF_BASE}/l/font?kit=-zkn91Ksy8U47Wnsfmy8wVPR4P25N4kH&skey=8c06b1b3ed97d173&v=v18`
+      ? `${FONTS_BASE}/georgia-italic.woff2`
       : w === 700
-        ? `${GF_BASE}/l/font?kit=-zkg91Ksy8U47WnsdtKZ1Gb3pA&skey=bbb745e2fcd7331c&v=v18`
-        : `${GF_BASE}/l/font?kit=-zkl91Ksy8U47Wnsfmm8wQ&skey=ca45512e77838097&v=v18`,
+        ? `${FONTS_BASE}/georgia-bold.woff2`
+        : `${FONTS_BASE}/georgia-regular.woff2`,
   },
   'Lato': {
     family: 'lato',
     url: (w, i) => i
-      ? `${GF_BASE}/s/lato/v25/S6u8w4BMUTPHjxsAXC-q.woff2`
+      ? `${FONTS_BASE}/lato-italic.woff2`
       : w === 700
-        ? `${GF_BASE}/s/lato/v25/S6u9w4BMUTPHh6UVSwiPGQ.woff2`
-        : `${GF_BASE}/s/lato/v25/S6uyw4BMUTPHjx4wXg.woff2`,
+        ? `${FONTS_BASE}/lato-bold.woff2`
+        : `${FONTS_BASE}/lato-regular.woff2`,
   },
   'Noto Sans': {
     family: 'notosans',
@@ -47,10 +55,10 @@ const FONT_VERSIONS: Record<string, { family: string; url: (w: number, i: boolea
     // instances only come back when each weight is queried in isolation. Verified with
     // fontkit: NotoSans-Regular vs NotoSans-Bold, "AVWMil" advance width 3552 vs 3809 units.
     url: (w, i) => i
-      ? `${GF_BASE}/s/notosans/v42/o-0ZIpQlx3QUlC5A4PNr4C5OaxRsfNNlKbCePevtuXOm.woff2`
+      ? `${FONTS_BASE}/notosans-italic.woff2`
       : w === 700
-        ? `${GF_BASE}/s/notosans/v42/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyAaBO9a6VI.woff2`
-        : `${GF_BASE}/s/notosans/v42/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9a6VI.woff2`,
+        ? `${FONTS_BASE}/notosans-bold.woff2`
+        : `${FONTS_BASE}/notosans-regular.woff2`,
   },
   'Open Sans': {
     family: 'opensans',
@@ -59,50 +67,50 @@ const FONT_VERSIONS: Record<string, { family: string; url: (w: number, i: boolea
     // Refetched all three isolated by weight/style. Verified with fontkit: OpenSans-Regular vs
     // OpenSans-Bold, "AVWMil" advance width 7283 vs 7905 units.
     url: (w, i) => i
-      ? `${GF_BASE}/s/opensans/v44/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk8ZkWVAewA.woff2`
+      ? `${FONTS_BASE}/opensans-italic.woff2`
       : w === 700
-        ? `${GF_BASE}/s/opensans/v44/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsg-1x4gaVI.woff2`
-        : `${GF_BASE}/s/opensans/v44/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4gaVI.woff2`,
+        ? `${FONTS_BASE}/opensans-bold.woff2`
+        : `${FONTS_BASE}/opensans-regular.woff2`,
   },
   'PT Sans': {
     family: 'ptsans',
     url: (w, i) => i
-      ? `${GF_BASE}/s/ptsans/v17/jizYRExUiTo99u79D0eE0CQ0Z_8.woff2`
+      ? `${FONTS_BASE}/ptsans-italic.woff2`
       : w === 700
-        ? `${GF_BASE}/s/ptsans/v17/jizfRExUiTo99u79B_mh0O6tLR8a8zI.woff2`
-        : `${GF_BASE}/s/ptsans/v17/jizaRExUiTo99u79D0KEwOhKEl8.woff2`,
+        ? `${FONTS_BASE}/ptsans-bold.woff2`
+        : `${FONTS_BASE}/ptsans-regular.woff2`,
   },
   'Roboto': {
     family: 'roboto',
     url: (w, i) => i
-      ? `${GF_BASE}/s/roboto/v32/KFOkCnqEu92Fr1Mu51xIIzIXKMny.woff2`
+      ? `${FONTS_BASE}/roboto-italic.woff2`
       : w === 700
-        ? `${GF_BASE}/s/roboto/v32/KFOlCnqEu92Fr1MmWUlfBBc4AMP6lQ.woff2`
-        : `${GF_BASE}/s/roboto/v32/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2`,
+        ? `${FONTS_BASE}/roboto-bold.woff2`
+        : `${FONTS_BASE}/roboto-regular.woff2`,
   },
   'Times New Roman': {
     family: 'tinos',
     url: (w, i) => i
-      ? `${GF_BASE}/l/font?kit=buE2poGnedXvwjX-fmRb9mt9u7UoAQ&skey=bebefdc6a40fd4ff&v=v26`
+      ? `${FONTS_BASE}/tinos-italic.woff2`
       : w === 700
-        ? `${GF_BASE}/s/tinos/v26/buE1poGnedXvwj1AW3Fu0C8.woff2`
-        : `${GF_BASE}/s/tinos/v26/buE4poGnedXvwjX7fmQ.woff2`,
+        ? `${FONTS_BASE}/tinos-bold.woff2`
+        : `${FONTS_BASE}/tinos-regular.woff2`,
   },
   'Tinos': {
     family: 'tinos',
     url: (w, i) => i
-      ? `${GF_BASE}/l/font?kit=buE2poGnedXvwjX-fmRb9mt9u7UoAQ&skey=bebefdc6a40fd4ff&v=v26`
+      ? `${FONTS_BASE}/tinos-italic.woff2`
       : w === 700
-        ? `${GF_BASE}/s/tinos/v26/buE1poGnedXvwj1AW3Fu0C8.woff2`
-        : `${GF_BASE}/s/tinos/v26/buE4poGnedXvwjX7fmQ.woff2`,
+        ? `${FONTS_BASE}/tinos-bold.woff2`
+        : `${FONTS_BASE}/tinos-regular.woff2`,
   },
   'Verdana': {
     family: 'verdana',
     url: (w, i) => i
-      ? `${GF_BASE}/l/font?kit=dFa9ZfqA86A4lLhf7qFHfw8cuTbKPzIR&skey=48066a2ff839778c&v=v15`
+      ? `${FONTS_BASE}/verdana-italic.woff2`
       : w === 700
-        ? `${GF_BASE}/l/font?kit=dFa6ZfqA86A4lLhf5h9iajo6_Q&skey=cd26fb9258467dcb&v=v15`
-        : `${GF_BASE}/l/font?kit=dFa_ZfqA86A4lLhf7qRHfw&skey=28f652d19e80fbde&v=v15`,
+        ? `${FONTS_BASE}/verdana-bold.woff2`
+        : `${FONTS_BASE}/verdana-regular.woff2`,
   },
 };
 
@@ -143,14 +151,26 @@ export async function embedFont(pdfDoc: any, family: string, weight: number = 40
   return pdfDoc.embedFont(bytes);
 }
 
+const FONTS_STYLE_ID = 'optimapdf-local-fonts';
+
+// Previously fetched a CSS file from fonts.googleapis.com (which itself points at
+// fonts.gstatic.com) — that meant every edit-pdf session contacted Google before the user did
+// anything at all, just to render the live text-editing preview. This builds the equivalent
+// @font-face rules locally from the same self-hosted files getFontBytes()/embedFont() use for
+// the actual PDF export, so preview and export always agree and nothing leaves the browser.
 export function loadGoogleFontsCSS(): void {
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
+  if (document.getElementById(FONTS_STYLE_ID)) return;
   const seen = new Set<string>();
-  const families = Object.values(FONT_VERSIONS)
-    .filter(cfg => { const k = cfg.family; if (seen.has(k)) return false; seen.add(k); return true; })
-    .map(cfg => cfg.family + ':wght@400;700&display=swap')
-    .join('&family=');
-  link.href = `https://fonts.googleapis.com/css2?family=${families}`;
-  document.head.appendChild(link);
+  const rules: string[] = [];
+  for (const cfg of Object.values(FONT_VERSIONS)) {
+    if (seen.has(cfg.family)) continue;
+    seen.add(cfg.family);
+    rules.push(`@font-face { font-family: '${cfg.family}'; font-weight: 400; font-style: normal; font-display: swap; src: url('${cfg.url(400, false)}') format('woff2'); }`);
+    rules.push(`@font-face { font-family: '${cfg.family}'; font-weight: 700; font-style: normal; font-display: swap; src: url('${cfg.url(700, false)}') format('woff2'); }`);
+    rules.push(`@font-face { font-family: '${cfg.family}'; font-weight: 400; font-style: italic; font-display: swap; src: url('${cfg.url(400, true)}') format('woff2'); }`);
+  }
+  const style = document.createElement('style');
+  style.id = FONTS_STYLE_ID;
+  style.textContent = rules.join('\n');
+  document.head.appendChild(style);
 }

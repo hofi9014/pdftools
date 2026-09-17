@@ -65,7 +65,8 @@
     "test:e2e-base-url-env": "npx --yes tsx tests/e2e-base-url-env.mts",
     "test:e2e-manual-tools-exit-codes": "npx --yes tsx tests/e2e-manual-tools-exit-codes.mts",
     "test:excel-to-pdf-direction": "npx --yes tsx tests/excel-to-pdf-direction.mts",
-    "test:e2e-real-waits": "npx --yes tsx tests/e2e-real-waits.mts"
+    "test:e2e-real-waits": "npx --yes tsx tests/e2e-real-waits.mts",
+    "test:privacy-hardening-batch": "npx --yes tsx tests/privacy-hardening-batch.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
