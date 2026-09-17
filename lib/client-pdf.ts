@@ -1278,105 +1278,109 @@ export interface CellTextAssignment {
 const CELL_TOLERANCE_X = 3; // pt — horizontal tolerance for text-in-cell matching
 const CELL_TOLERANCE_Y = 5; // pt — vertical tolerance for text-in-cell matching
 
-// Known Limitation: assumes each rect's owned cells form a perfect rectangle
-// (topLeft→bottomRight). Non-rectangular (L-shaped) merges are not supported
-// — out of scope for MVP.
+// FINDING (table merge false-positive, superseding the "most specific owner" heuristic below
+// that used to implement this function) — that heuristic ranked candidate rects per cell by
+// "fewest cells covered" and used the winner's full extent as the merge span. For a table whose
+// cells are delimited ONLY by border lines (no per-cell fill — confirmed with a concrete repro:
+// a plain 2x2 bordered table, no merges intended), a column-divider line spans the FULL height
+// of the table and nothing more specific exists to out-rank it, so every cell in that column
+// was wrongly reported as one rowspan-2 merge — and assignTextRunsToCells then failed to route
+// text physically in the second row anywhere (it only looks up cells by their exact top-left
+// row/col), so that row's real content silently fell out of the table entirely.
+//
+// Fixed with a different, more general signal: instead of asking "which rect owns this cell",
+// ask "is there an actual divider between this cell and its neighbor" — for each pair of
+// adjacent base grid cells, some rect's edge (a line segment OR a normal filled/stroked
+// rectangle's own edge) must coincide with the shared boundary and fully span it, or the two
+// cells are joined into one merged region. This single rule handles all three real-world table
+// representations correctly: per-cell bordered rectangles (each cell's own edges seal every
+// boundary — nothing merges), a table drawn as pure divider lines with one missing on purpose
+// (exactly the standard way a real merge is drawn this way), and a genuine merge represented as
+// one continuous background fill (its own edges never touch the boundary strictly BETWEEN its
+// constituent cells, so that boundary is correctly detected as unsealed). The pdf-to-excel
+// round-trip path's own detectMergesByTopology (below) is intentionally left untouched — it is
+// tuned specifically for this app's own spreadsheet-renderer output and has its own separate,
+// heavily-regression-tested behavior.
+//
+// Known Limitation: a merge region is assumed to be a perfect rectangle. A union-find group
+// whose member count doesn't match its bounding box's area (which would require an internally
+// inconsistent set of dividers — pathological, not expected from any real table) falls back to
+// treating each of its cells as an unmerged 1x1 cell rather than guessing a wrong span.
 export function buildGridAndDetectMerged(cluster: TableCluster): GridCell[] {
   const { rects, xEdges, yEdges, cols, rows } = cluster;
+  const EDGE_T = 1.0; // pt — matches detectMergesByTopology's own edge-alignment tolerance
 
-  // Count how many cells each rect spans (for specificity ranking)
-  // Safe throughout this function: a TableCluster is only ever produced by
-  // buildTableClusters(), which already guarantees cols >= 2 and rows >= 2 (so xEdges/yEdges
-  // have at least 3 entries), and every ri/ci loop below stays within [0, rows-1]/[0, cols-1].
-  const rectCellCounts = new Array(rects.length).fill(0);
-  const clusterW = xEdges[xEdges.length - 1]! - xEdges[0]!;
-  const clusterH = yEdges[yEdges.length - 1]! - yEdges[0]!;
-  for (let ri2 = 0; ri2 < rects.length; ri2++) {
-    const r = rects[ri2]!;
-    // Skip rects that exactly span the full cluster — they're outer borders
-    if (Math.abs(r.width - clusterW) < 1 && Math.abs(r.height - clusterH) < 1) continue;
-    for (let ri = 0; ri < rows; ri++) {
-      const cellTop = yEdges[ri]!, cellBottom = yEdges[ri + 1]!;
-      if (r.y + r.height <= cellTop || r.y >= cellBottom) continue;
-      for (let ci = 0; ci < cols; ci++) {
-        const cellLeft = xEdges[ci]!, cellRight = xEdges[ci + 1]!;
-        // Non-zero width: half-open [x, x+w) must overlap [cellLeft, cellRight)
-        // Zero width (line): point x must be within [cellLeft, cellRight)
-        if (r.width > 0) {
-          if (r.x + r.width <= cellLeft || r.x >= cellRight) continue;
-        } else {
-          if (r.x < cellLeft || r.x >= cellRight) continue;
-        }
-        rectCellCounts[ri2]++;
+  // True if some rect has an edge at `boundaryPos` (on the given axis) that fully spans
+  // [spanStart, spanEnd) — i.e. a real divider seals this specific boundary segment, whether
+  // that rect is a thin line (its two edges coincide) or an ordinary cell/fill rectangle.
+  function hasDividerAt(axis: 'h' | 'v', boundaryPos: number, spanStart: number, spanEnd: number): boolean {
+    for (const r of rects) {
+      if (axis === 'h') {
+        const top = r.y, bottom = r.y + r.height;
+        if (Math.abs(top - boundaryPos) > EDGE_T && Math.abs(bottom - boundaryPos) > EDGE_T) continue;
+        const left = r.x, right = r.x + r.width;
+        if (left <= spanStart + EDGE_T && right >= spanEnd - EDGE_T) return true;
+      } else {
+        const left = r.x, right = r.x + r.width;
+        if (Math.abs(left - boundaryPos) > EDGE_T && Math.abs(right - boundaryPos) > EDGE_T) continue;
+        const top = r.y, bottom = r.y + r.height;
+        if (top <= spanStart + EDGE_T && bottom >= spanEnd - EDGE_T) return true;
       }
     }
+    return false;
   }
 
-  // cellOwner[ri][ci] = index of rect that owns this cell, or -1
-  // Prefer the most specific rect (fewest total cells) to avoid outer border claiming all cells
-  const cellOwner: number[][] = Array.from({ length: rows }, () => new Array(cols).fill(-1));
+  const hSealed: boolean[][] = Array.from({ length: Math.max(0, rows - 1) }, () => new Array(cols).fill(false));
+  for (let bi = 0; bi < rows - 1; bi++) {
+    const boundaryY = yEdges[bi + 1]!;
+    for (let ci = 0; ci < cols; ci++) hSealed[bi]![ci] = hasDividerAt('h', boundaryY, xEdges[ci]!, xEdges[ci + 1]!);
+  }
+  const vSealed: boolean[][] = Array.from({ length: rows }, () => new Array(Math.max(0, cols - 1)).fill(false));
+  for (let ri = 0; ri < rows; ri++) {
+    for (let bj = 0; bj < cols - 1; bj++) vSealed[ri]![bj] = hasDividerAt('v', xEdges[bj + 1]!, yEdges[ri]!, yEdges[ri + 1]!);
+  }
+
+  // Union-find over base grid cells: two adjacent cells join into the same merge region
+  // exactly when no divider separates them.
+  // Safe throughout: a TableCluster is only ever produced by buildTableClusters(), which
+  // already guarantees cols >= 2 and rows >= 2, so every index used below stays in bounds.
+  const uf = new UnionFind(rows * cols);
+  const idx = (r: number, c: number) => r * cols + c;
   for (let ri = 0; ri < rows; ri++) {
     for (let ci = 0; ci < cols; ci++) {
-      const cellLeft = xEdges[ci]!, cellRight = xEdges[ci + 1]!;
-      const cellTop = yEdges[ri]!, cellBottom = yEdges[ri + 1]!;
-      let bestIdx = -1, bestCount = Infinity, bestArea = -1;
-      for (let ri2 = 0; ri2 < rects.length; ri2++) {
-        const r = rects[ri2]!;
-        if (r.width > 0) {
-          if (r.x + r.width <= cellLeft || r.x >= cellRight) continue;
-        } else {
-          if (r.x < cellLeft || r.x >= cellRight) continue;
-        }
-        if (r.y + r.height <= cellTop || r.y >= cellBottom) continue;
-        // Skip rects that exactly span the full cluster — they're outer borders
-        if (Math.abs(r.width - clusterW) < 1 && Math.abs(r.height - clusterH) < 1) continue;
-        const area = r.width * r.height;
-        const count = rectCellCounts[ri2]!;
-        if (count < bestCount ||
-            (count === bestCount && area > bestArea)) {
-          bestCount = count;
-          bestArea = area;
-          bestIdx = ri2;
-        }
-      }
-      cellOwner[ri]![ci] = bestIdx;
+      if (ci < cols - 1 && !vSealed[ri]![ci]) uf.union(idx(ri, ci), idx(ri, ci + 1));
+      if (ri < rows - 1 && !hSealed[ri]![ci]) uf.union(idx(ri, ci), idx(ri + 1, ci));
     }
   }
 
-  // Find top-left corner of each rect's span → that's the GridCell
+  const groups = new Map<number, { r: number; c: number }[]>();
+  for (let ri = 0; ri < rows; ri++) {
+    for (let ci = 0; ci < cols; ci++) {
+      const root = uf.find(idx(ri, ci));
+      const arr = groups.get(root);
+      if (arr) arr.push({ r: ri, c: ci }); else groups.set(root, [{ r: ri, c: ci }]);
+    }
+  }
+
+  function pickRepresentativeRect(minR: number, maxR: number, minC: number, maxC: number): RawRect {
+    const left = xEdges[minC]!, right = xEdges[maxC + 1]!, top = yEdges[minR]!, bottom = yEdges[maxR + 1]!;
+    const overlapping = rects.find((r) => !(r.x + r.width <= left || r.x >= right || r.y + r.height <= top || r.y >= bottom));
+    return overlapping ?? rects[0]!;
+  }
+
   const cells: GridCell[] = [];
-  const visited = new Set<string>();
-
-  for (let ri2 = 0; ri2 < rects.length; ri2++) {
-    // Find all cells owned by this rect
-    const ownedCells: { r: number; c: number }[] = [];
-    for (let ri = 0; ri < rows; ri++) {
-      for (let ci = 0; ci < cols; ci++) {
-        if (cellOwner[ri]![ci] === ri2) ownedCells.push({ r: ri, c: ci });
-      }
+  for (const members of groups.values()) {
+    const minR = Math.min(...members.map((m) => m.r));
+    const maxR = Math.max(...members.map((m) => m.r));
+    const minC = Math.min(...members.map((m) => m.c));
+    const maxC = Math.max(...members.map((m) => m.c));
+    const expectedSize = (maxR - minR + 1) * (maxC - minC + 1);
+    if (members.length !== expectedSize) {
+      for (const m of members) cells.push({ row: m.r, col: m.c, rowspan: 1, colspan: 1, rect: pickRepresentativeRect(m.r, m.r, m.c, m.c) });
+      continue;
     }
-    if (ownedCells.length === 0) continue;
-
-    // Top-left is the cell with smallest (row, col)
-    const topLeft = ownedCells.reduce((a, b) => a.r < b.r || (a.r === b.r && a.c < b.c) ? a : b);
-    // Bottom-right
-    const bottomRight = ownedCells.reduce((a, b) => a.r > b.r || (a.r === b.r && a.c > b.c) ? a : b);
-
-    const rowspan = bottomRight.r - topLeft.r + 1;
-    const colspan = bottomRight.c - topLeft.c + 1;
-    const key = `${topLeft.r},${topLeft.c}`;
-    if (visited.has(key)) continue;
-    visited.add(key);
-
-    cells.push({
-      row: topLeft.r,
-      col: topLeft.c,
-      rowspan,
-      colspan,
-      rect: rects[ri2]!,
-    });
+    cells.push({ row: minR, col: minC, rowspan: maxR - minR + 1, colspan: maxC - minC + 1, rect: pickRepresentativeRect(minR, maxR, minC, maxC) });
   }
-
   return cells;
 }
 
@@ -1397,6 +1401,18 @@ export function assignTextRunsToCells(
   xEdges: number[],
   yEdges: number[],
   pageHeight: number,
+  // Opt-in only (default false): resolve (ri, ci) to a cell whose SPAN contains it, not just
+  // an exact top-left match — needed so text physically positioned in, say, the second row of
+  // a genuine rowspan-2 cell still routes to it (see buildGridAndDetectMerged's header comment)
+  // instead of being silently dropped. Kept opt-in because this function is shared with the
+  // pdf-to-excel round-trip path (pdfTablesToCellsFromScaffolds -> detectMergesByTopology),
+  // whose own cells can have overlapping/approximate spans by design (see AGENTS.md's
+  // extensively-documented "false cs2 merge" / "coversValued" handling) — matching by span
+  // there would route text into the wrong (bigger, approximate) merge instead of correctly
+  // leaving it unassigned for that path's own downstream disambiguation. Only the word/odt/pptx
+  // caller (extractFormattedTextFromScaffolds), whose cells now come from the fixed, exact,
+  // divider-based buildGridAndDetectMerged, enables this.
+  matchSpans = false,
 ): CellTextAssignment[] {
   if (cells.length === 0) return [];
 
@@ -1442,7 +1458,13 @@ export function assignTextRunsToCells(
         if (runCenterY + CELL_TOLERANCE_Y < cellTop || runCenterY - CELL_TOLERANCE_Y > cellBottom) continue;
         if (runX + CELL_TOLERANCE_X < cellLeft || runX - CELL_TOLERANCE_X > cellRight) continue;
 
-        const cell = cells.find(c => c.row === ri && c.col === ci);
+        // A merged cell (rowspan/colspan > 1) is only registered once, at its top-left
+        // (row, col) — text physically positioned anywhere else within its span (e.g. the
+        // second row of a genuine rowspan-2 header) must still resolve back to that SAME
+        // GridCell, not fail to match because ri/ci isn't its literal top-left coordinate.
+        const cell = matchSpans
+          ? cells.find(c => ri >= c.row && ri < c.row + c.rowspan && ci >= c.col && ci < c.col + c.colspan)
+          : cells.find(c => c.row === ri && c.col === ci);
         if (!cell) continue;
 
         // Distance from run center to cell center
@@ -2139,6 +2161,7 @@ export async function segmentSlideElements(
       cluster.xEdges,
       cluster.yEdges,
       pageHeight,
+      true,
     );
     if (assignments.length === 0) continue;
 
@@ -2331,7 +2354,7 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
     // --- Table detection: cluster (from scaffold) → grid → assign → consumedIndices ---
     for (const cluster of tableClusters) {
       const gridCells = buildGridAndDetectMerged(cluster);
-      const assignments = assignTextRunsToCells(textRuns, gridCells, cluster.xEdges, cluster.yEdges, pageHeight);
+      const assignments = assignTextRunsToCells(textRuns, gridCells, cluster.xEdges, cluster.yEdges, pageHeight, true);
 
       if (assignments.length > 0) {
         // Build IRTableCell[][] grid
