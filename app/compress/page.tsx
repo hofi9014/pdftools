@@ -56,7 +56,7 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
 
     try {
       for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+        const file = files[i]!;
         const result = await compressPDFClient(file, level as 'low' | 'recommended' | 'extreme');
         const blob = new Blob([result as BlobPart], { type: 'application/pdf' });
         batchResults.push({ name: file.name.replace('.pdf', '_skompresowany.pdf'), originalSize: file.size, compressedSize: blob.size, data: blob });
@@ -66,7 +66,7 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
       setResults(batchResults.map(r => ({ name: r.name, originalSize: r.originalSize, compressedSize: r.compressedSize })));
 
       if (batchResults.length === 1) {
-        const r = batchResults[0];
+        const r = batchResults[0]!;
         processedBlobRef.current = r.data;
         const url = URL.createObjectURL(r.data);
         const a = document.createElement('a');
@@ -191,7 +191,7 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
       )}
       {results.length === 1 && processedBlobRef.current && (
         <div className="flex justify-center mb-6">
-          <CloudFileSaver blob={processedBlobRef.current} fileName={results[0].name} />
+          <CloudFileSaver blob={processedBlobRef.current} fileName={results[0]!.name} />
         </div>
       )}
 

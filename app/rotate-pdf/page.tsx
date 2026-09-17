@@ -45,14 +45,15 @@ export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } 
       const results: { data: Uint8Array; name: string }[] = [];
 
       for (let i = 0; i < files.length; i++) {
-        const data = await rotatePDF(files[i], angle);
-        results.push({ data, name: files[i].name.replace('.pdf', '_obrócony.pdf') });
+        const file = files[i]!;
+        const data = await rotatePDF(file, angle);
+        results.push({ data, name: file.name.replace('.pdf', '_obrócony.pdf') });
       }
 
       if (results.length === 1) {
-        const blob = await downloadPdf(results[0].data, results[0].name);
+        const blob = await downloadPdf(results[0]!.data, results[0]!.name);
         processedBlobRef.current = blob;
-        downloadFileNameRef.current = results[0].name;
+        downloadFileNameRef.current = results[0]!.name;
       } else {
         const zip = new JSZip();
         results.forEach(r => zip.file(r.name, r.data));

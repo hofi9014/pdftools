@@ -79,7 +79,7 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div
-          onDrop={(e) => { e.preventDefault(); setDragOverA(false); handleFile('A')(e.dataTransfer.files[0]); }}
+          onDrop={(e) => { e.preventDefault(); setDragOverA(false); handleFile('A')(e.dataTransfer.files[0] ?? null); }}
           onDragOver={(e) => { e.preventDefault(); setDragOverA(true); }}
           onDragLeave={() => setDragOverA(false)}
           onClick={() => document.getElementById('fileInputA')?.click()}
@@ -107,7 +107,7 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
         </div>
 
         <div
-          onDrop={(e) => { e.preventDefault(); setDragOverB(false); handleFile('B')(e.dataTransfer.files[0]); }}
+          onDrop={(e) => { e.preventDefault(); setDragOverB(false); handleFile('B')(e.dataTransfer.files[0] ?? null); }}
           onDragOver={(e) => { e.preventDefault(); setDragOverB(true); }}
           onDragLeave={() => setDragOverB(false)}
           onClick={() => document.getElementById('fileInputB')?.click()}

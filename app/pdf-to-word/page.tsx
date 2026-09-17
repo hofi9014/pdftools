@@ -47,7 +47,7 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
 
     try {
       for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+        const file = files[i]!;
         let blob: Blob;
         try {
           blob = await pdfToWordIR(file);
@@ -61,7 +61,7 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
       }
 
       if (batchResults.length === 1) {
-        const r = batchResults[0];
+        const r = batchResults[0]!;
         processedBlobRef.current = r.data;
         downloadFileNameRef.current = r.name;
         const url = URL.createObjectURL(r.data);

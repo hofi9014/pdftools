@@ -70,7 +70,8 @@ export default function RedactCanvas({ file, pageIndex, pageRegions, onPageRegio
     if (!natural) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     setSelected(index);
-    const r = pageRegions[index];
+    // Safe: index is always a valid pageRegions index (passed from rendering that region).
+    const r = pageRegions[index]!;
     dragRef.current = { index, sx: e.clientX, sy: e.clientY, ox: r.x, oy: r.y };
   };
 

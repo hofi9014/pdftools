@@ -51,7 +51,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
     try {
       let warnCount = 0;
       for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+        const file = files[i]!;
         const { spreadsheet, warnings } = await pdfToIRSpreadsheet(file);
         warnCount += warnings.length;
         const blob = await renderIRSpreadsheetToXlsx(spreadsheet);
@@ -61,7 +61,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
       setWarnings(warnCount);
 
       if (batchResults.length === 1) {
-        const r = batchResults[0];
+        const r = batchResults[0]!;
         processedBlobRef.current = r.data;
         downloadFileNameRef.current = r.name;
         const url = URL.createObjectURL(r.data);

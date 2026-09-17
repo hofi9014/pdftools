@@ -70,7 +70,7 @@ export default function ProtectPDF({ locale: forcedLocale }: { locale?: Locale }
         </div>
 
         <div
-          onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+          onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0] ?? null); }}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onClick={() => document.getElementById('fileInput')?.click()}

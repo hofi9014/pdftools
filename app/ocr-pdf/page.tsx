@@ -107,7 +107,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
       let completedPages = 0;
 
       for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+        const file = files[i]!;
         setProgressLabel(t('page.ocr.progress_start', locale).replace('{page}', String(completedPages + 1)));
         const result = await ocrPdfClient(file, language, (page, total) => {
           totalPages = total;
@@ -137,9 +137,9 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
   const downloadPDF = async () => {
     if (pdfResults.length === 0) return;
     if (pdfResults.length === 1) {
-      const blob = new Blob([pdfResults[0].data as BlobPart], { type: 'application/pdf' });
+      const blob = new Blob([pdfResults[0]!.data as BlobPart], { type: 'application/pdf' });
       processedBlobRef.current = blob;
-      downloadFileNameRef.current = pdfResults[0].name;
+      downloadFileNameRef.current = pdfResults[0]!.name;
       await downloadBlob(blob, downloadFileNameRef.current);
       return;
     }
@@ -152,7 +152,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
     if (!recognizedText) return;
     const blob = new Blob([recognizedText], { type: 'text/plain;charset=utf-8' });
     processedBlobRef.current = blob;
-    downloadFileNameRef.current = files.length === 1 ? files[0].name.replace('.pdf', '_ocr.txt') : 'ocr-wyniki.txt';
+    downloadFileNameRef.current = files.length === 1 ? files[0]!.name.replace('.pdf', '_ocr.txt') : 'ocr-wyniki.txt';
     downloadBlob(blob, downloadFileNameRef.current);
   };
 
@@ -168,7 +168,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
     });
     const blob = await Packer.toBlob(doc);
     processedBlobRef.current = blob;
-    downloadFileNameRef.current = files.length === 1 ? files[0].name.replace('.pdf', '_ocr.docx') : 'ocr-wyniki.docx';
+    downloadFileNameRef.current = files.length === 1 ? files[0]!.name.replace('.pdf', '_ocr.docx') : 'ocr-wyniki.docx';
     downloadBlob(blob, downloadFileNameRef.current);
   };
 

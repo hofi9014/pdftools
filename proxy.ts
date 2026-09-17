@@ -54,7 +54,8 @@ function detectLocale(request: NextRequest): string {
   const acceptLang = request.headers.get('Accept-Language');
   if (acceptLang) {
     for (const part of acceptLang.split(',')) {
-      const lang = part.trim().split(';')[0].split('-')[0].toLowerCase();
+      // Safe: String.split always returns a non-empty array, so [0] always exists.
+      const lang = part.trim().split(';')[0]!.split('-')[0]!.toLowerCase();
       if (lang && (LOCALES as readonly string[]).includes(lang)) {
         return lang;
       }
@@ -118,7 +119,7 @@ export function proxy(request: NextRequest) {
   }
 
   const segments = pathname.split('/').filter(Boolean);
-  if (segments.length > 0 && (LOCALES as readonly string[]).includes(segments[0])) {
+  if (segments.length > 0 && (LOCALES as readonly string[]).includes(segments[0]!)) {
     return NextResponse.next();
   }
 

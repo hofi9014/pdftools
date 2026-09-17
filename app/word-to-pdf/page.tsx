@@ -26,7 +26,8 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
 
-  const currentFormat = FORMATS.find(f => f.id === format) || FORMATS[0];
+  // Safe: FORMATS is a non-empty literal array, so FORMATS[0] always exists as the fallback.
+  const currentFormat = FORMATS.find(f => f.id === format) || FORMATS[0]!;
   const acceptedExtensions = currentFormat.exts;
 
   const handleFile = (f: File | null) => {
@@ -116,7 +117,7 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
       </div>
 
       <div
-        onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+        onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0] ?? null); }}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onClick={() => document.getElementById('fileInput')?.click()}

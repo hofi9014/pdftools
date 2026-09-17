@@ -67,7 +67,8 @@ export function makeFrozenLookup(addresses: LookupAddress[]) {
     if (options.all) {
       callback(null, filtered);
     } else {
-      callback(null, filtered[0].address, filtered[0].family);
+      // Safe: filtered.length === 0 already returned above.
+      callback(null, filtered[0]!.address, filtered[0]!.family);
     }
   };
 }

@@ -33,7 +33,8 @@ export async function applyTextEdits(pdfDoc: PDFDocument, textEdits: TextEdit[],
 
   for (const edit of textEdits) {
     if (edit.page < 1 || edit.page > pages.length) continue;
-    const page = pages[edit.page - 1];
+    // Safe: edit.page is bounds-checked above to be within [1, pages.length].
+    const page = pages[edit.page - 1]!;
     const { width, height } = page.getSize();
 
     const pdfY = height - edit.y - edit.height;
@@ -48,8 +49,9 @@ export async function applyTextEdits(pdfDoc: PDFDocument, textEdits: TextEdit[],
             const scaleY = canvas.height / height;
             const cx = Math.min(edit.x * scaleX + (edit.width * scaleX) / 2, canvas.width - 1);
             const cy = Math.min(edit.y * scaleY + (edit.height * scaleY) / 2, canvas.height - 1);
+            // Safe: a 1x1 getImageData() always yields exactly 4 bytes (RGBA).
             const p = ctx.getImageData(Math.max(0, Math.round(cx)), Math.max(0, Math.round(cy)), 1, 1).data;
-            if (p[3] > 200) return rgb(p[0] / 255, p[1] / 255, p[2] / 255);
+            if (p[3]! > 200) return rgb(p[0]! / 255, p[1]! / 255, p[2]! / 255);
           }
         }
       }
@@ -76,14 +78,16 @@ export async function applyTextEdits(pdfDoc: PDFDocument, textEdits: TextEdit[],
       const checkFit = (text: string, size: number) => font.widthOfTextAtSize(text, size) <= edit.width;
 
       let finalSize = edit.fontSize;
-      if (!checkFit(lines[0], finalSize)) {
-        while (finalSize > 6 && !checkFit(lines[0], finalSize)) finalSize -= 0.5;
+      // Safe: String.split always returns a non-empty array, so lines[0] and lines[li]
+      // (li < lines.length) always exist.
+      if (!checkFit(lines[0]!, finalSize)) {
+        while (finalSize > 6 && !checkFit(lines[0]!, finalSize)) finalSize -= 0.5;
       }
 
       for (let li = 0; li < lines.length; li++) {
         const lineY = pdfY + edit.height - (li + 1) * lineHeight;
         if (lineY < 0) break;
-        page.drawText(lines[li], { x: edit.x, y: lineY, size: finalSize, font, color: rgb(color.r, color.g, color.b) });
+        page.drawText(lines[li]!, { x: edit.x, y: lineY, size: finalSize, font, color: rgb(color.r, color.g, color.b) });
       }
     } catch {
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -91,7 +95,7 @@ export async function applyTextEdits(pdfDoc: PDFDocument, textEdits: TextEdit[],
       const lines = edit.newText.split('\n');
       const lineHeight = edit.fontSize * 1.2;
       for (let li = 0; li < lines.length; li++) {
-        page.drawText(lines[li], { x: edit.x, y: pdfY + edit.height - (li + 1) * lineHeight, size: edit.fontSize, font, color: rgb(color.r, color.g, color.b) });
+        page.drawText(lines[li]!, { x: edit.x, y: pdfY + edit.height - (li + 1) * lineHeight, size: edit.fontSize, font, color: rgb(color.r, color.g, color.b) });
       }
     }
   }

@@ -207,29 +207,32 @@ function unfilterPng(data: Uint8Array, width: number, height: number, channels: 
     const row = data.subarray(srcOff, srcOff + stride);
     srcOff += stride;
     const prevOff = dstOff - stride;
+    // Safe: x < stride === row.length by the loop bound; dstOff/prevOff + x(-channels) always
+    // lands on an already-written earlier position in `result` (or is skipped via the x>=channels /
+    // y>0 guards), never past what has been written so far.
     for (let x = 0; x < stride; x++) {
-      const a = x >= channels ? result[dstOff + x - channels] : 0;
-      const b = y > 0 ? result[prevOff + x] : 0;
-      const c = y > 0 && x >= channels ? result[prevOff + x - channels] : 0;
+      const a = x >= channels ? result[dstOff + x - channels]! : 0;
+      const b = y > 0 ? result[prevOff + x]! : 0;
+      const c = y > 0 && x >= channels ? result[prevOff + x - channels]! : 0;
       let raw: number;
       switch (filterType) {
         case 0:
-          raw = row[x];
+          raw = row[x]!;
           break;
         case 1:
-          raw = (row[x] + a) & 0xff;
+          raw = (row[x]! + a) & 0xff;
           break;
         case 2:
-          raw = (row[x] + b) & 0xff;
+          raw = (row[x]! + b) & 0xff;
           break;
         case 3:
-          raw = (row[x] + Math.floor((a + b) / 2)) & 0xff;
+          raw = (row[x]! + Math.floor((a + b) / 2)) & 0xff;
           break;
         case 4:
-          raw = (row[x] + paeth(a, b, c)) & 0xff;
+          raw = (row[x]! + paeth(a, b, c)) & 0xff;
           break;
         default:
-          raw = row[x];
+          raw = row[x]!;
       }
       result[dstOff + x] = raw;
     }
@@ -361,7 +364,9 @@ function crc32(buf: Uint8Array): number {
     }
   }
   let c = 0xffffffff;
-  for (let i = 0; i < buf.length; i++) c = crcTable[(c ^ buf[i]) & 0xff] ^ (c >>> 8);
+  // Safe: i < buf.length by the loop bound; crcTable is a fixed 256-entry table indexed by
+  // an 8-bit mask (& 0xff), always in range; crcTable itself is populated just above.
+  for (let i = 0; i < buf.length; i++) c = crcTable[(c ^ buf[i]!) & 0xff]! ^ (c >>> 8);
   return (c ^ 0xffffffff) >>> 0;
 }
 
@@ -445,18 +450,20 @@ async function decodeFlateToPng(meta: PdfImageStreamMeta): Promise<DecodedPdfIma
 
   if (alpha) {
     const rgba = new Uint8Array(w * h * 4);
+    // Safe: i < w*h by the loop bound; dec.pixels is exactly w*h*channels long (decoded above),
+    // and alpha is exactly w*h long (decodeSmaskAlpha), so every index here is in range.
     for (let i = 0; i < w * h; i++) {
       if (dec.channels === 3) {
-        rgba[i * 4] = dec.pixels[i * 3];
-        rgba[i * 4 + 1] = dec.pixels[i * 3 + 1];
-        rgba[i * 4 + 2] = dec.pixels[i * 3 + 2];
+        rgba[i * 4] = dec.pixels[i * 3]!;
+        rgba[i * 4 + 1] = dec.pixels[i * 3 + 1]!;
+        rgba[i * 4 + 2] = dec.pixels[i * 3 + 2]!;
       } else {
-        const v = dec.pixels[i];
+        const v = dec.pixels[i]!;
         rgba[i * 4] = v;
         rgba[i * 4 + 1] = v;
         rgba[i * 4 + 2] = v;
       }
-      rgba[i * 4 + 3] = alpha[i];
+      rgba[i * 4 + 3] = alpha[i]!;
     }
     return { mime: 'image/png', data: buildPng(w, h, 4, rgba, pako) };
   }
@@ -521,7 +528,7 @@ export interface PdfImageMap {
 function fnv1aHex(b: Uint8Array): string {
   let h = 0x811c9dc5;
   for (let i = 0; i < b.length; i++) {
-    h ^= b[i];
+    h ^= b[i]!;
     h = Math.imul(h, 0x01000193) >>> 0;
   }
   return h.toString(16);
@@ -609,7 +616,8 @@ export async function buildPdfImageMap(file: File, pages: number[]): Promise<Pdf
         });
         continue;
       }
-      const stream = candidates[0];
+      // Safe: candidates.length === 0 and > 1 are already handled (continue) above.
+      const stream = candidates[0]!;
       const dedupe = fnv1aHex(stream.rawBytes);
       let copy = dedupeCache.get(dedupe);
       if (copy && !bytesEqual(copy.bytes, stream.rawBytes)) copy = undefined; // astronomically unlikely FNV collision guard

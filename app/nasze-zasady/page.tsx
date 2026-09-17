@@ -658,7 +658,8 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
 export default function RulesPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const { locale: detectedLocale } = useLocale();
   const locale = forcedLocale || detectedLocale;
-  const lang = content[locale] || content.en;
+  // Safe: content always has an 'en' entry (defined below), used as the fallback default.
+  const lang = content[locale] || content.en!;
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-12">
