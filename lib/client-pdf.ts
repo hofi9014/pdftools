@@ -2444,7 +2444,24 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
       }
     }
 
-    // Sort runs by Y (top to bottom in PDF coords = descending Y), then X
+    // Sort runs by Y (top to bottom in PDF coords = descending Y), then X.
+    //
+    // KNOWN LIMITATION (superscript/subscript reading-order scramble, investigated but NOT
+    // fixed) — a raised or lowered inline run sharing a real text line with normal-size text
+    // (a footnote-marker superscript, a chemical-formula subscript) can differ in Y by more
+    // than this tolerance while still being grouped onto the same line by the more generous
+    // check below, so it can sort to before/after the line instead of its true X position
+    // within it (repro: "Tekst z przypisem²  dalej." extracts as "² Tekst z przypisem dalej.").
+    // A first attempt widened this tie-break to match the grouping check's own height-relative
+    // tolerance, but that regressed real documents far more than it fixed: on a real multi-page
+    // fixture, headings and body-text lines started reordering relative to each other wherever
+    // a large-font run's own height inflated the tolerance past the real gap to the next
+    // genuinely different line — confirmed via a before/after diff showing scrambled block
+    // order across most pages, not just the intended superscript case. Reverted rather than
+    // ship a broader regression for a narrower fix; a correct fix would need to distinguish
+    // "a smaller run offset from a same-size neighbor" from "two lines of similar/large font
+    // spaced closely" (e.g. a tolerance based on the SMALLER run's height, or an explicit
+    // same-baseline-family check) rather than a single Math.max on both heights.
     const Y_TIE_TOLERANCE = 2;
     const sorted = textRuns
       .map((tr, idx) => ({ tr, idx }))
