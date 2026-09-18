@@ -1950,6 +1950,8 @@ function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
   lines: Array<{ runs: IRTextRun[]; text: string; fontSize: number }>;
   fontSize: number;
   color: string;
+  bold: boolean;
+  italic: boolean;
 }> {
   if (runs.length === 0) return [];
 
@@ -1990,6 +1992,8 @@ function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
     lines: Array<{ runs: IRTextRun[]; text: string; fontSize: number }>;
     fontSize: number;
     color: string;
+    bold: boolean;
+    italic: boolean;
     minX: number;
     minY: number;
     maxX: number;
@@ -2011,9 +2015,14 @@ function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
     const maxY = Math.max(...lineRuns.map(r => r.position.y + r.height));
     const fs = lineRuns.reduce((m, r) => r.fontSize > m ? r.fontSize : m, 0);
     const color = lineRuns[0]!.color;
+    // Bold/italic from the first run — same "first run represents the whole line" convention
+    // already used for color above (the pptx IR is one bold/italic value per textbox, not
+    // per-run, unlike docx/odt's fully per-run formatting).
+    const bold = !!lineRuns[0]!.bold;
+    const italic = !!lineRuns[0]!.italic;
     const runFontName = run.fontName;
     return {
-      lineRuns, minX, maxX, minY, maxY, fs, color, runFontName,
+      lineRuns, minX, maxX, minY, maxY, fs, color, bold, italic, runFontName,
       blank: isBlankLine(lineRuns),
     };
   };
@@ -2036,6 +2045,8 @@ function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
       }],
       fontSize: ld.fs,
       color: ld.color,
+      bold: ld.bold,
+      italic: ld.italic,
       minX: ld.minX,
       minY: ld.minY,
       maxX: ld.maxX,
@@ -2104,6 +2115,8 @@ function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
     lines: Array<{ runs: IRTextRun[]; text: string; fontSize: number }>;
     fontSize: number;
     color: string;
+    bold: boolean;
+    italic: boolean;
   }> = [];
 
   for (const para of paragraphs) {
@@ -2113,6 +2126,8 @@ function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
       lines: para.lines,
       fontSize: para.fontSize,
       color: para.color,
+      bold: para.bold,
+      italic: para.italic,
     });
   }
 
@@ -2232,8 +2247,8 @@ export async function segmentSlideElements(
     content: {
       text: tb.lines.map(l => l.text).join('\n'),
       fontSize: tb.fontSize,
-      bold: false,
-      italic: false,
+      bold: tb.bold,
+      italic: tb.italic,
       color: tb.color || '#000000',
       align: 'left' as const,
     },
