@@ -25,6 +25,7 @@
     "test:ocr-multi-file-pdf": "npx --yes tsx tests/ocr-multi-file-pdf.mts",
     "test:export-edited-pdf-scale": "npx --yes tsx tests/export-edited-pdf-scale.mts",
     "test:ocr-worker-cleanup": "npx --yes tsx tests/ocr-worker-cleanup.mts",
+    "test:ocr-text-layer-scale": "npx --yes tsx tests/ocr-text-layer-scale.mts",
     "test:font-bold-weight": "npx --yes tsx tests/font-bold-weight.mts",
     "test:rasterize-pages-batch": "npx --yes tsx tests/rasterize-pages-batch.mts",
     "test:pdf-excel-shared-parse": "npx --yes tsx tests/pdf-excel-shared-parse.mts",

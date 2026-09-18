@@ -57,7 +57,9 @@ export async function createOcrPage(
   origPdf: PDFDocument,
   pageIndex: number,
   words: Word[],
-  font: PDFFont
+  font: PDFFont,
+  canvasWidth: number,
+  canvasHeight: number
 ): Promise<{ dropped: number; samples: string[] }> {
   const [copiedPage] = await newPdf.copyPages(origPdf, [pageIndex]);
   newPdf.addPage(copiedPage);
@@ -65,8 +67,18 @@ export async function createOcrPage(
   const charSet = new Set(font.getCharacterSet());
   const { width, height } = page.getSize();
 
-  const scaleX = width / 2000;
-  const scaleY = height / 2800;
+  // FINDING (2026-09-17) — word.bbox is in pixel space of the canvas actually OCR'd
+  // (canvasWidth × canvasHeight, i.e. the PDF page's point size × the render scale used
+  // below), NOT a fixed 2000×2800 image. The previous hardcoded divisor only produced a
+  // correct pixel→point scale for a hypothetical ~1000×1400pt page, which no standard page
+  // size (Letter 612×792, A4 595×842, Legal 612×1008...) matches — on every real document
+  // this placed and sized every OCR'd word using the wrong scale (~1.6-1.7x too small for
+  // Letter/A4), compressing the whole invisible searchable-text layer into roughly the
+  // bottom-left 60% of the page instead of aligning it with the visible scanned glyphs.
+  // Deriving the scale from the actual canvas dimensions passed in from ocrPdfClient makes
+  // this exact for any page size and any future render-scale change.
+  const scaleX = width / canvasWidth;
+  const scaleY = height / canvasHeight;
 
   let dropped = 0;
   const samples: string[] = [];
@@ -141,7 +153,7 @@ export async function ocrPdfClient(
 
         const { data } = await tessWorker.recognize(canvas.toDataURL('image/png'));
         const words = extractWords(data);
-        const { dropped, samples } = await createOcrPage(newPdf, origPdf, i, words, font);
+        const { dropped, samples } = await createOcrPage(newPdf, origPdf, i, words, font, canvas.width, canvas.height);
         if (dropped > 0) {
           dropStats.count += dropped;
           samples.forEach(s => dropStats.samples.add(s));
