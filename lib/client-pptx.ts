@@ -127,7 +127,10 @@ export async function renderIRToPptx(deck: IRDeck): Promise<Blob> {
               for (let rr = r; rr < r + rowspan; rr++) {
                 for (let cc = c; cc < c + colspan; cc++) covered.add(`${rr}:${cc}`);
               }
-              const text = (cell.runs ?? []).map(run => run.text).join('\n');
+              // Concatenated with no separator — cell.runs are inline spans of one flowing
+              // line (a bold word followed by plain text, etc.), same as the docx table writer
+              // treats them (a single Paragraph over all runs), not one run per line.
+              const text = (cell.runs ?? []).map(run => run.text).join('');
               const options =
                 colspan > 1 || rowspan > 1
                   ? { ...(colspan > 1 ? { colspan } : {}), ...(rowspan > 1 ? { rowspan } : {}) }
