@@ -3832,27 +3832,51 @@ export async function editPdfClient(file: File, pageIndex: number, elements: Pdf
         page.drawImage(img, { x: sx, y: sy - dh, width: dw, height: dh, opacity });
       } catch {}
     } else if (el.type === 'freehand' && el.points && el.points.length > 1) {
+      // FINDING (2026-09-21) — freehand elements always carry el.x=el.y=0 (position is encoded
+      // entirely in el.points, in the same canvas-pixel space as every other tool's x/y — see
+      // EditLayer.tsx's clientToImg). Every OTHER element type (rect/line/circle/text/image)
+      // scales its real el.x/el.y/width/height by scaleX/scaleY to land at the correct PDF
+      // point-space position, but this branch instead rasterized the stroke onto an arbitrary
+      // FIXED 2000x2000 canvas and placed it at a FIXED (sx, sy-500) position with a FIXED
+      // 500x500 (scaled) size — completely ignoring where the user actually drew and how big
+      // the drawing was. Every freehand annotation landed squished into the same fixed spot in
+      // the page's top-left area. Fixed by computing the stroke's own bounding box in pixel
+      // space (same source of truth as its points), sizing the raster canvas to exactly that
+      // box (plus stroke-width padding so the line isn't clipped at the edges), and placing the
+      // result at the box's real, scaled PDF position/size — the same scaleX/scaleY conversion
+      // already used correctly for every other element type in this function.
+      const pts = el.points;
+      const minX = Math.min(...pts.map(p => p.x));
+      const minY = Math.min(...pts.map(p => p.y));
+      const maxX = Math.max(...pts.map(p => p.x));
+      const maxY = Math.max(...pts.map(p => p.y));
+      const lineWidthPx = (el.size || 3) * 2;
+      const pad = lineWidthPx;
+      const boxW = Math.max(1, maxX - minX + pad * 2);
+      const boxH = Math.max(1, maxY - minY + pad * 2);
+
       const fCanvas = document.createElement('canvas');
       const fCtx = fCanvas.getContext('2d')!;
-      fCanvas.width = 2000;
-      fCanvas.height = 2000;
+      fCanvas.width = Math.ceil(boxW);
+      fCanvas.height = Math.ceil(boxH);
       fCtx.strokeStyle = sColor;
-      fCtx.lineWidth = (el.size || 3) * 2;
+      fCtx.lineWidth = lineWidthPx;
       fCtx.lineCap = 'round';
       fCtx.lineJoin = 'round';
       fCtx.beginPath();
       // Safe: this branch's guard requires el.points.length > 1.
-      fCtx.moveTo(el.points[0]!.x, el.points[0]!.y);
-      for (let i = 1; i < el.points.length; i++) {
-        fCtx.lineTo(el.points[i]!.x, el.points[i]!.y);
+      fCtx.moveTo(pts[0]!.x - minX + pad, pts[0]!.y - minY + pad);
+      for (let i = 1; i < pts.length; i++) {
+        fCtx.lineTo(pts[i]!.x - minX + pad, pts[i]!.y - minY + pad);
       }
       fCtx.stroke();
       const fBlob = await new Promise<Blob>(resolve => fCanvas.toBlob(b => resolve(b!), 'image/png'));
       const fBuf = new Uint8Array(await fBlob.arrayBuffer());
       const fImg = await pdfDoc.embedPng(fBuf);
       page.drawImage(fImg, {
-        x: sx, y: sy - 500,
-        width: 500 * scaleX, height: 500 * scaleY,
+        x: (minX - pad) * scaleX,
+        y: pdfHeight - (maxY + pad) * scaleY,
+        width: boxW * scaleX, height: boxH * scaleY,
         opacity,
       });
     } else if (el.type === 'text' && el.text) {
