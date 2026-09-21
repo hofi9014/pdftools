@@ -303,7 +303,7 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
       if (textEdits.length > 0) {
         const cm = new Map<number, HTMLCanvasElement>();
         if (pageCanvas) cm.set(currentPage, pageCanvas);
-        const blob = await exportEditedPdf(file, textEdits, cm);
+        const blob = await exportEditedPdf(file, textEdits, cm, renderScale);
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `edytowany-${file.name}`; a.click();
         setSuccess(true); setExportMsg(t('edit.success_text', locale));
       } else if (elements.length > 0) {
