@@ -26,13 +26,33 @@ function hexToRgb(hex: string) {
   };
 }
 
-export async function applyTextEdits(pdfDoc: PDFDocument, textEdits: TextEdit[], canvasByPage?: Map<number, HTMLCanvasElement>): Promise<void> {
+// FINDING (engine, edit-pdf text-position/size, 2026-09-18) — TextBlock/TextEdit's x/y/
+// width/height/fontSize are produced by lib/pdf/extractTextBlocks.ts via pdf.js's
+// viewport.convertToViewportPoint() and a `* renderScale` multiply, i.e. CANVAS PIXEL space
+// at the fixed render scale (1.5) used throughout components/edit-pdf/ — never PDF point
+// space. Every caller downstream that needs PIXELS (positioning the edit popup, drawing the
+// on-canvas overlay box) works correctly as-is, but this function draws directly onto the
+// PDF page via pdf-lib, which only understands POINTS — it was treating the raw pixel-space
+// numbers as if they were already points, so every saved text edit (position of the redrawn
+// text AND its white-out background box) landed at 1.5x the correct offset and 1.5x the
+// correct size on every real document, on every use of edit-pdf's core "click text, retype,
+// save" feature. `renderScale` converts back to points; defaults to 1 (no-op) so existing
+// callers/tests built directly against point-space TextEdit values are unaffected.
+export async function applyTextEdits(pdfDoc: PDFDocument, textEdits: TextEdit[], canvasByPage?: Map<number, HTMLCanvasElement>, renderScale: number = 1): Promise<void> {
   const pages = pdfDoc.getPages();
   const fontkit = await import('@pdf-lib/fontkit');
   (pdfDoc as any).registerFontkit(fontkit.default || fontkit);
 
-  for (const edit of textEdits) {
-    if (edit.page < 1 || edit.page > pages.length) continue;
+  for (const rawEdit of textEdits) {
+    if (rawEdit.page < 1 || rawEdit.page > pages.length) continue;
+    const edit: TextEdit = renderScale === 1 ? rawEdit : {
+      ...rawEdit,
+      x: rawEdit.x / renderScale,
+      y: rawEdit.y / renderScale,
+      width: rawEdit.width / renderScale,
+      height: rawEdit.height / renderScale,
+      fontSize: rawEdit.fontSize / renderScale,
+    };
     // Safe: edit.page is bounds-checked above to be within [1, pages.length].
     const page = pages[edit.page - 1]!;
     const { width, height } = page.getSize();
@@ -105,10 +125,11 @@ export async function exportEditedPdf(
   originalFile: File,
   textEdits: TextEdit[],
   canvasByPage?: Map<number, HTMLCanvasElement>,
+  renderScale: number = 1,
 ): Promise<Blob> {
   const buf = await originalFile.arrayBuffer();
   const pdfDoc = await PDFDocument.load(buf, { ignoreEncryption: true });
-  await applyTextEdits(pdfDoc, textEdits, canvasByPage);
+  await applyTextEdits(pdfDoc, textEdits, canvasByPage, renderScale);
   const bytes = await pdfDoc.save();
   return new Blob([bytes as BlobPart], { type: 'application/pdf' });
 }

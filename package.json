@@ -25,6 +25,7 @@
     "test:dropzone-keyboard-a11y": "npx --yes tsx tests/dropzone-keyboard-a11y.mts",
     "test:ocr-multi-file-pdf": "npx --yes tsx tests/ocr-multi-file-pdf.mts",
     "test:export-edited-pdf-scale": "npx --yes tsx tests/export-edited-pdf-scale.mts",
+    "test:export-edited-pdf-text-scale": "npx --yes tsx tests/export-edited-pdf-text-scale.mts",
     "test:ocr-worker-cleanup": "npx --yes tsx tests/ocr-worker-cleanup.mts",
     "test:ocr-text-layer-scale": "npx --yes tsx tests/ocr-text-layer-scale.mts",
     "test:font-bold-weight": "npx --yes tsx tests/font-bold-weight.mts",
