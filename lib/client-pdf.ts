@@ -208,8 +208,18 @@ export async function cropPages(file: File, margins: { top: number; right: numbe
   for (const idx of indices) {
     const page = allPages[idx];
     if (!page) continue;
-    const { width, height } = page.getSize();
-    page.setMediaBox(margins.left, margins.bottom, width - margins.left - margins.right, height - margins.bottom - margins.top);
+    // FINDING (2026-09-21) — getSize() only returns width/height, dropping the MediaBox's own
+    // x/y origin; setMediaBox(x, y, w, h) then anchored the new box at the ABSOLUTE page origin
+    // (0,0) instead of the box's actual lower-left corner. A PDF whose MediaBox doesn't start
+    // at (0,0) (not exotic — some scanners/printers and re-paged PDFs produce this) got cropped
+    // from the wrong region, or clipped away entirely if the true origin was far from 0.
+    const box = page.getMediaBox();
+    page.setMediaBox(
+      box.x + margins.left,
+      box.y + margins.bottom,
+      box.width - margins.left - margins.right,
+      box.height - margins.bottom - margins.top,
+    );
   }
   return pdf.save();
 }
@@ -485,7 +495,11 @@ export async function splitByRanges(file: File, rangeString: string): Promise<{ 
     // m[1] is guaranteed present whenever m matches: the first capture group (\d+) has no
     // trailing ? , unlike the second (-(\d+))?, which m[2]'s own optional-chained check below
     // already treats as possibly absent.
-    const start = parseInt(m[1]!, 10) - 1;
+    // FINDING (2026-09-21) — a user-typed range with page "0" (e.g. "0" or "0-3", a plausible
+    // 0-vs-1-indexed slip with no input validation upstream) gave start=-1, pushed into
+    // indices, and crashed pdf-lib's copyPages (srcPages[-1] is undefined, not a wrap-around)
+    // partway through — losing results for any earlier, valid ranges in the same comma-list too.
+    const start = Math.max(0, parseInt(m[1]!, 10) - 1);
     const end = m[2] ? parseInt(m[2], 10) - 1 : start;
     const indices: number[] = [];
     for (let i = start; i <= end && i < total; i++) indices.push(i);
@@ -3671,19 +3685,38 @@ export async function officeToPdf(file: File): Promise<Blob> {
   return new Blob([await pdf.save() as BlobPart], { type: 'application/pdf' });
 }
 
+// FINDING (2026-09-21) — pdf-lib's embedJpg/embedPng only ever expose an image's raw PIXEL
+// dimensions (confirmed: no DPI/density is parsed or exposed anywhere in pdf-lib's embedders),
+// but the page size passed to addPage() and the margin/width/height passed to drawImage() are
+// PDF POINTS (1/72in) — the exact same unit-mismatch class as the OCR and edit-pdf bugs fixed
+// earlier this session. A typical modern phone photo (e.g. 4032x3024px) was turned into a
+// 4032x3024-POINT page — 56x42 INCHES — instead of a normal-sized page. Neither this app's own
+// image files nor the browser File/Blob API carry real DPI metadata without a dedicated
+// JPEG/PNG metadata parser (out of scope here), so this uses the same 96 DPI fallback browsers
+// themselves assume for a DPI-less raster image (CSS's "1px = 1/96in"), converting pixels to
+// points via *72/96 — still a large page for a high-res photo, but a real, bounded, standard
+// assumption instead of silently treating pixels as points outright.
+const IMAGE_PX_TO_PT = 72 / 96;
+
 export async function imagesToPdf(files: File[], margin: number): Promise<Blob> {
   const pdf = await PDFDocument.create();
+  const placeImage = (image: { width: number; height: number }) => {
+    const w = image.width * IMAGE_PX_TO_PT;
+    const h = image.height * IMAGE_PX_TO_PT;
+    const page = pdf.addPage([w + margin * 2, h + margin * 2]);
+    return { page, w, h };
+  };
   for (const file of files) {
     const ext = file.name.toLowerCase().split('.').pop() || '';
     const buf = await file.arrayBuffer();
     if (ext === 'png') {
       const image = await pdf.embedPng(new Uint8Array(buf));
-      const page = pdf.addPage([image.width + margin * 2, image.height + margin * 2]);
-      page.drawImage(image, { x: margin, y: margin, width: image.width, height: image.height });
+      const { page, w, h } = placeImage(image);
+      page.drawImage(image, { x: margin, y: margin, width: w, height: h });
     } else if (['jpg', 'jpeg'].includes(ext)) {
       const image = await pdf.embedJpg(new Uint8Array(buf));
-      const page = pdf.addPage([image.width + margin * 2, image.height + margin * 2]);
-      page.drawImage(image, { x: margin, y: margin, width: image.width, height: image.height });
+      const { page, w, h } = placeImage(image);
+      page.drawImage(image, { x: margin, y: margin, width: w, height: h });
     } else {
       const img = await createImageBitmap(new Blob([buf]));
       const canvas = document.createElement('canvas');
@@ -3694,8 +3727,8 @@ export async function imagesToPdf(files: File[], margin: number): Promise<Blob> 
       const pngBlob = await new Promise<Blob>(resolve => canvas.toBlob(b => resolve(b!), 'image/png'));
       const pngBuf = new Uint8Array(await pngBlob.arrayBuffer());
       const image = await pdf.embedPng(pngBuf);
-      const page = pdf.addPage([image.width + margin * 2, image.height + margin * 2]);
-      page.drawImage(image, { x: margin, y: margin, width: image.width, height: image.height });
+      const { page, w, h } = placeImage(image);
+      page.drawImage(image, { x: margin, y: margin, width: w, height: h });
       img.close();
     }
   }
