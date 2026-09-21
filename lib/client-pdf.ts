@@ -4360,6 +4360,25 @@ export interface FormField {
   value?: string | boolean;
 }
 
+// FINDING (fill-form, pre-existing field values silently wiped or crashing the whole save,
+// 2026-09-21) — two bugs here, found together.
+// (1) extractFormFields only ever read a current value for checkboxes (isChecked()); text/
+// dropdown/radio/listbox always got value:undefined, even though pdf-lib exposes getText()/
+// getSelected() for all of them. The UI (app/fill-form/page.tsx) then initializes every
+// non-checkbox field's starting value to '' (since fld.value was never a real string) —
+// including fields the user never touches — and fillFormFields writes that '' back for every
+// field present in its values map (all of them, since the UI always sends one entry per field).
+// For text fields this SILENTLY BLANKS any pre-filled text the user didn't touch. For radio/
+// dropdown/listbox, pdf-lib's select('') throws (assertIsOneOf rejects an option that isn't one
+// of the field's real choices), which ABORTS THE ENTIRE SAVE — so any PDF arriving with even
+// one pre-filled dropdown/radio/listbox the user doesn't manually re-pick fails outright.
+// Fixed by actually reading each field's current value/selection in extractFormFields, so an
+// untouched field round-trips its real starting value instead of ''.
+// (2) Independent bug found while fixing (1): both functions checked f.constructor.name against
+// the string 'PDFListBox', but pdf-lib's real class for this field type is 'PDFOptionList' (the
+// file is literally named PDFOptionList.js; grepped pdf-lib's own public exports — 'PDFListBox'
+// appears nowhere) — this check could never match, so list-box fields were always mistyped as
+// 'unknown' on read and silently ignored (never filled at all, not even destructively) on write.
 export async function extractFormFields(file: File): Promise<{ fields: FormField[] }> {
   const { PDFDocument } = await import('pdf-lib');
   const buf = await file.arrayBuffer();
@@ -4371,13 +4390,14 @@ export async function extractFormFields(file: File): Promise<{ fields: FormField
     const type = f.constructor.name;
     let fieldType: FormField['type'] = 'unknown';
     let options: string[] | undefined;
-    if (type === 'PDFTextField') fieldType = 'text';
-    else if (type === 'PDFCheckBox') fieldType = 'checkbox';
-    else if (type === 'PDFRadioGroup') { fieldType = 'radio'; options = f.getOptions(); }
-    else if (type === 'PDFDropdown') { fieldType = 'dropdown'; options = f.getOptions(); }
-    else if (type === 'PDFListBox') { fieldType = 'listbox'; options = f.getOptions(); }
+    let value: string | boolean | undefined;
+    if (type === 'PDFTextField') { fieldType = 'text'; value = f.getText() ?? ''; }
+    else if (type === 'PDFCheckBox') { fieldType = 'checkbox'; value = f.isChecked(); }
+    else if (type === 'PDFRadioGroup') { fieldType = 'radio'; options = f.getOptions(); value = f.getSelected() ?? ''; }
+    else if (type === 'PDFDropdown') { fieldType = 'dropdown'; options = f.getOptions(); value = f.getSelected()?.[0] ?? ''; }
+    else if (type === 'PDFOptionList') { fieldType = 'listbox'; options = f.getOptions(); value = f.getSelected()?.[0] ?? ''; }
     else if (type === 'PDFSignature') fieldType = 'signature';
-    return { name, type: fieldType, options, value: fieldType === 'checkbox' ? f.isChecked() : undefined };
+    return { name, type: fieldType, options, value };
   });
   return { fields };
 }
@@ -4396,9 +4416,12 @@ export async function fillFormFields(file: File, values: Record<string, string |
     const type = f.constructor.name;
     if (type === 'PDFTextField') f.setText(val as string);
     else if (type === 'PDFCheckBox') val ? f.check() : f.uncheck();
-    else if (type === 'PDFRadioGroup') f.select(val as string);
-    else if (type === 'PDFDropdown') f.select(val as string);
-    else if (type === 'PDFListBox') f.select(val as string);
+    // select('') always throws (an empty string is never one of the field's real options) —
+    // only select when there's an actual value to set, leaving an unselected/untouched field
+    // exactly as it was rather than crashing the whole save.
+    else if (type === 'PDFRadioGroup' && val) f.select(val as string);
+    else if (type === 'PDFDropdown' && val) f.select(val as string);
+    else if (type === 'PDFOptionList' && val) f.select(val as string);
   }
 
   form.flatten();
