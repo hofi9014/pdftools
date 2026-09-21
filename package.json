@@ -30,6 +30,7 @@
     "test:images-to-pdf-scale": "npx --yes tsx tests/images-to-pdf-scale.mts",
     "test:edit-pdf-freehand-position": "npx --yes tsx tests/edit-pdf-freehand-position.mts",
     "test:fill-form-preserve-values": "npx --yes tsx tests/fill-form-preserve-values.mts",
+    "test:office-to-pdf-ods-odp": "npx --yes tsx tests/office-to-pdf-ods-odp.mts",
     "test:ocr-worker-cleanup": "npx --yes tsx tests/ocr-worker-cleanup.mts",
     "test:ocr-text-layer-scale": "npx --yes tsx tests/ocr-text-layer-scale.mts",
     "test:font-bold-weight": "npx --yes tsx tests/font-bold-weight.mts",

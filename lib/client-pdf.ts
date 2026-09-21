@@ -3593,9 +3593,17 @@ export async function officeToPdf(file: File): Promise<Blob> {
     const xml = await docFile.async('string');
     const matches = xml.match(/<w:t[^>]*>([^<]+)<\/w:t>/g) || [];
     text = matches.map(m => m.replace(/<w:t[^>]*>/, '').replace(/<\/w:t>/, '')).join('\n');
-  } else if (ext === 'odt') {
+  } else if (ext === 'odt' || ext === 'ods' || ext === 'odp') {
+    // FINDING (2026-09-21) — ods (spreadsheet) and odp (presentation) are, like odt, ordinary
+    // ZIP-based OpenDocument XML files whose text content is carried in the same <text:p>
+    // elements (cell paragraphs for ods, text-box paragraphs for odp) — verified against
+    // hand-built minimal fixtures of both before relying on it. app/word-to-pdf/page.tsx's
+    // "openoffice" format tab already advertises and accepts all three extensions, but this
+    // function previously only matched 'odt', so uploading an .ods/.odp always threw "Format
+    // .ods/.odp nie jest obsługiwany" despite the UI claiming support. The same odt extraction
+    // logic handles all three correctly.
     const contentFile = zip.file('content.xml');
-    if (!contentFile) throw new Error('Nie znaleziono treści w pliku ODT');
+    if (!contentFile) throw new Error('Nie znaleziono treści w pliku ODF');
     const xml = await contentFile.async('string');
     const matches = xml.match(/<text:p[^>]*>([\s\S]*?)<\/text:p>/g) || [];
     text = matches.map(p => p.replace(/<[^>]+>/g, '').trim()).filter(Boolean).join('\n');

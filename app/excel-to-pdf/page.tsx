@@ -19,7 +19,10 @@ export default function ExcelToPDF({ locale: forcedLocale }: { locale?: Locale }
   const handleFile = (f: File | null) => {
     if (!f) return;
     const ext = f.name.toLowerCase().split('.').pop();
-    if (!['xlsx', 'xls'].includes(ext || '')) {
+    // .xls is the legacy OLE binary format, not a ZIP archive — officeToPdf's JSZip-based
+    // extraction can never open it (see the FINDING in app/word-to-pdf/page.tsx), so it's
+    // rejected here instead of always failing after upload.
+    if (ext !== 'xlsx') {
       setError(t('page.excel2pdf.only_excel', locale));
       return;
     }
@@ -85,12 +88,12 @@ export default function ExcelToPDF({ locale: forcedLocale }: { locale?: Locale }
               <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('page.excel2pdf.accepted', locale)}</p>
             </div>
           )}
-          <input id="fileInput" type="file" accept=".xlsx,.xls" className="hidden"
+          <input id="fileInput" type="file" accept=".xlsx" className="hidden"
             onChange={e => handleFile(e.target.files?.[0] || null)} />
         </div>
 
       <div className="flex justify-center gap-2 mb-6">
-        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} accept=".xlsx,.xls" label={"☁️ " + t('cloud.add', locale)} />
+        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} accept=".xlsx" label={"☁️ " + t('cloud.add', locale)} />
       </div>
 
         <div className="tool-info-box rounded-2xl p-5 mb-6">
