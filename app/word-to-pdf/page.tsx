@@ -8,10 +8,21 @@ import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 
+// FINDING (2026-09-21) — .doc/.xls/.ppt are the legacy OLE Compound File Binary Format, not a
+// ZIP archive at all (unlike their modern .docx/.xlsx/.pptx successors), so officeToPdf's
+// JSZip-based extraction can never open them — every upload of these three extensions was
+// guaranteed to fail with "Format nie jest obsługiwany", despite this list (and the file
+// picker's accept attribute built from it) explicitly advertising and accepting them. Real
+// support would need a dedicated OLE/legacy-binary-format parser, well out of scope here;
+// removed from the advertised formats instead of leaving a button that always fails — the same
+// "don't claim what isn't real" choice already applied elsewhere in this codebase (see
+// AGENTS.md's PDF-UA/MarkInfo findings). .ods/.odp, by contrast, ARE ordinary ZIP-based
+// OpenDocument XML (verified against hand-built fixtures) and are now genuinely supported by
+// officeToPdf, so they stay.
 const FORMATS = [
-  { id: 'word', icon: '📝', label: 'Word', formats: 'DOC, DOCX', exts: ['.doc', '.docx'], mimes: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'] },
-  { id: 'excel', icon: '📊', label: 'Excel', formats: 'XLS, XLSX', exts: ['.xls', '.xlsx'], mimes: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] },
-  { id: 'powerpoint', icon: '🎯', label: 'PowerPoint', formats: 'PPT, PPTX', exts: ['.ppt', '.pptx'], mimes: ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'] },
+  { id: 'word', icon: '📝', label: 'Word', formats: 'DOCX', exts: ['.docx'], mimes: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'] },
+  { id: 'excel', icon: '📊', label: 'Excel', formats: 'XLSX', exts: ['.xlsx'], mimes: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] },
+  { id: 'powerpoint', icon: '🎯', label: 'PowerPoint', formats: 'PPTX', exts: ['.pptx'], mimes: ['application/vnd.openxmlformats-officedocument.presentationml.presentation'] },
   { id: 'openoffice', icon: '📄', label: 'OpenOffice', formats: 'ODT, ODS, ODP', exts: ['.odt', '.ods', '.odp'], mimes: [] },
 ];
 
