@@ -346,9 +346,27 @@ function updateXmpField(doc: Document, nsUri: string, localName: string, value: 
     return;
   }
   if (containerTag) {
-    const liArray = Array.from(node.getElementsByTagNameNS(RDF_NS, 'li'));
-    const targetLi = liArray.find(li => li.getAttributeNS(XML_NS, 'lang') === 'x-default') ?? liArray[0] ?? null;
-    if (targetLi) targetLi.textContent = value;
+    // FINDING (2026-09-22) — this used to update only ONE <rdf:li> (the x-default entry, or
+    // the first) and leave every OTHER <li> in the container untouched. dc:creator (rdf:Seq)
+    // carries one <li> per author; dc:title/dc:description (rdf:Alt) carry one <li> per
+    // language variant. A PDF whose existing XMP already has several — a multi-author document,
+    // or Adobe/InDesign-authored output with language variants, both common — kept every
+    // untouched author/variant fully embedded in the saved file even after the user replaced or
+    // CLEARED that field in this tool's UI, which is precisely the metadata a privacy-oriented
+    // tool (see AGENTS.md's `privacy`/RODO framing) exists to let someone scrub before sharing.
+    // A single plain-text UI field has no way to express "keep entry 2, only change entry 1", so
+    // the only metadata-honest behavior is a full replacement: drop every existing <li> and
+    // write exactly one new one.
+    let container = node.getElementsByTagNameNS(RDF_NS, containerTag)[0];
+    if (!container) {
+      container = doc.createElementNS(RDF_NS, 'rdf:' + containerTag);
+      node.appendChild(container);
+    }
+    while (container.firstChild) container.removeChild(container.firstChild);
+    const li = doc.createElementNS(RDF_NS, 'rdf:li');
+    li.setAttributeNS(XML_NS, 'xml:lang', 'x-default');
+    li.textContent = value;
+    container.appendChild(li);
   } else {
     node.textContent = value;
   }

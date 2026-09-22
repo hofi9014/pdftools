@@ -86,7 +86,8 @@
     "test:i18n-dollar-interpolation": "npx --yes tsx tests/i18n-dollar-interpolation.mts",
     "test:encrypted-pdf-guard": "npx --yes tsx tests/encrypted-pdf-guard.mts",
     "test:edit-pdf-combined-export": "npx --yes tsx tests/edit-pdf-combined-export.mts",
-    "test:docx-auto-color": "npx --yes tsx tests/docx-auto-color.mts"
+    "test:docx-auto-color": "npx --yes tsx tests/docx-auto-color.mts",
+    "test:metadata-xmp-multivalue": "npx --yes tsx tests/metadata-xmp-multivalue.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
