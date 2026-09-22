@@ -4321,8 +4321,17 @@ export async function signPdfClient(
       const { cssW, cssH, scale } = normalizedSigSize(natW, natH, opts.sigRatio ?? 1);
       const imgW = cssW * scale;
       const imgH = cssH * scale;
+      // FINDING (2026-09-22) — this "+ 20" was unexplained drift, not a real compensation for
+      // anything: `estH` (used two blocks up to compute preset positions like bottom-left/
+      // top-center) is computed via the SAME normalizedSigSize() formula as `imgH` here, so
+      // they're equal — and the sibling text-signature path just above draws at
+      // `normalizedY - s.height` with no offset at all. The "+ 20" made every preset position
+      // drift: bottom-* presets landed 20pt HIGHER than their stated 40pt margin (an effective
+      // 60pt gap), top-* presets landed with only a 20pt margin instead of 40pt, and manual
+      // custom X/Y placement was consistently 20pt off from what the text-signature mode would
+      // draw at the same coordinates.
       page.drawImage(embedImage, {
-        x: finalX, y: normalizedY - imgH + 20, width: imgW, height: imgH, opacity: 0.9,
+        x: finalX, y: normalizedY - imgH, width: imgW, height: imgH, opacity: 0.9,
       });
     }
   }
