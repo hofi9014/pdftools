@@ -4,6 +4,8 @@ import { isIP, BlockList } from 'net';
 import { promises as dns, type LookupAddress, type LookupOptions } from 'dns';
 import * as http from 'http';
 import * as https from 'https';
+import { readFile } from 'fs/promises';
+import path from 'path';
 import { MAX_UPLOAD_BYTES } from '@/lib/upload-limit';
 
 // Built on Node's own SSRF-prevention primitive (net.BlockList, since v15) rather
@@ -149,6 +151,38 @@ export function fetchViaValidatedAddresses(parsed: URL, addresses: LookupAddress
   });
 }
 
+// FINDING (2026-09-22): the previous inline version only stripped tags themselves
+// (`<[^>]*>`), which leaves the TEXT CONTENT of <script> and <style> blocks behind
+// — raw JS/CSS source ended up rendered as plain body text in the output PDF for
+// any page carrying inline scripts or styles (virtually all real websites). Strip
+// these two elements' content first, before the generic tag-stripping pass.
+export function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/\s+/g, ' ').trim();
+}
+
+// FINDING (2026-09-22): StandardFonts.Helvetica (WinAnsi) cannot encode
+// Polish/extended-Latin characters (see AGENTS.md's WinAnsi/StandardFonts note)
+// — every prior fix for this used the client-side embedLiberationSans helper
+// (lib/client-pdf.ts), but that helper does `fetch('/pdfjs-dist/...')`, a
+// browser-relative URL with no meaning in this server route. This route was
+// never covered by that fix and crashed with a 500 on ANY converted page
+// containing a Polish diacritic or other extended-Latin character — the
+// overwhelming majority of real pages for a Polish-market tool. Reading the
+// same font file directly off disk (it already ships in public/ for pdf.js's
+// own use) fixes this without duplicating the file.
+export async function embedServerFont(pdf: import('pdf-lib').PDFDocument): Promise<import('pdf-lib').PDFFont> {
+  const fontkit = (await import('@pdf-lib/fontkit')).default;
+  pdf.registerFontkit(fontkit);
+  const fontBytes = await readFile(
+    path.join(process.cwd(), 'public', 'pdfjs-dist', 'standard_fonts', 'LiberationSans-Regular.ttf')
+  );
+  return pdf.embedFont(new Uint8Array(fontBytes));
+}
+
 export async function POST(request: Request) {
   try {
     const { url } = await request.json();
@@ -226,11 +260,11 @@ export async function POST(request: Request) {
     }
 
     const html = outcome.body;
-    const text = html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/\s+/g, ' ').trim();
+    const text = htmlToPlainText(html);
 
-    const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib');
+    const { PDFDocument, rgb } = await import('pdf-lib');
     const pdf = await PDFDocument.create();
-    const font = await pdf.embedFont(StandardFonts.Helvetica);
+    const font = await embedServerFont(pdf);
     const fontSize = 11;
     const margin = 50;
     const lineHeight = fontSize * 1.5;
