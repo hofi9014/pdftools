@@ -4,6 +4,7 @@ import { rasterizePages, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanv
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
 import { renderIRToDocx, type IRTextRun, type IRImageBlock, type IRTableCell, type IRBlock, type IRRect, type IRPageIR, type IRSpreadsheetCell, type IRSheet, type IRSpreadsheet, type IRConditionalFormattingRule, ptToXlsxCharWidth } from './client-pdf-docx';
 import type { IRSlide, IRSlideElement, IRDeck, IRPtRect, IRTextContent } from './client-pptx';
+import { getFontFamily } from './pdf/fonts';
 
 let pdfjsInitPromise: Promise<void> | null = null;
 
@@ -3967,7 +3968,18 @@ export async function editPdfClient(file: File, pageIndex: number, elements: Pdf
         opacity,
       });
     } else if (el.type === 'text' && el.text) {
-      const fontName = el.font || 'Arial';
+      // FINDING (2026-09-22) — this used the raw display name (e.g. "Times New Roman", "Noto
+      // Sans", "PT Sans", and even the DEFAULT "Arial") directly as the Canvas2D font family.
+      // loadGoogleFontsCSS() (lib/pdf/fonts.ts, called once on mount by PdfEditor.tsx) registers
+      // @font-face rules under the INTERNAL, lowercase, no-space family keys ('tinos',
+      // 'notosans', 'opensans', 'ptsans', 'arimo' — Arial is aliased to the Arimo files —
+      // etc.), and the on-screen preview correctly resolves through the same getFontFamily()
+      // used here (see EditLayer.tsx). A raw display name with a space ("Times New Roman") or a
+      // different word entirely (Arial→arimo) never matches any registered @font-face family,
+      // so Canvas2D silently fell back to a generic system font — a deterministic WYSIWYG
+      // mismatch between the on-screen preview and the exported PDF for 5 of the 12 selectable
+      // fonts, including the default.
+      const fontName = getFontFamily(el.font || 'Arial');
       const fontStyle = `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}`;
       const fontSize = (el.size || 16) * scaleY * 2;
       const fnt = `${fontStyle}${fontSize}px ${fontName}`;
