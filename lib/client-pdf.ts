@@ -3588,11 +3588,21 @@ export async function officeToPdf(file: File): Promise<Blob> {
   let text = '';
 
   if (ext === 'docx') {
+    // FINDING (2026-09-22) — <w:t> runs were joined with '\n' regardless of whether they
+    // belonged to the same paragraph. Word splits a single paragraph into many <w:r>/<w:t>
+    // runs at every formatting boundary (bold word, hyperlink, spell-check marker, tracked
+    // change) — any of those, which is nearly every real-world paragraph with even one bold/
+    // italic word or a link, broke mid-sentence (sometimes mid-word) onto its own line in the
+    // output PDF. Fixed the same way odt/ods/odp already do it below: extract whole <w:p>
+    // paragraphs first, join the runs WITHIN each paragraph with '' (no separator — a run
+    // boundary carries no implied whitespace), then join paragraphs themselves with '\n'.
     const docFile = zip.file('word/document.xml');
     if (!docFile) throw new Error('Nie znaleziono dokumentu w pliku .docx');
     const xml = await docFile.async('string');
-    const matches = xml.match(/<w:t[^>]*>([^<]+)<\/w:t>/g) || [];
-    text = matches.map(m => m.replace(/<w:t[^>]*>/, '').replace(/<\/w:t>/, '')).join('\n');
+    const paragraphs = xml.match(/<w:p[ >][\s\S]*?<\/w:p>/g) || [];
+    text = paragraphs
+      .map(p => (p.match(/<w:t[^>]*>([^<]*)<\/w:t>/g) || []).map(m => m.replace(/<w:t[^>]*>/, '').replace(/<\/w:t>/, '')).join(''))
+      .join('\n');
   } else if (ext === 'odt' || ext === 'ods' || ext === 'odp') {
     // FINDING (2026-09-21) — ods (spreadsheet) and odp (presentation) are, like odt, ordinary
     // ZIP-based OpenDocument XML files whose text content is carried in the same <text:p>
