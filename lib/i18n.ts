@@ -14733,7 +14733,15 @@ export function t(key: string, locale?: string, params?: Record<string, string |
   let val = all[lang]?.[key] ?? all[defaultLocale]?.[key] ?? key;
   if (params) {
     for (const [k, v] of Object.entries(params)) {
-      val = val.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+      // FINDING (2026-09-22): a string passed directly as String.replace()'s second argument
+      // is not inserted literally — sequences like $&, $`, $', $$, $1 are special replacement
+      // patterns (MDN). Any user-typed value containing '$' (e.g. typing a price into the
+      // homepage search box, which flows into 'home.search_no_results' via { query: search })
+      // got silently mangled — '$&' means "re-insert the matched substring", so searching for
+      // "foo$&bar" rendered as "...pasujących do „foo{query}bar”." instead of the literal
+      // typed text. A replacer FUNCTION always inserts its return value literally, with no
+      // special-pattern parsing, so it's used here instead of the raw string.
+      val = val.replace(new RegExp(`\\{${k}\\}`, 'g'), () => String(v));
     }
   }
   return val;
