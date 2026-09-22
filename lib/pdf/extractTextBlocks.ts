@@ -99,8 +99,29 @@ export async function extractTextBlocks(
   rotation: number = 0
 ): Promise<TextBlock[]> {
   const page = typeof pdfDoc.getPage === 'function' ? await pdfDoc.getPage(pageNum) : pdfDoc;
+  // FINDING (2026-09-22): pdf.js's TextItem.fontName is NOT the real font name — it's an
+  // internal, sequentially-assigned object id ("g_d0_f1", "g_d0_f2", ...) that pdf.js hands out
+  // while parsing, with zero relationship to the PDF's actual /BaseFont value. Every consumer of
+  // TextBlock.fontName that tries substring-matching it for "bold"/"italic" (pdfToEpub's
+  // isBoldFont/isItalicFont in lib/client-pdf.ts) silently never matches anything, since the
+  // alias never contains those words — confirmed empirically: drawing text with
+  // StandardFonts.HelveticaBold still reports fontName "g_d0_f1", not "Helvetica-Bold". The real
+  // name IS resolvable, via page.commonObjs (populated once the operator list has been walked)
+  // — commonObjs.get(alias).name gives the true BaseFont name ("Helvetica-Bold",
+  // "Helvetica-Oblique", etc).
+  await page.getOperatorList();
   const textContent = await page.getTextContent();
   const viewport = page.getViewport({ scale: renderScale, rotation });
+
+  const resolveFontName = (alias: string): string => {
+    if (!alias) return '';
+    try {
+      const obj = page.commonObjs.get(alias);
+      return (obj && typeof obj.name === 'string' && obj.name) || alias;
+    } catch {
+      return alias;
+    }
+  };
 
   const items = textContent.items.map((item: any) => {
     const transform = item.transform || [1, 0, 0, 1, 0, 0];
@@ -124,7 +145,7 @@ export async function extractTextBlocks(
       width: w,
       height: h,
       fontSize: fs,
-      fontName: item.fontName || '',
+      fontName: resolveFontName(item.fontName),
       rotation: itemRotation,
     };
   }).filter((item: any) => item.text.trim().length > 0);
