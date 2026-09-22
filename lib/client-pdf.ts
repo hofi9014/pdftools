@@ -33,6 +33,7 @@ export async function mergePDFs(files: File[]): Promise<Uint8Array> {
   for (const file of files) {
     const buf = await file.arrayBuffer();
     const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+    if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
     const indices = pdf.getPageIndices();
     const pages = await mergedPdf.copyPages(pdf, indices);
     pages.forEach(page => mergedPdf.addPage(page));
@@ -43,6 +44,7 @@ export async function mergePDFs(files: File[]): Promise<Uint8Array> {
 export async function splitPDF(file: File): Promise<Uint8Array[]> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const results: Uint8Array[] = [];
   for (let i = 0; i < pdf.getPageCount(); i++) {
     const newPdf = await PDFDocument.create();
@@ -56,6 +58,7 @@ export async function splitPDF(file: File): Promise<Uint8Array[]> {
 export async function rotatePDF(file: File, angle: 90 | 180 | 270): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   for (const page of pdf.getPages()) {
     const current = page.getRotation().angle;
     page.setRotation(degrees((current + angle) % 360));
@@ -96,6 +99,7 @@ function visualToRawPoint(rawWidth: number, rawHeight: number, rotationDeg: numb
 export async function addPageNumbers(file: File, options: { startNumber?: number; verticalPosition?: 'bottom' | 'top'; horizontalPosition?: 'left' | 'center' | 'right'; fontSize?: number } = {}): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const start = options.startNumber ?? 1;
   const vPos = options.verticalPosition ?? 'bottom';
@@ -123,6 +127,7 @@ export async function addPageNumbers(file: File, options: { startNumber?: number
 export async function addWatermark(file: File, text: string, options?: { opacity?: number; rotation?: number; fontSize?: number; position?: 'top' | 'center' | 'bottom' }): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const font = await embedLiberationSans(pdf);
   const opacity = (options?.opacity ?? 50) / 100;
   const rotation = options?.rotation ?? 45;
@@ -163,6 +168,7 @@ export async function addWatermark(file: File, text: string, options?: { opacity
 export async function deletePages(file: File, pageIndices: number[]): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const sorted = [...new Set(pageIndices)].sort((a, b) => b - a);
   let removedAny = false;
   for (const idx of sorted) {
@@ -187,6 +193,7 @@ export async function deletePages(file: File, pageIndices: number[]): Promise<Ui
 export async function extractPages(file: File, pageIndices: number[]): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const newPdf = await PDFDocument.create();
   for (const idx of pageIndices) {
     if (idx >= 0 && idx < pdf.getPageCount()) {
@@ -203,6 +210,7 @@ export async function splitBySelection(
 ): Promise<{ selected: Uint8Array | null; rest: Uint8Array | null }> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const total = pdf.getPageCount();
   const selIndices = [...new Set(selectedIndices)]
     .filter((i) => i >= 0 && i < total)
@@ -226,6 +234,7 @@ export async function splitBySelection(
 export async function reorderPages(file: File, newOrder: number[]): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const newPdf = await PDFDocument.create();
   for (const idx of newOrder) {
     if (idx >= 0 && idx < pdf.getPageCount()) {
@@ -239,6 +248,7 @@ export async function reorderPages(file: File, newOrder: number[]): Promise<Uint
 export async function cropPages(file: File, margins: { top: number; right: number; bottom: number; left: number }, pages?: number[]): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const allPages = pdf.getPages();
   const indices = pages || allPages.map((_, i) => i);
   for (const idx of indices) {
@@ -263,6 +273,7 @@ export async function cropPages(file: File, margins: { top: number; right: numbe
 export async function addBlankPage(file: File, position?: number): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   if (position !== undefined && position >= 0 && position <= pdf.getPageCount()) {
     pdf.insertPage(position);
   } else {
@@ -274,6 +285,7 @@ export async function addBlankPage(file: File, position?: number): Promise<Uint8
 export async function editMetadata(file: File, meta: { title?: string; author?: string; subject?: string; keywords?: string }): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   if (meta.title !== undefined) pdf.setTitle(meta.title);
   if (meta.author !== undefined) pdf.setAuthor(meta.author);
   if (meta.subject !== undefined) pdf.setSubject(meta.subject);
@@ -396,6 +408,7 @@ function writeXmpToPdf(pdf: PDFDocument, xmpXml: string): void {
 export async function flattenPDF(file: File): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const pages = pdf.getPages();
 
   const acroForm = pdf.catalog.get(PDFName.of('AcroForm'));
@@ -522,6 +535,7 @@ export async function downloadZip(buffers: { data: Uint8Array; name: string }[])
 export async function splitByRanges(file: File, rangeString: string): Promise<{ data: Uint8Array; name: string }[]> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const total = pdf.getPageCount();
   const parts = rangeString.split(',').map(s => s.trim()).filter(Boolean);
   const results: { data: Uint8Array; name: string }[] = [];
@@ -3428,6 +3442,7 @@ export function parseFilters(fRaw: unknown): string[] {
 export async function compressPDFClient(file: File, level: 'low' | 'recommended' | 'extreme'): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const ctx = pdf.context;
 
   const infoRef = (ctx.trailerInfo as Record<string, unknown>).Info;
@@ -4534,6 +4549,7 @@ export async function extractImagesFromPdf(
 export async function convertToPdfA(file: File): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(buf, { ignoreEncryption: true });
+  if (pdfDoc.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
 
   // 1. Flatten forms
   try {
