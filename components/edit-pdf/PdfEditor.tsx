@@ -300,13 +300,28 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
   const handleExport = useCallback(async () => {
     setExporting(true); setError(''); setSuccess(false);
     try {
+      if (textEdits.length === 0 && elements.length === 0) {
+        setError(t('edit.msg_no_elements', locale));
+        return;
+      }
+      // FINDING (2026-09-22): this used to be `if (textEdits.length > 0) {...} else if
+      // (elements.length > 0) {...}` — a plain if/else-if, so a user who both fixed a typo
+      // (textEdits) AND drew a shape/stamp/redaction rect (elements) in the same session — a
+      // completely natural combined workflow — silently lost every single element with zero
+      // warning; the success toast still claimed the save worked. Fixed by chaining: apply text
+      // edits first (if any), producing an intermediate PDF, then apply elements (if any) on TOP
+      // of that intermediate result rather than the original file, so both survive together.
+      let blob: Blob;
+      let sourceFile: File = file;
       if (textEdits.length > 0) {
         const cm = new Map<number, HTMLCanvasElement>();
         if (pageCanvas) cm.set(currentPage, pageCanvas);
-        const blob = await exportEditedPdf(file, textEdits, cm, renderScale);
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `edytowany-${file.name}`; a.click();
-        setSuccess(true); setExportMsg(t('edit.success_text', locale));
-      } else if (elements.length > 0) {
+        blob = await exportEditedPdf(sourceFile, textEdits, cm, renderScale);
+        if (elements.length > 0) {
+          sourceFile = Object.assign(blob, { name: file.name }) as unknown as File;
+        }
+      }
+      if (elements.length > 0) {
         const data: PdfEditElement[] = elements.map(el => ({
           type: el.type as any, x: el.x, y: el.y,
           text: el.text, size: el.size, color: el.color, width: el.w, height: el.h, opacity: el.opacity,
@@ -315,12 +330,11 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
           imageDataUrl: el.imageDataUrl,
           points: el.points,
         }));
-        const blob = await editPdfClient(file, currentPage - 1, data, canvasWidth, canvasHeight);
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `edytowany-${file.name}`; a.click();
-        setSuccess(true); setExportMsg(t('edit.success_elements', locale));
-      } else {
-        setError(t('edit.msg_no_elements', locale));
+        blob = await editPdfClient(sourceFile, currentPage - 1, data, canvasWidth, canvasHeight);
       }
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob!); a.download = `edytowany-${file.name}`; a.click();
+      setSuccess(true);
+      setExportMsg(elements.length > 0 ? t('edit.success_elements', locale) : t('edit.success_text', locale));
     } catch (err: unknown) { setError(err instanceof Error ? err.message : String(err)); }
     finally { setExporting(false); }
   }, [elements, textEdits, file, currentPage, canvasWidth, canvasHeight, pageCanvas]);
