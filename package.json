@@ -81,7 +81,8 @@
     "test:pades-sign": "npx --yes tsx tests/pades-sign.mts",
     "test:url-to-pdf-text-extraction": "npx --yes tsx tests/url-to-pdf-text-extraction.mts",
     "test:office-to-pdf-docx-runs": "npx --yes tsx tests/office-to-pdf-docx-runs.mts",
-    "test:pdf-to-epub-bold-italic": "npx --yes tsx tests/pdf-to-epub-bold-italic.mts"
+    "test:pdf-to-epub-bold-italic": "npx --yes tsx tests/pdf-to-epub-bold-italic.mts",
+    "test:rotated-page-annotations": "npx --yes tsx tests/rotated-page-annotations.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

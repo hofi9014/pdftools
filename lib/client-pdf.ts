@@ -63,6 +63,36 @@ export async function rotatePDF(file: File, angle: 90 | 180 | 270): Promise<Uint
   return pdf.save();
 }
 
+// FINDING (2026-09-22) — addPageNumbers/addWatermark computed x/y directly from page.getSize(),
+// which returns the RAW (unrotated) MediaBox dimensions, and drew unrotated text — completely
+// ignoring the page's own /Rotate entry (common on scanned documents: a landscape page stored
+// with a portrait MediaBox plus /Rotate 90). Confirmed empirically with pdf.js (rendering the
+// page exactly as a real viewer would, i.e. honoring /Rotate): a page number requested at
+// "bottom center" on a 90°-rotated page landed at the VISUAL left-center edge instead — nowhere
+// near the bottom, and not centered — because "bottom" (y near 0 in raw space) and "center"
+// (x = rawWidth/2) only mean what they say when the page isn't rotated for display.
+//
+// Fixed with two small, empirically-derived (not guessed — verified point-by-point against
+// pdf.js's own viewport transform for all of 90/180/270) helpers: visualPageSize() gives the
+// dimensions as a VIEWER actually sees them (width/height swapped for 90/270), and
+// visualToRawPoint() maps a desired VISUAL position back to the raw content-space coordinates
+// that must be passed to drawText() so the point lands there after the viewer applies /Rotate.
+// The text itself is drawn with an added `rotate: pageRotation` (verified empirically via
+// pdf.js's composed transform matrix: drawing with rotate=+pageRotation, not -pageRotation,
+// is what cancels the page's own clockwise /Rotate and keeps the glyphs upright on screen).
+function visualPageSize(rawWidth: number, rawHeight: number, rotationDeg: number): { width: number; height: number } {
+  const rot = ((rotationDeg % 360) + 360) % 360;
+  return rot === 90 || rot === 270 ? { width: rawHeight, height: rawWidth } : { width: rawWidth, height: rawHeight };
+}
+
+function visualToRawPoint(rawWidth: number, rawHeight: number, rotationDeg: number, vx: number, vy: number): { x: number; y: number } {
+  const rot = ((rotationDeg % 360) + 360) % 360;
+  if (rot === 90) return { x: rawWidth - vy, y: vx };
+  if (rot === 180) return { x: rawWidth - vx, y: rawHeight - vy };
+  if (rot === 270) return { x: vy, y: rawHeight - vx };
+  return { x: vx, y: vy };
+}
+
 export async function addPageNumbers(file: File, options: { startNumber?: number; verticalPosition?: 'bottom' | 'top'; horizontalPosition?: 'left' | 'center' | 'right'; fontSize?: number } = {}): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
@@ -74,15 +104,18 @@ export async function addPageNumbers(file: File, options: { startNumber?: number
 
   for (let i = 0; i < pdf.getPageCount(); i++) {
     const page = pdf.getPage(i);
-    const { width, height } = page.getSize();
+    const { width: rawWidth, height: rawHeight } = page.getSize();
+    const pageRotationDeg = page.getRotation().angle;
+    const { width, height } = visualPageSize(rawWidth, rawHeight, pageRotationDeg);
     const text = String(start + i);
     const textWidth = font.widthOfTextAtSize(text, fontSize);
-    let x: number;
-    if (hPos === 'left') x = 50;
-    else if (hPos === 'right') x = width - 50 - textWidth;
-    else x = width / 2 - textWidth / 2;
-    const y = vPos === 'top' ? height - 30 : 30;
-    page.drawText(text, { x, y, size: fontSize, font, color: rgb(0, 0, 0) });
+    let vx: number;
+    if (hPos === 'left') vx = 50;
+    else if (hPos === 'right') vx = width - 50 - textWidth;
+    else vx = width / 2 - textWidth / 2;
+    const vy = vPos === 'top' ? height - 30 : 30;
+    const { x, y } = visualToRawPoint(rawWidth, rawHeight, pageRotationDeg, vx, vy);
+    page.drawText(text, { x, y, size: fontSize, font, color: rgb(0, 0, 0), rotate: degrees(pageRotationDeg) });
   }
   return pdf.save();
 }
@@ -97,14 +130,16 @@ export async function addWatermark(file: File, text: string, options?: { opacity
   const position = options?.position ?? 'center';
 
   for (const page of pdf.getPages()) {
-    const { width, height } = page.getSize();
+    const { width: rawWidth, height: rawHeight } = page.getSize();
+    const pageRotationDeg = page.getRotation().angle;
+    const { width, height } = visualPageSize(rawWidth, rawHeight, pageRotationDeg);
     const textWidth = font.widthOfTextAtSize(text, fontSize);
-    let x: number, y: number;
+    let vx: number, vy: number;
     if (rotation === 0) {
-      if (position === 'top') y = height - 60 - fontSize;
-      else if (position === 'bottom') y = 60;
-      else y = height / 2 - fontSize / 2;
-      x = width / 2 - textWidth / 2;
+      if (position === 'top') vy = height - 60 - fontSize;
+      else if (position === 'bottom') vy = 60;
+      else vy = height / 2 - fontSize / 2;
+      vx = width / 2 - textWidth / 2;
     } else {
       const textHeight = font.heightAtSize(fontSize);
       const ascentHeight = font.heightAtSize(fontSize, { descender: false });
@@ -116,10 +151,11 @@ export async function addWatermark(file: File, text: string, options?: { opacity
       const bboxCenterOffsetY = (textWidth / 2) * sinR + centerYOffset * cosR;
       const refX = width / 2;
       const refY = position === 'top' ? height * 0.75 : position === 'bottom' ? height * 0.25 : height / 2;
-      x = refX - bboxCenterOffsetX;
-      y = refY - bboxCenterOffsetY;
+      vx = refX - bboxCenterOffsetX;
+      vy = refY - bboxCenterOffsetY;
     }
-    page.drawText(text, { x, y, size: fontSize, font, color: rgb(0.5, 0.5, 0.5), opacity, rotate: degrees(rotation) });
+    const { x, y } = visualToRawPoint(rawWidth, rawHeight, pageRotationDeg, vx, vy);
+    page.drawText(text, { x, y, size: fontSize, font, color: rgb(0.5, 0.5, 0.5), opacity, rotate: degrees(pageRotationDeg + rotation) });
   }
   return pdf.save();
 }
