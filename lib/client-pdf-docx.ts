@@ -1004,8 +1004,18 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
 // single table row taller than one page height is not split vertically
 // and may overflow the bottom margin.
 
+// FINDING (2026-09-22) — this had zero input validation. Word legitimately emits
+// `<w:color w:val="auto"/>` (meaning "automatic/theme color" — written for default body text,
+// after "Clear Formatting", in many templates; a very common real value, not an edge case) and
+// this flowed unvalidated all the way from parseRPr() into IRTextRun.color. "auto".substring(0,2)
+// parses as a lone valid hex digit ("a"), but the remaining substrings ("to", "") aren't valid
+// hex at all, so two of the three RGB channels came out NaN — and pdf-lib's rgb() actually
+// THROWS for a NaN channel ("`green` must be of type `number`, but was actually of type `NaN`"),
+// uncaught here, aborting the ENTIRE word-to-pdf/openoffice-to-pdf conversion for any document
+// containing so much as one run with the theme/automatic color — not a rare edge case.
 function hexToColor(hex: string): ReturnType<typeof rgb> {
   const h = hex.replace('#', '');
+  if (!/^[0-9a-fA-F]{6}$/.test(h)) return rgb(0, 0, 0);
   return rgb(
     parseInt(h.substring(0, 2), 16) / 255,
     parseInt(h.substring(2, 4), 16) / 255,
