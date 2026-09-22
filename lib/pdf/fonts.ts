@@ -15,13 +15,30 @@ export interface FontFamilyOption {
 const FONTS_BASE = '/fonts';
 
 const FONT_VERSIONS: Record<string, { family: string; url: (w: number, i: boolean) => string }> = {
+  // FINDING (2026-09-21) — url() ignored both its (weight, italic) arguments and always
+  // returned arimo-regular.woff2, because that was the only Arimo file that existed on disk;
+  // every other family here already had real per-weight/style files. Ticking Bold or Italic
+  // on Arial/Arimo (Arial is edit-pdf's default font) silently produced plain regular weight.
+  // arimo-bold.woff2/arimo-italic.woff2 fetched in isolation from Google Fonts' css2 endpoint
+  // (combined weight+style queries return a shared variable-font blob that renders identically
+  // regardless of the requested weight — the same issue already documented for Noto Sans/Open
+  // Sans above) and verified with fontkit: distinct advance widths (regular/bold "AVWMil" 7129
+  // vs 7470 units) and distinct italic angle (regular/italic 0° vs -12°), not duplicate files.
   'Arial': {
     family: 'arimo',
-    url: () => `${FONTS_BASE}/arimo-regular.woff2`,
+    url: (w, i) => i
+      ? `${FONTS_BASE}/arimo-italic.woff2`
+      : w === 700
+        ? `${FONTS_BASE}/arimo-bold.woff2`
+        : `${FONTS_BASE}/arimo-regular.woff2`,
   },
   'Arimo': {
     family: 'arimo',
-    url: () => `${FONTS_BASE}/arimo-regular.woff2`,
+    url: (w, i) => i
+      ? `${FONTS_BASE}/arimo-italic.woff2`
+      : w === 700
+        ? `${FONTS_BASE}/arimo-bold.woff2`
+        : `${FONTS_BASE}/arimo-regular.woff2`,
   },
   'Cousine': {
     family: 'cousine',
