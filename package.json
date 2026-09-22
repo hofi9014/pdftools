@@ -84,7 +84,8 @@
     "test:pdf-to-epub-bold-italic": "npx --yes tsx tests/pdf-to-epub-bold-italic.mts",
     "test:rotated-page-annotations": "npx --yes tsx tests/rotated-page-annotations.mts",
     "test:i18n-dollar-interpolation": "npx --yes tsx tests/i18n-dollar-interpolation.mts",
-    "test:encrypted-pdf-guard": "npx --yes tsx tests/encrypted-pdf-guard.mts"
+    "test:encrypted-pdf-guard": "npx --yes tsx tests/encrypted-pdf-guard.mts",
+    "test:edit-pdf-combined-export": "npx --yes tsx tests/edit-pdf-combined-export.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
