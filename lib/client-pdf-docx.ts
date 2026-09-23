@@ -691,17 +691,56 @@ function processTable(
   const rows: IRTableCell[][] = [];
   const trEls = tblEl.getElementsByTagNameNS(WORD_NS, 'tr');
 
+  // FINDING (2026-09-23) — this previously hardcoded `rowspan: 1` unconditionally and never
+  // read <w:vMerge> at all, while the sibling ODT reader (odfProcessTable, below) already
+  // correctly recovers row spans from ODF's table:number-rows-spanned. Word represents a
+  // vertical merge as <w:vMerge w:val="restart"/> on the TOP cell (which carries the real
+  // content) followed by a plain <w:vMerge/> (no val, or val="continue") on each subsequent row
+  // at the SAME grid column — with no rowspan count anywhere; it must be recovered by counting
+  // consecutive continuation cells. Every real Word document with a vertically-merged table
+  // cell, converted via word-to-pdf (docxToIR -> renderIRToPdf), silently lost the merge —
+  // rendering as ordinary stacked separate (empty) rows instead of one spanning cell — even
+  // though renderTable() already has full, correct rowspan-aware grid-occupancy handling
+  // (confirmed by reading it) and was simply never being FED a rowspan > 1 to act on.
+  //
+  // Unlike the IR's own grid model (which omits covered cells entirely, forcing the drawing
+  // code in renderTable() to track occupancy across rows), raw OOXML always emits an explicit
+  // <w:tc> for EVERY grid position in EVERY row — a vMerge continuation row still has a real
+  // <w:tc><w:vMerge/></w:tc> element, it just carries no colspan-skip surprises the way a
+  // pre-collapsed grid would. So tracking this row's grid column purely by summing colspans
+  // seen so far in THIS row (no cross-row occupancy skip needed) is sufficient and correct.
+  // openMergeAnchor[col] holds the currently-open merge's anchor cell so a later continuation
+  // row can bump its rowspan; it is overwritten (to the new cell, or cleared to null) every
+  // time a non-continuation <w:tc> is placed at that column, since that always ends whatever
+  // merge chain existed there before.
+  const openMergeAnchor: (IRTableCell | null)[] = [];
+
   for (let r = 0; r < trEls.length; r++) {
     const row: IRTableCell[] = [];
     const tcEls = trEls[r]!.getElementsByTagNameNS(WORD_NS, 'tc');
+    let g = 0;
     for (let c = 0; c < tcEls.length; c++) {
       const tc = tcEls[c]!;
       const tcPr = tc.getElementsByTagNameNS(WORD_NS, 'tcPr');
       let colspan = 1;
+      let vMergeVal: string | null = null;
       if (tcPr.length > 0) {
         const gs = tcPr[0]!.getElementsByTagNameNS(WORD_NS, 'gridSpan');
         if (gs.length > 0) colspan = parseInt(getLocal(gs[0]!, 'val') || '1');
+        const vm = tcPr[0]!.getElementsByTagNameNS(WORD_NS, 'vMerge');
+        if (vm.length > 0) vMergeVal = getLocal(vm[0]!, 'val') || 'continue';
       }
+
+      if (vMergeVal && vMergeVal !== 'restart') {
+        // Continuation of a merge anchored in an earlier row at this grid column — extend the
+        // anchor's rowspan; do not add a new cell (matching odfProcessTable's equivalent
+        // behavior of never emitting a <table:covered-table-cell> as its own grid entry).
+        const anchor = openMergeAnchor[g];
+        if (anchor) anchor.rowspan += 1;
+        g += colspan;
+        continue;
+      }
+
       // Collect all text runs from paragraphs inside this cell
       const cellRuns: IRTextRun[] = [];
       const pEls = tc.getElementsByTagNameNS(WORD_NS, 'p');
@@ -709,7 +748,12 @@ function processTable(
         const pRuns = parseRuns(pEls[p]!, resolvedStyles, undefined, undefined);
         cellRuns.push(...pRuns);
       }
-      row.push({ runs: cellRuns, colspan, rowspan: 1 });
+      const newCell: IRTableCell = { runs: cellRuns, colspan, rowspan: 1 };
+      row.push(newCell);
+      for (let cc = 0; cc < colspan; cc++) {
+        openMergeAnchor[g + cc] = vMergeVal === 'restart' ? newCell : null;
+      }
+      g += colspan;
     }
     if (row.length > 0) rows.push(row);
   }
