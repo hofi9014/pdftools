@@ -13,7 +13,19 @@ const MODEL = 'openai/gpt-4o-mini';
 const MAX_TEXT_LENGTH_CHAT = 12000;
 const MAX_TEXT_LENGTH_BULK = 120000;
 const MAX_QUESTION_LENGTH = 2000;
-const MAX_LANGUAGE_LENGTH = 100;
+
+// The real UI (app/ai-translate/page.tsx's LANG_KEYS) only ever sends one of these exact,
+// fixed Polish language names via a <select> dropdown — `language` was previously only
+// length-capped (100 chars) before being interpolated directly into the system prompt
+// ("Przetłumacz poniższy tekst na język ${language}..."). A request sent directly to this
+// endpoint (bypassing the dropdown) could set `language` to arbitrary instruction text to
+// override the intended system prompt and repurpose this endpoint for arbitrary generation
+// instead of translation. Validating against this closed set (mirroring the dropdown) closes
+// that off entirely rather than trying to sanitize free text.
+const ALLOWED_TRANSLATE_LANGUAGES = new Set([
+  'angielski', 'polski', 'niemiecki', 'francuski', 'hiszpański', 'włoski',
+  'rosyjski', 'ukraiński', 'czeski', 'chiński (uproszczony)', 'japoński',
+]);
 
 function getClientIp(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for');
@@ -70,9 +82,9 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
-  if (task === 'translate' && typeof language === 'string' && language.length > MAX_LANGUAGE_LENGTH) {
+  if (task === 'translate' && !ALLOWED_TRANSLATE_LANGUAGES.has(language)) {
     return NextResponse.json(
-      { error: `Nazwa języka jest za długa. Maksymalna długość: ${MAX_LANGUAGE_LENGTH} znaków.` },
+      { error: 'Nieobsługiwany język docelowy.' },
       { status: 400 }
     );
   }
