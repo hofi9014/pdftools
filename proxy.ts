@@ -28,6 +28,21 @@ const ALLOWED_ORIGINS = [
 ];
 const STATE_CHANGING_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
 const rateMap = new Map<string, { count: number; resetAt: number }>();
+// rateMap is only ever written to, never swept — on a warm instance (this module persists
+// across requests) an IP that sends one request and never returns leaves its entry here
+// forever, growing unboundedly under sustained traffic from many distinct IPs. Swept
+// opportunistically (on request volume, not a background timer, whose firing isn't
+// guaranteed across every runtime this proxy might execute in) rather than on every call,
+// to keep the O(map size) sweep cost off the hot path.
+export const RATE_LIMIT_SWEEP_INTERVAL = 500;
+let requestsSinceSweep = 0;
+export function getRateMapForTesting(): Map<string, { count: number; resetAt: number }> {
+  return rateMap;
+}
+export function resetRateLimitSweepStateForTesting(): void {
+  rateMap.clear();
+  requestsSinceSweep = 0;
+}
 
 function getClientIp(request: NextRequest): string {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
@@ -35,8 +50,19 @@ function getClientIp(request: NextRequest): string {
     || 'unknown';
 }
 
-function checkRateLimit(ip: string): boolean {
+// Exported so tests/proxy-rate-limit-sweep.mts can directly observe rateMap's actual size
+// after a sweep, rather than only inferring it indirectly through proxy()'s allow/deny output
+// (which can't tell "no cleanup, still allowed because it's a fresh IP" apart from "cleanup
+// happened correctly").
+export function checkRateLimit(ip: string): boolean {
   const now = Date.now();
+  requestsSinceSweep++;
+  if (requestsSinceSweep >= RATE_LIMIT_SWEEP_INTERVAL) {
+    requestsSinceSweep = 0;
+    for (const [key, val] of rateMap) {
+      if (now > val.resetAt) rateMap.delete(key);
+    }
+  }
   const entry = rateMap.get(ip);
   if (!entry || now > entry.resetAt) {
     rateMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
