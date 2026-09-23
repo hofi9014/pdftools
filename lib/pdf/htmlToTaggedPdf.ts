@@ -18,6 +18,13 @@
 // which this does not attempt. Explicitly out of scope: CSS styling (only semantic tags drive
 // layout), colspan/rowspan, nested lists beyond one level's visual indent, and per-link /Link
 // structure elements (links ARE clickable and visually marked, just not individually tagged).
+// Also explicitly deferred (found 2026-09-23, same scanning pass that fixed the image-height
+// overflow below): a table row whose cell content wraps to enough lines to exceed a full page's
+// usable height (renderTable()'s ensureSpace(state, rowHeight) call has the same "only checks
+// the CURRENT page, never a hard cap" gap the image case had) can still overflow past the bottom
+// margin and be silently clipped — unlike the image case, fixing this would require splitting a
+// single row's content across pages, a real structural change to the table renderer, not a
+// bounded local fix like the image cap was.
 
 import {
   PDFDocument, PDFName, PDFString, PDFArray, PDFOperator, PDFOperatorNames,
@@ -520,7 +527,18 @@ async function renderImage(state: RenderState, dataUrl: string, alt: string, par
   const naturalWidth = image.width * IMAGE_PX_TO_PT;
   const naturalHeight = image.height * IMAGE_PX_TO_PT;
   const maxWidth = CONTENT_WIDTH;
-  const scale = Math.min(1, maxWidth / naturalWidth);
+  // FINDING (2026-09-23) — ensureSpace() below only checks whether the CURRENT page has room
+  // for `h` and starts a fresh page if not; it never checks whether `h` fits within a full
+  // page's usable height at all. A tall image (e.g. a portrait screenshot scaled to content
+  // width, whose aspect ratio makes its scaled height exceed a full page's content area) would
+  // still be drawn past the bottom margin even on a brand new page — the excess is silently
+  // clipped by the PDF page boundary (content outside a page's MediaBox is not carried to a
+  // following page), a real, silent loss of part of the image. Capping height to what a single
+  // full page can ever hold, in addition to the existing width cap, guarantees the image
+  // (rescaled proportionally, so its aspect ratio is preserved) always fits after ensureSpace()
+  // moves to a fresh page.
+  const maxHeight = PAGE_HEIGHT - MARGIN * 2;
+  const scale = Math.min(1, maxWidth / naturalWidth, maxHeight / naturalHeight);
   const w = naturalWidth * scale;
   const h = naturalHeight * scale;
   ensureSpace(state, h);

@@ -26,6 +26,7 @@
 
 import { chromium } from 'playwright';
 import { PDFDocument, PDFName, PDFDict, PDFArray } from 'pdf-lib';
+import { createCanvas } from '@napi-rs/canvas';
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 
@@ -204,6 +205,62 @@ console.log('\n=== Multi-page: /StructParents and /ParentTree stay in sync acros
   const expected = Array.from({ length: mpDoc.getPageCount() }, (_, i) => i);
   check(JSON.stringify(pageStructParents) === JSON.stringify(expected), `every page's /StructParents is sequential 0..N-1, no off-by-one (got: ${JSON.stringify(pageStructParents)})`);
   check(JSON.stringify(numsKeys) === JSON.stringify(expected), `/ParentTree/Nums keys match the same 0..N-1 sequence (got: ${JSON.stringify(numsKeys)})`);
+}
+
+// --- Tall-image overflow fix (2026-09-23): a very tall image (e.g. a portrait screenshot
+// scaled to content width) whose scaled height would exceed a full page's usable height must be
+// scaled down further (preserving aspect ratio) so it always fits within a single page, instead
+// of silently overflowing past the bottom margin and being clipped by the page boundary. ---
+console.log('\n=== Tall image: a very tall image is scaled down to fit within a single page, not clipped ===');
+{
+  // 200x2000px, solid color — real pixel dimensions matter here (not content), so a flat fill
+  // is enough. At 96 DPI this is 150x1500pt raw, far taller than a full page's ~741.89pt usable
+  // height, so BOTH the width cap (150pt is already under the ~495pt content width) and the new
+  // height cap must combine correctly: old code (no height cap) would only apply the width cap
+  // (a no-op here) and draw at the full, unclipped-by-code 1500pt height.
+  const canvas = createCanvas(200, 2000);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#3366cc';
+  ctx.fillRect(0, 0, 200, 2000);
+  const tallImageDataUrl = canvas.toDataURL('image/png');
+
+  const tallHtml = `<html lang="pl"><head><title>Wysoki obraz</title></head><body><img src="${tallImageDataUrl}" alt="Wysoki obraz testowy"></body></html>`;
+  const tallBytes = await generateViaRealUi(tallHtml);
+  const tallPdfjsDoc = await pdfjsLib.getDocument({ data: tallBytes, standardFontDataUrl: 'node_modules/pdfjs-dist/standard_fonts/' }).promise;
+
+  type Mat2 = [number, number, number, number, number, number];
+  const IDENTITY2: Mat2 = [1, 0, 0, 1, 0, 0];
+  const mul2 = (m: Mat2, n: Mat2): Mat2 => [
+    m[0] * n[0] + m[1] * n[2], m[0] * n[1] + m[1] * n[3],
+    m[2] * n[0] + m[3] * n[2], m[2] * n[1] + m[3] * n[3],
+    m[4] * n[0] + m[5] * n[2] + n[4], m[4] * n[1] + m[5] * n[3] + n[5],
+  ];
+  // ensureSpace() only calls newPage() ONCE when the current page lacks room, without
+  // re-checking afterward — pre-fix, a still-too-tall image doesn't stay on page 1, it moves
+  // to page 2 (and would still overflow there too, invisibly). Searching every page (not just
+  // page 1) makes this check honestly characterize BOTH possible pre-fix outcomes rather than
+  // assuming the image landed on the first page.
+  let drawnHeight: number | null = null;
+  let foundOnPage = -1;
+  for (let p = 1; p <= tallPdfjsDoc.numPages; p++) {
+    const tallPage = await tallPdfjsDoc.getPage(p);
+    const tallOpList = await tallPage.getOperatorList();
+    let ctm2: Mat2 = IDENTITY2;
+    const stack2: Mat2[] = [];
+    for (let i = 0; i < tallOpList.fnArray.length; i++) {
+      const fn = tallOpList.fnArray[i];
+      if (fn === pdfjsLib.OPS.save) stack2.push(ctm2);
+      else if (fn === pdfjsLib.OPS.restore) ctm2 = stack2.pop() ?? IDENTITY2;
+      else if (fn === pdfjsLib.OPS.transform) ctm2 = mul2(tallOpList.argsArray[i] as Mat2, ctm2);
+      else if (fn === pdfjsLib.OPS.paintImageXObject) { drawnHeight = Math.sqrt(ctm2[2] * ctm2[2] + ctm2[3] * ctm2[3]); foundOnPage = p; }
+    }
+    if (drawnHeight !== null) break;
+  }
+  const PAGE_HEIGHT_USABLE = 841.89 - 50 * 2; // mirrors PAGE_HEIGHT/MARGIN in lib/pdf/htmlToTaggedPdf.ts
+  check(drawnHeight !== null, `a drawn image was found somewhere across all ${tallPdfjsDoc.numPages} page(s) of the tall-image output PDF (found on page: ${foundOnPage})`);
+  check(drawnHeight !== null && drawnHeight <= PAGE_HEIGHT_USABLE + 0.5, `the tall image's drawn height fits within a single page's usable height (${PAGE_HEIGHT_USABLE.toFixed(2)}pt) — got ${drawnHeight?.toFixed(2)}pt on page ${foundOnPage}, NOT the old unclipped-by-code 1500pt`);
+  check(drawnHeight !== null && drawnHeight > 700, `the tall image is still scaled as large as it can be while fitting (not over-shrunk) — got ${drawnHeight?.toFixed(2)}pt`);
+  check(tallPdfjsDoc.numPages === 1, `the single tall image fits on one page — no unnecessary extra page (got: ${tallPdfjsDoc.numPages})`);
 }
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
