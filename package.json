@@ -93,7 +93,8 @@
     "test:redact-worker-timeout": "npx --yes tsx tests/redact-worker-timeout.mts",
     "test:extract-pages-order": "npx --yes tsx tests/extract-pages-order.mts",
     "test:metadata-keywords-comma": "npx --yes tsx tests/metadata-keywords-comma.mts",
-    "test:add-page-invalid-position": "npx --yes tsx tests/add-page-invalid-position.mts"
+    "test:add-page-invalid-position": "npx --yes tsx tests/add-page-invalid-position.mts",
+    "test:docx-vmerge-rowspan": "npx --yes tsx tests/docx-vmerge-rowspan.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
