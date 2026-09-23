@@ -1,9 +1,10 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { locales, t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
-import { getArticlesByCategory } from '@/lib/guides';
+import { getArticlesByCategory, getAllCategories } from '@/lib/guides';
 import CTATool from '@/components/guides/CTATool';
 
 const categoryLabels: Record<string, Record<Locale, string>> = {
@@ -101,6 +102,13 @@ export default async function CategoryPage({
 }) {
   const { locale: localeSegment, category } = await params;
   const locale = localeFromSegment(localeSegment) as Locale;
+  // FINDING (2026-09-23) — same class of bug as the sibling [slug] article page: an unrecognized
+  // category previously rendered a normal 200 "no articles" page (getCategoryLabel() even falls
+  // back to echoing the raw, invalid category string as the page's own <h1>), instead of a real
+  // 404. getAllCategories() is the definitive list derived from actual guide content, so any
+  // category not in it can never have articles — checking it directly (rather than inferring
+  // invalidity from an empty articles array) is also correct if that ever changes.
+  if (!getAllCategories().includes(category)) notFound();
   const articles = getArticlesByCategory(category);
   const tool = categoryTool[category];
 
