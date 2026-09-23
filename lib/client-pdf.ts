@@ -890,6 +890,24 @@ function createRedactWorker(): Worker | null {
   return redactWorker;
 }
 
+// FINDING (2026-09-22) — createRedactWorker() cached the worker forever, even if it was
+// permanently broken: `redactWorkerDisabled` is only set when `typeof Worker === 'undefined'`
+// or `new Worker()` throws SYNCHRONOUSLY. If the worker's MODULE fails to fully load (blocked by
+// an ad-blocker/extension, a transient network failure, a stale CDN/service-worker cache —
+// import 'pdfjs-dist/build/pdf.worker.min.mjs' at the top of redact-worker.ts), the Worker
+// object itself is still constructed without throwing, so it got cached and returned by every
+// future call — but because the worker's script never finished evaluating, `self.onmessage`
+// inside it was never registered, so it silently drops every `postMessage()` forever, with NO
+// message or error event ever firing back. Combined with the complete absence of any timeout
+// here, every call after the first hung the calling promise permanently — the UI stayed stuck on
+// "loading" until the page was reloaded.
+const REDACT_WORKER_TIMEOUT_MS = 60000;
+
+function discardRedactWorker(): void {
+  try { redactWorker?.terminate(); } catch {}
+  redactWorker = null;
+}
+
 function redactInWorker(buf: ArrayBuffer, regions: RedactRegion[]): Promise<Uint8Array> {
   return new Promise<Uint8Array>((resolve, reject) => {
     const worker = createRedactWorker();
@@ -898,12 +916,15 @@ function redactInWorker(buf: ArrayBuffer, regions: RedactRegion[]): Promise<Uint
       return;
     }
     const id = ++redactRequestId;
+    let settled = false;
     const cleanup = () => {
+      clearTimeout(timeoutId);
       worker.removeEventListener('message', onMessage);
       worker.removeEventListener('error', onError);
     };
     const onMessage = (e: MessageEvent<RedactWorkerResponse>) => {
-      if (e.data.id !== id) return;
+      if (e.data.id !== id || settled) return;
+      settled = true;
       cleanup();
       if (e.data.type === 'ok') {
         resolve(new Uint8Array(e.data.buf));
@@ -912,9 +933,19 @@ function redactInWorker(buf: ArrayBuffer, regions: RedactRegion[]): Promise<Uint
       }
     };
     const onError = (e: ErrorEvent) => {
+      if (settled) return;
+      settled = true;
       cleanup();
+      discardRedactWorker();
       reject(new Error(e.message || 'Redact worker failed'));
     };
+    const timeoutId = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      discardRedactWorker();
+      reject(new Error(REDACT_WORKER_UNAVAILABLE));
+    }, REDACT_WORKER_TIMEOUT_MS);
     worker.addEventListener('message', onMessage);
     worker.addEventListener('error', onError);
     const request: RedactWorkerRequest = { id, type: 'redact', buf, regions };
