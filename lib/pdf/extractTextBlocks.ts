@@ -14,10 +14,25 @@ export interface TextBlock {
 function groupIntoLines(items: { text: string; x: number; y: number; width: number; height: number; fontSize: number; fontName: string; rotation: number }[], pageHeight: number): TextBlock[] {
   if (items.length === 0) return [];
 
+  // FINDING (2026-09-23) — `items` arrive here already run through pdf.js's
+  // viewport.convertToViewportPoint() (see extractTextBlocks() below), which is CANVAS/SCREEN
+  // space: y=0 at the TOP of the (already-rotation-normalized) rendered page, increasing
+  // DOWNWARD — confirmed directly against pdf.js's own PageViewport.transform (rotation=0 case:
+  // [scale, 0, 0, -scale, e, f], i.e. viewportY = f - scale*pdfY, so a LARGER original PDF y —
+  // higher up the page — maps to a SMALLER viewport y). Top-to-bottom reading order in THIS
+  // space therefore means ASCENDING y (smallest/topmost first) — but this comparator sorted
+  // DESCENDING (`b.y - a.y`), which is the correct direction only for PDF-native (bottom-up)
+  // coordinates, not the viewport-space values actually passed in. The result: every document
+  // whose text is classified as "structured" by pdfToEpub's hasStructure gate (any bold run,
+  // any detected heading, or more than one paragraph break — plain, unstyled body text instead
+  // takes a separate raw-pdf.js-order fallback that never calls this function, which is why this
+  // wasn't visible on every PDF) had its lines emitted in REVERSED — bottom-to-top — order.
+  // Reproduced with 3 lines at y=400/380/360 (PDF space) containing one bold word: the emitted
+  // paragraph read "...italic. ...bold. ...regular." instead of "...regular. ...bold. ...italic.".
   const sorted = [...items].sort((a, b) => {
     const yDiff = Math.abs(a.y - b.y);
     if (yDiff < 3) return a.x - b.x;
-    return b.y - a.y;
+    return a.y - b.y;
   });
 
   const blocks: TextBlock[] = [];
