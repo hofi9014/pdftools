@@ -26,7 +26,7 @@
 import { register } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { PDFDocument, rgb, degrees } from 'pdf-lib';
+import { PDFDocument, PDFName, rgb, degrees } from 'pdf-lib';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, '..');
@@ -93,6 +93,22 @@ async function buildSourcePdf(rotationDeg: number): Promise<Uint8Array> {
   return pdf.save();
 }
 
+// Same corner-mark layout, but the MediaBox itself is offset from (0,0) — e.g. [50, 30, 250, 330]
+// instead of [0, 0, 200, 300] — an already-documented, non-exotic case (some scanners/printers,
+// or a previously-cropped PDF). page.drawRectangle() draws at absolute PDF user-space
+// coordinates, so the marks below are offset by (X0, Y0) too, to land inside this shifted box.
+async function buildSourcePdfWithOffsetMediaBox(rotationDeg: number, x0: number, y0: number): Promise<Uint8Array> {
+  const pdf = await PDFDocument.create();
+  const page = pdf.addPage([RAW_W, RAW_H]);
+  page.node.set(PDFName.of('MediaBox'), pdf.context.obj([x0, y0, x0 + RAW_W, y0 + RAW_H]));
+  page.setRotation(degrees(rotationDeg));
+  page.drawRectangle({ x: x0 + INSET, y: y0 + INSET, width: MARK, height: MARK, color: rgb(RED.r / 255, RED.g / 255, RED.b / 255) });
+  page.drawRectangle({ x: x0 + RAW_W - INSET - MARK, y: y0 + INSET, width: MARK, height: MARK, color: rgb(GREEN.r / 255, GREEN.g / 255, GREEN.b / 255) });
+  page.drawRectangle({ x: x0 + INSET, y: y0 + RAW_H - INSET - MARK, width: MARK, height: MARK, color: rgb(BLUE.r / 255, BLUE.g / 255, BLUE.b / 255) });
+  page.drawRectangle({ x: x0 + RAW_W - INSET - MARK, y: y0 + RAW_H - INSET - MARK, width: MARK, height: MARK, color: rgb(YELLOW.r / 255, YELLOW.g / 255, YELLOW.b / 255) });
+  return pdf.save();
+}
+
 async function renderViaPdfjs(pdfBytes: Uint8Array, scale: number): Promise<{ data: Buffer; width: number; height: number }> {
   const doc = await pdfjsLib.getDocument({ data: pdfBytes.slice(), standardFontDataUrl: pathToFileURL(join(ROOT, 'node_modules', 'pdfjs-dist', 'standard_fonts') + '/').href }).promise;
   const page = await doc.getPage(1);
@@ -121,10 +137,8 @@ function colorName(c: RGB): string {
   return `unknown(${c.r},${c.g},${c.b})`;
 }
 
-for (const rot of [0, 90, 180, 270]) {
-  console.log(`\n=== /Rotate ${rot}: redacted (flattened) output visually matches the original ===`);
-  const sourceBytes = await buildSourcePdf(rot);
-
+async function verifyRedactionPreservesVisual(label: string, sourceBytes: Uint8Array): Promise<void> {
+  console.log(`\n=== ${label}: redacted (flattened) output visually matches the original ===`);
   const region: RedactRegion = { page: 0, x: 0, y: 0, width: 0, height: 0 }; // zero-size — flattens the page, blacks out nothing
   const redactedBytes = await rasterizePages(pdfjsLib as unknown as PdfjsLibLike, canvasFactory, sourceBytes, [region], 2, {
     standardFontDataUrl: pathToFileURL(join(ROOT, 'node_modules', 'pdfjs-dist', 'standard_fonts') + '/').href,
@@ -146,13 +160,22 @@ for (const rot of [0, 90, 180, 270]) {
       ['bottom-left', m, orig.height - 1 - m],
       ['bottom-right', orig.width - 1 - m, orig.height - 1 - m],
     ];
-    for (const [label, px, py] of corners) {
+    for (const [cornerLabel, px, py] of corners) {
       const origColor = pixelAt(orig.data, orig.width, px, py);
       const afterColor = pixelAt(after.data, after.width, px, py);
-      check(closeEnough(origColor, afterColor), `screen corner "${label}" (${px},${py}): original=${colorName(origColor)} after=${colorName(afterColor)} — match`);
+      check(closeEnough(origColor, afterColor), `screen corner "${cornerLabel}" (${px},${py}): original=${colorName(origColor)} after=${colorName(afterColor)} — match`);
     }
   }
 }
+
+for (const rot of [0, 90, 180, 270]) {
+  await verifyRedactionPreservesVisual(`/Rotate ${rot}`, await buildSourcePdf(rot));
+}
+
+// MediaBox-origin part of the same fix (getMediaBox() instead of getSize()) — combined with a
+// non-zero rotation, the combination most likely to reveal a compounding error between the two
+// parts of the fix.
+await verifyRedactionPreservesVisual('/Rotate 90 + MediaBox origin (50, 30) instead of (0, 0)', await buildSourcePdfWithOffsetMediaBox(90, 50, 30));
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);
