@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import { getCategoryIcon } from '@/lib/icons';
 import { toolsByCategory, toolPath } from '@/lib/tools';
@@ -21,10 +21,19 @@ interface Category {
   separatorIndex?: number;
 }
 
-export default function MobileMenu() {
+// FINDING (2026-09-23) — this component always called useHydrationSafeLocale() itself,
+// ignoring the URL-derived locale its parent (Header, in turn LayoutShell) already resolved.
+// useHydrationSafeLocale() only ever reflects localStorage/the detected-locale cookie (a
+// browser-language guess), never the current path — so on a first-time visitor whose browser
+// language differs from the locale in the URL (e.g. opening /de/merge with an English browser),
+// this menu's own labels rendered in the WRONG language while every sibling nav element on the
+// same page correctly showed German. Accepting an optional `locale` prop (same pattern already
+// used by Header/Footer/Breadcrumbs/SchemaHowTo) lets the parent hand down the correct,
+// URL-derived locale; the hydration-safe fallback remains for any caller that doesn't have one.
+export default function MobileMenu({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const locale = useHydrationSafeLocale();
+  const locale = forcedLocale ?? useHydrationSafeLocale();
 
   const infoMore: CatTool[] = [
     { key: 'rules', href: locale ? `/${locale}/nasze-zasady` : '/nasze-zasady', navKey: 'nav.rules', icon: '📜' },

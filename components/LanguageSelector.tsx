@@ -28,8 +28,16 @@ function setLocaleCookie(code: string) {
   document.cookie = `x-detected-locale=${code};path=/;max-age=${365 * 24 * 60 * 60};SameSite=Lax`;
 }
 
-export default function LanguageSelector() {
-  const locale = useHydrationSafeLocale();
+// FINDING (2026-09-23) — same class of bug as MobileMenu: this component always called
+// useHydrationSafeLocale() itself for both the displayed flag/label AND the dropdown's "active
+// language" highlight, ignoring the URL-derived locale its parent (Header) already resolved.
+// On a first-time visitor whose browser language differs from the URL's locale, the flag/label
+// shown and the highlighted "active" entry in the dropdown were simply wrong — e.g. opening
+// /de/merge with an English browser showed "English" highlighted as active while the page was
+// entirely in German. handleChange()'s own locale-switching logic was unaffected (it already
+// reads the real URL via usePathname()) — only the display was wrong.
+export default function LanguageSelector({ locale: forcedLocale }: { locale?: Locale } = {}) {
+  const locale = forcedLocale ?? useHydrationSafeLocale();
   const { setLocale } = useLocale();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);

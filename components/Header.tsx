@@ -99,9 +99,9 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
         </nav>
 
         <div className="flex items-center gap-1.5">
-          <MobileMenu />
-          <LanguageSelector />
-          <ThemeToggle />
+          <MobileMenu locale={locale} />
+          <LanguageSelector locale={locale} />
+          <ThemeToggle locale={locale} />
         </div>
       </div>
     </header>
