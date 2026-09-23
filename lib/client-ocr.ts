@@ -123,6 +123,16 @@ export async function ocrPdfClient(
   const doc = await pdfjsLib.getDocument({ data: new Uint8Array(bufForPdfjs) }).promise;
 
   const origPdf = await PDFDocument.load(bufForPdfLib, { ignoreEncryption: true });
+  // FINDING (2026-09-23) — same class of bug already found and fixed for 16 functions in
+  // lib/client-pdf.ts (Krok 20): ignoreEncryption only skips pdf-lib's own "encrypted, can't
+  // proceed" throw — pdf-lib has no decryption logic anywhere, so every stream/string in an
+  // owner-password-protected PDF (openable without a password — a real, common case, e.g. a
+  // permission-restricted scan) stays raw ciphertext. newPdf.copyPages() a few lines below
+  // copies the original page's still-encrypted /Contents stream into a document with no
+  // /Encrypt dict, so a normal viewer renders that ciphertext as garbage/blank content — while
+  // the OCR text layer drawn on top is perfectly positioned and searchable, the opposite of
+  // what OCR is meant to preserve (visible original + added searchability).
+  if (origPdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const newPdf = await PDFDocument.create();
 
   const { createWorker } = await import('tesseract.js');
