@@ -72,13 +72,28 @@ export function parsePkcs12(p12Bytes: Uint8Array, password: string): PadesCertBu
   const keyBagOid = forge.pki.oids.keyBag!;
   const certBagOid = forge.pki.oids.certBag!;
 
+  // forge's own pkcs12.js _decodeSafeContents never lets an unrecognized private-key algorithm
+  // (e.g. EC/ECDSA — forge's pki.privateKeyFromAsn1 only understands RSAPrivateKey) escape as a
+  // thrown error: it catches that internally and stores `bag.key = null; bag.asn1 = <raw ASN.1>`
+  // instead, so a bag for a real, present-but-unsupported key looks identical to "no bag at all"
+  // by `.key` alone — `.asn1` is the only signal that distinguishes the two. Checked for both here
+  // so a user who supplies a non-RSA certificate gets told WHY, instead of the misleading "no
+  // private key found" (a private key WAS found, just not one this tool can use).
   const keyBags = p12.getBags({ bagType: pkcs8ShroudedKeyBagOid });
+  const plainKeyBagsForCheck = p12.getBags({ bagType: keyBagOid });
   let key = keyBags[pkcs8ShroudedKeyBagOid]?.[0]?.key;
   if (!key) {
-    const plainKeyBags = p12.getBags({ bagType: keyBagOid });
-    key = plainKeyBags[keyBagOid]?.[0]?.key;
+    key = plainKeyBagsForCheck[keyBagOid]?.[0]?.key;
   }
-  if (!key) throw new Error('Nie znaleziono klucza prywatnego w pliku .p12/.pfx.');
+  if (!key) {
+    const sawUnsupportedKeyType =
+      (keyBags[pkcs8ShroudedKeyBagOid] ?? []).some(b => !b.key && b.asn1) ||
+      (plainKeyBagsForCheck[keyBagOid] ?? []).some(b => !b.key && b.asn1);
+    if (sawUnsupportedKeyType) {
+      throw new Error('Ten plik .p12/.pfx zawiera klucz prywatny w nieobsługiwanym formacie (np. EC/ECDSA) — obsługiwane są wyłącznie certyfikaty z kluczem RSA.');
+    }
+    throw new Error('Nie znaleziono klucza prywatnego w pliku .p12/.pfx.');
+  }
 
   const certBags = p12.getBags({ bagType: certBagOid });
   const certs = (certBags[certBagOid] || [])
