@@ -99,7 +99,8 @@
     "test:pades-ec-key-error": "npx --yes tsx tests/pades-ec-key-error.mts",
     "test:ai-chat-error-clear": "npx --yes tsx tests/ai-chat-error-clear.mts",
     "test:proxy-rate-limit-sweep": "npx --yes tsx tests/proxy-rate-limit-sweep.mts",
-    "test:ai-translate-language-allowlist": "npx --yes tsx tests/ai-translate-language-allowlist.mts"
+    "test:ai-translate-language-allowlist": "npx --yes tsx tests/ai-translate-language-allowlist.mts",
+    "test:redact-raster-rotation": "npx --yes tsx tests/redact-raster-rotation.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

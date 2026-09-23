@@ -13,7 +13,46 @@ import {
   translate,
   drawObject,
   scale as scaleOperator,
+  rotateDegrees,
 } from 'pdf-lib';
+
+// FINDING (2026-09-23) — both rasterizePage/rasterizePages placed the redacted-page PNG using
+// the RAW (unrotated) MediaBox size from page.getSize() and a plain translate(0,0)+scale, with
+// no compensating rotation — ignoring the page's own /Rotate entry entirely (the same bug class
+// already found and fixed for addPageNumbers/addWatermark in client-pdf.ts, Krok 17, and for
+// cropPages' MediaBox-origin handling, Krok 9). But pdf.js's page.getViewport({scale}) — used to
+// render the source PNG a few lines above this — defaults its own `rotation` parameter to
+// `this.rotate` (confirmed in pdfjs-dist source), so the rendered PNG already has the page's
+// rotation baked in: for /Rotate 90 or 270 its pixel dimensions are SWAPPED relative to the raw
+// MediaBox, and its content is already oriented the way a viewer displays it. Scaling that
+// already-rotated bitmap into the raw (unrotated) MediaBox rectangle distorted the aspect ratio
+// for 90/270, and leaving /Rotate untouched then made a normal viewer rotate the (already
+// rotated) image a SECOND time on top of that — for redacting any rotated scanned page (common:
+// scanners routinely store a landscape page as a portrait MediaBox + /Rotate 90/270), the
+// redacted output came back squished and/or sideways/upside-down instead of matching the
+// original layout.
+//
+// Fixed with the same visualPageSize()/visualToRawPoint() pattern already verified for
+// addPageNumbers/addWatermark (duplicated here rather than imported from client-pdf.ts, which
+// pulls in a large browser-only module graph that lib/redact-worker.ts's Web Worker bundle must
+// not depend on): visualPageSize() gives the PNG's actual (rotation-aware) pixel-aspect
+// dimensions; visualToRawPoint() maps the desired visual bottom-left corner (0,0) back to raw
+// content-space coordinates; the image is drawn there at that visual size with a compensating
+// `rotateDegrees(pageRotationDeg)`, which cancels the viewer's own clockwise /Rotate the same way
+// it already does for watermark/page-number text. getMediaBox() (not getSize()) is used so a
+// MediaBox that doesn't start at (0,0) is handled too (same class of fix as cropPages, Krok 9).
+function visualPageSize(rawWidth: number, rawHeight: number, rotationDeg: number): { width: number; height: number } {
+  const rot = ((rotationDeg % 360) + 360) % 360;
+  return rot === 90 || rot === 270 ? { width: rawHeight, height: rawWidth } : { width: rawWidth, height: rawHeight };
+}
+
+function visualToRawPoint(rawWidth: number, rawHeight: number, rotationDeg: number, vx: number, vy: number): { x: number; y: number } {
+  const rot = ((rotationDeg % 360) + 360) % 360;
+  if (rot === 90) return { x: rawWidth - vy, y: vx };
+  if (rot === 180) return { x: rawWidth - vx, y: rawHeight - vy };
+  if (rot === 270) return { x: vy, y: rawHeight - vx };
+  return { x: vx, y: vy };
+}
 
 export interface RedactRegion {
   page: number;
@@ -188,13 +227,17 @@ export async function rasterizePage(
 
   const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
   const libPage = pdfDoc.getPage(pageIndex);
-  const { width, height } = libPage.getSize();
+  const { x: x0, y: y0, width: rawWidth, height: rawHeight } = libPage.getMediaBox();
+  const pageRotationDeg = libPage.getRotation().angle;
+  const { width: visW, height: visH } = visualPageSize(rawWidth, rawHeight, pageRotationDeg);
+  const { x: rawX, y: rawY } = visualToRawPoint(rawWidth, rawHeight, pageRotationDeg, 0, 0);
   const image = await pdfDoc.embedPng(png);
   const xObjectKey = libPage.node.newXObject('Image', image.ref);
   const operators: PDFOperator[] = [
     pushGraphicsState(),
-    translate(0, 0),
-    scaleOperator(width, height),
+    translate(x0 + rawX, y0 + rawY),
+    rotateDegrees(pageRotationDeg),
+    scaleOperator(visW, visH),
     drawObject(xObjectKey),
     popGraphicsState(),
   ];
@@ -246,13 +289,17 @@ export async function rasterizePages(
     const png = await canvasToPngBytes(canvas);
 
     const libPage = pdfDoc.getPage(pageIndex);
-    const { width, height } = libPage.getSize();
+    const { x: x0, y: y0, width: rawWidth, height: rawHeight } = libPage.getMediaBox();
+    const pageRotationDeg = libPage.getRotation().angle;
+    const { width: visW, height: visH } = visualPageSize(rawWidth, rawHeight, pageRotationDeg);
+    const { x: rawX, y: rawY } = visualToRawPoint(rawWidth, rawHeight, pageRotationDeg, 0, 0);
     const image = await pdfDoc.embedPng(png);
     const xObjectKey = libPage.node.newXObject('Image', image.ref);
     const operators: PDFOperator[] = [
       pushGraphicsState(),
-      translate(0, 0),
-      scaleOperator(width, height),
+      translate(x0 + rawX, y0 + rawY),
+      rotateDegrees(pageRotationDeg),
+      scaleOperator(visW, visH),
       drawObject(xObjectKey),
       popGraphicsState(),
     ];
