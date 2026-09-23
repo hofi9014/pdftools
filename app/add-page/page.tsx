@@ -35,7 +35,21 @@ export default function AddPage({ locale: forcedLocale }: { locale?: Locale } = 
     try {
       let pos: number | undefined;
       if (position === 'start') pos = 0;
-      else if (position === 'custom') pos = parseInt(customIndex, 10) - 1;
+      else if (position === 'custom') {
+        // FINDING (2026-09-23) — the <input type="number" min="1"> is only a soft HTML hint;
+        // a user can still clear the field or type "0"/negative. parseInt('', 10) - 1 = NaN,
+        // and parseInt('0', 10) - 1 = -1 — both previously failed addBlankPage's
+        // `position >= 0` check and silently fell through to appending the page at the very
+        // end, a materially different, unrequested result, with the tool still reporting
+        // success and no indication the typed value was ignored. Now surfaced as a clear error
+        // instead of a silent, wrong fallback.
+        const parsed = parseInt(customIndex, 10);
+        if (!Number.isInteger(parsed) || parsed < 1) {
+          setError(t('error.generic', locale));
+          return;
+        }
+        pos = parsed - 1;
+      }
       const result = await addBlankPage(file, pos);
       const blob = await downloadPdf(result, 'z-dodana-strona.pdf');
       processedBlobRef.current = blob;
