@@ -1,11 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 
-export default function ThemeToggle() {
+// FINDING (2026-09-23) — same class of bug as MobileMenu/LanguageSelector: this component's
+// button `title` tooltip always used useHydrationSafeLocale(), ignoring the URL-derived locale
+// its parent (Header) already resolved, so the tooltip could show in the wrong language for a
+// first-time visitor whose browser language differs from the URL's locale.
+export default function ThemeToggle({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const [dark, setDark] = useState(false);
-  const locale = useHydrationSafeLocale();
+  const locale = forcedLocale ?? useHydrationSafeLocale();
 
   useEffect(() => {
     const stored = localStorage.getItem('theme');
