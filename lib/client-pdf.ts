@@ -690,6 +690,15 @@ function classifyBlocks(blocks: TextBlock[]): StructuredBlock[] {
   for (const fs of fontSizes) freq.set(fs, (freq.get(fs) || 0) + 1);
   const domFS = [...freq.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || median(fontSizes);
 
+  // FINDING (2026-09-23) — `blocks` arrive here in ASCENDING viewport-y order (top of page
+  // first) since the extractTextBlocks.ts sort-order fix — previously this assumed the OLD,
+  // reversed (descending) order, where a preceding block always had a LARGER y than the one
+  // after it. `gap = prev.y - cur.y` was written for that old convention; kept as-is after only
+  // fixing the sort, every gap here would come out negative (prev.y now SMALLER than cur.y for
+  // two consecutive lines in correct reading order), so `gap > 0 && gap < 200` would exclude
+  // every real line gap, `lineGaps` would stay empty, and medGap would silently fall back to the
+  // hardcoded default (14) for any document — breaking heading/paragraph-break detection instead
+  // of the text order itself. Flipped to `cur.y - prev.y` to match the corrected ordering.
   const lineGaps: number[] = [];
   for (let i = 1; i < blocks.length; i++) {
     // Safe: i ranges over [1, blocks.length-1], so both blocks[i] and blocks[i-1] are always
@@ -697,7 +706,7 @@ function classifyBlocks(blocks: TextBlock[]): StructuredBlock[] {
     const cur = blocks[i]!;
     const prev = blocks[i - 1]!;
     if (cur.page === prev.page) {
-      const gap = prev.y - cur.y;
+      const gap = cur.y - prev.y;
       if (gap > 0 && gap < 200) lineGaps.push(gap);
     }
   }
@@ -718,7 +727,9 @@ function classifyBlocks(blocks: TextBlock[]): StructuredBlock[] {
     if (prev) {
       if (prev.page !== b.page) newParagraph = true;
       else {
-        const gap = prev.y - b.y;
+        // Same fix as the lineGaps loop above: blocks are now in ascending viewport-y order,
+        // so the gap to the PREVIOUS (higher-up) block is `b.y - prev.y`, not `prev.y - b.y`.
+        const gap = b.y - prev.y;
         newParagraph = gap > medGap * 1.6;
       }
     }
@@ -775,7 +786,8 @@ function blocksToXhtmlBody(blocks: StructuredBlock[]): string {
 /*
  * Known limitation: multi-column documents with detected structure
  * (headings/bold) may interleave column text - see Punkt 21 diagnosis.
- * extractTextBlocks sorts Y desc, X asc which produces row-major order
+ * extractTextBlocks sorts Y asc (viewport/screen space, top of page first — see the
+ * 2026-09-23 FINDING at groupIntoLines' sort comparator), X asc, which produces row-major order
  * (L1,R1,L2,R2) instead of column-major (L1,L2,R1,R2).
  * LEGACY path avoids this by using raw pdfjs getTextContent() directly.
  */
