@@ -277,19 +277,44 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
   }, [undoRedo, locale]);
 
   // Text block editing
-  const handleTextBlockClick = useCallback((block: { id: string; page: number }) => {
-    const tb = textBlocks.find(b => b.id === block.id);
-    if (!tb) return;
-    if (block.page !== currentPage) { setCurrentPage(block.page); setTimeout(() => showTextEditPopup(tb), 400); return; }
-    showTextEditPopup(tb);
-  }, [currentPage, textBlocks]);
-
+  // FINDING (2026-09-23) — showTextEditPopup() was declared AFTER handleTextBlockClick() but
+  // called from inside it, with handleTextBlockClick's own useCallback deps listing only
+  // [currentPage, textBlocks] — NOT showTextEditPopup. Both eslint-plugin-react-hooks rules catch
+  // this independently: "accessed before it is declared... prevents the earlier access from
+  // updating when this value changes over time" (the declaration-order issue itself) and the
+  // classic exhaustive-deps "missing dependency: showTextEditPopup". The real-world consequence:
+  // showTextEditPopup is ITS OWN useCallback depending on [canvasWidth, canvasHeight], so a new
+  // instance is created every time those change (canvas render completing asynchronously after
+  // PageRenderer's onRenderComplete fires). But handleTextBlockClick only gets a fresh closure
+  // when currentPage/textBlocks change — which, in the real page-load sequence, happens BEFORE
+  // the canvas finishes rendering (text blocks arrive from a separate extraction effect that
+  // doesn't wait on the canvas). So by the time a user clicks a detected text block,
+  // handleTextBlockClick is very often still the ORIGINAL closure from first render, permanently
+  // pinned to that render's showTextEditPopup — the one built with canvasWidth=canvasHeight=0 —
+  // regardless of what canvasWidth/canvasHeight hold in current state or in the live DOM. That
+  // stale showTextEditPopup divides by its own closed-over canvasHeight=0, producing
+  // `top: Infinity`, which is exactly the deterministic (not merely timing-flaky) bug reported:
+  // the popup mounts with correct block data (originalText/fontSize come from the `block` argument
+  // itself, passed fresh on every call) but an unusable position, because ONLY the position math
+  // depends on the stale canvasWidth/canvasHeight closure — nothing else does.
+  //
+  // Fixed by declaring showTextEditPopup first (so handleTextBlockClick references an
+  // already-initialized binding, not just a hoisted-in-time one) and adding it to
+  // handleTextBlockClick's own dependency array, so a fresh showTextEditPopup (i.e. a real
+  // canvasWidth/canvasHeight change) now also forces a fresh handleTextBlockClick.
   const showTextEditPopup = useCallback((block: TextBlockData) => {
     if (!contRef.current) return;
     const r = contRef.current.getBoundingClientRect();
     setEditPopupPos({ top: r.top + (block.y / canvasHeight) * r.height + 10, left: Math.min(r.left + (block.x / canvasWidth) * r.width, window.innerWidth - 300) });
     setEditingBlock(block);
   }, [canvasWidth, canvasHeight]);
+
+  const handleTextBlockClick = useCallback((block: { id: string; page: number }) => {
+    const tb = textBlocks.find(b => b.id === block.id);
+    if (!tb) return;
+    if (block.page !== currentPage) { setCurrentPage(block.page); setTimeout(() => showTextEditPopup(tb), 400); return; }
+    showTextEditPopup(tb);
+  }, [currentPage, textBlocks, showTextEditPopup]);
 
   const handleTextEditSave = useCallback((edit: TextEdit) => {
     setTextEdits(prev => { const i = prev.findIndex(e => e.id === edit.id); return i >= 0 ? prev.map((e, idx) => idx === i ? edit : e) : [...prev, edit]; });
