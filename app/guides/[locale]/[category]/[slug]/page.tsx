@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { locales, t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
@@ -72,18 +73,14 @@ export default async function ArticlePage({
   const locale = localeFromSegment(localeSegment) as Locale;
   const article = getArticle(category, slug);
 
-  if (!article) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-12 text-center">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-          {t('guides.article_not_found', locale)}
-        </h1>
-        <Link href={`/guides/${getLocaleSegment(locale)}`} className="text-blue-600 hover:underline mt-4 inline-block">
-          {t('guides.all_guides', locale)}
-        </Link>
-      </div>
-    );
-  }
+  // FINDING (2026-09-23) — this previously returned a normal 200 response with a "not found"
+  // MESSAGE for an unrecognized category/slug combination, instead of an actual 404 status.
+  // Since dynamicParams isn't disabled for this route, Next.js renders ANY path matching this
+  // shape (not just the ones generateStaticParams() enumerates), so an arbitrary invalid slug
+  // (e.g. /guides/guides/xyzabc/not-a-real-article) rendered as a "valid-looking", HTTP 200,
+  // indexable page — unbounded soft-404 URL space wasting crawl budget. notFound() gives it the
+  // real status; Next's own not-found boundary renders in place of this component.
+  if (!article) notFound();
 
   const title = (article.title as Record<string, string>)[locale] || article.title.en;
   const steps = article.body.filter((b): b is { type: 'step'; title: import('@/types/guide').LocalizedString; text: import('@/types/guide').LocalizedString } => b.type === 'step');
