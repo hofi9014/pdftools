@@ -196,7 +196,17 @@ export async function extractPages(file: File, pageIndices: number[]): Promise<U
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
   if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const newPdf = await PDFDocument.create();
-  for (const idx of pageIndices) {
+  // FINDING (2026-09-23) — this iterated pageIndices verbatim, with no sort. app/extract-pages
+  // builds this array via PagePreview.tsx's togglePage(), which APPENDS a newly-selected page
+  // to the end of the array (`[...selectedPages, pageIdx]`) — so a user who clicks page 5
+  // before page 2 (e.g. skimming a thumbnail grid visually, or deselecting/reselecting a page,
+  // which moves it to the end) gets an output PDF with pages in click order ([5, 2, ...]) rather
+  // than document order ([2, 5, ...]), with no UI indication that click order determines output
+  // order. deletePages already sorts (descending, for its own removal semantics) — extractPages
+  // never did. Sorted ascending + deduped so "extract pages 2 and 5" always means the same thing
+  // regardless of the order they were clicked in.
+  const sorted = [...new Set(pageIndices)].sort((a, b) => a - b);
+  for (const idx of sorted) {
     if (idx >= 0 && idx < pdf.getPageCount()) {
       const [page] = await newPdf.copyPages(pdf, [idx]);
       newPdf.addPage(page);
