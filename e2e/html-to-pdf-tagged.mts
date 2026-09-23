@@ -147,6 +147,38 @@ const annots = await pjsPage.getAnnotations();
 const linkAnnot = annots.find((a: { subtype: string }) => a.subtype === 'Link');
 check(!!linkAnnot && (linkAnnot as { url?: string }).url?.startsWith('https://example.com'), `real clickable /Link annotation with the href from <a> (got: ${JSON.stringify((linkAnnot as { url?: string } | undefined)?.url)})`);
 
+// --- Image DPI fix (2026-09-23): the embedded 10x10px PNG must be drawn at 10*(72/96)=7.5pt,
+// not 10pt (the old code's 1px=1pt bug) — read the actual drawn size back from the operator
+// list by properly simulating the CTM stack (a plain "nearest preceding save" backward scan,
+// used elsewhere in this suite for simpler cases, breaks here: pdf-lib's drawImage() now wraps
+// the paint op in its own inner save/setGState/restore for the image's default graphics state,
+// with no transform of its own — a backward scan stops at that inner save and misses the real
+// position/scale transforms just outside it). A full forward pass with an explicit CTM stack,
+// exactly mirroring how a real PDF interpreter processes `q`/`cm`/`Q`, gets this right
+// unconditionally regardless of how many (transform-less) nested save/restore pairs pdf-lib
+// wraps around the paint op. ---
+{
+  const opList = await pjsPage.getOperatorList();
+  type Mat = [number, number, number, number, number, number];
+  const IDENTITY: Mat = [1, 0, 0, 1, 0, 0];
+  const mul = (m: Mat, n: Mat): Mat => [
+    m[0] * n[0] + m[1] * n[2], m[0] * n[1] + m[1] * n[3],
+    m[2] * n[0] + m[3] * n[2], m[2] * n[1] + m[3] * n[3],
+    m[4] * n[0] + m[5] * n[2] + n[4], m[4] * n[1] + m[5] * n[3] + n[5],
+  ];
+  let ctm: Mat = IDENTITY;
+  const stack: Mat[] = [];
+  let drawnWidth: number | null = null;
+  for (let i = 0; i < opList.fnArray.length; i++) {
+    const fn = opList.fnArray[i];
+    if (fn === pdfjsLib.OPS.save) stack.push(ctm);
+    else if (fn === pdfjsLib.OPS.restore) ctm = stack.pop() ?? IDENTITY;
+    else if (fn === pdfjsLib.OPS.transform) ctm = mul(opList.argsArray[i] as Mat, ctm);
+    else if (fn === pdfjsLib.OPS.paintImageXObject) drawnWidth = Math.sqrt(ctm[0] * ctm[0] + ctm[1] * ctm[1]);
+  }
+  check(drawnWidth !== null && Math.abs(drawnWidth - 7.5) < 0.01, `the 10px-wide image is drawn at 7.5pt (96 DPI), not 10pt — the pre-fix 1px=1pt bug (got: ${drawnWidth})`);
+}
+
 // --- Multi-page StructParents/ParentTree correctness — through the same real UI/browser path
 // (Node has no built-in DOMParser, so this goes through the live page like everything above,
 // rather than importing htmlToTaggedPdf directly and hitting a ReferenceError). ---

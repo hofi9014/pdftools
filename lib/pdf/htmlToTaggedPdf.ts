@@ -498,16 +498,31 @@ function renderTable(state: RenderState, rows: { header: boolean; cells: InlineR
   return [tableRef];
 }
 
+// FINDING (2026-09-23) — pdf-lib's embedPng/embedJpg only ever expose an image's raw PIXEL
+// dimensions (no DPI/density is parsed or exposed anywhere in pdf-lib's embedders), but this
+// function's own `maxWidth`/drawImage() work in PDF POINTS (1/72in) — the same unit-mismatch
+// class already found and fixed for imagesToPdf (jpg-to-pdf) in lib/client-pdf.ts. The old code
+// only rescaled an image that already EXCEEDED the page's content width in raw pixel count; any
+// narrower image (the common case — a logo, an inline diagram) got scale=1, i.e. 1px treated as
+// 1pt, rendering roughly 33% larger than an actual browser would display the same <img> (which
+// assumes 96 DPI for a density-less raster image, CSS's "1px = 1/96in"), and any width/height
+// HTML attribute on the source <img> was ignored entirely regardless of image size. Converting
+// px to pt via the same 96 DPI assumption first — then still capping to content width if the
+// (now DPI-corrected) natural size is still too wide — fixes both.
+const IMAGE_PX_TO_PT = 72 / 96;
+
 async function renderImage(state: RenderState, dataUrl: string, alt: string, parentRef: PDFRef): Promise<PDFRef[]> {
   const match = /^data:(image\/(?:png|jpeg|jpg));base64,(.+)$/i.exec(dataUrl);
   if (!match) return [];
   const mime = match[1]!.toLowerCase();
   const bytes = Uint8Array.from(atob(match[2]!), (c) => c.charCodeAt(0));
   const image = mime.includes('png') ? await state.pdf.embedPng(bytes) : await state.pdf.embedJpg(bytes);
+  const naturalWidth = image.width * IMAGE_PX_TO_PT;
+  const naturalHeight = image.height * IMAGE_PX_TO_PT;
   const maxWidth = CONTENT_WIDTH;
-  const scale = Math.min(1, maxWidth / image.width);
-  const w = image.width * scale;
-  const h = image.height * scale;
+  const scale = Math.min(1, maxWidth / naturalWidth);
+  const w = naturalWidth * scale;
+  const h = naturalHeight * scale;
   ensureSpace(state, h);
   const { ref, dict } = beginMarkedContent(state, 'Figure', parentRef);
   // PDF/UA-style validators flag a Figure with no /Alt as an error, so an image the author gave
