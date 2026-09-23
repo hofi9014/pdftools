@@ -115,6 +115,34 @@ interface PreparedPdf {
   contentsHexEnd: number; // offset right after the last hex digit (position of '>')
 }
 
+// Returns `baseName` unchanged if no existing AcroForm field already carries it, otherwise a
+// disambiguated variant that isn't taken — so re-signing a PDF that already has a field named
+// "Signature1" (from a previous pass through this same tool, or from any other source) gets
+// "Signature2" instead of a second, ambiguous sibling field with the identical name. If
+// `baseName` itself already ends in digits (as the tool's own default "Signature1" does), that
+// trailing number is treated as the starting counter and incremented ("Signature1" ->
+// "Signature2" -> "Signature3", ...) rather than blindly appended ("Signature1" + "2" would read
+// as "Signature12", which is confusing and not what a human disambiguating "Signature1" means).
+// Otherwise a fresh "2", "3", ... suffix is appended to the whole name.
+function uniqueSignatureFieldName(catalog: PDFDict, baseName: string): string {
+  const existingNames = new Set<string>();
+  const acroForm = catalog.lookupMaybe(PDFName.of('AcroForm'), PDFDict);
+  const fields = acroForm?.lookupMaybe(PDFName.of('Fields'), PDFArray);
+  if (fields) {
+    for (let i = 0; i < fields.size(); i++) {
+      const fieldDict = catalog.context.lookupMaybe(fields.get(i), PDFDict);
+      const t = fieldDict?.lookupMaybe(PDFName.of('T'), PDFString) ?? fieldDict?.lookupMaybe(PDFName.of('T'), PDFHexString);
+      if (t) existingNames.add(t.decodeText());
+    }
+  }
+  if (!existingNames.has(baseName)) return baseName;
+  const trailingDigits = baseName.match(/^(.*?)(\d+)$/);
+  const prefix = trailingDigits ? trailingDigits[1]! : baseName;
+  let n = trailingDigits ? Number(trailingDigits[2]) + 1 : 2;
+  while (existingNames.has(`${prefix}${n}`)) n++;
+  return `${prefix}${n}`;
+}
+
 async function buildPlaceholderPdf(pdfBytes: Uint8Array, opts: PadesSignOptions, signingDate: Date): Promise<PreparedPdf> {
   const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true, updateMetadata: false });
   if (pdfDoc.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
@@ -141,7 +169,15 @@ async function buildPlaceholderPdf(pdfBytes: Uint8Array, opts: PadesSignOptions,
   if (opts.contactInfo) sigDict.set(PDFName.of('ContactInfo'), PDFString.of(opts.contactInfo));
   const sigRef = context.register(sigDict);
 
-  const fieldName = opts.fieldName || 'Signature1';
+  // FINDING (2026-09-23) — every signature created by this tool's UI (PadesSignForm.tsx never
+  // passes fieldName) used the literal default 'Signature1' unconditionally, with NO check for
+  // an existing field of the same name. Re-signing a PDF that was already signed once by this
+  // same tool — a realistic multi-signer scenario, or simply running this tool twice on the
+  // same output — unconditionally pushed a SECOND top-level field also named 'Signature1' into
+  // AcroForm/Fields, producing an AcroForm with two sibling fields sharing an identical fully
+  // qualified name, which violates the field-name-uniqueness expectation in ISO 32000 and makes
+  // by-name field lookup in the resulting PDF ambiguous for any consuming tool/validator.
+  const fieldName = uniqueSignatureFieldName(pdfDoc.catalog, opts.fieldName || 'Signature1');
   const firstPage = pdfDoc.getPage(0);
   const widgetDict = context.obj({
     FT: 'Sig',
