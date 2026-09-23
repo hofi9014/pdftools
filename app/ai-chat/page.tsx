@@ -54,7 +54,7 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
 
   const handleAsk = async () => {
     if (!question.trim() || !extractedText) return;
-    setAsking(true);
+    setAsking(true); setError('');
     const q = question.trim();
     setQuestion('');
     setMessages(prev => [...prev, { role: 'user', content: q }]);
