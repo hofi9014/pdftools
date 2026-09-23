@@ -90,7 +90,8 @@
     "test:metadata-xmp-multivalue": "npx --yes tsx tests/metadata-xmp-multivalue.mts",
     "test:sign-pdf-image-offset": "npx --yes tsx tests/sign-pdf-image-offset.mts",
     "test:edit-pdf-text-font-family": "npx --yes tsx tests/edit-pdf-text-font-family.mts",
-    "test:redact-worker-timeout": "npx --yes tsx tests/redact-worker-timeout.mts"
+    "test:redact-worker-timeout": "npx --yes tsx tests/redact-worker-timeout.mts",
+    "test:extract-pages-order": "npx --yes tsx tests/extract-pages-order.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

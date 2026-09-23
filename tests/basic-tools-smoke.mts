@@ -114,10 +114,18 @@ console.log('\n--- deletePages ---');
 
 console.log('\n--- extractPages ---');
 {
+  // FINDING (2026-09-23) — updated from the pre-fix expectation. extractPages() now sorts
+  // indices into DOCUMENT order (+ dedupes) before extracting, rather than preserving whatever
+  // order the caller happened to pass — see tests/extract-pages-order.mts for the full
+  // reasoning: app/extract-pages builds this array via UI click order (PagePreview.tsx's
+  // togglePage() appends to the end), which is not a deliberate reordering request from the
+  // user (that's what the separate reorderPages tool is for) — it's an accident of click
+  // sequence, so "extract pages 1 and 3" must always mean the same thing regardless of which
+  // one was clicked first.
   const file = await makePdf([0, 1, 2, 3]);
   const result = await extractPages(file, [3, 1]);
   const sizes = await pageSizes(result);
-  check(JSON.stringify(sizes) === JSON.stringify([[130, 180], [110, 160]]), `extracting [3,1] preserves the REQUESTED order, not original order — got ${JSON.stringify(sizes)}`);
+  check(JSON.stringify(sizes) === JSON.stringify([[110, 160], [130, 180]]), `extracting [3,1] preserves DOCUMENT order, not click order — got ${JSON.stringify(sizes)}`);
 }
 
 console.log('\n--- reorderPages ---');
