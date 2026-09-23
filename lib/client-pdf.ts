@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFRawStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation, type PDFFont } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFHexString, PDFRawStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation, type PDFFont } from 'pdf-lib';
 import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePages, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
@@ -300,7 +300,30 @@ export async function editMetadata(file: File, meta: { title?: string; author?: 
   if (meta.title !== undefined) pdf.setTitle(meta.title);
   if (meta.author !== undefined) pdf.setAuthor(meta.author);
   if (meta.subject !== undefined) pdf.setSubject(meta.subject);
-  if (meta.keywords !== undefined) pdf.setKeywords((meta.keywords || '').split(',').map(s => s.trim()).filter(Boolean));
+  // FINDING (2026-09-23) — pdf-lib's setKeywords(string[]) always joins the array with a
+  // SPACE (confirmed directly in its source: `keywords.join(' ')`), with no way to override
+  // that separator. Splitting the user's comma-separated input into an array first, only to
+  // have pdf-lib silently re-join it with spaces, destroyed the comma delimiters: typing
+  // "Umowa najmu, Warszawa, 2026" saved as literal /Keywords "Umowa najmu Warszawa 2026" — and
+  // since getKeywords() returns that raw string verbatim with no re-parsing, re-opening the
+  // same file in this tool then displayed "Umowa najmu Warszawa 2026" with no way to tell where
+  // one original keyword ends and the next begins (worse for multi-word keywords like "Umowa
+  // najmu", now indistinguishable from two separate ones). Every re-edit compounded the loss.
+  // The sibling XMP pdf:Keywords field (a few lines below, and in buildNewXmp) already writes
+  // meta.keywords directly, unsplit — this brought the classic Info-dict copy in line with it
+  // by writing the Info dict entry directly instead of going through pdf-lib's array API.
+  if (meta.keywords !== undefined) {
+    // pdf-lib's getInfoDict() does exactly this (create-if-missing) but is marked `private` in
+    // its own type declarations despite being an ordinary, unprefixed prototype method at
+    // runtime — reimplemented here against pdf.context, which IS public, rather than casting
+    // past the type system to call the "private" method directly.
+    const existingInfo = pdf.context.lookup(pdf.context.trailerInfo.Info);
+    const infoDict: PDFDict = existingInfo instanceof PDFDict ? existingInfo : pdf.context.obj({});
+    if (!(existingInfo instanceof PDFDict)) {
+      pdf.context.trailerInfo.Info = pdf.context.register(infoDict);
+    }
+    infoDict.set(PDFName.of('Keywords'), PDFHexString.fromText(meta.keywords));
+  }
 
   let xmpXml = await readExistingXmp(pdf);
   if (xmpXml) {
