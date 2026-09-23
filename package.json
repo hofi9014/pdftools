@@ -102,7 +102,8 @@
     "test:ai-translate-language-allowlist": "npx --yes tsx tests/ai-translate-language-allowlist.mts",
     "test:redact-raster-rotation": "npx --yes tsx tests/redact-raster-rotation.mts",
     "test:ocr-encrypted-pdf-guard": "npx --yes tsx tests/ocr-encrypted-pdf-guard.mts",
-    "test:header-locale-propagation": "npx --yes tsx tests/header-locale-propagation.mts"
+    "test:header-locale-propagation": "npx --yes tsx tests/header-locale-propagation.mts",
+    "test:guide-content-accuracy": "npx --yes tsx tests/guide-content-accuracy.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
