@@ -107,7 +107,8 @@
     "test:layout-shell-guides-locale": "npx --yes tsx tests/layout-shell-guides-locale.mts",
     "test:e2e-guides-404": "npx --yes tsx e2e/guides-404.mts",
     "test:pdf-editor-text-block-popup-stale-closure": "npx --yes tsx tests/pdf-editor-text-block-popup-stale-closure.mts",
-    "test:pdf-to-epub-line-order": "npx --yes tsx tests/pdf-to-epub-line-order.mts"
+    "test:pdf-to-epub-line-order": "npx --yes tsx tests/pdf-to-epub-line-order.mts",
+    "test:pdf-to-excel-bold-italic": "npx --yes tsx tests/pdf-to-excel-bold-italic.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
