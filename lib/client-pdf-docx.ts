@@ -3,6 +3,7 @@
 
 import { PDFDocument, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
 import type JSZip from 'jszip';
+import { applyConditionalFormatting } from './xlsx-conditional-formatting';
 
 // ============================================================
 // IR TYPES (Phase 1a — without TableBlock)
@@ -118,6 +119,15 @@ export interface IRConditionalFormattingRule {
   operator?: string;
   formula?: string[];
   dxfId?: number;
+  /** Resolved differential format (styles.xml <dxfs>[dxfId]); rules without one can't change appearance. */
+  dxf?: IRSpreadsheetRunFormat;
+  priority?: number;
+  text?: string;
+  rank?: number;
+  bottom?: boolean;
+  percent?: boolean;
+  aboveAverage?: boolean;
+  stopIfTrue?: boolean;
 }
 
 export interface IRSheet {
@@ -2261,6 +2271,38 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
     }
   }
 
+  const dxfList: IRSpreadsheetRunFormat[] = [];
+  const dxfsEl = styleDoc.getElementsByTagNameNS(XLSX_NS, 'dxfs');
+  if (dxfsEl.length > 0) {
+    const colorOf = (c: Element): string | undefined => {
+      const rgbAttr = xlsxGetAttr(c, 'rgb');
+      if (rgbAttr) return rgbAttr.slice(-6).toUpperCase();
+      const th = xlsxGetAttr(c, 'theme');
+      return th !== null ? xlsxThemeColor(themeEl, parseInt(th, 10), parseFloat(xlsxGetAttr(c, 'tint') || '0')) : undefined;
+    };
+    const dxfEls = dxfsEl[0]!.getElementsByTagNameNS(XLSX_NS, 'dxf');
+    for (let i = 0; i < dxfEls.length; i++) {
+      const dx = dxfEls[i] as Element;
+      const out: IRSpreadsheetRunFormat = {};
+      const font = dx.getElementsByTagNameNS(XLSX_NS, 'font')[0];
+      if (font) {
+        const b = font.getElementsByTagNameNS(XLSX_NS, 'b')[0];
+        const it = font.getElementsByTagNameNS(XLSX_NS, 'i')[0];
+        if (b && xlsxGetAttr(b, 'val') !== '0') out.bold = true;
+        if (it && xlsxGetAttr(it, 'val') !== '0') out.italic = true;
+        const col = font.getElementsByTagNameNS(XLSX_NS, 'color')[0];
+        if (col) out.colorHex = colorOf(col as Element);
+      }
+      const pf = dx.getElementsByTagNameNS(XLSX_NS, 'patternFill')[0];
+      if (pf) {
+        // dxf solid fills store the visible colour in bgColor (fgColor is the pattern colour).
+        const bg = pf.getElementsByTagNameNS(XLSX_NS, 'bgColor')[0] ?? pf.getElementsByTagNameNS(XLSX_NS, 'fgColor')[0];
+        if (bg) out.fillHex = colorOf(bg as Element);
+      }
+      dxfList.push(out);
+    }
+  }
+
   const workbookXml = await zip.file('xl/workbook.xml')?.async('string') || '';
   const workbookDoc = new DOMParser().parseFromString(workbookXml, 'application/xml');
   const workbookPr = workbookDoc.getElementsByTagNameNS(XLSX_NS, 'workbookPr');
@@ -2368,6 +2410,14 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
           operator,
           formula: formula.length > 0 ? formula : undefined,
           dxfId: dxfIdStr !== '' ? parseInt(dxfIdStr, 10) : undefined,
+          dxf: dxfIdStr !== '' ? dxfList[parseInt(dxfIdStr, 10)] : undefined,
+          priority: xlsxGetAttr(rlEl, 'priority') ? parseInt(xlsxGetAttr(rlEl, 'priority')!, 10) : undefined,
+          text: xlsxGetAttr(rlEl, 'text') || undefined,
+          rank: xlsxGetAttr(rlEl, 'rank') ? parseInt(xlsxGetAttr(rlEl, 'rank')!, 10) : undefined,
+          bottom: xlsxGetAttr(rlEl, 'bottom') === '1' || undefined,
+          percent: xlsxGetAttr(rlEl, 'percent') === '1' || undefined,
+          aboveAverage: xlsxGetAttr(rlEl, 'aboveAverage') === '0' ? false : undefined,
+          stopIfTrue: xlsxGetAttr(rlEl, 'stopIfTrue') === '1' || undefined,
         });
       }
     }
@@ -3016,6 +3066,9 @@ export function drawSpreadsheetCell(
   const dl = (x1: number, y1: number, x2: number, y2: number) =>
     page.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness: glw, color: glc });
 
+  if (cell.fmt?.fillHex) {
+    page.drawRectangle({ x, y: y - h, width: w, height: h, color: hexToColor(cell.fmt.fillHex) });
+  }
   dl(x, y, x + w, y);           // top
   dl(x, y - h, x + w, y - h);   // bottom
   dl(x, y, x, y - h);           // left
@@ -3040,7 +3093,7 @@ export function drawSpreadsheetCell(
     if (clipText && textY < bottomLimit) break;
     const lw = font.widthOfTextAtSize(line, fontSize);
     const tx = align === 'right' ? x + w - pad - lw : x + pad;
-    page.drawText(line, { x: tx, y: textY, size: fontSize, font, color: rgb(0, 0, 0) });
+    page.drawText(line, { x: tx, y: textY, size: fontSize, font, color: cell.fmt?.colorHex ? hexToColor(cell.fmt.colorHex) : rgb(0, 0, 0) });
     textY -= lineH;
   }
 }
@@ -3103,7 +3156,8 @@ export async function renderSpreadsheetIRToPdf(
   const drawOpts: DrawSpreadsheetCellOpts = { fontSize: FONT_SIZE, lineH: LINE_H, pad: PAD };
   const black = rgb(0, 0, 0);
 
-  for (const sheet of spreadsheet.sheets) {
+  for (const srcSheet of spreadsheet.sheets) {
+    const sheet = applyConditionalFormatting(srcSheet);
     const nRows = sheet.cells.length;
     const nCols = sheet.cells[0]?.length ?? 0;
     if (nRows === 0 || nCols === 0) continue;
