@@ -418,7 +418,7 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
               <span className="text-sm font-medium">{t('edit.page_indicator', locale, { current: currentPage, total: pageCount })}</span>
               <button onClick={() => setCurrentPage(p => Math.min(pageCount, p + 1))} disabled={currentPage >= pageCount}
                 className="px-2.5 py-1 rounded-lg text-sm bg-[var(--coffee-surface-solid)] border border-[var(--coffee-border)] disabled:opacity-30 hover:bg-[var(--coffee-surface-hover)]">→</button>
-              <span className="text-[10px] text-[var(--coffee-text-tertiary)] ml-2">{t('edit.element_count', locale, { n: elements.length, e: textEdits.length })}</span>
+              <span className="text-[10px] text-[var(--coffee-text-tertiary)] ms-2">{t('edit.element_count', locale, { n: elements.length, e: textEdits.length })}</span>
             </div>
           </div>
 

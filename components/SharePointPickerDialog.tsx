@@ -590,7 +590,7 @@ export default function SharePointPickerDialog({
             <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm rounded-lg px-4 py-3">
               {error}
               {(error.includes('blocked') || error.includes('cancelled')) && (
-                <button onClick={startOAuth} className="ml-2 underline font-medium">Try again</button>
+                <button onClick={startOAuth} className="ms-2 underline font-medium">Try again</button>
               )}
             </div>
           )}
@@ -599,7 +599,7 @@ export default function SharePointPickerDialog({
           {step === 'auth' && !error && (
             <div className="flex items-center justify-center py-8">
               <span className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-              <span className="ml-3 text-sm text-gray-600 dark:text-gray-400">Signing in to Microsoft...</span>
+              <span className="ms-3 text-sm text-gray-600 dark:text-gray-400">Signing in to Microsoft...</span>
             </div>
           )}
 
@@ -624,7 +624,7 @@ export default function SharePointPickerDialog({
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); removeRecentSite(site.url); setRecentSites(loadRecentSites()); }}
-                        className="text-blue-400 hover:text-red-500 transition flex-shrink-0 ml-1 opacity-0 group-hover:opacity-100"
+                        className="text-blue-400 hover:text-red-500 transition flex-shrink-0 ms-1 opacity-0 group-hover:opacity-100"
                         title="Usuń"
                       >
                         &times;
@@ -637,7 +637,7 @@ export default function SharePointPickerDialog({
               {/* Loading state (auto-search) */}
               {searching && sites.length === 0 && (
                 <div className="flex items-center justify-center py-8 text-sm text-gray-500">
-                  <span className="inline-block w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mr-2" />
+                  <span className="inline-block w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin me-2" />
                   Wyszukiwanie dostępnych witryn...
                 </div>
               )}
@@ -662,7 +662,7 @@ export default function SharePointPickerDialog({
                       <button
                         key={site.id}
                         onClick={() => handleSelectSite(site)}
-                        className="w-full text-left px-4 py-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4 transition shadow-sm hover:shadow"
+                        className="w-full text-start px-4 py-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4 transition shadow-sm hover:shadow"
                       >
                         <span className="text-2xl flex-shrink-0">🏢</span>
                         <div className="flex-1 min-w-0">
@@ -762,7 +762,7 @@ export default function SharePointPickerDialog({
               </div>
               {loadingLibraries ? (
                 <div className="flex items-center justify-center py-8 text-sm text-gray-500">
-                  <span className="inline-block w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mr-2" />
+                  <span className="inline-block w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin me-2" />
                   Loading libraries...
                 </div>
               ) : libraries.length === 0 ? (
@@ -775,7 +775,7 @@ export default function SharePointPickerDialog({
                     <button
                       key={drive.id}
                       onClick={() => handleSelectLibrary(drive)}
-                      className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-700 flex items-center gap-3 transition"
+                      className="w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-700 flex items-center gap-3 transition"
                     >
                       <span className="text-lg">📂</span>
                       <div className="flex-1 min-w-0">
@@ -809,7 +809,7 @@ export default function SharePointPickerDialog({
               )}
               {loadingFiles ? (
                 <div className="flex items-center justify-center py-8 text-sm text-gray-500">
-                  <span className="inline-block w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mr-2" />
+                  <span className="inline-block w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin me-2" />
                   Loading files...
                 </div>
               ) : files.length === 0 ? (

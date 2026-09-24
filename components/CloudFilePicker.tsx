@@ -415,39 +415,39 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
         )}
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 min-w-[200px] overflow-hidden">
+        <div className="absolute top-full start-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 min-w-[200px] overflow-hidden">
           {hasGoogle && (
-            <button onClick={handleGoogleDrive} className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+            <button onClick={handleGoogleDrive} className="w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
               <span className="text-lg">📁</span> Google Drive
             </button>
           )}
           {hasDropbox && (
-            <button onClick={handleDropbox} className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+            <button onClick={handleDropbox} className="w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
               <span className="text-lg">📦</span> Dropbox
             </button>
           )}
           {hasOneDrive && (
-            <button onClick={handleOneDrive} className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+            <button onClick={handleOneDrive} className="w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
               <span className="text-lg">☁️</span> OneDrive
             </button>
           )}
           {hasSharePoint && (
-            <button onClick={handleSharePoint} className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+            <button onClick={handleSharePoint} className="w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
               <span className="text-lg">🏢</span> SharePoint
             </button>
           )}
-          <button onClick={handleLocal} className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3">
+          <button onClick={handleLocal} className="w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3">
             <span className="text-lg">💻</span> {locale === 'pl' ? 'To urządzenie' : 'This device'}
           </button>
         </div>
       )}
       {offlineMsg && (
-        <div className="absolute top-full left-0 mt-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2 shadow-lg z-50 whitespace-nowrap">
+        <div className="absolute top-full start-0 mt-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2 shadow-lg z-50 whitespace-nowrap">
           ⚠️ {t('cloud.offline', locale)}
         </div>
       )}
       {errorMsg && (
-        <div className="absolute top-full left-0 mt-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2 shadow-lg z-50 max-w-xs">
+        <div className="absolute top-full start-0 mt-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2 shadow-lg z-50 max-w-xs">
           ⚠️ {errorMsg}
         </div>
       )}

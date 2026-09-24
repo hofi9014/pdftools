@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { extractTextFromPDF } from '@/lib/client-pdf';
 import { summarizeText } from '@/lib/client-ai';
 import { useLocale } from '@/lib/locale-context';
-import { t, type Locale } from '@/lib/i18n';
+import { t, isRtlLocale, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
 
@@ -81,7 +81,7 @@ export default function AiSummary({ locale: forcedLocale }: { locale?: Locale } 
 
       <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
         <h2 className="font-semibold tool-heading mb-2">{t('section.how_it_works', locale)}</h2>
-        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc pl-5">
+        <ul className={`text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc ${isRtlLocale(locale) ? 'pr-5' : 'pl-5'}`}>
           <li>{t('page.aisummary.howto_1', locale)}</li>
           <li>{t('page.aisummary.howto_2', locale)}</li>
           <li>{t('page.aisummary.howto_3', locale)}</li>

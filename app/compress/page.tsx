@@ -148,7 +148,7 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
                     <p className="text-xs text-gray-400 dark:text-gray-500">{formatSize(file.size)}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+                <div className="flex items-center gap-3 flex-shrink-0 ms-2">
                   {fileResult && (
                     <span className="text-xs text-green-600 dark:text-green-400 font-medium">
                       {savingsRatio < 0.01

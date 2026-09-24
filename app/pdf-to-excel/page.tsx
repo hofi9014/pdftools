@@ -4,7 +4,7 @@ import JSZip from 'jszip';
 import { pdfToIRSpreadsheet } from '@/lib/client-pdf';
 import { renderIRSpreadsheetToXlsx } from '@/lib/client-pdf-docx';
 import { useLocale } from '@/lib/locale-context';
-import { t, type Locale } from '@/lib/i18n';
+import { t, isRtlLocale, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
@@ -155,7 +155,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6 mb-6">
         <h2 className="font-bold tool-heading mb-2">{t('section.how_it_works', locale)}</h2>
-        <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1 list-disc pl-5">
+        <ul className={`text-sm text-blue-700 dark:text-blue-300 space-y-1 list-disc ${isRtlLocale(locale) ? 'pr-5' : 'pl-5'}`}>
           <li>{t('page.excel.howto_1', locale)}</li>
           <li>{t('page.excel.howto_2', locale)}</li>
           <li>{t('page.excel.howto_3', locale)}</li>
