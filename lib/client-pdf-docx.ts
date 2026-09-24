@@ -1092,10 +1092,17 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
             children: irRunsToTextRunsRotated(TextRun, li.runs, li.runs[0]?.rotation ?? 0),
           }));
         } else {
+          // A numbered marker ("1.", "2)") is written as literal text with a hanging indent — a
+          // Word bullet replaced every number with a dot and lost the numbering.
+          const numbered = /^\d+[.)]$/.test(li.marker);
           push(new Paragraph({
             ...layoutOpts(),
-            bullet: { level },
-            children: irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink),
+            ...(numbered
+              ? { indent: { left: twips(18 * (level + 1) + 18), hanging: twips(18) } }
+              : { bullet: { level } }),
+            children: numbered
+              ? [new TextRun({ text: li.marker + '\t' }), ...irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink)]
+              : irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink),
           }));
         }
       } else {
