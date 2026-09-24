@@ -3123,6 +3123,24 @@ export interface RenderSpreadsheetOpts {
   pad?: number;         // default 3
 }
 
+/**
+ * Fallback for sheets with no <pane state="frozen">: repeat row 0 on continuation pages only when
+ * it plausibly is a column-header row. A title row ("Załącznik nr 3 do...": one lone/merged cell,
+ * or mostly empty) repeated on every page is noise, and the real header sits further down, so
+ * repeat nothing rather than the wrong row. Header-like = at least 2 non-empty cells covering at
+ * least half of the columns, none of them numeric.
+ */
+export function inferHeaderRowCount(sheet: IRSheet): number {
+  const row = sheet.cells[0];
+  const nCols = sheet.cells[0]?.length ?? 0;
+  if (!row || nCols === 0) return 0;
+  const filled = row.filter((c) => c && c.display.trim() !== '');
+  if (nCols > 1 && filled.length < 2) return 0;
+  if (filled.length * 2 < nCols) return 0;
+  if (filled.some((c) => c!.type === 'number')) return 0;
+  return 1;
+}
+
 export async function renderSpreadsheetIRToPdf(
   spreadsheet: IRSpreadsheet,
   opts: RenderSpreadsheetOpts = {},
@@ -3166,7 +3184,7 @@ export async function renderSpreadsheetIRToPdf(
     const rowHt = spreadsheetRowHeightsPt(sheet, colPt, {
       fontSize: FONT_SIZE, lineH: LINE_H, pad: PAD, measure,
     });
-    const H = sheet.frozenRows === undefined ? 1 : Math.min(Math.max(sheet.frozenRows, 0), nRows);
+    const H = sheet.frozenRows === undefined ? Math.min(inferHeaderRowCount(sheet), nRows) : Math.min(Math.max(sheet.frozenRows, 0), nRows);
     const G = sheet.frozenCols === undefined ? 0 : Math.min(Math.max(sheet.frozenCols, 0), nCols);
     const headerW = colPt.slice(0, G).reduce((a, b) => a + b, 0);
     const headerBlockPt = rowHt.slice(0, H).reduce((a, b) => a + b, 0);
