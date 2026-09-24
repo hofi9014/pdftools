@@ -115,7 +115,8 @@
     "test:unlock-aes128": "npx --yes tsx tests/unlock-aes128.mts",
     "test:e2e-unlock-aes128-ui": "npx --yes tsx e2e/unlock-aes128-ui.mts",
     "test:edit-layer-drag": "npx --yes tsx tests/edit-layer-drag.mts",
-    "test:e2e-edit-pdf-drag": "npx --yes tsx e2e/edit-pdf-drag.mts"
+    "test:e2e-edit-pdf-drag": "npx --yes tsx e2e/edit-pdf-drag.mts",
+    "test:sitemap-canonical-urls": "npx --yes tsx tests/sitemap-canonical-urls.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
