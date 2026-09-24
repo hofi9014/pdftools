@@ -11,6 +11,7 @@ import ThumbnailPanel from './ThumbnailPanel';
 import PageRenderer, { type PageRendererHandle } from './PageRenderer';
 import EditLayer, { type EditorElement } from './EditLayer';
 import Toolbar from './Toolbar';
+import { shortcutAction } from './dragMath';
 import TextEditPopup from './TextEditPopup';
 
 interface TextBlockData {
@@ -123,8 +124,10 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
     undoRedo.reset([]);
   }, [undoRedo]);
 
-  const handleElementsChange = useCallback((newElements: EditorElement[]) => {
-    undoRedo.set(newElements);
+  const handleElementsChange = useCallback((newElements: EditorElement[], phase?: 'begin' | 'update') => {
+    // A drag emits one 'begin' then many 'update's: only the first is an undo step.
+    if (phase === 'update') undoRedo.setWithoutHistory(newElements);
+    else undoRedo.set(newElements);
   }, [undoRedo]);
 
   const handleSelect = useCallback((id: number | null) => {
@@ -367,21 +370,12 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      const c = e.ctrlKey || e.metaKey;
-      switch (e.key.toLowerCase()) {
-        case 'z': if (c && e.shiftKey) { e.preventDefault(); undoRedo.redo(); } else if (c) { e.preventDefault(); undoRedo.undo(); } break;
-        case 'y': if (c) { e.preventDefault(); undoRedo.redo(); } break;
-        case 'delete': case 'backspace': e.preventDefault(); handleDeleteSelected(); break;
-        case 'v': setActiveTool('select'); break;
-        case 't': setActiveTool('text'); break;
-        case 'r': setActiveTool('rect'); break;
-        case 'c': setActiveTool('circle'); break;
-        case 'l': setActiveTool('line'); break;
-        case 'a': setActiveTool('arrow'); break;
-        case 'f': setActiveTool('freehand'); break;
-        case 'h': setActiveTool('highlight'); break;
-      }
+      const action = shortcutAction(e);
+      if (!action) return;
+      if (action.kind === 'undo') { e.preventDefault(); undoRedo.undo(); }
+      else if (action.kind === 'redo') { e.preventDefault(); undoRedo.redo(); }
+      else if (action.kind === 'delete') { e.preventDefault(); handleDeleteSelected(); }
+      else setActiveTool(action.tool);
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);

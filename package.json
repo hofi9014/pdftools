@@ -113,7 +113,9 @@
     "test:spreadsheet-header-fallback": "npx --yes tsx tests/spreadsheet-header-fallback.mts",
     "test:superscript-reading-order": "npx --yes tsx tests/superscript-reading-order.mts",
     "test:unlock-aes128": "npx --yes tsx tests/unlock-aes128.mts",
-    "test:e2e-unlock-aes128-ui": "npx --yes tsx e2e/unlock-aes128-ui.mts"
+    "test:e2e-unlock-aes128-ui": "npx --yes tsx e2e/unlock-aes128-ui.mts",
+    "test:edit-layer-drag": "npx --yes tsx tests/edit-layer-drag.mts",
+    "test:e2e-edit-pdf-drag": "npx --yes tsx e2e/edit-pdf-drag.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
