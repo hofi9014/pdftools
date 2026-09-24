@@ -191,3 +191,32 @@ export function findBox(block: TextBlock, boxes: IRBoxRect[] | undefined): IRBox
   }
   return best;
 }
+
+/**
+ * Some exporters (LibreOffice Impress) separate paragraphs with a blank line drawn as a lone " "
+ * run on a line of its own; extraction keeps it inside the block, so Word got one endless
+ * paragraph. Splits the runs at such blank lines (a blank run that sits on its own line, with text
+ * before and after it); a space that is merely between two words on one line is not a separator.
+ */
+export function splitAtBlankLines<T extends { text: string; fontSize: number; position: { y: number } }>(runs: T[]): T[][] {
+  const groups: T[][] = [];
+  let current: T[] = [];
+  for (let i = 0; i < runs.length; i++) {
+    const r = runs[i]!;
+    if (r.text.trim() === '') {
+      if (!current.some((c) => c.text.trim() !== '')) continue; // leading blank line of a paragraph
+      const prev = runs[i - 1];
+      const next = runs[i + 1];
+      const own = (o: T | undefined) => !o || Math.abs(o.position.y - r.position.y) > 0.6 * Math.max(o.fontSize, r.fontSize);
+      if (prev && next && own(prev) && own(next)) {
+        if (current.some((c) => c.text.trim() !== '')) groups.push(current);
+        current = [];
+        continue;
+      }
+    }
+    current.push(r);
+  }
+  while (current.length > 0 && current[current.length - 1]!.text.trim() === '') current.pop(); // trailing blank line
+  if (current.length > 0) groups.push(current);
+  return groups.length > 0 ? groups : [runs];
+}

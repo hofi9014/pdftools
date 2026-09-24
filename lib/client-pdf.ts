@@ -2037,6 +2037,10 @@ export function buildPageScaffold(
     // Scan forward within the current BT…ET block for showText and moveText
     let accDx = 0; // accumulated moveText delta in text space
     let accDy = 0;
+    // Advance of the text already shown since the last moveText (text space). Td is relative to the
+    // start of the line, so it resets there; a second showText on the same line (colour/font change)
+    // starts where the previous one ended, not at the line origin.
+    let adv = 0;
 
     for (let j = i + 1; j < ops.length; j++) {
       // Safe: j is always in [i+1, ops.length-1] by the loop bounds.
@@ -2047,6 +2051,7 @@ export function buildPageScaffold(
         const delta = ops[j]!.args as number[];
         accDx += Number(delta[0]) || 0;
         accDy += Number(delta[1]) || 0;
+        adv = 0;
         continue;
       }
 
@@ -2075,8 +2080,8 @@ export function buildPageScaffold(
         const rotation = getRotation([comb[0], comb[1], 0, 0, 0, 0]);
 
         // Absolute position: Tm origin + accumulated moveText scaled by Tm, then through the CTM
-        const localX = tmX + accDx * tmA + accDy * tmC;
-        const localY = tmY + accDx * tmB + accDy * tmD;
+        const localX = tmX + (accDx + adv) * tmA + accDy * tmC;
+        const localY = tmY + (accDx + adv) * tmB + accDy * tmD;
         const posX = ctm[0] * localX + ctm[2] * localY + ctm[4];
         const posY = ctm[1] * localX + ctm[3] * localY + ctm[5];
 
@@ -2093,9 +2098,11 @@ export function buildPageScaffold(
           rotation,
         });
 
-        // After showText, PDF spec says the text cursor advances by the
-        // glyph width in text space.  We DON'T accumulate that here because
-        // the next moveText will set the position explicitly.
+        // After showText the text cursor advances by the glyph widths (text space); a moveText resets
+        // it (it is relative to the line start), a following showText continues from here.
+        let advance = 0;
+        for (const g of glyphArr) advance += (g.width || 0) * fontInfo.size / 1000;
+        adv += advance > 0 ? advance : text.length * fontInfo.size * 0.5;
       }
     }
   }
@@ -2135,6 +2142,7 @@ export function buildPageScaffold(
     // [1,0,0,1,0,0] (posX = tmX + accDx*tmA + accDy*tmC).
     let accDx = 0;
     let accDy = 0;
+    let adv = 0; // advance of the text already shown since the last moveText (see the Tm path)
     const fctm = ctmAtOp[i] ?? [1, 0, 0, 1, 0, 0];
     const fScale = Math.sqrt(fctm[0] * fctm[0] + fctm[1] * fctm[1]) || 1;
     const fRotation = getRotation([fctm[0], fctm[1], 0, 0, 0, 0]);
@@ -2146,6 +2154,7 @@ export function buildPageScaffold(
         const delta = args as number[];
         accDx += Number(delta[0]) || 0;
         accDy += Number(delta[1]) || 0;
+        adv = 0;
         continue;
       }
       if (op !== 'showText') continue;
@@ -2177,12 +2186,15 @@ export function buildPageScaffold(
         fontSize,
         width,
         height: fontSize,
-        position: { x: fctm[0] * accDx + fctm[2] * accDy + fctm[4], y: fctm[1] * accDx + fctm[3] * accDy + fctm[5] },
+        position: { x: fctm[0] * (accDx + adv) + fctm[2] * accDy + fctm[4], y: fctm[1] * (accDx + adv) + fctm[3] * accDy + fctm[5] },
         color,
         bold: parseFontStyle(fontInfo.name).bold,
         italic: parseFontStyle(fontInfo.name).italic,
         rotation: fRotation,
       });
+      let advance = 0;
+      for (const g of glyphArr) advance += (g.width || 0) * fontInfo.size / 1000;
+      adv += advance > 0 ? advance : text.length * fontInfo.size * 0.5;
     }
   }
 
@@ -3018,6 +3030,22 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
               groupRuns.push(next);
               used.add(nIdx);
               lastY = next.position.y;
+              // The rest of that line (a colour/bold change starts a new run): runs that directly
+              // continue it — starting where the previous one ends — belong to the same line.
+              // Runs further right are another column and stay out.
+              let lineRight = next.position.x + next.width;
+              for (let k = j + 1; k < sorted.length; k++) {
+                const { tr: mate, idx: mIdx } = sorted[k]!; // safe: k is always in [0, sorted.length-1]
+                if (next.position.y - mate.position.y >= lineHeight * 0.5 + breakPadding) break;
+                if (used.has(mIdx)) continue;
+                const gap = mate.position.x - lineRight;
+                if (Math.abs(mate.position.y - next.position.y) < Math.max(next.height, mate.height) * 0.5 &&
+                    Math.abs(mate.rotation - next.rotation) < 1 && gap >= -2 && gap <= next.fontSize * 0.8) {
+                  groupRuns.push(mate);
+                  used.add(mIdx);
+                  lineRight = mate.position.x + mate.width;
+                }
+              }
               changed = true;
               break;
             }
