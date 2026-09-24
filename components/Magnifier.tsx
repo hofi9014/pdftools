@@ -42,7 +42,7 @@ export default function Magnifier() {
             <button
               key={l}
               onClick={() => handleZoom(l)}
-              className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer ${
+              className={`w-full text-start px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer ${
                 zoom === l
                   ? 'bg-[var(--coffee-accent)] text-white'
                   : 'hover:bg-[var(--coffee-surface-hover)]'
@@ -55,7 +55,7 @@ export default function Magnifier() {
           <hr className="my-1 border-[var(--coffee-border)]" />
           <button
             onClick={() => handleZoom(100)}
-            className="w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition hover:bg-[var(--coffee-surface-hover)] cursor-pointer"
+            className="w-full text-start px-4 py-2 rounded-lg text-sm font-medium transition hover:bg-[var(--coffee-surface-hover)] cursor-pointer"
             style={{ color: 'var(--coffee-text-tertiary)' }}
           >
             Reset

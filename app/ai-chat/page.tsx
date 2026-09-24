@@ -123,7 +123,7 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
           <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/50">
             <span className="text-sm text-gray-500 dark:text-gray-400 truncate">{file?.name}</span>
             <button onClick={() => { setExtractedText(''); setMessages([]); setFile(null); setError(''); }}
-              className="text-xs !text-[var(--coffee-accent)] hover:underline shrink-0 ml-2">+ {t('page.aichat.new_file', locale)}</button>
+              className="text-xs !text-[var(--coffee-accent)] hover:underline shrink-0 ms-2">+ {t('page.aichat.new_file', locale)}</button>
           </div>
           <div className="max-h-96 overflow-y-auto p-4 space-y-4">
             {messages.map((msg, i) => (

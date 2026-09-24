@@ -6,7 +6,7 @@ import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { signPdfClient } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
-import { t, type Locale } from '@/lib/i18n';
+import { t, isRtlLocale, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import PadesSignForm from '@/components/sign-pdf/PadesSignForm';
 
@@ -246,7 +246,7 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
 
       <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
         <h2 className="font-semibold tool-heading mb-2">{t('section.how_it_works', locale)}</h2>
-        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc pl-5">
+        <ul className={`text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc ${isRtlLocale(locale) ? 'pr-5' : 'pl-5'}`}>
           <li>{t('page.sign.step1', locale)}</li>
           <li>{t('page.sign.step2', locale)}</li>
           <li>{t('page.sign.step3', locale)}</li>

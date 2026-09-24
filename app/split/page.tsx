@@ -157,8 +157,8 @@ export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } =
               />
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                 {t('page.split.examples_label', locale)} <span className="font-mono bg-gray-100 dark:bg-gray-700 px-1 rounded">1-3</span> ({t('page.split.example_pages_1_3', locale)}), 
-                <span className="font-mono bg-gray-100 dark:bg-gray-700 px-1 rounded ml-1">5</span> ({t('page.split.example_page_5_only', locale)}),
-                <span className="font-mono bg-gray-100 dark:bg-gray-700 px-1 rounded ml-1">1-3,7-9</span> ({t('page.split.example_two_ranges', locale)})
+                <span className="font-mono bg-gray-100 dark:bg-gray-700 px-1 rounded ms-1">5</span> ({t('page.split.example_page_5_only', locale)}),
+                <span className="font-mono bg-gray-100 dark:bg-gray-700 px-1 rounded ms-1">1-3,7-9</span> ({t('page.split.example_two_ranges', locale)})
               </p>
             </div>
           )}

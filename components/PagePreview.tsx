@@ -97,7 +97,7 @@ export default function PagePreview({ file, mode, selectedPages, onSelectionChan
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-        <span className="ml-3 text-gray-500 dark:text-gray-400">{t('preview.loading', locale)}</span>
+        <span className="ms-3 text-gray-500 dark:text-gray-400">{t('preview.loading', locale)}</span>
       </div>
     );
   }
@@ -111,7 +111,7 @@ export default function PagePreview({ file, mode, selectedPages, onSelectionChan
          mode === 'extract' ? t('preview.heading.extract', locale) :
          mode === 'select' ? t('preview.heading.select', locale) :
          t('preview.heading.reorder', locale)}
-        <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
+        <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ms-2">
           ({mode === 'reorder' ? `${totalPages} ${t('preview.pages', locale)}` : `${selectedPages.length}/${totalPages} ${t('preview.selected', locale)}`})
         </span>
       </h3>
@@ -137,16 +137,16 @@ export default function PagePreview({ file, mode, selectedPages, onSelectionChan
               {thumb && <img src={thumb.url} alt={`${t('preview.page_alt', locale)} ${pageIdx + 1}`} className="w-full h-auto" />}
               <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs text-center py-1 font-medium">
                 {pageIdx + 1}
-                {mode === 'reorder' && <span className="ml-1">(#{displayPos + 1})</span>}
+                {mode === 'reorder' && <span className="ms-1">(#{displayPos + 1})</span>}
               </div>
               {mode !== 'reorder' && (
-                <div className={`absolute top-1 right-1 w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition
+                <div className={`absolute top-1 end-1 w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition
                   ${isSelected ? (mode === 'select' ? 'bg-blue-500 border-blue-500 text-white' : 'bg-red-500 border-red-500 text-white') : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500'}`}>
                   {isSelected ? (mode === 'select' ? '✓' : '✕') : ''}
                 </div>
               )}
               {mode === 'reorder' && (
-                <div className="absolute top-1 right-1 flex gap-0.5">
+                <div className="absolute top-1 end-1 flex gap-0.5">
                   {displayPos > 0 && (
                     <button
                       type="button"

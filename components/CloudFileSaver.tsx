@@ -251,7 +251,7 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
 
   return (
     <div className="flex flex-wrap items-center gap-2 mt-3">
-      <span className="text-xs text-gray-500 dark:text-gray-400 mr-1">
+      <span className="text-xs text-gray-500 dark:text-gray-400 me-1">
         {locale === 'pl' ? 'Zapisz do:' : 'Save to:'}
       </span>
 
@@ -314,7 +314,7 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
         </button>
       )}
 
-      {error && <p className="text-xs text-red-500 ml-2">⚠️ {error === '__offline__' ? t('cloud.offline', locale) : error}</p>}
+      {error && <p className="text-xs text-red-500 ms-2">⚠️ {error === '__offline__' ? t('cloud.offline', locale) : error}</p>}
 
       <SharePointPickerDialog
         mode="saver"

@@ -1372,7 +1372,7 @@ export default function SecurityPage({ locale: forcedLocale }: { locale?: Locale
             <h2 className="text-lg sm:text-xl font-bold tool-heading mb-3">{sec.h}</h2>
             {'p' in sec && <p className="mb-2">{sec.p}</p>}
             {'items' in sec && sec.items && (
-              <ul className="list-disc pl-5 space-y-1.5">
+              <ul className="list-disc ps-5 space-y-1.5">
                 {sec.items.map((item, j) => (
                   <li key={j}>{item}</li>
                 ))}

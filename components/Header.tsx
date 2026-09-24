@@ -67,9 +67,9 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
               <button className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition cursor-pointer whitespace-nowrap" style={{ color: 'var(--coffee-text-secondary)' }}>
                 {getCategoryIcon(cat.key)}
                 <span>{t(`nav.category.${cat.key}`, locale)}</span>
-                <svg className="w-3 h-3 ml-0.5 mt-0.5 transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                <svg className="w-3 h-3 ms-0.5 mt-0.5 transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
               </button>
-              <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none group-hover:pointer-events-auto">
+              <div className="absolute top-full start-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none group-hover:pointer-events-auto">
                 <div className="bg-[var(--coffee-surface-solid)] dark:bg-[var(--coffee-surface-solid)] rounded-2xl shadow-xl border border-[var(--coffee-border)] p-4 min-w-[200px] backdrop-blur-xl">
                   <div className="grid gap-1">
                     {cat.tools.map((tool, i) => (
@@ -85,7 +85,7 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
                         <Link href={tool.href}
                           className="block px-3 py-2 rounded-lg text-sm transition hover:bg-[var(--coffee-surface-hover)]"
                           style={{ color: 'var(--coffee-text-secondary)' }}>
-                          {tool.icon && <span className="mr-1.5">{tool.icon}</span>}{t(tool.navKey ?? `tool.${tool.key}`, locale)}
+                          {tool.icon && <span className="me-1.5">{tool.icon}</span>}{t(tool.navKey ?? `tool.${tool.key}`, locale)}
                         </Link>
                       </div>
                     ))}

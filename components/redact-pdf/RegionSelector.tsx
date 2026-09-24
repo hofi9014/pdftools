@@ -46,7 +46,7 @@ export default function RegionSelector({ file, regions, onRegionsChange }: Regio
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <h3 className="font-bold text-gray-800 dark:text-gray-200">
           Zaznacz regiony do redakcji
-          <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
+          <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ms-2">
             ({totalRegions} łącznie · {pageRegionsCount} na tej stronie)
           </span>
         </h3>

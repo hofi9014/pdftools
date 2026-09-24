@@ -100,7 +100,7 @@ export default function LanguageSelector({ locale: forcedLocale }: { locale?: Lo
 
       {open && (
         <div
-          className="absolute right-0 top-full mt-1 py-1 min-w-[140px] rounded-xl border shadow-xl z-50"
+          className="absolute end-0 top-full mt-1 py-1 min-w-[140px] rounded-xl border shadow-xl z-50"
           style={{
             backgroundColor: 'var(--coffee-surface)',
             borderColor: 'var(--coffee-border)',
