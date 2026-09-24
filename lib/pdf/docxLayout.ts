@@ -146,3 +146,14 @@ export function separateLines<T extends { text: string; fontSize: number; positi
   }
   return out;
 }
+
+/**
+ * Blocks in top-to-bottom order. The IR lists tables before text (they are detected first) and
+ * uses a different y origin for tables (top-origin) than for text/images (bottom-origin), so a
+ * table always landed at the top of the Word document whatever its position on the page. Sorted by
+ * the top edge in one convention; ties keep extraction order (stable).
+ */
+export function blocksInReadingOrder(blocks: IRBlock[], pageHeight: number): IRBlock[] {
+  const top = (b: IRBlock): number => (b.kind === 'table' ? b.bounds.y : pageHeight - (b.bounds.y + b.bounds.height));
+  return blocks.map((b, i) => ({ b, i, t: top(b) })).sort((p, q) => (p.t - q.t) || (p.i - q.i)).map((x) => x.b);
+}

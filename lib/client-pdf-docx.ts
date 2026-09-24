@@ -4,7 +4,7 @@
 import { PDFDocument, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
 import type JSZip from 'jszip';
 import { applyConditionalFormatting } from './xlsx-conditional-formatting';
-import { inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines } from './pdf/docxLayout';
+import { inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder } from './pdf/docxLayout';
 
 // ============================================================
 // IR TYPES (Phase 1a — without TableBlock)
@@ -975,7 +975,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
     const pageColumn = inferPageColumn(page);
     let prevTextual: (IRBlock & { bounds: IRRect }) | undefined;
     const push = (child: unknown) => allChildren.push(child);
-    for (const block of page.blocks) {
+    for (const block of blocksInReadingOrder(page.blocks, page.height)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const layoutOpts = (): any => {
         const isText = block.kind === 'paragraph' || block.kind === 'heading' || block.kind === 'list-item';
@@ -1000,6 +1000,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
       if (block.kind === 'list-item' && (block as IRListItemBlock).runs.every((r) => r.text.trim() === '')) continue;
       const layoutOptsImage = () => (pendingBreak ? ((pendingBreak = false), { pageBreakBefore: true }) : {});
       if (block.kind === 'table') {
+        prevTextual = undefined; // a table has its own y origin; spacing after it is not inferred
         if (pendingBreak) { push(new Paragraph({ pageBreakBefore: true, children: [] })); pendingBreak = false; }
         const table = block as IRTableBlock;
         const docxRows = table.cells.map(row =>
@@ -1038,6 +1039,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
       const hasRotation = 'runs' in block && (block as { runs: IRTextRun[] }).runs.some(r => Math.abs(r.rotation) > 1);
 
       if (block.kind === 'image') {
+        prevTextual = block as unknown as IRBlock & { bounds: IRRect };
         const img = block as IRImageBlock;
         const imgData = images?.get(img.imageId);
         if (imgData) {

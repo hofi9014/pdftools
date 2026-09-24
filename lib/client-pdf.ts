@@ -1175,12 +1175,22 @@ export function extractRectsFromOps(ops: OpEntry[], pageHeight: number): RawRect
       const localH = (bbox[3] ?? 0) - localY;
       if (localW === 0 && localH === 0) continue;
 
-      // Transform to page coordinates
-      const topLeft = applyMatrix(composedMatrix, localX, localY);
-      const size = applyMatrixToSize(composedMatrix, localW, localH);
+      // Transform all four corners and take the bounding box. Using the transformed (x, y) corner
+      // plus |size| assumed that corner is the BOTTOM-left, which a y-flipping CTM (Chrome/Skia
+      // wrap every page in cm [s 0 0 -s 0 H]) turns into the TOP-left: every rect then sat one
+      // height too low, so table rows were off by one row against the text and list/box
+      // geometry drifted. The 4-corner box is correct for flips, rotations and plain scales.
+      const c1 = applyMatrix(composedMatrix, localX, localY);
+      const c2 = applyMatrix(composedMatrix, localX + localW, localY);
+      const c3 = applyMatrix(composedMatrix, localX, localY + localH);
+      const c4 = applyMatrix(composedMatrix, localX + localW, localY + localH);
+      const minX = Math.min(c1.x, c2.x, c3.x, c4.x), maxX = Math.max(c1.x, c2.x, c3.x, c4.x);
+      const minY = Math.min(c1.y, c2.y, c3.y, c4.y), maxY = Math.max(c1.y, c2.y, c3.y, c4.y);
+      const topLeft = { x: minX, y: minY };
+      const size = { w: maxX - minX, h: maxY - minY };
 
       // Normalize Y: PDF origin is bottom-left, IR uses top-left
-      const normY = pageHeight - topLeft.y - size.h;
+      const normY = pageHeight - maxY;
 
       const fill = paintingOp === 22 || paintingOp === 24 || paintingOp === 23 || paintingOp === 25 || paintingOp === 26 || paintingOp === 27;
       const stroke = paintingOp === 20 || paintingOp === 24 || paintingOp === 21 || paintingOp === 25 || paintingOp === 26 || paintingOp === 27;
@@ -1245,7 +1255,11 @@ export interface TableCluster {
   coverage: number;
 }
 
-export function buildTableClusters(rects: RawRect[]): TableCluster[] {
+export function buildTableClusters(allRects: RawRect[]): TableCluster[] {
+  // Bullet dots and list markers are tiny squares/circles (both sides < 4 pt); a border or divider
+  // is long in one direction. Dots line up on shared edges with boxes and list items and formed
+  // phantom "tables" (a dot touching a bordered box passed the coverage rule via the box's area).
+  const rects = allRects.filter((r) => r.width >= 4 || r.height >= 4);
   if (rects.length < 3) return [];
 
   // Step 1: Union-Find — group rects sharing any edge (within tolerance)
@@ -1278,9 +1292,8 @@ export function buildTableClusters(rects: RawRect[]): TableCluster[] {
   }
 
   // Step 3: Validate each group against 3 rules
-  const clusters: TableCluster[] = [];
-  for (const groupRects of groups.values()) {
-    if (groupRects.length < 3) continue;
+  const validateGroup = (groupRects: RawRect[]): TableCluster | null => {
+    if (groupRects.length < 3) return null;
 
     // Collect global edge lists
     const xSet = new Set<number>();
@@ -1317,7 +1330,13 @@ export function buildTableClusters(rects: RawRect[]): TableCluster[] {
     const cols = xEdges.length - 1;
     const rows = yEdges.length - 1;
 
-    if (cols < 2 || rows < 2) continue;
+    if (cols < 2 || rows < 2) return null;
+
+    // A real table is at least a few characters wide and a line tall. Bullet dots, list markers and
+    // other tiny shapes line up on shared edges too and formed phantom "tables" (three bullet dots
+    // in a column = a 4x3 grid that swallowed the list items next to them).
+    const gx0 = xEdges[0]!, gx1 = xEdges[xEdges.length - 1]!, gy0 = yEdges[0]!, gy1 = yEdges[yEdges.length - 1]!;
+    if (gx1 - gx0 < 20 || gy1 - gy0 < 10) return null;
 
     // Rule 3: coverage — how many grid cells are occupied by at least one rect?
     // Two complementary signals are combined:
@@ -1409,9 +1428,48 @@ export function buildTableClusters(rects: RawRect[]): TableCluster[] {
 
     const totalCells = cols * rows;
     const coverage = occupied.size / totalCells;
-    if (coverage < 0.6) continue;
+    if (coverage < 0.6) return null;
 
-    clusters.push({ rects: groupRects, xEdges, yEdges, cols, rows, coverage });
+    return { rects: groupRects, xEdges, yEdges, cols, rows, coverage };
+  };
+
+  // Rects that merely SHARE an edge coordinate are grouped above even when they are far apart —
+  // which is what lets a sparse sheet grid (borderless columns between two bordered cells) stay
+  // one table, but also chained a Chrome/Skia page's title band, list, bordered box and data
+  // table into one 12x7 "table". Resolve it by splitting a group into spatially connected
+  // components (touching/overlapping within the edge tolerance): if the best valid component
+  // covers most of the group's extent, the group really is one (sparse) table and stays whole;
+  // if it covers a small part, the group was over-merged and each valid component is its own table.
+  const bboxArea = (rs: RawRect[]): number => {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const r of rs) { x0 = Math.min(x0, r.x); y0 = Math.min(y0, r.y); x1 = Math.max(x1, r.x + r.width); y1 = Math.max(y1, r.y + r.height); }
+    return Math.max(0, x1 - x0) * Math.max(0, y1 - y0);
+  };
+  const touching = (a: RawRect, b: RawRect): boolean =>
+    a.x <= b.x + b.width + EDGE_TOLERANCE && b.x <= a.x + a.width + EDGE_TOLERANCE
+    && a.y <= b.y + b.height + EDGE_TOLERANCE && b.y <= a.y + a.height + EDGE_TOLERANCE;
+
+  const clusters: TableCluster[] = [];
+  for (const groupRects of groups.values()) {
+    if (groupRects.length >= 3) {
+      const cuf = new UnionFind(groupRects.length);
+      for (let i = 0; i < groupRects.length; i++) {
+        for (let j = i + 1; j < groupRects.length; j++) if (touching(groupRects[i]!, groupRects[j]!)) cuf.union(i, j);
+      }
+      const comps = new Map<number, RawRect[]>();
+      groupRects.forEach((r, i) => { const k = cuf.find(i); (comps.get(k) ?? comps.set(k, []).get(k)!).push(r); });
+      if (comps.size > 1) {
+        const valid = [...comps.values()].map(validateGroup).filter((c): c is TableCluster => c !== null);
+        const groupArea = bboxArea(groupRects);
+        const bestArea = valid.reduce((m, c) => Math.max(m, bboxArea(c.rects)), 0);
+        if (valid.length > 0 && groupArea > 0 && bestArea / groupArea < 0.6) {
+          clusters.push(...valid);
+          continue;
+        }
+      }
+    }
+    const whole = validateGroup(groupRects);
+    if (whole) clusters.push(whole);
   }
 
   return clusters;
