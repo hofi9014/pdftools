@@ -863,6 +863,35 @@ const IR_HEADING_MAP: Record<number, string> = {
   4: 'Heading4', 5: 'Heading5', 6: 'Heading6',
 };
 
+/**
+ * Turns a PDF font resource name into a family name Word can resolve. PDFs carry subset tags
+ * ("PSWIZS+Gotham-Book"), style/weight suffixes ("-Bold", "-Black"), PostScript suffixes
+ * ("ArialMT", "TimesNewRomanPSMT") and generator-added numeric suffixes ("LiberationSans-2867"):
+ * none of those are installed font names, so Word substituted a default face for every run.
+ * Bold/italic are carried by their own run flags, so the style words are dropped here.
+ */
+const FONT_FAMILY_MAP: Record<string, string> = {
+  arial: 'Arial', arialmt: 'Arial', helvetica: 'Arial', liberationsans: 'Arial', arimo: 'Arial',
+  timesnewroman: 'Times New Roman', timesnewromanps: 'Times New Roman', timesnewromanpsmt: 'Times New Roman',
+  times: 'Times New Roman', timesroman: 'Times New Roman', liberationserif: 'Times New Roman', tinos: 'Times New Roman',
+  couriernew: 'Courier New', couriernewps: 'Courier New', courier: 'Courier New', liberationmono: 'Courier New', cousine: 'Courier New',
+  carlito: 'Calibri', calibri: 'Calibri', caladea: 'Cambria', cambria: 'Cambria',
+  symbol: 'Symbol', zapfdingbats: 'Wingdings',
+};
+
+export function docxFontFamily(raw: string): string | undefined {
+  if (!raw) return undefined;
+  let n = raw.replace(/^[A-Z]{6}\+/, '');
+  n = n.replace(/[-_ ]?\d{2,}$/, '');
+  const styleWords = /(?:[-,_ ]|(?<=[a-z]))(?:BoldItalic|BoldOblique|Bold|Italic|Oblique|Regular|Book|Medium|Light|Black|Heavy|Semibold|DemiBold|Demi|Thin|Ultra|ExtraBold|MT|PSMT|PS)+$/;
+  for (let i = 0; i < 3; i++) { const m = n.replace(styleWords, ''); if (m === n || !m) break; n = m; }
+  const key = n.toLowerCase().replace(/[^a-z]/g, '');
+  const mapped = FONT_FAMILY_MAP[key];
+  if (mapped) return mapped;
+  const spaced = n.replace(/[-_]/g, ' ').replace(/(?<=[a-z])(?=[A-Z])/g, ' ').trim();
+  return spaced || undefined;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function irRunsToTextRuns(TRC: any, runs: IRTextRun[], ExtLink?: any): any[] {
   return runs.map(run => {
@@ -880,7 +909,7 @@ function irRunsToTextRuns(TRC: any, runs: IRTextRun[], ExtLink?: any): any[] {
           color: '0563C1',
           underline: {},
           size: Math.round(run.fontSize * 2),
-          font: run.fontName || undefined,
+          font: docxFontFamily(run.fontName),
         })],
       });
     }
@@ -891,7 +920,7 @@ function irRunsToTextRuns(TRC: any, runs: IRTextRun[], ExtLink?: any): any[] {
       underline: run.underline ? {} : undefined,
       color: run.color.replace('#', ''),
       size: Math.round(run.fontSize * 2),
-      font: run.fontName || undefined,
+      font: docxFontFamily(run.fontName),
     });
   });
 }
@@ -909,7 +938,7 @@ function irRunsToTextRunsRotated(TRC: any, runs: IRTextRun[], rotation: number):
     italics: true,
     color: '888888',
     size: Math.round(run.fontSize * 2),
-    font: run.fontName || undefined,
+    font: docxFontFamily(run.fontName),
   }));
   const suffix = new TRC({
     text: '"]',
