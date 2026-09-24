@@ -16,7 +16,7 @@ register(pathToFileURL(join(ROOT, 'scripts/_pdfjs_remap.mjs')).href, pathToFileU
 import { DOMParser } from '@xmldom/xmldom';
 (globalThis as Record<string, unknown>).DOMParser = DOMParser;
 
-import { inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines } from '../lib/pdf/docxLayout.ts';
+import { inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder } from '../lib/pdf/docxLayout.ts';
 import { pdfToWordIR } from '../lib/client-pdf.ts';
 import type { IRPageIR, IRBlock, IRTextRun } from '../lib/client-pdf-docx.ts';
 
@@ -92,6 +92,36 @@ console.log('\n=== real pipeline: epz-report-variant2.pdf (scaled by cm, table) 
   check(!/w:val="(FFFFFF|D8D8D8|ffffff|d8d8d8)"/.test(xml.replace(/<w:shd[^>]*>/g, '')), 'no run is coloured white/grey from a cell background');
   check((xml.match(/<w:tbl>/g) ?? []).length >= 3, 'the schedule tables are present');
   check(/8\/1\/2026/.test(text) && /Speed, teams/.test(text.replace(/\s+/g, ' ')), 'dates and the "Speed, teams" column are in the output');
+}
+
+console.log('\n=== reading order helper ===');
+{
+  const H = 800;
+  const tbl = { kind: 'table', cells: [], bounds: { x: 0, y: 200, width: 100, height: 50 }, columnWidths: [] } as unknown as IRBlock; // top-origin: top edge at y=200
+  const upper = para(50, 700, 100); // bottom-origin: top edge at 800-(700+12)=88
+  const lower = para(50, 300, 100); // top edge at 800-312=488
+  const ordered = blocksInReadingOrder([tbl, lower, upper], H);
+  check(ordered[0] === upper && ordered[1] === tbl && ordered[2] === lower, 'table (top-origin) is ordered among text (bottom-origin) by its real position');
+}
+
+console.log('\n=== real pipeline: chrome-report.pdf (Skia: y-flip cm, bands, list, box, table) ===');
+{
+  const f = 'chrome-report.pdf';
+  const file = Object.assign(new Blob([readFileSync(join(ROOT, 'test-real-pdfs', f))]), { name: f }) as unknown as File;
+  const zip = await JSZip.loadAsync(await (await pdfToWordIR(file)).arrayBuffer());
+  const xml = await zip.file('word/document.xml')!.async('string');
+  const text = (s: string) => (s.match(/<w:t[^>]*>([^<]*)<\/w:t>/g) ?? []).map((m) => m.replace(/<[^>]+>/g, '')).join('|');
+  const tables = xml.match(/<w:tbl>[\s\S]*?<\/w:tbl>/g) ?? [];
+  check(tables.length === 1, `exactly one table (the data table) — no phantom tables from the box/bullets/bands (got ${tables.length})`);
+  const rows = (tables[0]?.match(/<w:tr[ >]/g) ?? []).length;
+  check(rows === 4, `the data table has all 4 rows incl. the last (got ${rows})`);
+  check(/Wsch.d/.test(text(tables[0] ?? '')) && /Region/.test(text(tables[0] ?? '')), 'header and last row are both inside the table');
+  const titleAt = xml.indexOf('Kwartalny raport');
+  const tableAt = xml.indexOf('<w:tbl>');
+  check(titleAt !== -1 && tableAt !== -1 && titleAt < tableAt, 'the title comes BEFORE the table (tables used to be emitted first)');
+  check(/<w:shd [^>]*w:fill="1F4E79"/i.test(xml), 'white title sits on its blue band (paragraph shading)');
+  for (const item of ['Pierwszy punkt listy', 'Drugi punkt listy', 'Trzeci punkt']) check(text(xml).replace(/[|]/g, '').includes(item), `list item "${item}" is present outside the table`);
+  check(!/Pierwszy punkt/.test(text(tables[0] ?? '')), 'list items are not swallowed by a table');
 }
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
