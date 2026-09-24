@@ -104,6 +104,14 @@ console.log('\n=== guide content: false claims are gone, in all 16 locales, repl
   const bodyEn = 'Saves every page as its own PDF file.';
   check((splitGuide.match(/Saves every page as its own PDF file\./g) ?? []).length === 1, 'the English page-by-page body appears exactly once (other 15 locales are translations)');
   void bodyEn;
+
+  // unlock guide: decryption supports AES-256/AES-128/RC4 (lib/pdf/decryptV4.ts + the library),
+  // not "all standard protections".
+  const v4 = readFileSync(join(ROOT, 'lib', 'pdf', 'decryptV4.ts'), 'utf-8');
+  check(/AESV2/.test(v4), 'engine really has an AES-128 (V=4) path');
+  const unlockGuide = readFileSync(join(ROOT, 'content', 'guides', 'unlock-pdf', 'how-to-unlock-pdf-online.ts'), 'utf-8');
+  check(!unlockGuide.includes('The tool supports all standard PDF protections.'), 'unlock guide (en) no longer claims "all standard PDF protections"');
+  check((unlockGuide.match(/AES-128/g) ?? []).length === 16, 'unlock guide names the supported schemes in all 16 locales');
 }
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);

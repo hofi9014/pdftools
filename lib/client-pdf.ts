@@ -4288,10 +4288,31 @@ function parsePageRangeClient(input: string, total: number): number[] {
   return [...pages].sort((a, b) => a - b);
 }
 
+// @pdfsmaller/pdf-decrypt handles RC4 (V1-2) and AES-256 (V5) but throws "Unsupported encryption:
+// V=4" for AES-128 — the most common encryption on real PDFs — so that case goes to
+// lib/pdf/decryptV4.ts. Library errors are English free text; they are mapped to PdfUnlockError
+// codes so the page can show a localized message instead of raw library text.
 export async function unlockPdfClient(file: File, password?: string): Promise<Blob> {
-  const buf = await file.arrayBuffer();
+  const { PdfUnlockError, decryptV4Pdf } = await import('./pdf/decryptV4');
+  const bytes = new Uint8Array(await file.arrayBuffer());
   const { decryptPDF } = await import('@pdfsmaller/pdf-decrypt');
-  const result = await decryptPDF(new Uint8Array(buf), password || '');
+  let result: Uint8Array;
+  try {
+    result = await decryptPDF(bytes, password || '');
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (/Unsupported encryption: V=4/.test(msg)) {
+      result = await decryptV4Pdf(bytes, password || '');
+    } else if (/Incorrect password/i.test(msg)) {
+      throw new PdfUnlockError('wrong-password', msg);
+    } else if (/not encrypted/i.test(msg)) {
+      throw new PdfUnlockError('not-encrypted', msg);
+    } else if (/Unsupported encryption/i.test(msg)) {
+      throw new PdfUnlockError('unsupported', msg);
+    } else {
+      throw new PdfUnlockError('failed', msg);
+    }
+  }
   return new Blob([result as BlobPart], { type: 'application/pdf' });
 }
 

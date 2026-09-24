@@ -111,7 +111,9 @@
     "test:pdf-to-excel-bold-italic": "npx --yes tsx tests/pdf-to-excel-bold-italic.mts",
     "test:xlsx-conditional-formatting": "npx --yes tsx tests/xlsx-conditional-formatting.mts",
     "test:spreadsheet-header-fallback": "npx --yes tsx tests/spreadsheet-header-fallback.mts",
-    "test:superscript-reading-order": "npx --yes tsx tests/superscript-reading-order.mts"
+    "test:superscript-reading-order": "npx --yes tsx tests/superscript-reading-order.mts",
+    "test:unlock-aes128": "npx --yes tsx tests/unlock-aes128.mts",
+    "test:e2e-unlock-aes128-ui": "npx --yes tsx e2e/unlock-aes128-ui.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
