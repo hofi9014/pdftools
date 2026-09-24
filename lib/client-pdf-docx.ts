@@ -933,30 +933,6 @@ function irRunsToTextRuns(TRC: any, runs: IRTextRun[], ExtLink?: any): any[] {
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function irRunsToTextRunsRotated(TRC: any, runs: IRTextRun[], rotation: number): any[] {
-  const prefix = new TRC({
-    text: `[Obrócony tekst ${Math.round(rotation)}°: "`,
-    italics: true,
-    color: '888888',
-    size: 10,
-  });
-  const content = runs.map(run => new TRC({
-    text: run.text,
-    italics: true,
-    color: '888888',
-    size: Math.round(run.fontSize * 2),
-    font: docxFontFamily(run.fontName),
-  }));
-  const suffix = new TRC({
-    text: '"]',
-    italics: true,
-    color: '888888',
-    size: 10,
-  });
-  return [prefix, ...content, suffix];
-}
-
 export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, WriterImage>): Promise<Blob> {
   const {
     Document, Packer, Paragraph, HeadingLevel, TextRun, ImageRun,
@@ -990,6 +966,9 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
             if (lay.alignment !== 'left') o.alignment = ALIGN[lay.alignment];
             if (lay.leftIndentPt > 0) o.indent = { left: twips(lay.leftIndentPt) };
           }
+          // Word cannot rotate a run: rotated text is written upright, and its rotated bounding box
+          // says nothing about where a horizontal paragraph would sit, so no alignment/indent.
+          if (hasRotation) { delete o.alignment; delete o.indent; }
           if (lay.spacingBeforePt > 0) o.spacing = { before: twips(lay.spacingBeforePt) };
           const bg = findBackgroundFill(block as IRBlock & { bounds: IRRect }, page.fills);
           if (bg) o.shading = { type: ShadingType.CLEAR, fill: bg, color: 'auto' };
@@ -1074,53 +1053,32 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
         const h = block as IRHeadingBlock;
         const level = Math.min(Math.max(h.level, 1), 6);
         const headingKey = IR_HEADING_MAP[level] as keyof typeof HeadingLevel;
-        if (hasRotation) {
-          push(new Paragraph({
-            ...layoutOpts(),
-            children: irRunsToTextRunsRotated(TextRun, h.runs, h.runs[0]?.rotation ?? 0),
-          }));
-        } else {
-          push(new Paragraph({
-            ...layoutOpts(),
-            heading: HeadingLevel[headingKey],
-            children: irRunsToTextRuns(TextRun, h.runs, ExternalHyperlink),
-          }));
-        }
+        push(new Paragraph({
+          ...layoutOpts(),
+          heading: HeadingLevel[headingKey],
+          children: irRunsToTextRuns(TextRun, h.runs, ExternalHyperlink),
+        }));
       } else if (block.kind === 'list-item') {
         const li = block as IRListItemBlock;
         const level = Math.min(li.level, 8);
-        if (hasRotation) {
-          push(new Paragraph({
-            ...layoutOpts(),
-            children: irRunsToTextRunsRotated(TextRun, li.runs, li.runs[0]?.rotation ?? 0),
-          }));
-        } else {
-          // A numbered marker ("1.", "2)") is written as literal text with a hanging indent — a
-          // Word bullet replaced every number with a dot and lost the numbering.
-          const numbered = /^\d+[.)]$/.test(li.marker);
-          push(new Paragraph({
-            ...layoutOpts(),
-            ...(numbered
-              ? { indent: { left: twips(18 * (level + 1) + 18), hanging: twips(18) } }
-              : { bullet: { level } }),
-            children: numbered
-              ? [new TextRun({ text: li.marker + '\t' }), ...irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink)]
-              : irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink),
-          }));
-        }
+        // A numbered marker ("1.", "2)") is written as literal text with a hanging indent — a
+        // Word bullet replaced every number with a dot and lost the numbering.
+        const numbered = /^\d+[.)]$/.test(li.marker);
+        push(new Paragraph({
+          ...layoutOpts(),
+          ...(numbered
+            ? { indent: { left: twips(18 * (level + 1) + 18), hanging: twips(18) } }
+            : { bullet: { level } }),
+          children: numbered
+            ? [new TextRun({ text: li.marker + '\t' }), ...irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink)]
+            : irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink),
+        }));
       } else {
         const p = block as IRParagraphBlock;
-        if (hasRotation) {
-          push(new Paragraph({
-            ...layoutOpts(),
-            children: irRunsToTextRunsRotated(TextRun, p.runs, p.runs[0]?.rotation ?? 0),
-          }));
-        } else {
-          push(new Paragraph({
-            ...layoutOpts(),
-            children: irRunsToTextRuns(TextRun, p.runs, ExternalHyperlink),
-          }));
-        }
+        push(new Paragraph({
+          ...layoutOpts(),
+          children: irRunsToTextRuns(TextRun, p.runs, ExternalHyperlink),
+        }));
       }
     }
   }
