@@ -63,6 +63,8 @@ export interface IRTableCell {
   runs: IRTextRun[];
   colspan: number;
   rowspan: number;
+  /** Solid background of the cell as 6-digit hex, when the source painted one (not white). */
+  fill?: string;
 }
 
 export interface IRTableBlock {
@@ -1014,6 +1016,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
               const opts: any = { children: paragraphs };
               if (cell.colspan > 1) opts.columnSpan = cell.colspan;
               if (cell.rowspan > 1) opts.rowSpan = cell.rowspan;
+              if (cell.fill) opts.shading = { type: ShadingType.CLEAR, color: 'auto', fill: cell.fill };
               return new TableCell(opts);
             }),
           })
