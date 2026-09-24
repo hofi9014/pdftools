@@ -2588,6 +2588,26 @@ export async function extractFormattedTextFromPDF(file: File): Promise<IRPageIR[
   return extractFormattedTextFromScaffolds(scaffolds);
 }
 
+/** Moves superscript/subscript-like runs to their X position among the base runs of one line. */
+function reseatScriptRuns(group: IRTextRun[], yTolerance: number): void {
+  const maxSize = group.reduce((m, r) => Math.max(m, r.fontSize), 0);
+  const baseYs = group.filter((r) => r.fontSize >= maxSize * 0.8).map((r) => r.position.y);
+  if (baseYs.length === 0 || baseYs.length === group.length) return;
+  const baseY = baseYs.reduce((a, b) => a + b, 0) / baseYs.length;
+  // Footnote marks / formula subscripts are short ("²", "1", "TM", "(1)"); longer small text is
+  // a separate element (slide footer, caption) that must keep its place.
+  const isScript = (r: IRTextRun) => r.fontSize < maxSize * 0.8 && r.text.trim().length <= 4 && Math.abs(r.position.y - baseY) > yTolerance;
+  const scripts = group.filter(isScript);
+  if (scripts.length === 0) return;
+  const result = group.filter((r) => !isScript(r));
+  for (const sc of scripts.sort((r1, r2) => r1.position.x - r2.position.x)) {
+    const at = result.findIndex((r) => r.position.x > sc.position.x);
+    if (at === -1) result.push(sc);
+    else result.splice(at, 0, sc);
+  }
+  group.splice(0, group.length, ...result);
+}
+
 function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPageIR[] {
   const pages: IRPageIR[] = [];
 
@@ -2771,6 +2791,15 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
           used.add(oIdx);
         }
       }
+
+      // Runs collected onto one line above were gathered in Y-then-X sort order, so a raised or
+      // lowered run (footnote superscript, chemical subscript) whose Y differs by more than
+      // Y_TIE_TOLERANCE sits ahead of/behind its line-mates regardless of where it really is on
+      // the line. Only genuine script runs are re-seated by X: clearly smaller type (<80% of the
+      // largest in the group) AND offset from the base line. Re-sorting the whole group by X (and
+      // widening the page-level sort) were both tried and regressed real documents, because a
+      // large-type group can span two visual lines that must keep their Y order.
+      if (groupRuns.length > 1) reseatScriptRuns(groupRuns, Y_TIE_TOLERANCE);
 
       // If single line, try to merge with consecutive lines below (paragraph grouping)
       if (groupRuns.length <= 1) {
