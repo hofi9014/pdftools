@@ -2562,6 +2562,42 @@ interface PageTableScaffold {
   images: PdfPageScaffoldImage[];
   tableClusters: TableCluster[];
   fillRects: IRFillRect[];
+  /** Centres (bottom-origin) of small filled squares — bullets drawn as shapes, not glyphs. */
+  bulletDots: Array<{ x: number; y: number; size: number }>;
+}
+
+/** Small filled, roughly square rects (2–9 pt): list bullets that a producer drew as shapes. */
+function collectBulletDots(rects: RawRect[], pageHeight: number): Array<{ x: number; y: number; size: number }> {
+  const out: Array<{ x: number; y: number; size: number }> = [];
+  for (const r of rects) {
+    if (!r.fill || r.width < 2 || r.height < 2 || r.width > 9 || r.height > 9) continue;
+    if (Math.abs(r.width - r.height) > 2) continue;
+    out.push({ x: r.x + r.width / 2, y: pageHeight - r.y - r.height / 2, size: Math.max(r.width, r.height) });
+  }
+  return out;
+}
+
+/**
+ * Turns a paragraph into a list item when a bullet dot sits just left of its first line. The dot
+ * must be vertically inside the first line and 3–30 pt before the text; blocks that already start
+ * with a glyph marker were handled earlier and are never touched.
+ */
+function applyShapeBullets(blocks: IRBlock[], dots: Array<{ x: number; y: number; size: number }>): void {
+  if (dots.length === 0) return;
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i]!;
+    if (b.kind !== 'paragraph') continue;
+    const first = b.runs[0];
+    if (!first) continue;
+    const lineTop = first.position.y + first.fontSize;
+    const dot = dots.find((d) => {
+      const gap = first.position.x - d.x;
+      return gap >= 3 && gap <= 30 && d.y >= first.position.y - 1 && d.y <= lineTop + 1;
+    });
+    if (!dot) continue;
+    const indent = first.position.x - 50;
+    blocks[i] = { kind: 'list-item', marker: '•', level: Math.max(0, Math.round(indent / 20) - 1), runs: b.runs, bounds: b.bounds };
+  }
 }
 
 interface PdfjsLinkAnnotation {
@@ -2679,7 +2715,7 @@ async function parsePagesForTableExtraction(file: File): Promise<PageTableScaffo
     const tableRects = extractRectsFromOps(ops, pageHeight);
     applyUnderlineFromRects(textRuns, tableRects, pageHeight);
     const tableClusters = buildTableClusters(tableRects);
-    result.push({ page: p, pageWidth, pageHeight, ops, textRuns, images, tableClusters, fillRects: collectFillRects(tableRects, pageHeight) });
+    result.push({ page: p, pageWidth, pageHeight, ops, textRuns, images, tableClusters, fillRects: collectFillRects(tableRects, pageHeight), bulletDots: collectBulletDots(tableRects, pageHeight) });
   }
 
   await doc.cleanup();
@@ -2718,7 +2754,7 @@ function reseatScriptRuns(group: IRTextRun[], yTolerance: number): void {
 function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPageIR[] {
   const pages: IRPageIR[] = [];
 
-  for (const { pageWidth, pageHeight, textRuns, images, tableClusters, fillRects } of scaffolds) {
+  for (const { pageWidth, pageHeight, textRuns, images, tableClusters, fillRects, bulletDots } of scaffolds) {
     // --- Compute bodyFontSize ---
     const sizeStats: Record<string, number> = {};
     for (const tr of textRuns) {
@@ -2979,6 +3015,7 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
       blocks.splice(insertIdx, 0, imgBlock);
     }
 
+    applyShapeBullets(blocks, bulletDots);
     pages.push({ width: pageWidth, height: pageHeight, blocks, ...(fillRects.length > 0 ? { fills: fillRects } : {}) });
   }
 
