@@ -43,7 +43,15 @@ export default function UnlockPDF({ locale: forcedLocale }: { locale?: Locale } 
       URL.revokeObjectURL(url);
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      // unlockPdfClient throws PdfUnlockError with a stable code; library text is English-only.
+      const code = err instanceof Error && err.name === 'PdfUnlockError' ? (err as Error & { code: string }).code : null;
+      const known: Record<string, string> = {
+        'wrong-password': 'page.unlock.err_wrong_password',
+        'not-encrypted': 'page.unlock.err_not_encrypted',
+        unsupported: 'page.unlock.err_unsupported',
+        failed: 'page.unlock.err_failed',
+      };
+      setError(code && known[code] ? t(known[code], locale) : err instanceof Error ? err.message : t('error.generic', locale));
     } finally {
       setLoading(false);
     }
