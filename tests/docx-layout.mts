@@ -122,6 +122,9 @@ console.log('\n=== real pipeline: chrome-report.pdf (Skia: y-flip cm, bands, lis
   check(/<w:shd [^>]*w:fill="1F4E79"/i.test(xml), 'white title sits on its blue band (paragraph shading)');
   for (const item of ['Pierwszy punkt listy', 'Drugi punkt listy', 'Trzeci punkt']) check(text(xml).replace(/[|]/g, '').includes(item), `list item "${item}" is present outside the table`);
   check(!/Pierwszy punkt/.test(text(tables[0] ?? '')), 'list items are not swallowed by a table');
+  const tcShd = (tables[0]?.match(/<w:tc>[\s\S]*?<\/w:tc>/g) ?? []).map((c) => /<w:shd [^>]*w:fill="([0-9A-Fa-f]{6})"/.exec(c)?.[1]?.toUpperCase());
+  check(tcShd.filter((f) => f === 'DDDDDD').length === 4, `the 4 header cells carry the grey background (got ${tcShd.filter((f) => f === 'DDDDDD').length})`);
+  check(!tcShd.includes('444444'), 'border colour (thin filled rects) is not mistaken for a cell background');
   check((xml.match(/<w:numPr>/g) ?? []).length === 3, `the 3 shape-drawn bullets become Word bullets (got ${(xml.match(/<w:numPr>/g) ?? []).length})`);
 }
 
@@ -132,8 +135,6 @@ console.log('\n=== numbered lists and heading-sized numerals ===');
   const pages = await extractFormattedTextFromPDF(file);
   const items = pages.flatMap((p) => p.blocks.filter((b) => b.kind === 'list-item')) as Array<{ marker: string; runs: Array<{ text: string }> }>;
   check(items.every((i) => i.runs.map((r) => r.text).join('').trim() !== ''), 'no empty list items (the 60pt section numerals used to become empty ones)');
-  const zip = await JSZip.loadAsync(await (await pdfToWordIR(file)).arrayBuffer());
-  const xml = await zip.file('word/document.xml')!.async('string');
 }
 {
   const numbered = /^\d+[.)]\s+(?!\d)/;

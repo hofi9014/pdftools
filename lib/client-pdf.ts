@@ -2803,6 +2803,17 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
           row.map(c => c ?? { runs: [], colspan: 1, rowspan: 1 })
         );
 
+        for (const gc of gridCells) {
+          const target = irCells[gc.row]?.[gc.col];
+          const hex = gc.rect.fill && gc.rect.fillColor ? /^#([0-9a-fA-F]{6})$/.exec(gc.rect.fillColor)?.[1] : undefined;
+          // Chrome/Skia paint cell borders as thin filled rects: only a rect that covers (most of) the
+          // cell is a background.
+          const cw = cluster.xEdges[Math.min(gc.col + gc.colspan, cluster.xEdges.length - 1)]! - cluster.xEdges[gc.col]!;
+          const ch = cluster.yEdges[Math.min(gc.row + gc.rowspan, cluster.yEdges.length - 1)]! - cluster.yEdges[gc.row]!;
+          const coversCell = gc.rect.width >= 0.8 * cw && gc.rect.height >= 0.8 * ch;
+          if (target && hex && coversCell && hex.toLowerCase() !== 'ffffff') target.fill = hex.toUpperCase();
+        }
+
         const columnWidths = [];
         for (let ci = 0; ci < cluster.xEdges.length - 1; ci++) {
           columnWidths.push(cluster.xEdges[ci + 1]! - cluster.xEdges[ci]!);
