@@ -10,7 +10,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   PDFDocument, StandardFonts, PDFOperator, PDFOperatorNames, pushGraphicsState, popGraphicsState,
-  concatTransformationMatrix, setFontAndSize, moveText, showText, beginText, endText,
+  concatTransformationMatrix, setFontAndSize, moveText, showText, beginText, endText, setTextMatrix,
 } from 'pdf-lib';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -64,6 +64,23 @@ console.log('\n=== moveText-only fallback under the same cm ===');
   check(!!r, 'fallback-path run extracted');
   check(near(r?.position.x, 80) && near(r?.position.y, 160), `position (80,160) (got ${r?.position.x.toFixed(1)},${r?.position.y.toFixed(1)})`);
   check(near(r?.fontSize, 10), `font size 10 (got ${r?.fontSize.toFixed(1)})`);
+}
+
+console.log('\n=== Skia/Chrome style: page-wide y-flip cm plus a flipped Tm ===');
+{
+  const runs = await extract((page, font) => {
+    page.setFont(font);
+    const key = (page as unknown as { fontKey: string }).fontKey;
+    page.pushOperators(
+      pushGraphicsState(), concatTransformationMatrix(1, 0, 0, -1, 0, 400),
+      beginText(), setFontAndSize(key, 20), setTextMatrix(1, 0, 0, -1, 60, 150), showText(font.encodeText('flipped-text')), endText(),
+      popGraphicsState(),
+    );
+  });
+  const r = runs.find((x) => x.text.includes('flipped-text'));
+  check(!!r, 'run extracted');
+  check(near(r?.position.x, 60) && near(r?.position.y, 250), `position = (60, 400-150) = (60,250) (got ${r?.position.x.toFixed(1)},${r?.position.y.toFixed(1)})`);
+  check(near(r?.fontSize, 20), `font size stays 20 (got ${r?.fontSize.toFixed(1)})`);
 }
 
 void PDFOperator; void PDFOperatorNames;
