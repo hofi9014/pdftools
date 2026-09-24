@@ -157,3 +157,24 @@ export function blocksInReadingOrder(blocks: IRBlock[], pageHeight: number): IRB
   const top = (b: IRBlock): number => (b.kind === 'table' ? b.bounds.y : pageHeight - (b.bounds.y + b.bounds.height));
   return blocks.map((b, i) => ({ b, i, t: top(b) })).sort((p, q) => (p.t - q.t) || (p.i - q.i)).map((x) => x.b);
 }
+
+/**
+ * Table-of-contents lines are drawn as "title ........ 12": the dots are a run of their own and
+ * the page number a separate run pinned to the right edge. Written as text the dots wrap and the
+ * numbers drift; Word models this as a right tab stop with a dot leader. Returns the runs before
+ * and after the leader when the line has exactly that shape (something before it, a short page
+ * number after it), otherwise null so ordinary lines are never touched.
+ */
+export function splitDotLeader<T extends { text: string }>(runs: T[]): { before: T[]; after: T[] } | null {
+  for (let i = runs.length - 2; i >= 1; i--) {
+    const t = runs[i]!.text;
+    if (!/^[\s.·…]+$/.test(t) || t.replace(/[\s]/g, '').length < 4) continue;
+    const before = runs.slice(0, i);
+    const after = runs.slice(i + 1);
+    if (!before.some((r) => r.text.trim() !== '')) return null;
+    const number = after.map((r) => r.text).join('').trim();
+    if (!/^(\d{1,4}|[ivxlcdm]{1,7})$/i.test(number)) return null;
+    return { before, after };
+  }
+  return null;
+}

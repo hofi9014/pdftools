@@ -4,7 +4,7 @@
 import { PDFDocument, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
 import type JSZip from 'jszip';
 import { applyConditionalFormatting } from './xlsx-conditional-formatting';
-import { inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder } from './pdf/docxLayout';
+import { splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder } from './pdf/docxLayout';
 
 // ============================================================
 // IR TYPES (Phase 1a — without TableBlock)
@@ -936,7 +936,7 @@ function irRunsToTextRuns(TRC: any, runs: IRTextRun[], ExtLink?: any): any[] {
 export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, WriterImage>): Promise<Blob> {
   const {
     Document, Packer, Paragraph, HeadingLevel, TextRun, ImageRun,
-    Table, TableRow, TableCell, WidthType, BorderStyle, ExternalHyperlink, AlignmentType, ShadingType,
+    Table, TableRow, TableCell, WidthType, BorderStyle, ExternalHyperlink, AlignmentType, ShadingType, Tab, TabStopType, LeaderType,
   } = await import('docx');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1070,15 +1070,32 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
             ? { indent: { left: twips(18 * (level + 1) + 18), hanging: twips(18) } }
             : { bullet: { level } }),
           children: numbered
-            ? [new TextRun({ text: li.marker + '\t' }), ...irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink)]
+            ? [new TextRun({ children: [li.marker, new Tab()] }), ...irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink)]
             : irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink),
         }));
       } else {
         const p = block as IRParagraphBlock;
-        push(new Paragraph({
-          ...layoutOpts(),
-          children: irRunsToTextRuns(TextRun, p.runs, ExternalHyperlink),
-        }));
+        const leader = hasRotation ? null : splitDotLeader(p.runs);
+        if (leader) {
+          // "title ..... 12": a right tab stop with a dot leader at the line's right edge (Word
+          // measures tab positions from the left margin, and they cannot pass the text width).
+          const textWidth = page.width - margins.left - margins.right;
+          const right = Math.min(p.bounds.x + p.bounds.width - margins.left, textWidth);
+          push(new Paragraph({
+            ...layoutOpts(),
+            tabStops: [{ type: TabStopType.RIGHT, position: twips(Math.max(right, 0)), leader: LeaderType.DOT }],
+            children: [
+              ...irRunsToTextRuns(TextRun, leader.before, ExternalHyperlink),
+              new TextRun({ children: [new Tab()] }),
+              ...irRunsToTextRuns(TextRun, leader.after, ExternalHyperlink),
+            ],
+          }));
+        } else {
+          push(new Paragraph({
+            ...layoutOpts(),
+            children: irRunsToTextRuns(TextRun, p.runs, ExternalHyperlink),
+          }));
+        }
       }
     }
   }
