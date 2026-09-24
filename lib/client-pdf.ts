@@ -2853,8 +2853,10 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
       if (!tr.text.trim()) { used.add(idx); continue; }
 
       // --- List item detection ---
-      const bulletMatch = tr.text.match(BULLET_REGEX);
-      const numberedMatch = tr.text.match(NUMBERED_REGEX);
+      // Heading-sized text is never a list marker (decorative 60pt section numerals "1.".."9.").
+      const headingSized = tr.fontSize >= 24;
+      const bulletMatch = headingSized ? null : tr.text.match(BULLET_REGEX);
+      const numberedMatch = headingSized ? null : tr.text.match(NUMBERED_REGEX);
       if (bulletMatch || numberedMatch) {
         const match = bulletMatch || numberedMatch;
         const marker = match![0].trimEnd();

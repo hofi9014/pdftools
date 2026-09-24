@@ -17,7 +17,7 @@ import { DOMParser } from '@xmldom/xmldom';
 (globalThis as Record<string, unknown>).DOMParser = DOMParser;
 
 import { inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder } from '../lib/pdf/docxLayout.ts';
-import { pdfToWordIR } from '../lib/client-pdf.ts';
+import { pdfToWordIR, extractFormattedTextFromPDF } from '../lib/client-pdf.ts';
 import type { IRPageIR, IRBlock, IRTextRun } from '../lib/client-pdf-docx.ts';
 
 let fails = 0;
@@ -122,6 +122,23 @@ console.log('\n=== real pipeline: chrome-report.pdf (Skia: y-flip cm, bands, lis
   check(/<w:shd [^>]*w:fill="1F4E79"/i.test(xml), 'white title sits on its blue band (paragraph shading)');
   for (const item of ['Pierwszy punkt listy', 'Drugi punkt listy', 'Trzeci punkt']) check(text(xml).replace(/[|]/g, '').includes(item), `list item "${item}" is present outside the table`);
   check(!/Pierwszy punkt/.test(text(tables[0] ?? '')), 'list items are not swallowed by a table');
+}
+
+console.log('\n=== numbered lists and heading-sized numerals ===');
+{
+  const f = 'allegro-raport.pdf';
+  const file = Object.assign(new Blob([readFileSync(join(ROOT, 'test-real-pdfs', f))]), { name: f }) as unknown as File;
+  const pages = await extractFormattedTextFromPDF(file);
+  const items = pages.flatMap((p) => p.blocks.filter((b) => b.kind === 'list-item')) as Array<{ marker: string; runs: Array<{ text: string }> }>;
+  check(items.every((i) => i.runs.map((r) => r.text).join('').trim() !== ''), 'no empty list items (the 60pt section numerals used to become empty ones)');
+  const zip = await JSZip.loadAsync(await (await pdfToWordIR(file)).arrayBuffer());
+  const xml = await zip.file('word/document.xml')!.async('string');
+  check(!/<w:numPr>/.test(xml) || (xml.match(/<w:numPr>/g) ?? []).length < 5, 'no decorative bullets from the numerals');
+}
+{
+  const numbered = /^\d+[.)]\s+(?!\d)/;
+  check(numbered.test('1. Pierwszy') && numbered.test('2) drugi'), 'marker with a following space is a numbered item');
+  check(!numbered.test('2026') && !numbered.test('1.5 kg') && !numbered.test('3.'), 'years, decimals and a bare "3." are not');
 }
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
