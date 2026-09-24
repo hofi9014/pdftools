@@ -2799,8 +2799,16 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
         }
 
         // Convert null cells to empty placeholders
-        const irCells: IRTableCell[][] = cellGrid.map(row =>
-          row.map(c => c ?? { runs: [], colspan: 1, rowspan: 1 })
+        // An EMPTY merged cell keeps its span: the positions it covers are dropped below, so a
+        // 1x1 placeholder here would lose those columns/rows.
+        const spanAt = new Map<string, GridCell>();
+        for (const gc of gridCells) spanAt.set(`${gc.row}:${gc.col}`, gc);
+        const irCells: IRTableCell[][] = cellGrid.map((row, ri) =>
+          row.map((c, ci) => c ?? {
+            runs: [],
+            colspan: spanAt.get(`${ri}:${ci}`)?.colspan ?? 1,
+            rowspan: spanAt.get(`${ri}:${ci}`)?.rowspan ?? 1,
+          })
         );
 
         for (const gc of gridCells) {
@@ -2814,6 +2822,17 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
           if (target && hex && coversCell && hex.toLowerCase() !== 'ffffff') target.fill = hex.toUpperCase();
         }
 
+        // Word/ODT rows list only the cells that START in that row: a position covered by another
+        // cell's colspan/rowspan is not a cell (same convention as the .docx reader and the PDF
+        // renderer). Keeping the empty placeholders made every merged row wider than the grid.
+        const covered = new Set<string>();
+        for (const gc of gridCells) {
+          for (let rr = gc.row; rr < gc.row + gc.rowspan; rr++) {
+            for (let cc = gc.col; cc < gc.col + gc.colspan; cc++) if (rr !== gc.row || cc !== gc.col) covered.add(`${rr}:${cc}`);
+          }
+        }
+        const irRows: IRTableCell[][] = irCells.map((row, ri) => row.filter((_, ci) => !covered.has(`${ri}:${ci}`)));
+
         const columnWidths = [];
         for (let ci = 0; ci < cluster.xEdges.length - 1; ci++) {
           columnWidths.push(cluster.xEdges[ci + 1]! - cluster.xEdges[ci]!);
@@ -2824,7 +2843,7 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
         const allY = cluster.yEdges;
         blocks.push({
           kind: 'table',
-          cells: irCells,
+          cells: irRows,
           bounds: {
             x: allX[0]!,
             y: allY[0]!,

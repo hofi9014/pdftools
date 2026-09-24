@@ -3498,21 +3498,39 @@ function odtRenderTableXml(table: IRTableBlock, nameFor: (r: IRTextRun) => strin
   const cols = table.columnWidths
     .map((w) => `<table:table-column style:column-width="${Math.round(w)}pt"/>`)
     .join('');
+  // IR rows list only the cells that START in that row; ODF wants every grid position present, so
+  // positions covered by a colspan (to the right) or a rowspan (from above) are written as
+  // <table:covered-table-cell/>.
+  const nCols = table.columnWidths.length;
+  const occupied: number[] = new Array(nCols).fill(0);
+  const covered = '<table:covered-table-cell/>';
   const rows = table.cells
-    .map((row) =>
-      `<table:table-row>` +
-      row
-        .map((cell) => {
-          const inner = odtRenderRunsXml(cell.runs, nameFor);
-          const p = inner ? `<text:p>${inner}</text:p>` : `<text:p/>`;
-          const attrs: string[] = [];
-          if (cell.colspan > 1) attrs.push(`table:number-columns-spanned="${cell.colspan}"`);
-          if (cell.rowspan > 1) attrs.push(`table:number-rows-spanned="${cell.rowspan}"`);
-          return `<table:table-cell${attrs.length ? ' ' + attrs.join(' ') : ''}>${p}</table:table-cell>`;
-        })
-        .join('') +
-      `</table:table-row>`
-    )
+    .map((row) => {
+      let g = 0;
+      let out = '';
+      const skipCovered = () => {
+        while (g < nCols && occupied[g]! > 0) { out += covered; occupied[g] = occupied[g]! - 1; g++; }
+      };
+      for (const cell of row) {
+        skipCovered();
+        if (g >= nCols) break;
+        const inner = odtRenderRunsXml(cell.runs, nameFor);
+        const p = inner ? `<text:p>${inner}</text:p>` : `<text:p/>`;
+        const attrs: string[] = [];
+        if (cell.colspan > 1) attrs.push(`table:number-columns-spanned="${cell.colspan}"`);
+        if (cell.rowspan > 1) attrs.push(`table:number-rows-spanned="${cell.rowspan}"`);
+        out += `<table:table-cell${attrs.length ? ' ' + attrs.join(' ') : ''}>${p}</table:table-cell>`;
+        const cs = Math.min(Math.max(cell.colspan || 1, 1), nCols - g);
+        const rs = Math.max(cell.rowspan || 1, 1);
+        for (let j = 0; j < cs; j++) {
+          if (j > 0) out += covered;
+          occupied[g + j] = rs > 1 ? rs - 1 : 0;
+        }
+        g += cs;
+      }
+      skipCovered();
+      return `<table:table-row>${out}</table:table-row>`;
+    })
     .join('');
   return `<table:table>${cols}${rows}</table:table>`;
 }
