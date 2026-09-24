@@ -120,6 +120,7 @@
     "test:docx-font-family": "npx --yes tsx tests/docx-font-family.mts",
     "test:docx-layout": "npx --yes tsx tests/docx-layout.mts",
     "test:docx-rotated-text": "npx --yes tsx tests/docx-rotated-text.mts",
+    "test:docx-toc-leader": "npx --yes tsx tests/docx-toc-leader.mts",
     "test:text-ctm-geometry": "npx --yes tsx tests/text-ctm-geometry.mts",
     "test:text-color-graphics-state": "npx --yes tsx tests/text-color-graphics-state.mts"
   },
