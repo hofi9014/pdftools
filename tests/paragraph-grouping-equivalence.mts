@@ -105,13 +105,13 @@ console.log('=== extractFormattedTextFromPDF: O(n^2) grouping optimization chang
 
 // {fixture: [expectedHash, expectedPageCount]} — captured from the fixed code and
 // cross-checked byte-for-byte against the pre-optimization code before being hard-coded here.
-// (Updated 2026-09-17 three times, for three unrelated fixes/features — see the comments above. Updated again 2026-09-24 for allegro-raport.pdf and the Raport fixture ONLY: parseFontStyle now treats Black/Heavy/Demi weights as bold; verified by a before/after diff to be exactly 43 bold false->true flips on Gotham-Black runs and zero other differences.)
+// (Updated 2026-09-17 three times, for three unrelated fixes/features — see the comments above. Updated again 2026-09-24 for allegro-raport.pdf and the Raport fixture ONLY: parseFontStyle now treats Black/Heavy/Demi weights as bold; verified by a before/after diff to be exactly 43 bold false->true flips on Gotham-Black runs and zero other differences. Updated a third time 2026-09-24 for epz-report-variant2.pdf ONLY: fill colour/font are now tracked with a q/Q stack; diff = 2981 run colours changed from a cell-background colour (white 2048, grey 719, ...) back to black, zero other differences. Updated a fourth time 2026-09-24 for the Raport fixture and epz-report-variant2.pdf: text positions/sizes/rotation now go through the CTM (tests/text-ctm-geometry.mts); e.g. Raport body lines moved from raw x=1,y=829 to the real x=100,y=721. The three CTM-free fixtures are byte-identical.)
 const EXPECTED: Record<string, [string, number]> = {
   'allegro-raport.pdf': ['4540a82f934ddfdfb79099584e82d0d333e021425ec2c0b5363112fcd1e8a95b', 27],
   'epz_pptx_table_fixture.pdf': ['7a269513327161a15d2b07f95cee0d96a14878a62595394704e10198db82255b', 3],
   'gpw-ebook.pdf': ['0397d62bee51da6d0ebde281680d0e2ce8112a3789223f1515773511fc02edef', 12],
-  'Raport - 12 rzeczy, które robią skuteczni handlarze w Internecie_na Allegro.pdf': ['8b46830acc261cd7129ae25b49a9bd1f60114f84e3c1553a90f1c720108958a3', 27],
-  'epz-report-variant2.pdf': ['d6ba02a9749fa38e5f083a782e5f9a69f399085e4dde51abd8f4d98c80711d69', 3],
+  'Raport - 12 rzeczy, które robią skuteczni handlarze w Internecie_na Allegro.pdf': ['198886fd4f380e2dfe015e21a21bf4092d65c239cf7e187e89a3ddac89d16738', 27],
+  'epz-report-variant2.pdf': ['2c857234c4452c9d6fefacbbf9986ef87e2c2fbb20969eddd465a844c47fb288', 3],
 };
 
 for (const [fname, [expectedHash, expectedPages]] of Object.entries(EXPECTED)) {

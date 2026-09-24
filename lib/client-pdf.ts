@@ -1729,6 +1729,18 @@ function getRotation(t: Mat2D): number {
   return Math.atan2(b, a) * 180 / Math.PI;
 }
 
+/** Row-vector matrix product: apply `a` first, then `b` (PDF convention, same as cm). */
+function mulMat(a: Mat2D | number[], b: Mat2D): Mat2D {
+  return [
+    a[0]! * b[0] + a[1]! * b[2],
+    a[0]! * b[1] + a[1]! * b[3],
+    a[2]! * b[0] + a[3]! * b[2],
+    a[2]! * b[1] + a[3]! * b[3],
+    a[4]! * b[0] + a[5]! * b[2] + b[4],
+    a[4]! * b[1] + a[5]! * b[3] + b[5],
+  ];
+}
+
 function parseFontStyle(fontName: string): { bold: boolean; italic: boolean } {
   return {
     // Weight words other than "Bold" (Gotham-Black, Roboto-Heavy, Segoe-Semibold, DemiBold...) are
@@ -1834,8 +1846,15 @@ export function buildPageScaffold(
 
   // For each setTextMatrix index, find the fill color that was set before it
   const textOpColors: Map<number, string> = new Map();
+  // Fill colour is graphics state: `q` saves it and `Q` restores it. Cell backgrounds are
+  // typically painted inside q…Q (fill white/grey, draw rect, restore) and the text that follows
+  // uses the colour from BEFORE the q — a plain "last write wins" gave every such run the
+  // background's colour (white or grey text, invisible in the converted document).
   let currentFill = '#000000';
+  const fillStack: string[] = [];
   for (const [i, { op, args }] of ops.entries()) {
+    if (op === 'save') fillStack.push(currentFill);
+    else if (op === 'restore') currentFill = fillStack.pop() ?? currentFill;
     if (op === 'setFillRGBColor') currentFill = Array.isArray(args) ? (args[0] as string) : (args as string);
     if (op === 'setTextMatrix' || op === 'showText') textOpColors.set(i, currentFill);
   }
@@ -1858,7 +1877,11 @@ export function buildPageScaffold(
   // wasn't built or doesn't have this specific font.
   const textOpFonts: Map<number, { name: string; size: number }> = new Map();
   let currentFont = { name: '', size: 12 };
+  const fontStack: Array<{ name: string; size: number }> = [];
   for (const [i, { op, args }] of ops.entries()) {
+    // Tf is graphics state too: q saves it, Q restores it.
+    if (op === 'save') fontStack.push({ ...currentFont });
+    else if (op === 'restore') currentFont = fontStack.pop() ?? currentFont;
     if (op === 'setFont' && Array.isArray(args)) {
       const loadedName = args[0] as string;
       const realName = fontNameMap?.get(loadedName) ?? loadedName;
@@ -1867,14 +1890,8 @@ export function buildPageScaffold(
     if (op === 'setTextMatrix' || op === 'showText') textOpFonts.set(i, { ...currentFont });
   }
 
-  // KNOWN LIMITATION: Linear color/font state machine
-  // The state machine above tracks color and font as linear "last write wins".
-  // It does NOT implement a proper save/restore stack (save/restore operators).
-  // For PDFs with nested save/restore blocks (e.g., different colors in
-  // save/restore pairs), the last setFillRGBColor before a setTextMatrix
-  // is used, which may be incorrect if a restore() should have reverted
-  // the color. This is a known limitation; most office-generated PDFs
-  // don't use nested save/restore for text formatting.
+  // Fill colour and font are tracked with a save/restore stack (see above); other graphics-state
+  // parameters (text render mode, pattern/shading fills) are not modelled.
 
   // --- Image detection: paintImageXObject with accumulated transforms ---
   // A proper graphics-state STACK is modeled for the CTM: `save` pushes the
@@ -1889,7 +1906,12 @@ export function buildPageScaffold(
   const images: PdfPageScaffoldImage[] = [];
   const stack: Mat2D[] = [];
   let accumTx: Mat2D = [1, 0, 0, 1, 0, 0];
-  for (const { op, args } of ops) {
+  // CTM in effect at every operator (text operators never change it, so the value at a Tm /
+  // moveText / beginText is the CTM the text is drawn under). accumTx is reassigned, never
+  // mutated, so keeping the reference is safe.
+  const ctmAtOp: Mat2D[] = new Array(ops.length);
+  for (const [opIdx, { op, args }] of ops.entries()) {
+    ctmAtOp[opIdx] = accumTx;
     if (op === 'save') stack.push([...accumTx]);
     if (op === 'restore') {
       if (stack.length > 0) accumTx = stack.pop() || [1, 0, 0, 1, 0, 0];
@@ -1947,7 +1969,12 @@ export function buildPageScaffold(
     const tmB = tmObj[1] ?? tmObj['1'] ?? 0;
     const tmC = tmObj[2] ?? tmObj['2'] ?? 0;
     const tmD = tmObj[3] ?? tmObj['3'] ?? 1;
-    const tmScale = Math.sqrt(tmA * tmA + tmB * tmB);
+    // Text is drawn under the CTM (Word/Chrome/Excel-scaled PDFs wrap whole pages in cm): the
+    // effective matrix is Tm × CTM. Ignoring it put every run at raw text-space coordinates while
+    // the table rectangles (which do apply the CTM) sat in page space, so cells and text never met.
+    const ctm = ctmAtOp[i] ?? [1, 0, 0, 1, 0, 0];
+    const comb = mulMat([tmA, tmB, tmC, tmD, tmX, tmY], ctm);
+    const tmScale = Math.sqrt(comb[0] * comb[0] + comb[1] * comb[1]);
 
     // Scan forward within the current BT…ET block for showText and moveText
     let accDx = 0; // accumulated moveText delta in text space
@@ -1987,11 +2014,13 @@ export function buildPageScaffold(
           width = text.length * effectiveFontSize * 0.5;
         }
 
-        const rotation = getRotation([tmA, tmB, 0, 0, 0, 0]);
+        const rotation = getRotation([comb[0], comb[1], 0, 0, 0, 0]);
 
-        // Absolute position: Tm origin + accumulated moveText scaled by Tm
-        const posX = tmX + accDx * tmA + accDy * tmC;
-        const posY = tmY + accDx * tmB + accDy * tmD;
+        // Absolute position: Tm origin + accumulated moveText scaled by Tm, then through the CTM
+        const localX = tmX + accDx * tmA + accDy * tmC;
+        const localY = tmY + accDx * tmB + accDy * tmD;
+        const posX = ctm[0] * localX + ctm[2] * localY + ctm[4];
+        const posY = ctm[1] * localX + ctm[3] * localY + ctm[5];
 
         textRuns.push({
           text,
@@ -2048,6 +2077,9 @@ export function buildPageScaffold(
     // [1,0,0,1,0,0] (posX = tmX + accDx*tmA + accDy*tmC).
     let accDx = 0;
     let accDy = 0;
+    const fctm = ctmAtOp[i] ?? [1, 0, 0, 1, 0, 0];
+    const fScale = Math.sqrt(fctm[0] * fctm[0] + fctm[1] * fctm[1]) || 1;
+    const fRotation = getRotation([fctm[0], fctm[1], 0, 0, 0, 0]);
 
     for (let j = i + 1; j < blockEnd; j++) {
       // Safe: j is always in [i+1, blockEnd-1], and blockEnd <= ops.length.
@@ -2071,7 +2103,7 @@ export function buildPageScaffold(
 
       const fontInfo = textOpFonts.get(j) || { name: '', size: 12 };
       const color = textOpColors.get(j) || '#000000';
-      const fontSize = fontInfo.size;
+      const fontSize = fontInfo.size * fScale;
 
       let width = 0;
       for (const g of glyphArr) {
@@ -2087,11 +2119,11 @@ export function buildPageScaffold(
         fontSize,
         width,
         height: fontSize,
-        position: { x: accDx, y: accDy },
+        position: { x: fctm[0] * accDx + fctm[2] * accDy + fctm[4], y: fctm[1] * accDx + fctm[3] * accDy + fctm[5] },
         color,
         bold: parseFontStyle(fontInfo.name).bold,
         italic: parseFontStyle(fontInfo.name).italic,
-        rotation: 0,
+        rotation: fRotation,
       });
     }
   }
