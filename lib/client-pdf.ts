@@ -2,7 +2,7 @@ import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFHexStr
 import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePages, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
-import { renderIRToDocx, type IRTextRun, type IRImageBlock, type IRTableCell, type IRBlock, type IRRect, type IRPageIR, type IRSpreadsheetCell, type IRSheet, type IRSpreadsheet, type IRConditionalFormattingRule, ptToXlsxCharWidth } from './client-pdf-docx';
+import { renderIRToDocx, type IRTextRun, type IRImageBlock, type IRTableCell, type IRBlock, type IRRect, type IRPageIR, type IRFillRect, type IRSpreadsheetCell, type IRSheet, type IRSpreadsheet, type IRConditionalFormattingRule, ptToXlsxCharWidth } from './client-pdf-docx';
 import type { IRSlide, IRSlideElement, IRDeck, IRPtRect, IRTextContent } from './client-pptx';
 import { getFontFamily } from './pdf/fonts';
 
@@ -2471,6 +2471,7 @@ interface PageTableScaffold {
   textRuns: IRTextRun[];
   images: PdfPageScaffoldImage[];
   tableClusters: TableCluster[];
+  fillRects: IRFillRect[];
 }
 
 interface PdfjsLinkAnnotation {
@@ -2553,6 +2554,20 @@ function applyUnderlineFromRects(textRuns: IRTextRun[], rects: RawRect[], pageHe
   }
 }
 
+/** Solid, non-white filled rectangles big enough to sit behind text, in PDF (bottom-origin) coordinates. */
+function collectFillRects(rects: RawRect[], pageHeight: number): IRFillRect[] {
+  const out: IRFillRect[] = [];
+  for (const r of rects) {
+    if (!r.fill || !r.fillColor || r.width < 20 || r.height < 6) continue;
+    const m = /^#([0-9a-fA-F]{6})$/.exec(r.fillColor);
+    if (!m) continue;
+    const v = parseInt(m[1]!, 16);
+    if (((v >> 16) & 255) > 245 && ((v >> 8) & 255) > 245 && (v & 255) > 245) continue;
+    out.push({ x: r.x, y: pageHeight - r.y - r.height, width: r.width, height: r.height, color: m[1]!.toUpperCase() });
+  }
+  return out;
+}
+
 async function parsePagesForTableExtraction(file: File): Promise<PageTableScaffold[]> {
   const buf = await file.arrayBuffer();
   const pdfjsLib = await import('pdfjs-dist');
@@ -2574,7 +2589,7 @@ async function parsePagesForTableExtraction(file: File): Promise<PageTableScaffo
     const tableRects = extractRectsFromOps(ops, pageHeight);
     applyUnderlineFromRects(textRuns, tableRects, pageHeight);
     const tableClusters = buildTableClusters(tableRects);
-    result.push({ page: p, pageWidth, pageHeight, ops, textRuns, images, tableClusters });
+    result.push({ page: p, pageWidth, pageHeight, ops, textRuns, images, tableClusters, fillRects: collectFillRects(tableRects, pageHeight) });
   }
 
   await doc.cleanup();
@@ -2613,7 +2628,7 @@ function reseatScriptRuns(group: IRTextRun[], yTolerance: number): void {
 function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPageIR[] {
   const pages: IRPageIR[] = [];
 
-  for (const { pageWidth, pageHeight, textRuns, images, tableClusters } of scaffolds) {
+  for (const { pageWidth, pageHeight, textRuns, images, tableClusters, fillRects } of scaffolds) {
     // --- Compute bodyFontSize ---
     const sizeStats: Record<string, number> = {};
     for (const tr of textRuns) {
@@ -2872,7 +2887,7 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
       blocks.splice(insertIdx, 0, imgBlock);
     }
 
-    pages.push({ width: pageWidth, height: pageHeight, blocks });
+    pages.push({ width: pageWidth, height: pageHeight, blocks, ...(fillRects.length > 0 ? { fills: fillRects } : {}) });
   }
 
   return pages;
