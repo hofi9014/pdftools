@@ -16,7 +16,7 @@ register(pathToFileURL(join(ROOT, 'scripts/_pdfjs_remap.mjs')).href, pathToFileU
 import { DOMParser } from '@xmldom/xmldom';
 (globalThis as Record<string, unknown>).DOMParser = DOMParser;
 
-import { inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder } from '../lib/pdf/docxLayout.ts';
+import { splitAtBlankLines, inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder } from '../lib/pdf/docxLayout.ts';
 import { pdfToWordIR, extractFormattedTextFromPDF } from '../lib/client-pdf.ts';
 import type { IRPageIR, IRBlock, IRTextRun } from '../lib/client-pdf-docx.ts';
 
@@ -71,6 +71,11 @@ console.log('\n=== real pipeline: allegro-raport.pdf → docx ===');
   const boxed = (xml.match(/<w:p>(?:(?!<\/w:p>)[\s\S])*<\/w:p>/g) ?? []).filter((p) => /<w:pBdr>/.test(p));
   check(boxed.length >= 5 && boxed.every((p) => /w:color="E94F1E"/.test(p)), `the orange callout frames become orange paragraph borders (got ${boxed.length})`);
   check(boxed.some((p) => p.includes('Jaki jest ten sekret')), 'the framed question on page 2 carries the border');
+  const paras = (xml.match(/<w:p>(?:(?!<\/w:p>)[\s\S])*<\/w:p>/g) ?? []).map((p) => p.replace(/<[^>]+>/g, ''));
+  const own = (needle: string) => paras.find((p) => p.includes(needle)) ?? '';
+  check(own('Najtańszy może być tylko jeden').trim() === 'Najtańszy może być tylko jeden.', 'a paragraph separated by blank lines is its own Word paragraph');
+  check(!own('Ludzie nie są głupi').includes('Moja babcia') && !own('Moja babcia').includes('Przeanalizowaliśmy'), 'neighbouring paragraphs are not fused into one');
+  check(own('ŻADNA').includes('ŻADNA z osób, które odniosła sukces startując od zera'), 'the coloured lead-in and the rest of its line stay in order');
   const plain = (xml.match(/<w:p>(?:(?!<\/w:p>)[\s\S])*<\/w:p>/g) ?? []).find((p) => p.includes('Co sprawia'));
   check(!!plain && !/<w:pBdr>/.test(plain), 'the unframed paragraph above it has no border');
 }
@@ -84,6 +89,17 @@ console.log('\n=== line changes get their space (separateLines) ===');
   check(out[3]!.text === ' nad-', 'a run after a line change still gets its space');
   check(out[4]!.text === 'zór', 'no space after a trailing hyphen (hyphenated wrap)');
   check(out[6]!.text === 'b', 'no double space when the previous run already ends with one');
+}
+
+console.log('\n=== blank lines split paragraphs (splitAtBlankLines) ===');
+{
+  const r = (t: string, y: number) => ({ text: t, fontSize: 10, position: { y } });
+  const g = splitAtBlankLines([r('first', 100), r('second', 88), r(' ', 76), r('third', 64), r(' ', 52), r('fourth', 40)]);
+  check(g.length === 3 && g[0]!.length === 2 && g[1]![0]!.text === 'third' && g[2]![0]!.text === 'fourth', 'lone blank lines separate three paragraphs');
+  const words = splitAtBlankLines([r('a', 100), r(' ', 100), r('b', 100)]);
+  check(words.length === 1 && words[0]!.length === 3, 'a space between two words on ONE line is not a separator');
+  const edges = splitAtBlankLines([r(' ', 100), r('x', 88), r(' ', 76)]);
+  check(edges.length === 1 && edges[0]!.length === 1 && edges[0]![0]!.text === 'x', 'leading/trailing blank lines are dropped');
 }
 
 console.log('\n=== real pipeline: epz-report-variant2.pdf (scaled by cm, table) ===');

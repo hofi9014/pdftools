@@ -122,6 +122,7 @@
     "test:docx-rotated-text": "npx --yes tsx tests/docx-rotated-text.mts",
     "test:docx-toc-leader": "npx --yes tsx tests/docx-toc-leader.mts",
     "test:table-merged-grid": "npx --yes tsx tests/table-merged-grid.mts",
+    "test:text-run-advance": "npx --yes tsx tests/text-run-advance.mts",
     "test:text-ctm-geometry": "npx --yes tsx tests/text-ctm-geometry.mts",
     "test:text-color-graphics-state": "npx --yes tsx tests/text-color-graphics-state.mts"
   },

@@ -4,7 +4,7 @@
 import { PDFDocument, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
 import type JSZip from 'jszip';
 import { applyConditionalFormatting } from './xlsx-conditional-formatting';
-import { findBox, splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder } from './pdf/docxLayout';
+import { splitAtBlankLines, findBox, splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder } from './pdf/docxLayout';
 
 // ============================================================
 // IR TYPES (Phase 1a — without TableBlock)
@@ -1111,10 +1111,19 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
             ],
           }));
         } else {
-          push(new Paragraph({
-            ...layoutOpts(),
-            children: irRunsToTextRuns(TextRun, p.runs, ExternalHyperlink),
-          }));
+          // Paragraphs separated by a blank line inside one block are written as separate paragraphs;
+          // the blank line becomes space-before (the extra distance beyond one normal line step).
+          const groups = hasRotation ? [p.runs] : splitAtBlankLines(p.runs);
+          const opts = layoutOpts();
+          groups.forEach((g, gi) => {
+            let own = opts;
+            if (gi > 0) {
+              const prevRun = groups[gi - 1]![groups[gi - 1]!.length - 1]!;
+              const extra = prevRun.position.y - g[0]!.position.y - prevRun.fontSize * 1.2;
+              own = { ...opts, pageBreakBefore: undefined, spacing: extra > 0 ? { before: twips(Math.min(extra, 72)) } : undefined };
+            }
+            push(new Paragraph({ ...own, children: irRunsToTextRuns(TextRun, g, ExternalHyperlink) }));
+          });
         }
       }
     }
