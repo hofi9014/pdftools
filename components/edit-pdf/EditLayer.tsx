@@ -1,8 +1,9 @@
 'use client';
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback } from 'react';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getFontFamily } from '@/lib/pdf/fonts';
+import { dragElement, type DragStart } from './dragMath';
 
 export interface EditorElement {
   id: number
@@ -30,7 +31,8 @@ interface Props {
   elements: EditorElement[]
   selectedId: number | null
   onSelect: (id: number | null) => void
-  onElementsChange: (elements: EditorElement[]) => void
+  /** 'begin' = first change of a gesture (one undo step); 'update' = later moves of the same gesture. */
+  onElementsChange: (elements: EditorElement[], phase?: 'begin' | 'update') => void
   canvasWidth: number
   canvasHeight: number
   activeTool: string
@@ -62,7 +64,7 @@ export default function EditLayer({
 }: Props) {
   const locale = useHydrationSafeLocale();
   const containerRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ id: number; sx: number; sy: number; ox: number; oy: number; ow: number; oh: number; handle: string | null } | null>(null);
+  const dragRef = useRef<(DragStart & { id: number; sx: number; sy: number; started: boolean }) | null>(null);
   const drawingRef = useRef<{ id: number; type: 'line' | 'arrow' | 'freehand'; pts: { x: number; y: number }[] } | null>(null);
 
   const clientToImg = useCallback((clientX: number, clientY: number) => {
@@ -80,6 +82,12 @@ export default function EditLayer({
     if (target.closest('.text-block-hit')) return;
 
     const p = clientToImg(e.clientX, e.clientY);
+
+    // Capture the pointer so releasing outside the layer still ends the stroke; otherwise the
+    // stroke stays "live" and keeps drawing on the next mouse move.
+    if (activeTool === 'line' || activeTool === 'arrow' || activeTool === 'freehand') {
+      try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); } catch { /* synthetic events */ }
+    }
 
     if (activeTool === 'line' || activeTool === 'arrow') {
       const id = onLineStart(p.x, p.y);
@@ -107,7 +115,10 @@ export default function EditLayer({
     const target = e.currentTarget as HTMLElement;
     target.setPointerCapture(e.pointerId);
     onSelect(el.id);
-    dragRef.current = { id: el.id, sx: e.clientX, sy: e.clientY, ox: el.x, oy: el.y, ow: el.w, oh: el.h, handle };
+    dragRef.current = {
+      id: el.id, sx: e.clientX, sy: e.clientY, ox: el.x, oy: el.y, ow: el.w, oh: el.h, handle,
+      ox2: el.x2, oy2: el.y2, opoints: el.points?.map((pt) => ({ ...pt })), started: false,
+    };
   }, [onSelect]);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
@@ -130,19 +141,9 @@ export default function EditLayer({
     const dx = (e.clientX - dr.sx) * sx;
     const dy = (e.clientY - dr.sy) * sy;
 
-    const updated = elements.map(el => {
-      if (el.id !== dr.id) return el;
-      if (dr.handle) {
-        let { x, y, w, h } = el;
-        if (dr.handle.includes('e')) w = Math.max(20, dr.ow + dx);
-        if (dr.handle.includes('w')) { x = dr.ox + dx; w = Math.max(20, dr.ow - dx); }
-        if (dr.handle.includes('s')) h = Math.max(20, dr.oh + dy);
-        if (dr.handle.includes('n')) { y = dr.oy + dy; h = Math.max(20, dr.oh - dy); }
-        return { ...el, x, y, w, h };
-      }
-      return { ...el, x: dr.ox + dx, y: dr.oy + dy };
-    });
-    onElementsChange(updated);
+    const updated = elements.map(el => (el.id === dr.id ? dragElement(el, dr, dx, dy) : el));
+    onElementsChange(updated, dr.started ? 'update' : 'begin');
+    dr.started = true;
   }, [elements, canvasWidth, canvasHeight, onElementsChange, clientToImg, onLineMove, onFreehandAddPoint]);
 
   const onPointerUp = useCallback(() => {
@@ -150,18 +151,8 @@ export default function EditLayer({
     dragRef.current = null;
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId != null) {
-        if (!(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
-          onElementsChange(elements.filter(el => el.id !== selectedId));
-          onSelect(null);
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedId, elements, onElementsChange, onSelect]);
+  // Delete/Backspace and the other shortcuts are handled once, in PdfEditor (shortcutAction) — a
+  // second window listener here removed the element twice and wrote two identical undo steps.
 
   const pct = (v: number, dim: number) => `${(v / dim) * 100}%`;
 
