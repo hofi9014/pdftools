@@ -18,13 +18,11 @@
 // which this does not attempt. Explicitly out of scope: CSS styling (only semantic tags drive
 // layout), colspan/rowspan, nested lists beyond one level's visual indent, and per-link /Link
 // structure elements (links ARE clickable and visually marked, just not individually tagged).
-// Also explicitly deferred (found 2026-09-23, same scanning pass that fixed the image-height
-// overflow below): a table row whose cell content wraps to enough lines to exceed a full page's
-// usable height (renderTable()'s ensureSpace(state, rowHeight) call has the same "only checks
-// the CURRENT page, never a hard cap" gap the image case had) can still overflow past the bottom
-// margin and be silently clipped — unlike the image case, fixing this would require splitting a
-// single row's content across pages, a real structural change to the table renderer, not a
-// bounded local fix like the image cap was.
+// A table row whose wrapped cell content is taller than a whole page (found 2026-09-23, fixed
+// 2026-09-24) is split into consecutive page-sized slices; each slice is emitted as its own /TR
+// (a StructElem's content must stay on one page here), so such a row appears as several rows in
+// the structure tree and gets a grid line at each slice boundary. Rows that fit a page are
+// untouched.
 
 import {
   PDFDocument, PDFName, PDFString, PDFArray, PDFOperator, PDFOperatorNames,
@@ -463,10 +461,21 @@ function renderTable(state: RenderState, rows: { header: boolean; cells: InlineR
   const cellPad = 4;
   const rowRefs: PDFRef[] = [];
 
+  const lineStep = size * 1.35;
+  const maxSliceLines = Math.max(1, Math.floor((PAGE_HEIGHT - MARGIN * 2 - cellPad * 2) / lineStep));
+  const slices: { header: boolean; cells: InlineRun[][]; cellLines: RunSegment[][][] }[] = [];
   for (const row of rows) {
-    const cellLines = row.cells.map((cellRuns) => wrapRuns(cellRuns, state.fonts, size, colWidth - cellPad * 2));
+    const full = row.cells.map((cellRuns) => wrapRuns(cellRuns, state.fonts, size, colWidth - cellPad * 2));
+    const total = Math.max(1, ...full.map((l) => l.length));
+    for (let start = 0; start < total; start += maxSliceLines) {
+      slices.push({ header: row.header, cells: row.cells, cellLines: full.map((l) => l.slice(start, start + maxSliceLines)) });
+    }
+  }
+
+  for (const row of slices) {
+    const cellLines = row.cellLines;
     const rowLineCount = Math.max(1, ...cellLines.map((l) => l.length));
-    const rowHeight = rowLineCount * size * 1.35 + cellPad * 2;
+    const rowHeight = rowLineCount * lineStep + cellPad * 2;
     ensureSpace(state, rowHeight);
 
     const { ref: trRef, dict: trDict } = registerContainer(state, 'TR', tableRef);
