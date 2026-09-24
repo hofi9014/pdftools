@@ -263,5 +263,34 @@ console.log('\n=== Tall image: a very tall image is scaled down to fit within a 
   check(tallPdfjsDoc.numPages === 1, `the single tall image fits on one page — no unnecessary extra page (got: ${tallPdfjsDoc.numPages})`);
 }
 
+// --- Oversized table row (2026-09-24): a row whose wrapped cell content is taller than a whole
+// page used to be drawn once, running off the bottom margin (text at negative y, clipped by the
+// page boundary). It must now be split across pages: every word still present, no text drawn
+// below the bottom margin, and more than one page produced. pdf.js getTextContent() reports text
+// even when it lies outside the page box, so the assertion is on each item's baseline position,
+// not just its presence. ---
+console.log('\n=== Oversized table row is split across pages, nothing drawn below the margin ===');
+{
+  const words = Array.from({ length: 700 }, (_, i) => `w${i}x`);
+  const tableHtml = `<html lang="pl"><head><title>Wysoki wiersz</title></head><body><table><tr><th>Kolumna A</th><th>Kolumna B</th></tr><tr><td>${words.join(' ')}</td><td>krótka komórka</td></tr><tr><td>po</td><td>tabeli</td></tr></table></body></html>`;
+  const bytes = await generateViaRealUi(tableHtml);
+  const doc = await pdfjsLib.getDocument({ data: bytes, standardFontDataUrl: 'node_modules/pdfjs-dist/standard_fonts/' }).promise;
+  check(doc.numPages >= 2, `the oversized row spills onto more than one page (got ${doc.numPages})`);
+  const seen = new Set<string>();
+  let lowest = Infinity;
+  for (let pg = 1; pg <= doc.numPages; pg++) {
+    const tc = await (await doc.getPage(pg)).getTextContent();
+    for (const it of tc.items as Array<{ str: string; transform: number[] }>) {
+      if (!it.str.trim()) continue;
+      for (const w of it.str.split(/\s+/)) seen.add(w);
+      lowest = Math.min(lowest, it.transform[5]!);
+    }
+  }
+  const missing = words.filter((w) => !seen.has(w));
+  check(missing.length === 0, `all 700 words of the oversized cell are present (missing: ${missing.length})`);
+  check(lowest >= 50 - 1, `no text baseline lies below the 50pt bottom margin (lowest baseline: ${lowest.toFixed(2)}pt)`);
+  check(seen.has('tabeli') && seen.has('po'), 'the row AFTER the oversized one is still rendered');
+}
+
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);
