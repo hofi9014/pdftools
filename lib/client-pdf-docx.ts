@@ -4,6 +4,7 @@
 import { PDFDocument, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
 import type JSZip from 'jszip';
 import { applyConditionalFormatting } from './xlsx-conditional-formatting';
+import { inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill } from './pdf/docxLayout';
 
 // ============================================================
 // IR TYPES (Phase 1a — without TableBlock)
@@ -73,10 +74,15 @@ export interface IRTableBlock {
 
 export type IRBlock = IRParagraphBlock | IRHeadingBlock | IRListItemBlock | IRImageBlock | IRTableBlock;
 
+/** A solid filled rectangle painted on the page (PDF coordinates: y grows upward, y = bottom edge). */
+export interface IRFillRect { x: number; y: number; width: number; height: number; color: string }
+
 export interface IRPageIR {
   width: number;
   height: number;
   blocks: IRBlock[];
+  /** Coloured bands/boxes behind the text; lets writers shade paragraphs so light text stays visible. */
+  fills?: IRFillRect[];
 }
 
 // ============================================================
@@ -952,15 +958,49 @@ function irRunsToTextRunsRotated(TRC: any, runs: IRTextRun[], rotation: number):
 export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, WriterImage>): Promise<Blob> {
   const {
     Document, Packer, Paragraph, HeadingLevel, TextRun, ImageRun,
-    Table, TableRow, TableCell, WidthType, BorderStyle, ExternalHyperlink,
+    Table, TableRow, TableCell, WidthType, BorderStyle, ExternalHyperlink, AlignmentType, ShadingType,
   } = await import('docx');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allChildren: any[] = [];
 
-  for (const page of pages) {
+  const margins = inferMargins(pages);
+  const ALIGN = { left: AlignmentType.LEFT, center: AlignmentType.CENTER, right: AlignmentType.RIGHT } as const;
+  const twips = (pt: number) => Math.round(pt * 20);
+
+  for (let pageIdx = 0; pageIdx < pages.length; pageIdx++) {
+    const page = pages[pageIdx]!;
+    // One source page = one Word page: a break before the first element of every page but the first.
+    let pendingBreak = pageIdx > 0;
+    const pageColumn = inferPageColumn(page);
+    let prevTextual: (IRBlock & { bounds: IRRect }) | undefined;
+    const push = (child: unknown) => allChildren.push(child);
     for (const block of page.blocks) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const layoutOpts = (): any => {
+        const isText = block.kind === 'paragraph' || block.kind === 'heading' || block.kind === 'list-item';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const o: any = {};
+        if (pendingBreak) { o.pageBreakBefore = true; pendingBreak = false; }
+        if (isText) {
+          const lay = inferParagraphLayout(block as IRBlock & { bounds: IRRect }, prevTextual, pageColumn, margins, page.width);
+          if (block.kind !== 'list-item') {
+            if (lay.alignment !== 'left') o.alignment = ALIGN[lay.alignment];
+            if (lay.leftIndentPt > 0) o.indent = { left: twips(lay.leftIndentPt) };
+          }
+          if (lay.spacingBeforePt > 0) o.spacing = { before: twips(lay.spacingBeforePt) };
+          const bg = findBackgroundFill(block as IRBlock & { bounds: IRRect }, page.fills);
+          if (bg) o.shading = { type: ShadingType.CLEAR, fill: bg, color: 'auto' };
+          prevTextual = block as IRBlock & { bounds: IRRect };
+        }
+        return o;
+      };
+      // A blank list item is a decorative glyph (a lone bullet/square from the source design),
+      // not content: it rendered as a stray bullet on its own line.
+      if (block.kind === 'list-item' && (block as IRListItemBlock).runs.every((r) => r.text.trim() === '')) continue;
+      const layoutOptsImage = () => (pendingBreak ? ((pendingBreak = false), { pageBreakBefore: true }) : {});
       if (block.kind === 'table') {
+        if (pendingBreak) { push(new Paragraph({ pageBreakBefore: true, children: [] })); pendingBreak = false; }
         const table = block as IRTableBlock;
         const docxRows = table.cells.map(row =>
           new TableRow({
@@ -1006,7 +1046,8 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
           // from the natural raster size.
           const widthPx = Math.round(img.bounds.width * (4 / 3));
           const heightPx = Math.round(img.bounds.height * (4 / 3));
-          allChildren.push(new Paragraph({
+          push(new Paragraph({
+            ...layoutOptsImage(),
             children: [new ImageRun({
               data: imgData.data,
               type: imgData.mime === 'image/jpeg' ? 'jpg' : 'png',
@@ -1015,7 +1056,8 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
           }));
         } else {
           // No decoded bytes for this painted image → opaque textual placeholder.
-          allChildren.push(new Paragraph({
+          push(new Paragraph({
+            ...layoutOptsImage(),
             children: [new TextRun({
               text: `[Image: ${img.naturalWidth}×${img.naturalHeight}]`,
               italics: true,
@@ -1028,11 +1070,13 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
         const level = Math.min(Math.max(h.level, 1), 6);
         const headingKey = IR_HEADING_MAP[level] as keyof typeof HeadingLevel;
         if (hasRotation) {
-          allChildren.push(new Paragraph({
+          push(new Paragraph({
+            ...layoutOpts(),
             children: irRunsToTextRunsRotated(TextRun, h.runs, h.runs[0]?.rotation ?? 0),
           }));
         } else {
-          allChildren.push(new Paragraph({
+          push(new Paragraph({
+            ...layoutOpts(),
             heading: HeadingLevel[headingKey],
             children: irRunsToTextRuns(TextRun, h.runs, ExternalHyperlink),
           }));
@@ -1041,11 +1085,13 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
         const li = block as IRListItemBlock;
         const level = Math.min(li.level, 8);
         if (hasRotation) {
-          allChildren.push(new Paragraph({
+          push(new Paragraph({
+            ...layoutOpts(),
             children: irRunsToTextRunsRotated(TextRun, li.runs, li.runs[0]?.rotation ?? 0),
           }));
         } else {
-          allChildren.push(new Paragraph({
+          push(new Paragraph({
+            ...layoutOpts(),
             bullet: { level },
             children: irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink),
           }));
@@ -1053,11 +1099,13 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
       } else {
         const p = block as IRParagraphBlock;
         if (hasRotation) {
-          allChildren.push(new Paragraph({
+          push(new Paragraph({
+            ...layoutOpts(),
             children: irRunsToTextRunsRotated(TextRun, p.runs, p.runs[0]?.rotation ?? 0),
           }));
         } else {
-          allChildren.push(new Paragraph({
+          push(new Paragraph({
+            ...layoutOpts(),
             children: irRunsToTextRuns(TextRun, p.runs, ExternalHyperlink),
           }));
         }
@@ -1065,8 +1113,17 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
     }
   }
 
+  const firstPage = pages[0];
   const doc = new Document({
-    sections: [{ children: allChildren }],
+    sections: [{
+      properties: firstPage ? {
+        page: {
+          size: { width: twips(firstPage.width), height: twips(firstPage.height) },
+          margin: { top: twips(margins.top), bottom: twips(margins.bottom), left: twips(margins.left), right: twips(margins.right) },
+        },
+      } : undefined,
+      children: allChildren,
+    }],
   });
   return await Packer.toBlob(doc);
 }
