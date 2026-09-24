@@ -4,7 +4,7 @@
 import { PDFDocument, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
 import type JSZip from 'jszip';
 import { applyConditionalFormatting } from './xlsx-conditional-formatting';
-import { splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder } from './pdf/docxLayout';
+import { findBox, splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder } from './pdf/docxLayout';
 
 // ============================================================
 // IR TYPES (Phase 1a — without TableBlock)
@@ -79,12 +79,17 @@ export type IRBlock = IRParagraphBlock | IRHeadingBlock | IRListItemBlock | IRIm
 /** A solid filled rectangle painted on the page (PDF coordinates: y grows upward, y = bottom edge). */
 export interface IRFillRect { x: number; y: number; width: number; height: number; color: string }
 
+/** A stroked rectangle that frames content (a callout box), not part of a table. PDF coordinates, y = bottom edge. */
+export interface IRBoxRect { x: number; y: number; width: number; height: number; color: string }
+
 export interface IRPageIR {
   width: number;
   height: number;
   blocks: IRBlock[];
   /** Coloured bands/boxes behind the text; lets writers shade paragraphs so light text stays visible. */
   fills?: IRFillRect[];
+  /** Stroked frames around content (callout boxes); writers turn them into paragraph borders. */
+  boxes?: IRBoxRect[];
 }
 
 // ============================================================
@@ -972,6 +977,21 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
           if (lay.spacingBeforePt > 0) o.spacing = { before: twips(lay.spacingBeforePt) };
           const bg = findBackgroundFill(block as IRBlock & { bounds: IRRect }, page.fills);
           if (bg) o.shading = { type: ShadingType.CLEAR, fill: bg, color: 'auto' };
+          // A paragraph inside a stroked frame gets a paragraph border in the frame's colour. The
+          // left gap keeps the text where it was; the right indent puts the border on the frame's
+          // right edge (Word measures border position from the indent edge, plus `space`).
+          const box = findBox(block as IRBlock & { bounds: IRRect }, page.boxes);
+          if (box) {
+            const b = block as IRBlock & { bounds: IRRect };
+            const edge = { style: BorderStyle.SINGLE, size: 8, color: box.color };
+            const leftGap = Math.min(Math.max(b.bounds.x - box.x, 1), 31);
+            const rightIndent = Math.max(0, page.width - margins.right + 8 - (box.x + box.width));
+            o.border = {
+              top: { ...edge, space: 4 }, bottom: { ...edge, space: 4 },
+              left: { ...edge, space: Math.round(leftGap) }, right: { ...edge, space: 8 },
+            };
+            o.indent = { ...(o.indent ?? {}), right: twips(rightIndent) };
+          }
           prevTextual = block as IRBlock & { bounds: IRRect };
         }
         return o;

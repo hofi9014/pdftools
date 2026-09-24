@@ -2,7 +2,7 @@ import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFHexStr
 import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePages, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
-import { renderIRToDocx, type IRTextRun, type IRImageBlock, type IRTableCell, type IRBlock, type IRRect, type IRPageIR, type IRFillRect, type IRSpreadsheetCell, type IRSheet, type IRSpreadsheet, type IRConditionalFormattingRule, ptToXlsxCharWidth } from './client-pdf-docx';
+import { renderIRToDocx, type IRTextRun, type IRImageBlock, type IRTableCell, type IRBlock, type IRRect, type IRPageIR, type IRFillRect, type IRBoxRect, type IRSpreadsheetCell, type IRSheet, type IRSpreadsheet, type IRConditionalFormattingRule, ptToXlsxCharWidth } from './client-pdf-docx';
 import type { IRSlide, IRSlideElement, IRDeck, IRPtRect, IRTextContent } from './client-pptx';
 import { getFontFamily } from './pdf/fonts';
 
@@ -2564,6 +2564,28 @@ interface PageTableScaffold {
   fillRects: IRFillRect[];
   /** Centres (bottom-origin) of small filled squares — bullets drawn as shapes, not glyphs. */
   bulletDots: Array<{ x: number; y: number; size: number }>;
+  boxes: IRBoxRect[];
+}
+
+/**
+ * Stroked rectangles that frame content (a callout box), in PDF (bottom-origin) coordinates: an
+ * outline at least 30x12 pt that is not the page itself and does not belong to a detected table.
+ */
+function collectBoxRects(rects: RawRect[], clusters: TableCluster[], pageWidth: number, pageHeight: number): IRBoxRect[] {
+  const out: IRBoxRect[] = [];
+  for (const r of rects) {
+    if (!r.stroke || r.width < 30 || r.height < 12) continue;
+    if (r.width > 0.97 * pageWidth && r.height > 0.97 * pageHeight) continue;
+    const m = /^#([0-9a-fA-F]{6})$/.exec(r.strokeColor ?? '');
+    if (!m) continue;
+    const inTable = clusters.some((c) => {
+      const x0 = c.xEdges[0]!, x1 = c.xEdges[c.xEdges.length - 1]!, y0 = c.yEdges[0]!, y1 = c.yEdges[c.yEdges.length - 1]!;
+      return r.x < x1 + 2 && r.x + r.width > x0 - 2 && r.y < y1 + 2 && r.y + r.height > y0 - 2;
+    });
+    if (inTable) continue;
+    out.push({ x: r.x, y: pageHeight - r.y - r.height, width: r.width, height: r.height, color: m[1]!.toUpperCase() });
+  }
+  return out;
 }
 
 /** Small filled, roughly square rects (2–9 pt): list bullets that a producer drew as shapes. */
@@ -2715,7 +2737,7 @@ async function parsePagesForTableExtraction(file: File): Promise<PageTableScaffo
     const tableRects = extractRectsFromOps(ops, pageHeight);
     applyUnderlineFromRects(textRuns, tableRects, pageHeight);
     const tableClusters = buildTableClusters(tableRects);
-    result.push({ page: p, pageWidth, pageHeight, ops, textRuns, images, tableClusters, fillRects: collectFillRects(tableRects, pageHeight), bulletDots: collectBulletDots(tableRects, pageHeight) });
+    result.push({ page: p, pageWidth, pageHeight, ops, textRuns, images, tableClusters, fillRects: collectFillRects(tableRects, pageHeight), bulletDots: collectBulletDots(tableRects, pageHeight), boxes: collectBoxRects(tableRects, tableClusters, pageWidth, pageHeight) });
   }
 
   await doc.cleanup();
@@ -2754,7 +2776,7 @@ function reseatScriptRuns(group: IRTextRun[], yTolerance: number): void {
 function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPageIR[] {
   const pages: IRPageIR[] = [];
 
-  for (const { pageWidth, pageHeight, textRuns, images, tableClusters, fillRects, bulletDots } of scaffolds) {
+  for (const { pageWidth, pageHeight, textRuns, images, tableClusters, fillRects, bulletDots, boxes } of scaffolds) {
     // --- Compute bodyFontSize ---
     const sizeStats: Record<string, number> = {};
     for (const tr of textRuns) {
@@ -3046,7 +3068,7 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
     }
 
     applyShapeBullets(blocks, bulletDots);
-    pages.push({ width: pageWidth, height: pageHeight, blocks, ...(fillRects.length > 0 ? { fills: fillRects } : {}) });
+    pages.push({ width: pageWidth, height: pageHeight, blocks, ...(fillRects.length > 0 ? { fills: fillRects } : {}), ...(boxes.length > 0 ? { boxes } : {}) });
   }
 
   return pages;
