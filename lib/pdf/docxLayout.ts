@@ -3,7 +3,7 @@
 // no indent and no spacing on a default-margin page, so centred titles, indented text and the
 // vertical rhythm of the source were all lost. All values are in PDF points; bounds use the PDF
 // convention (y grows upward, bounds.y is the bottom edge).
-import type { IRBlock, IRPageIR, IRRect, IRFillRect } from '../client-pdf-docx';
+import type { IRBlock, IRPageIR, IRRect, IRFillRect, IRBoxRect } from '../client-pdf-docx';
 
 export interface PageMargins { left: number; right: number; top: number; bottom: number }
 export interface PageColumn { left: number; right: number }
@@ -177,4 +177,17 @@ export function splitDotLeader<T extends { text: string }>(runs: T[]): { before:
     return { before, after };
   }
   return null;
+}
+
+/** The smallest stroked frame that fully contains the block (3 pt tolerance), if any. */
+export function findBox(block: TextBlock, boxes: IRBoxRect[] | undefined): IRBoxRect | undefined {
+  if (!boxes || boxes.length === 0) return undefined;
+  const tol = 3;
+  let best: IRBoxRect | undefined;
+  for (const b of boxes) {
+    if (block.bounds.x < b.x - tol || block.bounds.x + block.bounds.width > b.x + b.width + tol) continue;
+    if (block.bounds.y < b.y - tol || block.bounds.y + block.bounds.height > b.y + b.height + tol) continue;
+    if (!best || b.width * b.height < best.width * best.height) best = b;
+  }
+  return best;
 }

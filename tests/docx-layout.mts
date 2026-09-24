@@ -68,6 +68,11 @@ console.log('\n=== real pipeline: allegro-raport.pdf → docx ===');
   check(/w:ascii="Gotham"/.test(xml), 'font family is the clean name "Gotham"');
   const bullets = (xml.match(/<w:numPr>/g) ?? []).length;
   check(bullets >= 14, `the real bullet lists on pages 26-27 (round dots drawn as shapes) are Word bullets (got ${bullets})`);
+  const boxed = (xml.match(/<w:p>(?:(?!<\/w:p>)[\s\S])*<\/w:p>/g) ?? []).filter((p) => /<w:pBdr>/.test(p));
+  check(boxed.length >= 5 && boxed.every((p) => /w:color="E94F1E"/.test(p)), `the orange callout frames become orange paragraph borders (got ${boxed.length})`);
+  check(boxed.some((p) => p.includes('Jaki jest ten sekret')), 'the framed question on page 2 carries the border');
+  const plain = (xml.match(/<w:p>(?:(?!<\/w:p>)[\s\S])*<\/w:p>/g) ?? []).find((p) => p.includes('Co sprawia'));
+  check(!!plain && !/<w:pBdr>/.test(plain), 'the unframed paragraph above it has no border');
 }
 
 console.log('\n=== line changes get their space (separateLines) ===');
@@ -125,6 +130,8 @@ console.log('\n=== real pipeline: chrome-report.pdf (Skia: y-flip cm, bands, lis
   const tcShd = (tables[0]?.match(/<w:tc>[\s\S]*?<\/w:tc>/g) ?? []).map((c) => /<w:shd [^>]*w:fill="([0-9A-Fa-f]{6})"/.exec(c)?.[1]?.toUpperCase());
   check(tcShd.filter((f) => f === 'DDDDDD').length === 4, `the 4 header cells carry the grey background (got ${tcShd.filter((f) => f === 'DDDDDD').length})`);
   check(!tcShd.includes('444444'), 'border colour (thin filled rects) is not mistaken for a cell background');
+  const chromeBoxed = (xml.match(/<w:p>(?:(?!<\/w:p>)[\s\S])*<\/w:p>/g) ?? []).filter((p) => /<w:pBdr>/.test(p));
+  check(chromeBoxed.length === 1 && chromeBoxed[0]!.includes('Ramka') && /w:color="C0392B"/.test(chromeBoxed[0]!), `only the callout box paragraph is framed, in its red (got ${chromeBoxed.length})`);
   check((xml.match(/<w:numPr>/g) ?? []).length === 3, `the 3 shape-drawn bullets become Word bullets (got ${(xml.match(/<w:numPr>/g) ?? []).length})`);
 }
 
