@@ -86,6 +86,24 @@ console.log('\n=== guide content: false claims are gone, in all 16 locales, repl
   const jpgGuide = readFileSync(join(ROOT, 'content', 'guides', 'jpg-to-pdf', 'how-to-convert-jpg-to-pdf.ts'), 'utf-8');
   check(!jpgGuide.includes('Drag images to change their order.'), 'jpg-to-pdf guide (en) no longer claims drag-to-reorder');
   check(jpgGuide.includes('↑/↓ buttons'), 'jpg-to-pdf guide (en) now references the real ↑/↓ buttons');
+
+  // split guide: the app has "page by page" / "custom ranges" / "split by selection" — there is
+  // no every-N-pages mode, and selection mode yields TWO files (selected + the rest).
+  const splitPage = readFileSync(join(ROOT, 'app', 'split', 'page.tsx'), 'utf-8');
+  check(/const bufs = await splitPDF\(file\)/.test(splitPage) && !/pagesPerFile|everyN|every_n|perFile/i.test(splitPage), 'split page: "fixed" mode really is one file per page (splitPDF(file), no N input)');
+  check(/results\.push\(\{ data: rest/.test(splitPage), 'split page: selection mode really emits a second file with the remaining pages');
+  const splitGuide = readFileSync(join(ROOT, 'content', 'guides', 'split-pdf', 'how-to-split-pdf-online.ts'), 'utf-8');
+  for (const old of ['"Every N Pages" Mode', 'creates 4 files of 5 pages each', 'every N pages, custom ranges', 'Selected pages will be saved as a separate PDF file']) {
+    check(!splitGuide.includes(old), `split guide no longer contains the false claim "${old}"`);
+  }
+  for (const fresh of ['"Page by Page" Mode', 'creates 20 single-page files', '"Split by Selection" Mode', 'one with the selected pages and one with all the remaining pages']) {
+    check(splitGuide.includes(fresh), `split guide states the real behaviour: "${fresh}"`);
+  }
+  check((splitGuide.match(/^\s+pl: 'Tryb "Strona po stronie"',/gm) ?? []).length === 1, 'split guide: pl heading for page-by-page mode present once');
+  // every locale of the two corrected bodies must differ from the English text (i.e. was translated, not left/duplicated)
+  const bodyEn = 'Saves every page as its own PDF file.';
+  check((splitGuide.match(/Saves every page as its own PDF file\./g) ?? []).length === 1, 'the English page-by-page body appears exactly once (other 15 locales are translations)');
+  void bodyEn;
 }
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
