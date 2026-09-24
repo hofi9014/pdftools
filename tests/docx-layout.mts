@@ -16,7 +16,7 @@ register(pathToFileURL(join(ROOT, 'scripts/_pdfjs_remap.mjs')).href, pathToFileU
 import { DOMParser } from '@xmldom/xmldom';
 (globalThis as Record<string, unknown>).DOMParser = DOMParser;
 
-import { inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill } from '../lib/pdf/docxLayout.ts';
+import { inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines } from '../lib/pdf/docxLayout.ts';
 import { pdfToWordIR } from '../lib/client-pdf.ts';
 import type { IRPageIR, IRBlock, IRTextRun } from '../lib/client-pdf-docx.ts';
 
@@ -68,6 +68,30 @@ console.log('\n=== real pipeline: allegro-raport.pdf → docx ===');
   check(/w:ascii="Gotham"/.test(xml), 'font family is the clean name "Gotham"');
   const bullets = (xml.match(/<w:numPr>/g) ?? []).length;
   check(bullets < 5, `no flood of decorative bullets (numbered paragraphs: ${bullets})`);
+}
+
+console.log('\n=== line changes get their space (separateLines) ===');
+{
+  const r = (t: string, y: number) => ({ text: t, fontSize: 10, position: { y } });
+  const out = separateLines([r('uzupełnianie', 100), r('kontroli,', 88), r('raporty', 88), r('nad-', 76), r('zór', 64), r('a ', 52), r('b', 40)]);
+  check(out[1]!.text === ' kontroli,', 'new line: a space is added');
+  check(out[2]!.text === 'raporty', 'same line: unchanged');
+  check(out[3]!.text === ' nad-', 'a run after a line change still gets its space');
+  check(out[4]!.text === 'zór', 'no space after a trailing hyphen (hyphenated wrap)');
+  check(out[6]!.text === 'b', 'no double space when the previous run already ends with one');
+}
+
+console.log('\n=== real pipeline: epz-report-variant2.pdf (scaled by cm, table) ===');
+{
+  const f = 'epz-report-variant2.pdf';
+  const file = Object.assign(new Blob([readFileSync(join(ROOT, 'test-real-pdfs', f))]), { name: f }) as unknown as File;
+  const zip = await JSZip.loadAsync(await (await pdfToWordIR(file)).arrayBuffer());
+  const xml = await zip.file('word/document.xml')!.async('string');
+  const text = (xml.match(/<w:t[^>]*>([^<]*)<\/w:t>/g) ?? []).map((m) => m.replace(/<[^>]+>/g, '')).join('');
+  check(/raporty, nadz.r nad parking/.test(text), 'multi-line cell text keeps its spaces ("raporty, nadzór nad parkingów")');
+  check(!/w:val="(FFFFFF|D8D8D8|ffffff|d8d8d8)"/.test(xml.replace(/<w:shd[^>]*>/g, '')), 'no run is coloured white/grey from a cell background');
+  check((xml.match(/<w:tbl>/g) ?? []).length >= 3, 'the schedule tables are present');
+  check(/8\/1\/2026/.test(text) && /Speed, teams/.test(text.replace(/\s+/g, ' ')), 'dates and the "Speed, teams" column are in the output');
 }
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);

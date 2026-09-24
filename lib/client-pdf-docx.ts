@@ -4,7 +4,7 @@
 import { PDFDocument, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
 import type JSZip from 'jszip';
 import { applyConditionalFormatting } from './xlsx-conditional-formatting';
-import { inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill } from './pdf/docxLayout';
+import { inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines } from './pdf/docxLayout';
 
 // ============================================================
 // IR TYPES (Phase 1a — without TableBlock)
@@ -900,7 +900,7 @@ export function docxFontFamily(raw: string): string | undefined {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function irRunsToTextRuns(TRC: any, runs: IRTextRun[], ExtLink?: any): any[] {
-  return runs.map(run => {
+  return separateLines(runs).map(run => {
     // A run tagged with .link (from a PDF /Annots Link matched onto it — see
     // applyLinkAnnotations in client-pdf.ts) becomes a real, clickable ExternalHyperlink
     // instead of plain text, styled the conventional Word hyperlink blue+underline so it's
@@ -3454,7 +3454,8 @@ function odtRenderAutoStylesXml(styles: { name: string; props: OdtRunStyle }[]):
   return '\n' + rows + '\n';
 }
 
-function odtRenderRunsXml(runs: IRTextRun[], nameFor: (r: IRTextRun) => string): string {
+function odtRenderRunsXml(runsIn: IRTextRun[], nameFor: (r: IRTextRun) => string): string {
+  const runs = separateLines(runsIn);
   return runs
     .map((r) => {
       if (!r.text) return '';

@@ -125,3 +125,24 @@ export function findBackgroundFill(block: TextBlock, fills: IRFillRect[] | undef
   }
   return best?.color;
 }
+
+/**
+ * Runs that come from different source lines are stored without the space that separated them
+ * (a line end is a wrap, not a character), so a table cell or paragraph built from several lines
+ * read "uzupełnianiekontroli" / "raportynadzór". Adds the missing space at each line change, but
+ * not after a trailing hyphen (a hyphenated word wrap).
+ */
+export function separateLines<T extends { text: string; fontSize: number; position: { y: number } }>(runs: T[]): T[] {
+  const out: T[] = [];
+  for (let i = 0; i < runs.length; i++) {
+    const r = runs[i]!;
+    const prev = runs[i - 1];
+    const newLine = prev !== undefined && Math.abs(prev.position.y - r.position.y) > 0.6 * Math.max(prev.fontSize, r.fontSize);
+    if (newLine && prev && r.text !== '' && !/\s$/.test(prev.text) && !/^\s/.test(r.text) && !/[-‐–]$/.test(prev.text)) {
+      out.push({ ...r, text: ' ' + r.text });
+    } else {
+      out.push(r);
+    }
+  }
+  return out;
+}
