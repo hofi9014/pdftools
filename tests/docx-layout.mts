@@ -67,7 +67,7 @@ console.log('\n=== real pipeline: allegro-raport.pdf → docx ===');
   check(!/w:ascii="[A-Z]{6}\+/.test(xml), 'no subset-tagged font names remain');
   check(/w:ascii="Gotham"/.test(xml), 'font family is the clean name "Gotham"');
   const bullets = (xml.match(/<w:numPr>/g) ?? []).length;
-  check(bullets < 5, `no flood of decorative bullets (numbered paragraphs: ${bullets})`);
+  check(bullets >= 14, `the real bullet lists on pages 26-27 (round dots drawn as shapes) are Word bullets (got ${bullets})`);
 }
 
 console.log('\n=== line changes get their space (separateLines) ===');
@@ -122,6 +122,7 @@ console.log('\n=== real pipeline: chrome-report.pdf (Skia: y-flip cm, bands, lis
   check(/<w:shd [^>]*w:fill="1F4E79"/i.test(xml), 'white title sits on its blue band (paragraph shading)');
   for (const item of ['Pierwszy punkt listy', 'Drugi punkt listy', 'Trzeci punkt']) check(text(xml).replace(/[|]/g, '').includes(item), `list item "${item}" is present outside the table`);
   check(!/Pierwszy punkt/.test(text(tables[0] ?? '')), 'list items are not swallowed by a table');
+  check((xml.match(/<w:numPr>/g) ?? []).length === 3, `the 3 shape-drawn bullets become Word bullets (got ${(xml.match(/<w:numPr>/g) ?? []).length})`);
 }
 
 console.log('\n=== numbered lists and heading-sized numerals ===');
@@ -133,7 +134,6 @@ console.log('\n=== numbered lists and heading-sized numerals ===');
   check(items.every((i) => i.runs.map((r) => r.text).join('').trim() !== ''), 'no empty list items (the 60pt section numerals used to become empty ones)');
   const zip = await JSZip.loadAsync(await (await pdfToWordIR(file)).arrayBuffer());
   const xml = await zip.file('word/document.xml')!.async('string');
-  check(!/<w:numPr>/.test(xml) || (xml.match(/<w:numPr>/g) ?? []).length < 5, 'no decorative bullets from the numerals');
 }
 {
   const numbered = /^\d+[.)]\s+(?!\d)/;
