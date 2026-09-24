@@ -60,6 +60,7 @@
     "test:e2e-mobile-menu": "npx --yes tsx e2e/mobile-menu.mts",
     "test:e2e-offline-guard": "npx --yes tsx e2e/offline-guard.mts",
     "test:e2e-rtl-layout": "npx --yes tsx e2e/rtl-layout.mts",
+    "test:e2e-compress-real-pdf": "npx --yes tsx e2e/compress-real-pdf.mts",
     "test:e2e-html-to-pdf-tagged": "npx --yes tsx e2e/html-to-pdf-tagged.mts",
     "test:e2e-onedrive-stale-token": "npx --yes tsx e2e/onedrive-stale-token.mts",
     "test:e2e-pwa-audit": "npx --yes tsx e2e/pwa-audit.mts",
