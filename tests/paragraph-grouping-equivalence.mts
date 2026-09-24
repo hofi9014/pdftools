@@ -105,12 +105,12 @@ console.log('=== extractFormattedTextFromPDF: O(n^2) grouping optimization chang
 
 // {fixture: [expectedHash, expectedPageCount]} — captured from the fixed code and
 // cross-checked byte-for-byte against the pre-optimization code before being hard-coded here.
-// (Updated 2026-09-17 three times, for three unrelated fixes/features — see the comments above.)
+// (Updated 2026-09-17 three times, for three unrelated fixes/features — see the comments above. Updated again 2026-09-24 for allegro-raport.pdf and the Raport fixture ONLY: parseFontStyle now treats Black/Heavy/Demi weights as bold; verified by a before/after diff to be exactly 43 bold false->true flips on Gotham-Black runs and zero other differences.)
 const EXPECTED: Record<string, [string, number]> = {
-  'allegro-raport.pdf': ['0d97cca5cf57c003b0965cd9ab2a8499299de2834467fa1b4f9e53b7ed9b772b', 27],
+  'allegro-raport.pdf': ['4540a82f934ddfdfb79099584e82d0d333e021425ec2c0b5363112fcd1e8a95b', 27],
   'epz_pptx_table_fixture.pdf': ['7a269513327161a15d2b07f95cee0d96a14878a62595394704e10198db82255b', 3],
   'gpw-ebook.pdf': ['0397d62bee51da6d0ebde281680d0e2ce8112a3789223f1515773511fc02edef', 12],
-  'Raport - 12 rzeczy, które robią skuteczni handlarze w Internecie_na Allegro.pdf': ['941a7cc50d336d2f2586f5dd808e53a1d772f5b6cd3e719d401f0cae29118b4f', 27],
+  'Raport - 12 rzeczy, które robią skuteczni handlarze w Internecie_na Allegro.pdf': ['8b46830acc261cd7129ae25b49a9bd1f60114f84e3c1553a90f1c720108958a3', 27],
   'epz-report-variant2.pdf': ['d6ba02a9749fa38e5f083a782e5f9a69f399085e4dde51abd8f4d98c80711d69', 3],
 };
 

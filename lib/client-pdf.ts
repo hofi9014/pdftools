@@ -1731,7 +1731,9 @@ function getRotation(t: Mat2D): number {
 
 function parseFontStyle(fontName: string): { bold: boolean; italic: boolean } {
   return {
-    bold: /bold/i.test(fontName),
+    // Weight words other than "Bold" (Gotham-Black, Roboto-Heavy, Segoe-Semibold, DemiBold...) are
+    // bold too — matching only /bold/ silently dropped the weight of every such font.
+    bold: /bold|black|heavy|demi|ultra/i.test(fontName),
     italic: /italic|oblique|kurs/i.test(fontName),
   };
 }
