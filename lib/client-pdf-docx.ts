@@ -942,6 +942,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
   const {
     Document, Packer, Paragraph, HeadingLevel, TextRun, ImageRun,
     Table, TableRow, TableCell, WidthType, BorderStyle, ExternalHyperlink, AlignmentType, ShadingType, Tab, TabStopType, LeaderType,
+    HorizontalPositionRelativeFrom, VerticalPositionRelativeFrom, TextWrappingType,
   } = await import('docx');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1050,12 +1051,25 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
           // from the natural raster size.
           const widthPx = Math.round(img.bounds.width * (4 / 3));
           const heightPx = Math.round(img.bounds.height * (4 / 3));
+          // An image that covers (nearly) the whole page is a cover or a background, not a figure in
+          // the text flow: inline it would be taller than the text area and push everything down.
+          // It is anchored to the page, behind the text.
+          const coversPage = img.bounds.width >= 0.85 * page.width && img.bounds.height >= 0.85 * page.height;
           push(new Paragraph({
             ...layoutOptsImage(),
             children: [new ImageRun({
               data: imgData.data,
               type: imgData.mime === 'image/jpeg' ? 'jpg' : 'png',
               transformation: { width: widthPx, height: heightPx },
+              ...(coversPage ? {
+                floating: {
+                  horizontalPosition: { relative: HorizontalPositionRelativeFrom.PAGE, offset: Math.round(img.bounds.x * 12700) },
+                  verticalPosition: { relative: VerticalPositionRelativeFrom.PAGE, offset: Math.round(Math.max(page.height - (img.bounds.y + img.bounds.height), 0) * 12700) },
+                  behindDocument: true,
+                  allowOverlap: true,
+                  wrap: { type: TextWrappingType.NONE },
+                },
+              } : {}),
             })],
           }));
         } else {
