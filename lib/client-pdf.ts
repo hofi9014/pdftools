@@ -1854,6 +1854,48 @@ export function normalizeLigatures(text: string): string {
   return out;
 }
 
+/**
+ * Two runs of one line that sit on top of each other (start within 4 pt, at least 60% of the
+ * shorter one overlapped): an overprinted second text object, not two neighbours in the line.
+ */
+export function runsOverprint(a: IRTextRun, b: IRTextRun): boolean {
+  if (a.text.trim() === '' || b.text.trim() === '') return false;
+  const overlap = Math.min(a.position.x + a.width, b.position.x + b.width) - Math.max(a.position.x, b.position.x);
+  return Math.abs(a.position.x - b.position.x) <= 4 && overlap >= 0.6 * Math.min(a.width, b.width);
+}
+
+/** Splits one line into layers so that no two runs of a layer overprint each other. */
+export function splitOverprintedLine(line: IRTextRun[]): IRTextRun[][] {
+  const layers: IRTextRun[][] = [];
+  for (const r of line) {
+    const layer = layers.find((l) => !l.some((o) => runsOverprint(o, r)));
+    if (layer) layer.push(r); else layers.push([r]);
+  }
+  return layers;
+}
+
+/**
+ * Fake bold: some producers draw the same text twice, at the same place or a hair to the right, to
+ * thicken it. Read as text that is two words ("Wstęp" + "Wstęp" -> "WstępWstęp" in a heading, "Name"
+ * twice in a table header). A run with the same text, size, baseline (1 pt) and start (1.5 pt) as an
+ * earlier one is that second strike: it is dropped and the surviving run is marked bold.
+ */
+export function dedupeOverprintedRuns(runs: IRTextRun[]): IRTextRun[] {
+  const seen = new Map<string, IRTextRun[]>();
+  const out: IRTextRun[] = [];
+  for (const r of runs) {
+    if (r.text.trim() === '') { out.push(r); continue; }
+    const earlier = seen.get(r.text);
+    const twin = earlier?.find((e) =>
+      Math.abs(e.position.y - r.position.y) <= 1 && Math.abs(e.position.x - r.position.x) <= 1.5 &&
+      Math.abs(e.fontSize - r.fontSize) < 0.5 && Math.abs(e.rotation - r.rotation) < 1);
+    if (twin) { twin.bold = true; continue; }
+    if (earlier) earlier.push(r); else seen.set(r.text, [r]);
+    out.push(r);
+  }
+  return out;
+}
+
 const BULLET_REGEX = /^[•‣●\u2022\u2023\u25CF\-–—]\s*/;
 const NUMBERED_REGEX = /^\d+[.)]\s*/;
 
@@ -2215,7 +2257,7 @@ export function buildPageScaffold(
     }
   }
 
-  return { ops, textRuns, images };
+  return { ops, textRuns: dedupeOverprintedRuns(textRuns), images };
 }
 
 // ============================================================
@@ -2224,6 +2266,27 @@ export function buildPageScaffold(
 // Groups text runs into textboxes by Y-band (3 pt), splits on
 // X-indent / font-size / font-name change, converts rects to
 // shapes and images.  Y-flipped (PDF bottom-left → IR top-left).
+
+/**
+ * Text of one line made of several runs. Runs are split wherever the colour, weight or kerning
+ * changes, not only between words, so joining them with a space ("SekretyHandl" + "u" + ".pl" ->
+ * "SekretyHandl u .pl") invents spaces, and a run that already ends with one got two. A space is
+ * added only where the source has a real gap between the runs.
+ */
+export function joinLineRuns(runs: IRTextRun[]): string {
+  const sorted = [...runs].sort((a, b) => a.position.x - b.position.x);
+  let out = '';
+  for (let i = 0; i < sorted.length; i++) {
+    const r = sorted[i]!;
+    const prev = sorted[i - 1];
+    if (prev && out !== '' && !/\s$/.test(out) && !/^\s/.test(r.text)) {
+      const gap = r.position.x - (prev.position.x + prev.width);
+      if (gap > 0.15 * Math.max(prev.fontSize, r.fontSize)) out += ' ';
+    }
+    out += r.text;
+  }
+  return out;
+}
 
 function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
   bounds: { x: number; y: number; width: number; height: number };
@@ -2251,14 +2314,14 @@ function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
   for (let i = 1; i < sorted.length; i++) {
     const r = sorted[i]!;
     if (Math.abs(r.position.y - lineY) > Y_GAP) {
-      lines.push(curLine);
+      lines.push(...splitOverprintedLine(curLine));
       curLine = [r];
       lineY = r.position.y;
     } else {
       curLine.push(r);
     }
   }
-  lines.push(curLine);
+  lines.push(...splitOverprintedLine(curLine));
 
   // --- Phase 2: merge consecutive lines into PARAGRAPHS ---
   // A line that is vertically far from the previous one (relative to its own
@@ -2320,7 +2383,7 @@ function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
     paragraphs.push({
       lines: [{
         runs: ld.lineRuns,
-        text: ld.lineRuns.map(r => r.text).join(' '),
+        text: joinLineRuns(ld.lineRuns),
         fontSize: ld.fs,
       }],
       fontSize: ld.fs,
@@ -2380,7 +2443,7 @@ function groupRunsIntoTextboxes(runs: IRTextRun[]): Array<{
       para.color = para.color || cur.color;
       para.lines.push({
         runs: cur.lineRuns,
-        text: cur.lineRuns.map(r => r.text).join(' '),
+        text: joinLineRuns(cur.lineRuns),
         fontSize: cur.fs,
       });
     }
@@ -3012,7 +3075,11 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
         // Same line: Y within lineHeight tolerance
         const yDiff = Math.abs(other.position.y - tr.position.y);
         const sameLine = yDiff < Math.max(tr.height, other.height) * 0.5;
-        if (sameLine && Math.abs(other.rotation - tr.rotation) < 1) {
+        // Two runs of one line cannot sit on top of each other: a run that mostly overlaps one already
+        // in the line is a second, overprinted text object (a footer drawn twice, a shadow copy) and
+        // must not be interleaved with it — it becomes its own block.
+        const overprinted = sameLine && groupRuns.some((g) => runsOverprint(g, other));
+        if (sameLine && !overprinted && Math.abs(other.rotation - tr.rotation) < 1) {
           groupRuns.push(other);
           used.add(oIdx);
         }
