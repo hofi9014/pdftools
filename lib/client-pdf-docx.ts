@@ -33,6 +33,8 @@ export interface IRParagraphBlock {
   runs: IRTextRun[];
   bounds: IRRect;
   role?: 'header' | 'footer' | 'body';
+  /** The block starts on a new page (Word: page break before, a manual page break, a next-page section break). */
+  pageBreakBefore?: boolean;
 }
 
 export interface IRHeadingBlock {
@@ -41,6 +43,7 @@ export interface IRHeadingBlock {
   runs: IRTextRun[];
   bounds: IRRect;
   role?: 'header' | 'footer' | 'body';
+  pageBreakBefore?: boolean;
 }
 
 export interface IRListItemBlock {
@@ -49,6 +52,7 @@ export interface IRListItemBlock {
   level: number;
   runs: IRTextRun[];
   bounds: IRRect;
+  pageBreakBefore?: boolean;
 }
 
 export interface IRImageBlock {
@@ -72,6 +76,7 @@ export interface IRTableBlock {
   cells: IRTableCell[][];  // cells[row][col], only top-left of merged cells
   bounds: IRRect;
   columnWidths: number[];
+  pageBreakBefore?: boolean;
 }
 
 export type IRBlock = IRParagraphBlock | IRHeadingBlock | IRListItemBlock | IRImageBlock | IRTableBlock;
@@ -588,6 +593,53 @@ function parseHeadingLevel(pStyleId: string | null): number | null {
   return m ? parseInt(m[1]!) : null;
 }
 
+/**
+ * Where a Word paragraph forces a page break. `before`: w:pageBreakBefore, or a manual page break
+ * (w:br w:type="page") with no text ahead of it. `after`: a manual break with nothing after it
+ * (the usual Ctrl+Enter paragraph: it holds only the break and the NEXT content starts a new page),
+ * or a section break that is not "continuous". A break in the middle of a paragraph's text cannot
+ * split the block and is ignored.
+ */
+export function paragraphPageBreaks(pEl: Element): { before: boolean; after: boolean } {
+  let before = false;
+  let after = false;
+  const pPr = pEl.getElementsByTagNameNS(WORD_NS, 'pPr')[0];
+  if (pPr) {
+    const pb = pPr.getElementsByTagNameNS(WORD_NS, 'pageBreakBefore')[0];
+    if (pb) {
+      const v = (getLocal(pb, 'val') || '').toLowerCase();
+      before = !(v === '0' || v === 'false' || v === 'off');
+    }
+    const sect = pPr.getElementsByTagNameNS(WORD_NS, 'sectPr')[0];
+    if (sect) {
+      const type = sect.getElementsByTagNameNS(WORD_NS, 'type')[0];
+      after = !type || getLocal(type, 'val') !== 'continuous'; // no w:type means "next page"
+    }
+  }
+  // walk the runs in order: text and page breaks
+  let textBefore = false;
+  let breakSeen = false;
+  let textAfter = false;
+  const runs = pEl.getElementsByTagNameNS(WORD_NS, 'r');
+  for (let i = 0; i < runs.length; i++) {
+    const r = runs[i]!;
+    for (let k = 0; k < r.childNodes.length; k++) {
+      const c = r.childNodes[k]!;
+      if (c.nodeType !== 1) continue;
+      const e = c as Element;
+      if (e.namespaceURI !== WORD_NS) continue;
+      if (e.localName === 'br' && getLocal(e, 'type') === 'page') { breakSeen = true; textAfter = false; }
+      else if (e.localName === 't' && (e.textContent ?? '').trim() !== '') { if (breakSeen) textAfter = true; else textBefore = true; }
+    }
+  }
+  if (breakSeen) {
+    if (!textBefore) before = true;
+    if (!textAfter && !textBefore) after = true;
+    else if (!textAfter && textBefore) after = true;
+  }
+  return { before, after };
+}
+
 function processParagraph(
   pEl: Element,
   resolvedStyles: { styles: Map<string, StyleDef>; docDefaults: RunProps },
@@ -853,14 +905,25 @@ export async function docxToIR(file: File): Promise<DocxIRResult> {
   const blocks: IRBlock[] = [];
   const seenRids = new Set<string>();
   const children = body[0]!.childNodes;
+  let pendingBreak = false; // a page break that applies to the next block that appears
   for (let i = 0; i < children.length; i++) {
     const node = children[i]!;
     if (node.nodeType !== 1) continue;
     const el = node as Element;
     if (el.localName === 'p') {
-      blocks.push(...processParagraph(el, resolvedStyles, imageMap, seenRids));
+      const produced = processParagraph(el, resolvedStyles, imageMap, seenRids);
+      const breaks = paragraphPageBreaks(el);
+      if (produced.length > 0 && (pendingBreak || breaks.before)) {
+        (produced[0] as { pageBreakBefore?: boolean }).pageBreakBefore = true;
+        pendingBreak = false;
+      }
+      if (breaks.after) pendingBreak = true;
+      else if (breaks.before && produced.length === 0) pendingBreak = true;
+      blocks.push(...produced);
     } else if (el.localName === 'tbl') {
-      blocks.push(processTable(el, resolvedStyles));
+      const table = processTable(el, resolvedStyles);
+      if (pendingBreak) { table.pageBreakBefore = true; pendingBreak = false; }
+      blocks.push(table);
     }
   }
 
@@ -1318,6 +1381,11 @@ export async function renderIRToPdf(
   }
 
   async function renderBlock(block: IRBlock): Promise<void> {
+    if ((block as { pageBreakBefore?: boolean }).pageBreakBefore) {
+      ensurePage();
+      if (cursorY < pageH - MARGIN - 1) breakPage(); // already at the top of a page: nothing to break
+      ensurePage();
+    }
     if (block.kind === 'heading') {
       const h = block as IRHeadingBlock;
       const fs = FONT_SIZES[Math.min(h.level, 6)] || 11;
