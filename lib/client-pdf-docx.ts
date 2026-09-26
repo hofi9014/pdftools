@@ -2798,6 +2798,27 @@ export async function renderIRSpreadsheetToXlsx(ir: IRSpreadsheet): Promise<Blob
       if (chars !== undefined && chars > 0) ws.getColumn(c + 1).width = chars;
     }
 
+    // exceljs drops the value of every cell that lies under a merge, but a PDF splits the text of a
+    // tall merged cell over the rows it spans, so the continuation lines sit in covered cells: the
+    // schedule PDF's "Wprowadzanie" (row 7) + "czasu pracy, awizacje zał/rozł, bookowanie…" (row 9)
+    // is ONE merged cell in the source. The text of valued covered cells is appended to the anchor
+    // (row-major, single spaces) so it is not lost. Blank anchors are handled by the false-merge
+    // rule below.
+    const continuation = new Map<string, string>();
+    for (const rg of sheet.mergedRanges) {
+      const anchor = sheet.cells[rg.row]?.[rg.col];
+      if (!anchor || anchor.display === '') continue;
+      const parts: string[] = [];
+      for (let dr = 0; dr < rg.rowspan; dr++) {
+        for (let dc = 0; dc < rg.colspan; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const text = (sheet.cells[rg.row + dr]?.[rg.col + dc]?.display ?? '').replace(/\s+/g, ' ').trim();
+          if (text !== '') parts.push(text);
+        }
+      }
+      if (parts.length > 0) continuation.set(rg.row + ':' + rg.col, parts.join(' '));
+    }
+
     for (let r = 0; r < rows; r++) {
       const rowCells = sheet.cells[r];
       if (!rowCells) continue;
@@ -2806,7 +2827,8 @@ export async function renderIRSpreadsheetToXlsx(ir: IRSpreadsheet): Promise<Blob
         if (!cell) continue;
         const ex = ws.getCell(r + 1, c + 1);
         const { value } = xlsxWriteValue(cell);
-        ex.value = value;
+        const more = continuation.get(r + ':' + c);
+        ex.value = more !== undefined ? (cell.display.replace(/\s+/g, ' ').trim() + ' ' + more) : value;
         if (cell.fmt && (cell.fmt.bold !== undefined || cell.fmt.italic !== undefined
           || cell.fmt.colorHex || cell.fmt.fillHex)) {
           ex.font = {
