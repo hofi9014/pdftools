@@ -63,6 +63,7 @@
     "test:e2e-compress-real-pdf": "npx --yes tsx e2e/compress-real-pdf.mts",
     "test:e2e-tools-real-pdf": "npx --yes tsx e2e/tools-real-pdf.mts",
     "test:e2e-converters-real-pdf": "npx --yes tsx e2e/converters-real-pdf.mts",
+    "test:e2e-roundtrips-real-pdf": "npx --yes tsx e2e/roundtrips-real-pdf.mts",
     "test:e2e-html-to-pdf-tagged": "npx --yes tsx e2e/html-to-pdf-tagged.mts",
     "test:e2e-onedrive-stale-token": "npx --yes tsx e2e/onedrive-stale-token.mts",
     "test:e2e-pwa-audit": "npx --yes tsx e2e/pwa-audit.mts",
@@ -129,6 +130,8 @@
     "test:text-ligatures": "npx --yes tsx tests/text-ligatures.mts",
     "test:text-overprint": "npx --yes tsx tests/text-overprint.mts",
     "test:xlsx-merge-text-preserved": "npx --yes tsx tests/xlsx-merge-text-preserved.mts",
+    "test:protect-literal-strings": "npx --yes tsx tests/protect-literal-strings.mts",
+    "test:docx-page-breaks": "npx --yes tsx tests/docx-page-breaks.mts",
     "test:text-ctm-geometry": "npx --yes tsx tests/text-ctm-geometry.mts",
     "test:text-color-graphics-state": "npx --yes tsx tests/text-color-graphics-state.mts"
   },

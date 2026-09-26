@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFHexString, PDFRawStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation, type PDFFont } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFHexString, PDFString, PDFArray, PDFRawStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation, type PDFFont } from 'pdf-lib';
 import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePages, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
@@ -4626,13 +4626,50 @@ export async function unlockPdfClient(file: File, password?: string): Promise<Bl
   return new Blob([result as BlobPart], { type: 'application/pdf' });
 }
 
+/**
+ * Rewrites every literal string "(...)" of the document as a hex string "<...>".
+ * @pdfsmaller/pdf-encrypt stores the encrypted bytes of a literal string back into the pdf-lib
+ * PDFString as raw characters, and pdf-lib writes that value between parentheses WITHOUT escaping.
+ * Random ciphertext contains "(", ")", "\" or CR in about 1.6% of its bytes each, so a document with
+ * more than a few literal strings (link annotations, an Info dictionary from another producer)
+ * came out corrupted — pdf.js read 1-6 of 27 pages, or none, with the right password. Hex strings
+ * go through the library's PDFHexString path, which is safe.
+ */
+export function hexifyStrings(pdf: PDFDocument): number {
+  const toHex = (bytes: Uint8Array) => Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+  let converted = 0;
+  const convert = (value: unknown): unknown => {
+    if (value instanceof PDFString) { converted++; return PDFHexString.of(toHex(value.asBytes())); }
+    if (value instanceof PDFDict) {
+      for (const [key, inner] of [...value.entries()]) {
+        const next = convert(inner);
+        if (next !== inner) value.set(key, next as never);
+      }
+    } else if (value instanceof PDFArray) {
+      for (let i = 0; i < value.size(); i++) {
+        const inner = value.get(i);
+        const next = convert(inner);
+        if (next !== inner) value.set(i, next as never);
+      }
+    }
+    return value;
+  };
+  for (const [, obj] of pdf.context.enumerateIndirectObjects()) {
+    if (obj instanceof PDFRawStream) convert(obj.dict); else convert(obj);
+  }
+  return converted;
+}
+
 export async function protectPdfClient(file: File, password: string): Promise<Blob> {
   if (password.length < 4) {
     throw new Error('Password must be at least 4 characters');
   }
   const buf = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(buf, { ignoreEncryption: true, updateMetadata: false });
+  if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
+  hexifyStrings(pdf);
   const { encryptPDF } = await import('@pdfsmaller/pdf-encrypt');
-  const result = await encryptPDF(new Uint8Array(buf), password);
+  const result = await encryptPDF(await pdf.save({ useObjectStreams: false }), password);
   return new Blob([result as BlobPart], { type: 'application/pdf' });
 }
 
