@@ -1837,6 +1837,23 @@ function computeBounds(runs: IRTextRun[]): IRRect {
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
+/**
+ * PDF fonts draw "fi", "fl", "ffi"... as single ligature glyphs whose Unicode is the compatibility
+ * character (U+FB01 ...). Left as is, the text of a Word/HTML/EPUB output cannot be searched or
+ * copied as "firma", and a font without that glyph shows a box. pdf.js's own getTextContent
+ * normalises them; the run extraction did not.
+ */
+// U+FB00..U+FB06 in order: ff, fi, fl, ffi, ffl, st (long s + t), st.
+const LIGATURE_TEXT = ['ff', 'fi', 'fl', 'ffi', 'ffl', 'st', 'st'];
+export function normalizeLigatures(text: string): string {
+  let out = '';
+  for (const ch of text) {
+    const code = ch.codePointAt(0) ?? 0;
+    out += code >= 0xfb00 && code <= 0xfb06 ? LIGATURE_TEXT[code - 0xfb00]! : ch;
+  }
+  return out;
+}
+
 const BULLET_REGEX = /^[•‣●\u2022\u2023\u25CF\-–—]\s*/;
 const NUMBERED_REGEX = /^\d+[.)]\s*/;
 
@@ -2062,7 +2079,7 @@ export function buildPageScaffold(
           : []) as PDFGlyph[];
         if (glyphArr.length === 0) continue;
 
-        const text = glyphArr.map(g => g.unicode || g.fontChar || '').join('');
+        const text = normalizeLigatures(glyphArr.map(g => g.unicode || g.fontChar || '').join(''));
         if (!text) continue;
 
         const fontInfo = textOpFonts.get(j) || { name: '', size: 12 };
@@ -2165,7 +2182,7 @@ export function buildPageScaffold(
         : []) as PDFGlyph[];
       if (glyphArr.length === 0) continue;
 
-      const text = glyphArr.map((g: PDFGlyph) => g.unicode || g.fontChar || '').join('');
+      const text = normalizeLigatures(glyphArr.map((g: PDFGlyph) => g.unicode || g.fontChar || '').join(''));
       if (!text) continue;
 
       const fontInfo = textOpFonts.get(j) || { name: '', size: 12 };
