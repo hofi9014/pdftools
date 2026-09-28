@@ -4231,9 +4231,21 @@ export async function officeToPdf(file: File): Promise<Blob> {
         const rowText = cellMatches.map(cell => {
           const vMatch = cell.match(/<v>([^<]*)<\/v>/);
           const tMatch = cell.match(/<t[^>]*>([^<]*)<\/t>/);
-          if (vMatch) {
+          // A <v> is only a shared-string INDEX when the cell itself is typed t="s". Without
+          // that check, any plain numeric cell (a time or percentage stored as a 0..1 fraction —
+          // Godzina rozpoczęcia/zakończenia pracy, both filled on nearly every row of a real
+          // timesheet) got parseInt()-truncated to its integer part (0.333... -> 0, 0.667... ->
+          // 0, 1.5 -> 1, ...) and, whenever that integer happened to be a valid shared-string
+          // index (nearly always true for a small sharedStrings table), silently replaced the
+          // time with a UNRELATED string from elsewhere in the sheet (index 0's string, often the
+          // document's own title cell) — repeated on almost every row. Confirmed on a real user
+          // file: 0.33333333333333331 (08:00 as a day fraction) resolved to sharedStrings[0].
+          if (cell.match(/<c\b[^>]*\bt="s"/) && vMatch) {
             const idx = parseInt(vMatch[1]!, 10);
-            if (!isNaN(idx) && idx < strings.length) return strings[idx]!;
+            if (!isNaN(idx) && idx >= 0 && idx < strings.length) return strings[idx]!;
+            return vMatch[1] ?? '';
+          }
+          if (vMatch) {
             return vMatch[1]!;
           }
           return tMatch ? tMatch[1]! : '';
