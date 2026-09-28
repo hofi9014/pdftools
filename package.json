@@ -64,6 +64,7 @@
     "test:e2e-tools-real-pdf": "npx --yes tsx e2e/tools-real-pdf.mts",
     "test:e2e-converters-real-pdf": "npx --yes tsx e2e/converters-real-pdf.mts",
     "test:e2e-roundtrips-real-pdf": "npx --yes tsx e2e/roundtrips-real-pdf.mts",
+    "test:e2e-tools2-real-pdf": "npx --yes tsx e2e/tools2-real-pdf.mts",
     "test:e2e-html-to-pdf-tagged": "npx --yes tsx e2e/html-to-pdf-tagged.mts",
     "test:e2e-onedrive-stale-token": "npx --yes tsx e2e/onedrive-stale-token.mts",
     "test:e2e-pwa-audit": "npx --yes tsx e2e/pwa-audit.mts",
