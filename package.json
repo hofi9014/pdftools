@@ -118,6 +118,7 @@
     "test:pdf-to-excel-bold-italic": "npx --yes tsx tests/pdf-to-excel-bold-italic.mts",
     "test:xlsx-conditional-formatting": "npx --yes tsx tests/xlsx-conditional-formatting.mts",
     "test:xlsx-empty-sheets-guard": "npx --yes tsx tests/xlsx-empty-sheets-guard.mts",
+    "test:unlock-password-label-accuracy": "npx --yes tsx tests/unlock-password-label-accuracy.mts",
     "test:spreadsheet-header-fallback": "npx --yes tsx tests/spreadsheet-header-fallback.mts",
     "test:superscript-reading-order": "npx --yes tsx tests/superscript-reading-order.mts",
     "test:unlock-aes128": "npx --yes tsx tests/unlock-aes128.mts",
