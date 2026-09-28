@@ -133,6 +133,7 @@
     "test:xlsx-merge-text-preserved": "npx --yes tsx tests/xlsx-merge-text-preserved.mts",
     "test:protect-literal-strings": "npx --yes tsx tests/protect-literal-strings.mts",
     "test:docx-page-breaks": "npx --yes tsx tests/docx-page-breaks.mts",
+    "test:xlsx-pdf-xlsx-rowspan-continuation": "npx --yes tsx tests/xlsx-pdf-xlsx-rowspan-continuation.mts",
     "test:text-ctm-geometry": "npx --yes tsx tests/text-ctm-geometry.mts",
     "test:text-color-graphics-state": "npx --yes tsx tests/text-color-graphics-state.mts"
   },
