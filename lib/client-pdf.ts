@@ -285,11 +285,19 @@ export async function addBlankPage(file: File, position?: number): Promise<Uint8
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
   if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
-  if (position !== undefined && position >= 0 && position <= pdf.getPageCount()) {
-    pdf.insertPage(position);
-  } else {
-    pdf.addPage();
+  const pageCount = pdf.getPageCount();
+  const insertAt = position !== undefined && position >= 0 && position <= pageCount ? position : pageCount;
+  // pdf-lib's insertPage()/addPage() default an omitted size to A4 regardless of the document's
+  // own page size — for any non-A4 document (A5, Letter, Legal, scans...) the blank page comes out
+  // grossly disproportionate to the rest of the file. Match a neighboring existing page's VISUAL
+  // size instead (accounting for /Rotate, since the new page itself has none).
+  let size: [number, number] | undefined;
+  if (pageCount > 0) {
+    const ref = pdf.getPage(insertAt > 0 ? insertAt - 1 : 0);
+    const visual = visualPageSize(ref.getWidth(), ref.getHeight(), ref.getRotation().angle);
+    size = [visual.width, visual.height];
   }
+  pdf.insertPage(insertAt, size);
   return pdf.save();
 }
 
