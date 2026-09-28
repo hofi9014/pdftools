@@ -13,6 +13,7 @@ export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [noopFlatten, setNoopFlatten] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
 
@@ -29,11 +30,16 @@ export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale }
     setLoading(true);
     setError('');
     setSuccess(false);
+    setNoopFlatten(false);
 
     try {
       const result = await flattenPDF(file);
-      const blob = await downloadPdf(result, file.name.replace('.pdf', '') + '-spłaszczony.pdf');
+      const blob = await downloadPdf(result.bytes, file.name.replace('.pdf', '') + '-spłaszczony.pdf');
       processedBlobRef.current = blob;
+      // A PDF with no form fields and no annotations has nothing to flatten — the output is
+      // byte-for-byte the same document, which understandably reads as "did this even run?" to
+      // a user comparing the two files. Say so plainly instead of a silent identical download.
+      setNoopFlatten(result.flattenedFields === 0 && result.removedAnnotations === 0);
       setSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('error.generic', locale));
@@ -93,7 +99,12 @@ export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale }
         </div>
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
-      {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">            ✅ {t('page.flatten.success', locale)}</div>}
+      {success && (
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
+          ✅ {t('page.flatten.success', locale)}
+          {noopFlatten && <div className="text-sm mt-1 opacity-90">{t('page.flatten.success_nochange', locale)}</div>}
+        </div>
+      )}
       {success && file && processedBlobRef.current && (
         <div className="flex justify-center mb-6">
           <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', '') + '-spłaszczony.pdf'} />

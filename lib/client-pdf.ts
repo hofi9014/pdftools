@@ -465,13 +465,25 @@ function writeXmpToPdf(pdf: PDFDocument, xmpXml: string): void {
   pdf.catalog.set(PDFName.of('Metadata'), xmpRef);
 }
 
-export async function flattenPDF(file: File): Promise<Uint8Array> {
+export interface FlattenPdfResult {
+  bytes: Uint8Array;
+  /** Form fields converted to static page content (excludes untouched signature fields). */
+  flattenedFields: number;
+  /** Annotation entries removed from pages' /Annots (widgets of flattened fields, plus any
+   * unrelated links/comments — this tool removes all non-signature annotations, per its own
+   * "Removes all annotations and comments" description). */
+  removedAnnotations: number;
+}
+
+export async function flattenPDF(file: File): Promise<FlattenPdfResult> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
   if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const pages = pdf.getPages();
 
   const acroForm = pdf.catalog.get(PDFName.of('AcroForm'));
+  let flattenedFields = 0;
+  let removedAnnotations = 0;
 
   if (acroForm) {
     const form = pdf.getForm();
@@ -492,6 +504,7 @@ export async function flattenPDF(file: File): Promise<Uint8Array> {
 
     for (const f of pdfFields) {
       if (f.constructor.name === 'PDFSignature') continue;
+      flattenedFields++;
       try {
         if (f.needsAppearancesUpdate()) f.defaultUpdateAppearances(font);
         for (const widget of f.acroField.getWidgets()) {
@@ -526,6 +539,7 @@ export async function flattenPDF(file: File): Promise<Uint8Array> {
       for (const a of annots.asArray()) {
         if (a instanceof PDFRef && sigRefs.has(a)) keep.push(a);
       }
+      removedAnnotations += annots.asArray().length - keep.length;
       if (keep.length > 0) {
         page.node.set(PDFName.of('Annots'), pdf.context.obj(keep));
       } else {
@@ -533,12 +547,17 @@ export async function flattenPDF(file: File): Promise<Uint8Array> {
       }
     }
   } else {
-    for (const page of pages) page.node.delete(PDFName.Annots);
+    for (const page of pages) {
+      const annots = page.node.Annots();
+      if (annots) removedAnnotations += annots.asArray().length;
+      page.node.delete(PDFName.Annots);
+    }
   }
 
   // Appearances were generated explicitly above; skip save()'s auto-pass which
   // would use the WinAnsi default font (Helvetica) on any remaining field.
-  return pdf.save({ updateFieldAppearances: false });
+  const bytes = await pdf.save({ updateFieldAppearances: false });
+  return { bytes, flattenedFields, removedAnnotations };
 }
 
 function findWidgetPage(pdf: PDFDocument, pages: PDFPage[], widget: PDFWidgetAnnotation): PDFPage {
