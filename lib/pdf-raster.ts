@@ -2,11 +2,9 @@ import {
   PDFDocument,
   PDFName,
   PDFContentStream,
-  PDFRef,
   PDFDict,
+  PDFRef,
   PDFArray,
-  PDFObject,
-  PDFRawStream,
   PDFOperator,
   pushGraphicsState,
   popGraphicsState,
@@ -14,6 +12,7 @@ import {
   drawObject,
   scale as scaleOperator,
   rotateDegrees,
+  type PDFPage,
 } from 'pdf-lib';
 
 // FINDING (2026-09-23) — both rasterizePage/rasterizePages placed the redacted-page PNG using
@@ -128,75 +127,99 @@ async function canvasToPngBytes(canvas: RasterCanvas): Promise<Uint8Array> {
   throw new Error('Canvas nie udostępnia toBuffer, toDataURL ani convertToBlob');
 }
 
-function collectContentsRefs(pdfDoc: PDFDocument, obj: PDFObject | undefined): PDFRef[] {
-  const refs: PDFRef[] = [];
-  if (!obj) return refs;
-  if (obj instanceof PDFRef) {
-    refs.push(obj);
-    return refs;
+// FINDING (2026-09-28) — rasterizePage(s) used to mutate a redacted page's EXISTING /Resources
+// dict in place (pruneResources: delete every entry except the new image XObject), then run a
+// document-wide reachability sweep (deleteUnreachableRefs) to garbage-collect any now-orphaned
+// font/XObject the redacted page(s) used to reference — on the theory that a still-reachable ref
+// (because some OTHER, non-redacted page still points to it) would survive the sweep. On a real
+// user file (12 pages sharing one Font dict's worth of indirect font refs across every page,
+// exactly the common "one shared font set for the whole document" producer pattern) the redacted
+// output came back with EVERY page's /Resources missing its fonts — including pages that were
+// never touched, still carrying their ORIGINAL vector text — so opening it showed correct text
+// geometry rendered in pdf.js's/Acrobat's fallback font (garbled: missing Polish glyphs, wrong
+// metrics) instead of the real one, and Acrobat itself reported a page-content error. The exact
+// mechanism wasn't pinned down (a synthetic repro with the same shared-font-refs shape did NOT
+// reproduce it through this same code path), but the design itself is fragile by construction:
+// deleting a resource ref globally makes correctness depend on a hand-rolled reachability walker
+// correctly re-discovering every remaining reference, across however the source PDF happens to
+// structure its page tree — one blind spot (or one edge case in a producer's structure) corrupts
+// every page in the document, not just the redacted ones.
+//
+// Fixed by never touching /Resources at all: a redacted page gets pointed at a BRAND-NEW, private
+// dict containing only its own new image, instead of a mutated one — this is safe by construction,
+// since the operation then never mutates or deletes any resource object another page might share.
+//
+// The OLD /Contents stream is a different matter: unlike /Resources, /Contents is NOT one of
+// PDF's inheritable page attributes (PDFPageLeaf.InheritableEntries lists only Resources,
+// MediaBox, CropBox, Rotate), so it can't be silently shared via the same ancestor-inheritance
+// mechanism — but redaction exists specifically to make sensitive text UNRECOVERABLE, so simply
+// leaving the old (still-legible) content stream as an "unreferenced" object in the file would
+// defeat the tool's entire purpose: the text is still sitting right there in the saved bytes for
+// anyone who inflates every stream in the PDF rather than only the ones a normal viewer reaches.
+// contentRefUsage (built once per document from every page's CURRENT /Contents, before any page
+// is rewritten) counts how many pages reference each content ref; the old ref is deleted only
+// when this page is its sole user — the same narrow, cheap-to-verify safety check, scoped to the
+// one field that actually needs it, instead of the previous broad, document-wide, easy-to-get-
+// wrong reachability sweep over every kind of resource.
+function contentRefsOf(pageNode: PDFPage['node']): PDFRef[] {
+  const val = pageNode.get(PDFName.of('Contents'));
+  if (val instanceof PDFRef) return [val];
+  if (val instanceof PDFArray) {
+    const out: PDFRef[] = [];
+    for (const el of val.asArray()) if (el instanceof PDFRef) out.push(el);
+    return out;
   }
-  if (obj instanceof PDFArray) {
-    for (const el of obj.asArray()) {
-      if (el instanceof PDFRef) refs.push(el);
-    }
-  }
-  return refs;
+  return [];
 }
 
-function pruneResources(resDict: PDFDict | undefined, keepCategory: string, keepKey: string): PDFRef[] {
-  const removedRefs: PDFRef[] = [];
-  if (!resDict) return removedRefs;
-  for (const [catName, catVal] of resDict.entries()) {
-    if (!(catVal instanceof PDFDict)) continue;
-    const category = catVal;
-    for (const [key, val] of category.entries()) {
-      const isKeep = catName.toString() === keepCategory && key.toString() === keepKey;
-      if (isKeep) continue;
-      if (val instanceof PDFRef) removedRefs.push(val);
-      category.delete(key);
-    }
-    if (catName.toString() !== keepCategory && category.entries().length === 0) {
-      resDict.delete(catName);
+function countContentRefUsage(pdfDoc: PDFDocument): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const page of pdfDoc.getPages()) {
+    for (const ref of contentRefsOf(page.node)) {
+      const key = ref.toString();
+      counts.set(key, (counts.get(key) ?? 0) + 1);
     }
   }
-  return removedRefs;
+  return counts;
 }
 
-function reachableRefs(pdfDoc: PDFDocument): Set<string> {
-  const refs = new Set<string>();
-  const seen = new Set<PDFObject>();
-  const context = pdfDoc.context;
-  const walk = (obj: PDFObject | undefined): void => {
-    if (!obj || typeof obj !== 'object') return;
-    if (seen.has(obj)) return;
-    seen.add(obj);
-    if (obj instanceof PDFRef) {
-      refs.add(obj.toString());
-      const target = context.lookup(obj);
-      if (target) walk(target);
-      return;
-    }
-    if (obj instanceof PDFArray) {
-      for (const el of obj.asArray()) walk(el);
-      return;
-    }
-    if (obj instanceof PDFDict) {
-      for (const [, v] of obj.entries()) walk(v);
-      return;
-    }
-    if (obj instanceof PDFRawStream) walk(obj.dict);
-  };
-  walk(pdfDoc.catalog);
-  const trailerInfo = pdfDoc.context.trailerInfo as Record<string, PDFObject | undefined> | undefined;
-  walk(trailerInfo?.Info);
-  return refs;
-}
-
-function deleteUnreachableRefs(pdfDoc: PDFDocument, candidateRefs: PDFRef[]): void {
-  if (!candidateRefs.length) return;
-  const reachable = reachableRefs(pdfDoc);
-  for (const ref of candidateRefs) {
-    if (!reachable.has(ref.toString())) pdfDoc.context.delete(ref);
+/**
+ * Replaces a page's content with a flattened raster image: embeds the PNG, points the page at a
+ * brand-new, private /Resources dict containing only that image (never the page's existing one —
+ * see the docblock above), deletes the page's OLD /Contents stream(s) when this page is their only
+ * user (see docblock), and replaces /Contents with a stream that draws the new image.
+ */
+async function replacePageWithRasterImage(
+  pdfDoc: PDFDocument,
+  libPage: PDFPage,
+  png: Uint8Array,
+  contentRefUsage: Map<string, number>,
+): Promise<void> {
+  const { x: x0, y: y0, width: rawWidth, height: rawHeight } = libPage.getMediaBox();
+  const pageRotationDeg = libPage.getRotation().angle;
+  const { width: visW, height: visH } = visualPageSize(rawWidth, rawHeight, pageRotationDeg);
+  const { x: rawX, y: rawY } = visualToRawPoint(rawWidth, rawHeight, pageRotationDeg, 0, 0);
+  const image = await pdfDoc.embedPng(png);
+  const resources = pdfDoc.context.obj({
+    XObject: { Im0: image.ref },
+    ProcSet: ['PDF', 'ImageB', 'ImageC', 'ImageI'],
+  });
+  const oldContentRefs = contentRefsOf(libPage.node);
+  libPage.node.set(PDFName.of('Resources'), resources);
+  const operators: PDFOperator[] = [
+    pushGraphicsState(),
+    translate(x0 + rawX, y0 + rawY),
+    rotateDegrees(pageRotationDeg),
+    scaleOperator(visW, visH),
+    drawObject(PDFName.of('Im0')),
+    popGraphicsState(),
+  ];
+  const contentDict = pdfDoc.context.obj({});
+  const contentStream = PDFContentStream.of(contentDict, operators);
+  const contentStreamRef = pdfDoc.context.register(contentStream);
+  libPage.node.set(PDFName.of('Contents'), contentStreamRef);
+  for (const ref of oldContentRefs) {
+    if (contentRefUsage.get(ref.toString()) === 1) pdfDoc.context.delete(ref);
   }
 }
 
@@ -227,28 +250,7 @@ export async function rasterizePage(
 
   const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
   const libPage = pdfDoc.getPage(pageIndex);
-  const { x: x0, y: y0, width: rawWidth, height: rawHeight } = libPage.getMediaBox();
-  const pageRotationDeg = libPage.getRotation().angle;
-  const { width: visW, height: visH } = visualPageSize(rawWidth, rawHeight, pageRotationDeg);
-  const { x: rawX, y: rawY } = visualToRawPoint(rawWidth, rawHeight, pageRotationDeg, 0, 0);
-  const image = await pdfDoc.embedPng(png);
-  const xObjectKey = libPage.node.newXObject('Image', image.ref);
-  const operators: PDFOperator[] = [
-    pushGraphicsState(),
-    translate(x0 + rawX, y0 + rawY),
-    rotateDegrees(pageRotationDeg),
-    scaleOperator(visW, visH),
-    drawObject(xObjectKey),
-    popGraphicsState(),
-  ];
-  const oldContents = libPage.node.get(PDFName.of('Contents'));
-  const contentDict = pdfDoc.context.obj({});
-  const contentStream = PDFContentStream.of(contentDict, operators);
-  const contentStreamRef = pdfDoc.context.register(contentStream);
-  libPage.node.set(PDFName.of('Contents'), contentStreamRef);
-  const removedRefs: PDFRef[] = collectContentsRefs(pdfDoc, oldContents);
-  removedRefs.push(...pruneResources(libPage.node.Resources(), '/XObject', xObjectKey.toString()));
-  deleteUnreachableRefs(pdfDoc, removedRefs);
+  await replacePageWithRasterImage(pdfDoc, libPage, png, countContentRefUsage(pdfDoc));
   return new Uint8Array(await pdfDoc.save({ useObjectStreams: false }));
 }
 
@@ -272,7 +274,11 @@ export async function rasterizePages(
   const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
 
   const pageIndexes = [...new Set(regions.map((r) => r.page))].sort((a, b) => a - b);
-  const allRemovedRefs: PDFRef[] = [];
+  // Built once, from every page's CURRENT /Contents, before any page in this batch is rewritten —
+  // so a content ref shared between two pages BOTH being redacted in this same call is still
+  // correctly counted as shared (and thus kept) rather than looking like an orphan the moment the
+  // first of the two pages is processed.
+  const contentRefUsage = countContentRefUsage(pdfDoc);
 
   for (const pageIndex of pageIndexes) {
     const pageRegions = regions.filter((r) => r.page === pageIndex);
@@ -289,31 +295,10 @@ export async function rasterizePages(
     const png = await canvasToPngBytes(canvas);
 
     const libPage = pdfDoc.getPage(pageIndex);
-    const { x: x0, y: y0, width: rawWidth, height: rawHeight } = libPage.getMediaBox();
-    const pageRotationDeg = libPage.getRotation().angle;
-    const { width: visW, height: visH } = visualPageSize(rawWidth, rawHeight, pageRotationDeg);
-    const { x: rawX, y: rawY } = visualToRawPoint(rawWidth, rawHeight, pageRotationDeg, 0, 0);
-    const image = await pdfDoc.embedPng(png);
-    const xObjectKey = libPage.node.newXObject('Image', image.ref);
-    const operators: PDFOperator[] = [
-      pushGraphicsState(),
-      translate(x0 + rawX, y0 + rawY),
-      rotateDegrees(pageRotationDeg),
-      scaleOperator(visW, visH),
-      drawObject(xObjectKey),
-      popGraphicsState(),
-    ];
-    const oldContents = libPage.node.get(PDFName.of('Contents'));
-    const contentDict = pdfDoc.context.obj({});
-    const contentStream = PDFContentStream.of(contentDict, operators);
-    const contentStreamRef = pdfDoc.context.register(contentStream);
-    libPage.node.set(PDFName.of('Contents'), contentStreamRef);
-    allRemovedRefs.push(...collectContentsRefs(pdfDoc, oldContents));
-    allRemovedRefs.push(...pruneResources(libPage.node.Resources(), '/XObject', xObjectKey.toString()));
+    await replacePageWithRasterImage(pdfDoc, libPage, png, contentRefUsage);
   }
 
   await doc.cleanup();
-  deleteUnreachableRefs(pdfDoc, allRemovedRefs);
 
   // Rasterizing a page replaces its /Contents with a flat image, destroying any marked-content
   // (text runs, MCIDs) that a /StructTreeRoot's structure elements point into. The catalog
