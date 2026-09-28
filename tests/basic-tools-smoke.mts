@@ -178,8 +178,10 @@ console.log('\n--- flattenPDF (plain PDF, no AcroForm) ---');
 {
   const file = await makePdf([0, 1]);
   const result = await flattenPDF(file);
-  const doc = await PDFDocument.load(result);
+  const doc = await PDFDocument.load(result.bytes);
   check(doc.getPageCount() === 2, `flattening a form-less PDF leaves the page count unchanged — got ${doc.getPageCount()}`);
+  check(result.flattenedFields === 0 && result.removedAnnotations === 0,
+    `form-less, annotation-less PDF reports nothing flattened (fields=${result.flattenedFields}, annots=${result.removedAnnotations})`);
 }
 
 // --- WCAG/PDF-UA follow-up ---------------------------------------------------------------
