@@ -1,7 +1,7 @@
 // IR types shared between extraction (client-pdf.ts) and rendering (docx/pdf)
 // Dependencies: docx, pdf-lib, @pdf-lib/fontkit
 
-import { PDFDocument, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
+import { PDFDocument, PDFName, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
 import type JSZip from 'jszip';
 import { applyConditionalFormatting } from './xlsx-conditional-formatting';
 import { splitAtBlankLines, findBox, splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder } from './pdf/docxLayout';
@@ -3252,8 +3252,23 @@ export interface DrawSpreadsheetCellOpts {
   gridLineWidth?: number;
   gridColor?: ReturnType<typeof rgb>;
   clipText?: boolean;   // default true: truncate lines below bottom padding
+  /**
+   * Index into the cell's own word-wrapped lines to start drawing from. Used when a rowspan cell
+   * is split across a page break: the piece on the earlier page draws lines [0, N), and the
+   * carry-over piece on the next page must continue from line N rather than redraw the whole
+   * text from its own top (which would either duplicate the opening lines or, for short cells,
+   * show nothing new at all). Default 0 (draw from the start, the normal single-page case).
+   */
+  startLine?: number;
 }
 
+/**
+ * Draws one cell and returns the index of the first line NOT drawn (i.e. startLine + however many
+ * of the wrapped lines fit and were actually drawn) — callers rendering a rowspan cell split across
+ * a page break pass this back in as the next piece's startLine so the text continues instead of
+ * repeating. For a cell that isn't split (the overwhelming majority), the return value is simply
+ * discarded by the caller.
+ */
 export function drawSpreadsheetCell(
   page: PDFPage,
   cell: IRSpreadsheetCell,
@@ -3261,13 +3276,14 @@ export function drawSpreadsheetCell(
   w: number, h: number,
   fonts: SpreadsheetFonts,
   opts: DrawSpreadsheetCellOpts = {},
-): void {
+): number {
   const fontSize = opts.fontSize ?? 10;
   const lineH    = opts.lineH    ?? 11;
   const pad      = opts.pad      ?? 3;
   const glw      = opts.gridLineWidth ?? 0.5;
   const glc      = opts.gridColor ?? rgb(0.6, 0.6, 0.6);
   const clipText = opts.clipText  ?? true;
+  const startLine = opts.startLine ?? 0;
 
   const dl = (x1: number, y1: number, x2: number, y2: number) =>
     page.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness: glw, color: glc });
@@ -3280,14 +3296,14 @@ export function drawSpreadsheetCell(
   dl(x, y, x, y - h);           // left
   dl(x + w, y, x + w, y - h);   // right
 
-  if (!cell.display) return;
+  if (!cell.display) return startLine;
 
   const align = spreadsheetCellAlign(cell);
   const bold  = cell.fmt?.bold   ?? false;
   const italic = cell.fmt?.italic ?? false;
   const font  = ssPickFont(fonts, bold, italic);
   const innerW = w - pad * 2;
-  if (innerW <= 0) return;
+  if (innerW <= 0) return startLine;
 
   const measure: SpreadsheetCellMeasure = (t, fs, b, i) =>
     ssPickFont(fonts, b, i).widthOfTextAtSize(t, fs);
@@ -3295,13 +3311,17 @@ export function drawSpreadsheetCell(
 
   let textY = y - pad - fontSize;
   const bottomLimit = y - h + pad;
-  for (const line of lines) {
+  let i = startLine;
+  while (i < lines.length) {
     if (clipText && textY < bottomLimit) break;
+    const line = lines[i]!;
     const lw = font.widthOfTextAtSize(line, fontSize);
     const tx = align === 'right' ? x + w - pad - lw : x + pad;
     page.drawText(line, { x: tx, y: textY, size: fontSize, font, color: cell.fmt?.colorHex ? hexToColor(cell.fmt.colorHex) : rgb(0, 0, 0) });
     textY -= lineH;
+    i++;
   }
+  return i;
 }
 
 // ============================================================
@@ -3346,6 +3366,40 @@ export function inferHeaderRowCount(sheet: IRSheet): number {
   if (filled.some((c) => c!.type === 'number')) return 0;
   return 1;
 }
+
+/**
+ * Cells (by their ORIGINAL anchor position) whose vertical merge is still "open" at chunkStart —
+ * i.e. the merge started on an earlier chunk (row < chunkStart) and reaches past it
+ * (row + rowspan > chunkStart). These are exactly the pieces that a naive per-chunk draw loop
+ * would silently drop: the loop only ever looks up sheet.cells[row][col] for row inside the
+ * CURRENT chunk's own range, and a merge's non-anchor rows are `undefined` in the grid (only the
+ * anchor carries the cell — see xlsxToIR's "covered slots stay undefined" convention), so a merge
+ * anchored before the chunk boundary was never found again once its anchor fell on an earlier
+ * page (see AGENTS FINDING: split rowspans used to vanish past a page break instead of
+ * continuing). The caller draws these explicitly at the top of the new chunk.
+ */
+function findCarryOverCells(sheet: IRSheet, chunkStart: number): Array<{ row: number; col: number; cell: IRSpreadsheetCell }> {
+  const out: Array<{ row: number; col: number; cell: IRSpreadsheetCell }> = [];
+  for (let r = 0; r < chunkStart; r++) {
+    const row = sheet.cells[r];
+    if (!row) continue;
+    for (let c = 0; c < row.length; c++) {
+      const cell = row[c];
+      if (!cell || cell.rowspan <= 1) continue;
+      if (r + cell.rowspan > chunkStart) out.push({ row: r, col: c, cell });
+    }
+  }
+  return out;
+}
+
+/** Custom, non-standard page-dict key: canonical columns whose rowspan drawn at this page's
+ * bottom body row is a CONFIRMED continuation onto the next page (see findCarryOverCells above).
+ * Written only by this renderer and read only by our own pdfToIRSpreadsheet round-trip reader
+ * (buildFragmentGrid in client-pdf.ts) to glue a split rowspan back into one merge instead of the
+ * conservative "ambiguous, never glue" fallback it uses for any PDF lacking this marker (i.e.
+ * every third-party PDF, and any page this renderer didn't itself split). A PDF viewer or any
+ * other tool simply ignores an unrecognized page-dict entry. */
+const ROWSPAN_CONTINUES_KEY = 'OptimaRowspanContinues';
 
 export async function renderSpreadsheetIRToPdf(
   spreadsheet: IRSpreadsheet,
@@ -3398,6 +3452,10 @@ export async function renderSpreadsheetIRToPdf(
 
     const fragments = spreadsheetColFragments(sheet, colPt, availableW, G);
     const chunks = spreadsheetRowChunks(sheet, rowHt, bodyBudget, H);
+    // One entry per chunk boundary: cells whose merge is still open when that chunk's body starts
+    // (see findCarryOverCells) — precomputed once per sheet since it only depends on rows/chunks,
+    // not on which column fragment is currently being paged.
+    const carryPerChunk = chunks.map((ch) => findCarryOverCells(sheet, ch.start));
 
     // Frozen header columns: X offsets within the header block (left of body).
     const headerColsX = spreadsheetFragmentColsX(colPt, { start: 0, end: G });
@@ -3413,17 +3471,27 @@ export async function renderSpreadsheetIRToPdf(
       const bodyXOf = new Map<number, number>();
       const bodyLeft = MARGIN + headerW;
       for (const e of bodyColsX) bodyXOf.set(e.c, bodyLeft + e.x);
+      // How many of a rowspan cell's wrapped lines have already been drawn on an earlier chunk's
+      // page, keyed by its anchor "row:col" — reset per column fragment (a fragment boundary is a
+      // genuinely different physical page showing a different horizontal slice, never a text
+      // continuation), but must persist across this fragment's own chunk pages.
+      const linesDrawn = new Map<string, number>();
 
       for (let ci = 0; ci < chunks.length; ci++) {
         const ch = chunks[ci]!;
         const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
         let y = PAGE_H - MARGIN;
+        const confirmedCarryCols = new Set<number>();
 
         if (firstPageOfSheet) {
           page.drawText(sheet.name, { x: MARGIN, y: PAGE_H - MARGIN - TITLE_PT, size: TITLE_PT, font: fonts.bold, color: black });
         }
         y -= TITLE_PT;
 
+        // Plain draw, no cross-page line tracking: used for frozen header rows [0,H), which are
+        // redrawn IN FULL on every page by design (repetition, not a page-break continuation) —
+        // tracking those would wrongly treat each redraw as "more of the same text", running out
+        // of lines a few pages in and leaving the header blank.
         const drawClipped = (
           row: number, c: number, colBandStart: number, colBandEnd: number,
           rowStart: number, rowEnd: number,
@@ -3443,17 +3511,69 @@ export async function renderSpreadsheetIRToPdf(
           drawSpreadsheetCell(page, cell, leftX, y, w, h, fonts, drawOpts);
         };
 
+        // Tracked draw: used for BODY rows and the carry-over pass, where a rowspan cell can
+        // genuinely be split by a page break and must continue (not repeat) its wrapped lines.
+        const drawBodyCell = (
+          row: number, c: number, cell: IRSpreadsheetCell, colBandStart: number, colBandEnd: number,
+          rowStart: number, rowEnd: number,
+        ) => {
+          const cs = Math.max(cell.colspan || 1, 1);
+          const rs = Math.max(cell.rowspan || 1, 1);
+          const clip = clipCellToBand(row, c, cs, rs, colBandStart, colBandEnd, rowStart, rowEnd);
+          if (!clip.visible) return;
+          const leftCol = clip.colStart;
+          const leftX = leftCol < G ? (headerXOf.get(leftCol) ?? MARGIN) : (bodyXOf.get(leftCol) ?? bodyLeft);
+          let w = 0;
+          for (let cc = clip.colStart; cc < clip.colEnd; cc++) w += colPt[cc] ?? 0;
+          let h = 0;
+          for (let rr = clip.rowStart; rr < clip.rowEnd; rr++) h += rowHt[rr] ?? 0;
+          if (rs > 1) {
+            const key = `${row}:${c}`;
+            const startLine = linesDrawn.get(key) ?? 0;
+            const next = drawSpreadsheetCell(page, cell, leftX, y, w, h, fonts, { ...drawOpts, startLine });
+            linesDrawn.set(key, next);
+          } else {
+            drawSpreadsheetCell(page, cell, leftX, y, w, h, fonts, drawOpts);
+          }
+        };
+        const drawBodyClipped = (
+          row: number, c: number, colBandStart: number, colBandEnd: number,
+          rowStart: number, rowEnd: number,
+        ) => {
+          const cell = sheet.cells[row]?.[c];
+          if (!cell) return;
+          drawBodyCell(row, c, cell, colBandStart, colBandEnd, rowStart, rowEnd);
+        };
+
         // Frozen header rows [0,H) — full fragment horizontal extent.
         for (let r = 0; r < H; r++) {
           for (const e of headerColsX) drawClipped(r, e.c, 0, G, 0, H);
           for (const e of bodyColsX) drawClipped(r, e.c, frag.start, frag.end, 0, H);
           y -= rowHt[r] ?? 0;
         }
+        // Carry-over pass: rowspan cells anchored on an EARLIER chunk's page that are still open
+        // at ch.start (see findCarryOverCells) — drawn here, at the top of the body area, before
+        // the normal per-row loop below (whose own lookup by anchor row can never find them, since
+        // their anchor lies outside [ch.start, ch.end)). Each confirmed column is recorded so a
+        // marker can tell our own round-trip reader these are genuine continuations, not two
+        // coincidentally-adjacent cells.
+        for (const co of carryPerChunk[ci]!) {
+          const inHeaderCols = co.col < G;
+          const inBodyCols = co.col >= frag.start && co.col < frag.end;
+          if (!inHeaderCols && !inBodyCols) continue;
+          const colBandStart = inHeaderCols ? 0 : frag.start;
+          const colBandEnd = inHeaderCols ? G : frag.end;
+          drawBodyCell(co.row, co.col, co.cell, colBandStart, colBandEnd, ch.start, ch.end);
+          confirmedCarryCols.add(co.col);
+        }
         // Body rows [ch.start, ch.end) — full fragment horizontal extent.
         for (let r = ch.start; r < ch.end; r++) {
-          for (const e of headerColsX) drawClipped(r, e.c, 0, G, ch.start, ch.end);
-          for (const e of bodyColsX) drawClipped(r, e.c, frag.start, frag.end, ch.start, ch.end);
+          for (const e of headerColsX) drawBodyClipped(r, e.c, 0, G, ch.start, ch.end);
+          for (const e of bodyColsX) drawBodyClipped(r, e.c, frag.start, frag.end, ch.start, ch.end);
           y -= rowHt[r] ?? 0;
+        }
+        if (confirmedCarryCols.size > 0) {
+          page.node.set(PDFName.of(ROWSPAN_CONTINUES_KEY), pdfDoc.context.obj([...confirmedCarryCols]));
         }
         firstPageOfSheet = false;
       }

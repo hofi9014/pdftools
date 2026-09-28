@@ -3383,22 +3383,21 @@ function clusterColIndex(xEdges: number[], localXEdges: number[], localCol: numb
 }
 
 /**
- * Canonical columns whose multi-row merges reach the LAST body row of a page
- * (i.e. the row the renderer clipped at the page bottom). A rowspan that was
- * split by vertical pagination disappears "into" page N+1 here: the piece on
- * page N exactly abuts the bottom body edge. Returns an empty set when the
- * page has no such abutting multi-row merges.
+ * Canonical columns whose multi-row merges reach the LAST body row of a page (i.e. the row the
+ * renderer clipped at the page bottom), together with that merge's LOCAL (this page's own
+ * cluster) anchor row and rowspan. A rowspan that was split by vertical pagination disappears
+ * "into" page N+1 here: the piece on page N exactly abuts the bottom body edge.
  */
-function bottomRowspanCols(
+function bottomRowspanCells(
   cl: PdfTableClusterResult,
   xEdges: number[],
   localXEdges: number[],
-): Set<number> {
-  const out = new Set<number>();
+): Map<number, { row: number; rowspan: number }> {
+  const out = new Map<number, { row: number; rowspan: number }>();
   for (const cell of cl.cells) {
     if (cell.rowspan <= 1) continue; // only vertical merges can cross a row break
     if (cell.row + cell.rowspan >= cl.rows) {
-      out.add(clusterColIndex(xEdges, localXEdges, cell.col));
+      out.set(clusterColIndex(xEdges, localXEdges, cell.col), { row: cell.row, rowspan: cell.rowspan });
     }
   }
   return out;
@@ -3418,7 +3417,7 @@ function canonicalRowTexts(cl: PdfTableClusterResult, localXEdges: number[], xEd
   return rows;
 }
 
-function buildFragmentGrid(pages: MergeBandPage[]): { grid: FragmentGrid; warnings: MergeWarning[] } {
+function buildFragmentGrid(pages: MergeBandPage[], continuationMarkers: Map<number, Set<number>>): { grid: FragmentGrid; warnings: MergeWarning[] } {
   const warnings: MergeWarning[] = [];
   // Canonical columns = the WIDEST xEdges across the pages' clusters (all
   // pages share the same left edge). Empty trailing columns may vanish from a
@@ -3446,15 +3445,24 @@ function buildFragmentGrid(pages: MergeBandPage[]): { grid: FragmentGrid; warnin
   // clusters) — callers only ever pass fragments built from titledPages (already
   // filtered to clusters.length > 0), so this is always set once the loop below runs.
   let firstPage: number | undefined;
-  // Columns whose last page-body merge reached the very bottom body row of the
-  // PRECEDING page. A rowspan crossing a page break is drawn (clipped) as two
-  // pieces: a bottom piece ending at the last body row of page N and a top
-  // piece starting at the first non-frozen body row of page N+1, in the same
-  // column. This renderer never draws a gap between them, so we cannot prove
-  // they are one original cell (see AGENTS FINDING). Per the conservative V1
-  // rule (never glue, always warn) we surface every such pairing as
-  // 'merge-continuation-ambiguous' instead of silently merging them.
-  let prevBottomCols = new Set<number>();
+  // Canonical column -> ABSOLUTE anchor row (index into `cells`/`merges`) of a merge that is
+  // still "open" at the bottom of the page just processed, i.e. may continue onto the next page.
+  // A rowspan crossing a page break is drawn (clipped) as two pieces: a bottom piece ending at the
+  // last body row of page N and a top piece starting at the first non-frozen body row of page N+1,
+  // in the same column. Geometry alone cannot prove these are one original cell (two
+  // coincidentally-adjacent cells look identical), so by default we never glue them — UNLESS our
+  // own renderer left a confirmation marker on page N+1 (continuationMarkers; see
+  // renderSpreadsheetIRToPdf's ROWSPAN_CONTINUES_KEY), which exists only on a PDF this app itself
+  // produced and is silently absent — safe fallback to the conservative "always warn" behaviour —
+  // on any other PDF, including one this app rendered before this marker existed.
+  let prevBottom = new Map<number, number>();
+  // First non-zero commonPrefixLen observed for this fragment, i.e. confirmation that it genuinely
+  // repeats some frozen header rows on every continuation page. Stays null for a fragment whose
+  // sheet has no frozen rows at all (inferHeaderRowCount correctly declines to fake one — see the
+  // frozen-header-fallback FINDING): for such a fragment EVERY continuation page legitimately
+  // shares NOTHING with the anchor's own first row, which used to be (wrongly) flagged as
+  // 'header-mismatch' and the entire page's rows discarded — see the rowspan-continuation FINDING.
+  let establishedHeaderRows: number | null = null;
 
   for (const page of pages) {
     if (page.clusters.length === 0) {
@@ -3498,15 +3506,18 @@ function buildFragmentGrid(pages: MergeBandPage[]): { grid: FragmentGrid; warnin
       }
       anchorRowTexts = rowTexts;
       firstPage = page.page;
-      prevBottomCols = bottomRowspanCols(cl, xEdges, localX);
+      const bottomCells = bottomRowspanCells(cl, xEdges, localX);
+      prevBottom = new Map([...bottomCells].map(([ci, info]) => [ci, rowBase + info.row]));
       continue;
     }
 
     // Continuation page: dedup the longest common text prefix vs the anchor.
     const common = commonPrefixLen(anchorRowTexts, rowTexts);
-    if (common === 0) {
-      // Geometry agrees (same fragment) but the top row text differs →
-      // R4 alarm. Never merge silently.
+    if (common === 0 && establishedHeaderRows !== null) {
+      // This fragment DOES repeat header rows on every other continuation page (established
+      // below the first time common > 0 is observed) — a page sharing NOTHING with the anchor
+      // is then a genuine R4 alarm: geometry agrees (same fragment) but the top row text
+      // differs. Never merge silently.
       warnings.push({
         kind: 'header-mismatch',
         page: page.page,
@@ -3516,21 +3527,44 @@ function buildFragmentGrid(pages: MergeBandPage[]): { grid: FragmentGrid; warnin
       });
       continue;
     }
+    if (common > 0) establishedHeaderRows = common;
     // The page's first `common` rows duplicate already-assembled rows (repeated
     // frozen title), so their merged ranges must NOT be re-recorded. Every
     // merged cell in a row r >= common lands at (rowBase + r - common).
     const mergeRowBase = rowBase - common;
-    // A merged cell whose top sits on the first non-frozen body row in a column
-    // whose preceding page ended at its bottom body row is a split rowspan — we
-    // do not glue pieces (the renderer cannot prove they are one cell), so this
-    // pairing is surfaced as a warning.
+    // A merged cell whose top sits on the first non-frozen body row in a column whose preceding
+    // page ended at its bottom body row is a split rowspan. Confirmed (via continuationMarkers)
+    // -> extend the earlier anchor's rowspan/text in place instead of recording a second, separate
+    // merge; otherwise fall back to the old "warn, never glue" behaviour.
+    const gluedCols = new Set<number>();
     for (const cell of cl.cells) {
       if (cell.row !== common) continue;
       if (cell.rowspan <= 1 && cell.colspan <= 1) continue;
       const ci = clusterColIndex(xEdges, localX, cell.col);
-      if (prevBottomCols.has(ci)) {
+      const prevAnchorRow = prevBottom.get(ci);
+      if (prevAnchorRow === undefined) continue;
+      const confirmed = continuationMarkers.get(page.page)?.has(ci) ?? false;
+      if (!confirmed) {
         warnings.push({ kind: 'merge-continuation-ambiguous', page: page.page, col: ci });
+        continue;
       }
+      const m = merges.find((mm) => mm.row === prevAnchorRow && mm.col === ci);
+      const anchorCell = cells[prevAnchorRow]?.[ci];
+      if (!m || !anchorCell) continue; // defensive: should always be found together
+      const newRowspan = (rowBase + cell.rowspan) - prevAnchorRow;
+      m.rowspan = newRowspan;
+      anchorCell.rowspan = newRowspan;
+      // Reconstruct the original wrapped text: the renderer draws this piece continuing from
+      // wherever the earlier page's piece left off (never repeating its opening lines), so the two
+      // pieces' extracted text are disjoint slices of one original string (see docxLayout's
+      // covered-cell text join, the same "join with a single space" convention).
+      const extra = clusterCellText(cl, common, cell.col);
+      if (extra) {
+        const joined = anchorCell.display ? `${anchorCell.display} ${extra}`.trim() : extra;
+        anchorCell.display = joined;
+        if (anchorCell.type === 'string') anchorCell.raw = joined;
+      }
+      gluedCols.add(ci);
     }
     // Reject every merged cell whose leading row lies within the duplicated
     // frozen rows [0, common): repeated title/header rows only "happen" to still
@@ -3539,6 +3573,7 @@ function buildFragmentGrid(pages: MergeBandPage[]): { grid: FragmentGrid; warnin
       if (cell.row < common) continue;
       if (cell.rowspan > 1 || cell.colspan > 1) {
         const ci = clusterColIndex(xEdges, localX, cell.col);
+        if (cell.row === common && gluedCols.has(ci)) continue; // extended the earlier anchor above
         if (ci < cols) {
           merges.push({ row: mergeRowBase + cell.row, col: ci, rowspan: cell.rowspan, colspan: cell.colspan });
         }
@@ -3558,7 +3593,21 @@ function buildFragmentGrid(pages: MergeBandPage[]): { grid: FragmentGrid; warnin
       cells.push(rowCells);
       text.push(rowTxt);
     }
-    prevBottomCols = bottomRowspanCols(cl, xEdges, localX);
+    // A glued column's continuation piece is now part of the EARLIER anchor, not a fresh cell —
+    // clear the placeholder this page's own row-build loop just wrote for it.
+    for (const ci of gluedCols) {
+      const row = cells[rowBase];
+      if (row) row[ci] = undefined;
+    }
+    const bottomCells = bottomRowspanCells(cl, xEdges, localX);
+    const nextPrevBottom = new Map<number, number>();
+    for (const [ci, info] of bottomCells) {
+      // A column glued above keeps pointing at the ORIGINAL anchor (possibly several pages back,
+      // for a merge tall enough to span 3+ pages); any other bottom-reaching column on this page
+      // is a fresh anchor of its own.
+      nextPrevBottom.set(ci, gluedCols.has(ci) ? prevBottom.get(ci)! : mergeRowBase + info.row);
+    }
+    prevBottom = nextPrevBottom;
   }
 
   const grid: FragmentGrid = {
@@ -3577,7 +3626,7 @@ function buildFragmentGrid(pages: MergeBandPage[]): { grid: FragmentGrid; warnin
  * Pure core: given per-page band clusters, re-assemble sheets + warnings.
  * Synthetic-unit-testable without pdfjs.
  */
-export function assembleSheets(bands: MergeBandPage[]): MergeResult {
+export function assembleSheets(bands: MergeBandPage[], continuationMarkers: Map<number, Set<number>> = new Map()): MergeResult {
   const warnings: MergeWarning[] = [];
 
   // --- R1: segment pages into sheets ---
@@ -3641,7 +3690,7 @@ export function assembleSheets(bands: MergeBandPage[]): MergeResult {
 
     // Build fragment grids (down-merging each fragment's chunk pages).
     const fragmentGrids: FragmentGrid[] = fragOrder.map(sig => {
-      const r = buildFragmentGrid(fragMap.get(sig)!);
+      const r = buildFragmentGrid(fragMap.get(sig)!, continuationMarkers);
       for (const w of r.warnings) warnings.push(w);
       return r.grid;
     });
@@ -3746,6 +3795,37 @@ function foldFragmentsRight(frags: FragmentGrid[]): {
   };
 }
 
+/**
+ * Reads the confirmed-rowspan-continuation marker (ROWSPAN_CONTINUES_KEY in
+ * renderSpreadsheetIRToPdf, client-pdf-docx.ts) via a SEPARATE pdf-lib load of the same file — a
+ * non-standard page-dict entry that only our own spreadsheet renderer writes, and which pdf.js's
+ * own parse (used for everything else in this pipeline) has no reason to expose. Returns an empty
+ * map (never throws) for anything pdf-lib can't load — encrypted, malformed, or simply a PDF this
+ * app never rendered — so buildFragmentGrid safely falls back to its old conservative
+ * "warn, never glue" behaviour for every PDF lacking the marker, i.e. every third-party PDF.
+ */
+async function readRowspanContinuationMarkers(file: File): Promise<Map<number, Set<number>>> {
+  const markers = new Map<number, Set<number>>();
+  try {
+    const buf = await file.arrayBuffer();
+    const pdf = await PDFDocument.load(buf, { ignoreEncryption: true, updateMetadata: false });
+    const pages = pdf.getPages();
+    for (let i = 0; i < pages.length; i++) {
+      const entry = pages[i]!.node.get(PDFName.of('OptimaRowspanContinues'));
+      if (!(entry instanceof PDFArray)) continue;
+      const cols = new Set<number>();
+      for (let j = 0; j < entry.size(); j++) {
+        const v = entry.get(j);
+        if (v instanceof PDFNumber) cols.add(v.asNumber());
+      }
+      if (cols.size > 0) markers.set(i + 1, cols);
+    }
+  } catch {
+    // Fall through with whatever was collected (typically nothing) — see docblock.
+  }
+  return markers;
+}
+
 // ============================================================
 // Orchestrator: pipe pdfTablesToCells (clusters) + the extracted page
 // layout (sheet-title headings + loose text) into assembleSheets.
@@ -3758,6 +3838,7 @@ export async function mergeBandsForRoundtrip(file: File): Promise<MergeResult> {
   const scaffolds = await parsePagesForTableExtraction(file);
   const tables = pdfTablesToCellsFromScaffolds(scaffolds);
   const layout = extractFormattedTextFromScaffolds(scaffolds);
+  const continuationMarkers = await readRowspanContinuationMarkers(file);
 
   const layoutByPage = new Map<number, IRPageIR>();
   for (const [i, pg] of layout.entries()) layoutByPage.set(i + 1, pg);
@@ -3786,7 +3867,7 @@ export async function mergeBandsForRoundtrip(file: File): Promise<MergeResult> {
     return { page: t.page, pageHeight: t.pageHeight, sheetTitle, pageText, clusters: t.clusters };
   });
 
-  return assembleSheets(bands);
+  return assembleSheets(bands, continuationMarkers);
 }
 
 // ============================================================
