@@ -2847,6 +2847,16 @@ export function xlsxWriteValue(cell: IRSpreadsheetCell):
  *   - conditionalFormattingRules are NOT re-emitted (storage-only in IR).
  */
 export async function renderIRSpreadsheetToXlsx(ir: IRSpreadsheet): Promise<Blob> {
+  // A workbook with zero worksheets has no <sheets> element at all in xl/workbook.xml — it is not
+  // a valid OOXML spreadsheet (the spec requires at least one sheet), and real Excel refuses to
+  // open it ("content causes a problem" / "file is damaged"), even though exceljs happily writes
+  // it and lenient readers like openpyxl load it without complaint. ir.sheets is empty whenever
+  // pdfToIRSpreadsheet finds no detectable table on any page of the source PDF (a normal, non-error
+  // outcome, e.g. a PDF with only prose/lists) — that must surface as a clear message, never as a
+  // silently-downloaded, unopenable file.
+  if (ir.sheets.length === 0) {
+    throw new Error('Nie wykryto żadnej tabeli w tym pliku PDF — brak danych do zapisania w arkuszu Excel.');
+  }
   const ExcelJS = (await import('exceljs')).default;
   const wb = new ExcelJS.Workbook();
   wb.creator = 'OptimaPDF';
