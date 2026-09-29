@@ -2322,6 +2322,15 @@ function odfFrameBlocks(
   if (fill) {
     for (const b of blocks) if (b.kind === 'paragraph' && !b.fill) b.fill = fill;
   }
+  // A text frame with an explicit outline colour is a callout box (the orange frame around a
+  // question in a PDF→ODT conversion): its paragraphs get that border. Frames without
+  // svg:stroke-color (banner text frames laid over a filled shape) carry only a default hairline
+  // fo:border that is not part of the design, so they are left alone.
+  const g = odfResolveProps(index, 'graphic', odfAttrNS(frameEl, ODF_DRAW, 'style-name') || undefined, 'gPr');
+  const stroke = g['stroke'] !== 'none' ? odfVisibleColor(g['stroke-color']) : undefined;
+  if (stroke) {
+    for (const b of blocks) if ((b.kind === 'paragraph' || b.kind === 'heading') && !b.border) b.border = stroke;
+  }
   // A text box anchored to the PAGE (directly, or through its drawing group) and placed in the
   // bottom fifth of it is a running footer ("SekretyHandlu.pl @ 2020" on a dark bar): in reading
   // order it sits wherever its anchor paragraph is — right under the page title — so it is

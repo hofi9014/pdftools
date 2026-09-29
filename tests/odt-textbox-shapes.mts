@@ -62,7 +62,8 @@ const content = `<?xml version="1.0" encoding="UTF-8"?>
     <style:style style:name="FRG" style:family="graphic"><style:graphic-properties style:horizontal-rel="page" style:vertical-rel="page" style:wrap="run-through" style:run-through="background"/></style:style>
     ${shapeStyle('FRO', '#e94f1e', 'paragraph')}
     ${shapeStyle('FRD', '#1d1d1b', 'paragraph')}
-    <style:style style:name="FRT" style:family="graphic"><style:graphic-properties draw:fill="none" draw:stroke="none"/></style:style>
+    <style:style style:name="FRT" style:family="graphic"><style:graphic-properties draw:fill="none" draw:stroke="solid" fo:border-top="#000000 0.018cm solid"/></style:style>
+    <style:style style:name="FRS" style:family="graphic"><style:graphic-properties draw:stroke="solid" svg:stroke-width="0.035cm" svg:stroke-color="#e94f1e" draw:fill="none" fo:border-top="#e94f1e 0.035cm solid"/></style:style>
     <style:style style:name="P1" style:family="paragraph"/>
     <style:style style:name="P2" style:family="paragraph" style:master-page-name="Standard"/>
     <style:style style:name="P3" style:family="paragraph" style:master-page-name="Standard"/>
@@ -78,6 +79,7 @@ const content = `<?xml version="1.0" encoding="UTF-8"?>
     <text:section text:name="S2"><text:p text:style-name="P2"><draw:g draw:style-name="FRG" text:anchor-type="page">${shape('-0.026cm', '2.822cm', 'FRO')}${textFrame('-0.026cm', '2.822cm', 'PC', 'TW', 'BANNER TITLE')}</draw:g><draw:g draw:style-name="FRG" text:anchor-type="page">${shape('27.775cm', '1.953cm', 'FRD')}${textFrame('27.775cm', '1.953cm', 'PC', 'TF', 'FOOTER TEXT')}</draw:g></text:p>
       <text:p text:style-name="P1"><text:span text:style-name="TB">BODY PARAGRAPH one of page two.</text:span></text:p>
       <text:p text:style-name="P1"><text:span text:style-name="TB">BODY PARAGRAPH two of page two.</text:span></text:p>
+      <text:p text:style-name="P1"><draw:frame svg:x="2.7cm" svg:y="0.6cm" svg:width="15.5cm" svg:height="2cm" draw:style-name="FRS" text:anchor-type="char"><draw:text-box><text:p text:style-name="P1"><text:span text:style-name="TB">CALLOUT QUESTION in an orange frame?</text:span></text:p></draw:text-box></draw:frame></text:p>
     </text:section>
     <text:section text:name="S3"><text:h text:style-name="P3" text:outline-level="1"><draw:g draw:style-name="FRG" text:anchor-type="page">${shape('-0.026cm', '27.855cm', 'FRO')}${shape('27.775cm', '1.953cm', 'FRD')}</draw:g><text:span text:style-name="TH">1.</text:span></text:h>
       <text:p text:style-name="PC"><text:span text:style-name="TS">SECTION TITLE</text:span></text:p>
@@ -126,6 +128,9 @@ check(blocks[sectionStart]?.kind === 'page-shape', 'the section page starts with
 check(sectionShapes.length === 2 && sectionShapes.some((s) => s.kind === 'page-shape' && s.color.toLowerCase() === 'e94f1e' && s.bounds.height > 780),
   `full-page orange shape and bottom bar become page backgrounds (${sectionShapes.length})`);
 check(!blocks.slice(0, sectionStart).some((b) => b.kind === 'page-shape'), 'shapes that carry a text frame (banner, footer bar) are not page backgrounds');
+const callout = blocks[find('CALLOUT QUESTION')] as { border?: string } | undefined;
+check(callout?.border?.toLowerCase() === 'e94f1e', `a text frame with an outline colour becomes a bordered callout (border ${callout?.border})`);
+check(!(banner as { border?: string } | undefined)?.border, 'a banner text frame (hairline fo:border, no svg:stroke-color) gets no border');
 
 console.log('\n=== renderIRToPdf ===');
 const pdfBytes = new Uint8Array(await (await renderIRToPdf(pages, images)).arrayBuffer());
