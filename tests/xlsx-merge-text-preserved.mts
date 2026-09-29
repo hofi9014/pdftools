@@ -65,7 +65,23 @@ console.log('\n=== real pipeline: schedule PDF ===');
   const have = new Set(words(strings.join(' ')));
   const missing = [...new Set(words(src))].filter((w) => !have.has(w) && !/^arkusz\d$/.test(w)); // sheet names live in workbook.xml
   check(missing.length === 0, `every distinct word of the PDF is in a cell (missing: ${JSON.stringify(missing)})`);
-  check(strings.some((s) => /^Wprowadzanie czasu pracy, awizacje zał\/rozł, bookowanie parkingów/.test(s)), 'the merged activity cell reads as one text');
+  // The original Excel cell (EPZ_SIERPIEN_2026.xlsx). This assertion used to expect "Wprowadzanie
+  // czasu pracy, …": the lines of the merge that fell into covered rows without a grid cell of
+  // their own ("zleceń, obliczanie") were silently dropped, and the test encoded that lossy text.
+  const GT = 'Wprowadzanie zleceń, obliczanie czasu pracy, awizacje zał/rozł, bookowanie parkingów, uzupełnianie systemów, uzupełnianie kontroli, raporty, nadzór nad przebiegiem tras';
+  check(strings.includes(GT), 'the merged activity cell reads as the full original text');
+  const zip = await JSZip.loadAsync(await (await renderIRSpreadsheetToXlsx(ir)).arrayBuffer());
+  let full = 0, garbled = 0;
+  for (const f of Object.keys(zip.files).filter((n) => /worksheets\/sheet\d+\.xml$/.test(n))) {
+    const xml = await zip.file(f)!.async('string');
+    for (const m of xml.matchAll(/<c [^>]*t="s"[^>]*><v>(\d+)<\/v>/g)) {
+      const s = strings[Number(m[1])] ?? '';
+      if (!s.startsWith('Wprow')) continue;
+      if (s === GT) full++;
+      else if (!GT.startsWith(s)) garbled++; // a prefix is a cell cut at a page break (no glue marker in this old fixture)
+    }
+  }
+  check(full >= 60 && garbled === 0, `activity cells: ${full} complete, ${garbled} with lines missing from the middle (was 0 complete, 77 garbled)`);
 }
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
