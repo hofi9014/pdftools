@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { comparePdfTextClient, comparePdfVisual, type PageDiff } from '@/lib/client-pdf';
+import { comparePdfTextClient, comparePdfVisual, comparePdfSimilarity, UNRELATED_DOCUMENTS_THRESHOLD, type PageDiff } from '@/lib/client-pdf';
 import { getToolIcon } from '@/lib/icons';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
@@ -23,6 +23,10 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
   const [error, setError] = useState('');
   const [diffs, setDiffs] = useState<DiffItem[] | null>(null);
   const [vDiffs, setVDiffs] = useState<PageDiff[] | null>(null);
+  // Share of vocabulary the two files have in common (null = not enough text to judge). The tool
+  // compares two versions of one document; two unrelated documents come out "different
+  // everywhere", which reads like a malfunction unless it is said plainly.
+  const [similarity, setSimilarity] = useState<number | null>(null);
   const [dragOverA, setDragOverA] = useState(false);
   const [dragOverB, setDragOverB] = useState(false);
 
@@ -42,13 +46,16 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
     setError('');
     setDiffs(null);
     setVDiffs(null);
+    setSimilarity(null);
 
     try {
       if (mode === 'text') {
-        const { differences } = await comparePdfTextClient(fileA, fileB);
+        const { differences, similarity: sim } = await comparePdfTextClient(fileA, fileB);
+        setSimilarity(sim);
         setDiffs(differences);
       } else {
-        const visualDiffs = await comparePdfVisual(fileA, fileB);
+        const [visualDiffs, sim] = await Promise.all([comparePdfVisual(fileA, fileB), comparePdfSimilarity(fileA, fileB)]);
+        setSimilarity(sim);
         setVDiffs(visualDiffs);
       }
     } catch (err: unknown) {
@@ -147,6 +154,12 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
           ${loading || !fileA || !fileB ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
         {loading ? '⏳ ' + t('page.compare.comparing', locale) : mode === 'text' ? '🔍 ' + t('page.compare.btn_compare_text', locale) : '🎨 ' + t('page.compare.btn_compare_visual', locale)}
       </button>
+
+      {(diffs !== null || vDiffs !== null) && similarity !== null && similarity < UNRELATED_DOCUMENTS_THRESHOLD && (
+        <div data-testid="unrelated-notice" className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 rounded-xl p-4 mb-6">
+          ⚠️ {t('page.compare.unrelated_notice', locale, { percent: String(Math.round(similarity * 100)) })}
+        </div>
+      )}
 
       {diffs !== null && mode === 'text' && (
         <div className="tool-card rounded-2xl border overflow-hidden">

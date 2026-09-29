@@ -4559,9 +4559,34 @@ export async function editPdfClient(file: File, pageIndex: number, elements: Pdf
   return new Blob([await pdfDoc.save() as BlobPart], { type: 'application/pdf' });
 }
 
-export async function comparePdfTextClient(fileA: File, fileB: File): Promise<{ differences: { page: number; type: 'added' | 'removed'; content: string }[] }> {
+/**
+ * How much vocabulary two documents share: Jaccard index of their sets of words of 4+ letters
+ * (short function words — "i", "na", "the" — are common to any two texts of one language and
+ * would make unrelated documents look alike). Two versions of one document score high; two
+ * unrelated documents close to 0. null when either side has too few words to judge (a scan with
+ * no text layer).
+ */
+export function vocabularySimilarity(textA: string, textB: string): number | null {
+  const words = (t: string) => new Set(t.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length >= 4));
+  const a = words(textA);
+  const b = words(textB);
+  if (a.size < 10 || b.size < 10) return null;
+  let common = 0;
+  for (const w of a) if (b.has(w)) common++;
+  return common / (a.size + b.size - common);
+}
+
+/** Below this, the two files are treated as unrelated documents rather than two versions. */
+export const UNRELATED_DOCUMENTS_THRESHOLD = 0.2;
+
+export async function comparePdfSimilarity(fileA: File, fileB: File): Promise<number | null> {
+  return vocabularySimilarity(await extractTextFromPDF(fileA), await extractTextFromPDF(fileB));
+}
+
+export async function comparePdfTextClient(fileA: File, fileB: File): Promise<{ differences: { page: number; type: 'added' | 'removed'; content: string }[]; similarity: number | null }> {
   const textA = await extractTextFromPDF(fileA);
   const textB = await extractTextFromPDF(fileB);
+  const similarity = vocabularySimilarity(textA, textB);
   const pagesA = textA.split('\n---\n');
   const pagesB = textB.split('\n---\n');
   const maxPages = Math.max(pagesA.length, pagesB.length);
@@ -4626,7 +4651,7 @@ export async function comparePdfTextClient(fileA: File, fileB: File): Promise<{ 
     }
   }
 
-  return { differences };
+  return { differences, similarity };
 }
 
 export async function pdfToOdt(file: File): Promise<Blob> {
