@@ -25,7 +25,8 @@
 // /ParentTree entry.
 
 import { chromium } from 'playwright';
-import { PDFDocument, PDFName, PDFDict, PDFArray } from 'pdf-lib';
+import { PDFDocument, PDFName, PDFDict, PDFArray, PDFRawStream } from 'pdf-lib';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { createCanvas } from '@napi-rs/canvas';
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
@@ -99,6 +100,10 @@ console.log('=== html-to-pdf: real UI generates a genuinely Tagged PDF ===');
 const bytes = await generateViaRealUi(TEST_HTML);
 check(bytes.length > 1000, `generated a non-trivial PDF (${bytes.length} bytes)`);
 check(Buffer.from(bytes.slice(0, 5)).toString() === '%PDF-', 'output starts with a real PDF header');
+// Sample for an external PDF/UA validator (veraPDF). Written now: pdf.js below takes over (detaches)
+// the buffer it is given.
+mkdirSync('test-output', { recursive: true });
+writeFileSync('test-output/html-to-pdf-tagged.pdf', bytes);
 
 // --- pdf-lib: the writer's own view of what it wrote ---
 const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
@@ -147,6 +152,41 @@ check(text.includes('To jest cytat'), 'blockquote text present');
 const annots = await pjsPage.getAnnotations();
 const linkAnnot = annots.find((a: { subtype: string }) => a.subtype === 'Link');
 check(!!linkAnnot && (linkAnnot as { url?: string }).url?.startsWith('https://example.com'), `real clickable /Link annotation with the href from <a> (got: ${JSON.stringify((linkAnnot as { url?: string } | undefined)?.url)})`);
+
+// --- PDF/UA-1 gaps found by veraPDF (2026-09-28) and fixed 2026-09-29 — read from the file
+// the real UI produced, not from the writer's own state. ---
+{
+  const page1 = doc.getPage(0).node;
+  check(page1.get(PDFName.of('Tabs'))?.toString() === '/S', `7.18.3#1: a page with annotations has /Tabs /S (got: ${page1.get(PDFName.of('Tabs'))?.toString()})`);
+  const annotRefs = page1.lookupMaybe(PDFName.of('Annots'), PDFArray);
+  const annot = annotRefs ? doc.context.lookup(annotRefs.get(0), PDFDict) : undefined;
+  check(annot?.get(PDFName.of('Contents'))?.toString() === '(linkiem)', `7.18.5#2/7.18.1#2: the link annotation's /Contents is the link text (got: ${annot?.get(PDFName.of('Contents'))?.toString()})`);
+  const key = Number(annot?.get(PDFName.of('StructParent'))?.toString());
+  const nums = doc.context.lookup(structTreeRoot!.get(PDFName.of('ParentTree')), PDFDict).lookup(PDFName.of('Nums'), PDFArray);
+  let owner: PDFDict | undefined;
+  for (let i = 0; i < nums.size(); i += 2) if (Number(nums.get(i).toString()) === key) owner = doc.context.lookup(nums.get(i + 1), PDFDict);
+  check(owner?.get(PDFName.of('S'))?.toString() === '/Link', `7.18.5#1: the annotation's /StructParent resolves to a /Link StructElem (got: ${owner?.get(PDFName.of('S'))?.toString()})`);
+  const objr = owner?.lookupMaybe(PDFName.of('K'), PDFArray);
+  const objrDict = objr ? doc.context.lookup(objr.get(0), PDFDict) : undefined;
+  check(objrDict?.get(PDFName.of('Type'))?.toString() === '/OBJR' && objrDict.get(PDFName.of('Obj')) === annotRefs?.get(0), 'the /Link StructElem points back at the annotation through an /OBJR');
+  const linkParent = owner ? doc.context.lookup(owner.get(PDFName.of('P')), PDFDict) : undefined;
+  check(linkParent?.get(PDFName.of('S'))?.toString() === '/P', `the /Link element sits in the paragraph that holds the link text (got: ${linkParent?.get(PDFName.of('S'))?.toString()})`);
+  const pNode = tree.children?.find((c: { role?: string }) => c.role === 'P') as { children?: { role?: string }[] } | undefined;
+  check(!!pNode?.children?.some((c) => c.role === 'Link'), 'pdf.js independently sees the /Link element inside the paragraph');
+  const tableEl = doc.context.lookup(topKids!.get(topRoles.indexOf('Table')), PDFDict);
+  const headerRow = doc.context.lookup(tableEl.lookup(PDFName.of('K'), PDFArray).get(0), PDFDict);
+  const thKids = headerRow.lookupMaybe(PDFName.of('K'), PDFArray);
+  const scopes: string[] = [];
+  for (let i = 0; i < (thKids?.size() ?? 0); i++) {
+    const th = doc.context.lookup(thKids!.get(i), PDFDict);
+    scopes.push(th.lookupMaybe(PDFName.of('A'), PDFDict)?.get(PDFName.of('Scope'))?.toString() ?? '-');
+  }
+  check(scopes.length === 2 && scopes.every((s) => s === '/Column'), `7.5#1: every /TH carries /Scope /Column (got: ${JSON.stringify(scopes)})`);
+  const meta = catalog.lookupMaybe(PDFName.of('Metadata'), PDFRawStream);
+  const xmp = meta ? Buffer.from(meta.getContents()).toString('utf8') : '';
+  check(meta?.dict.get(PDFName.of('Type'))?.toString() === '/Metadata' && meta.dict.get(PDFName.of('Subtype'))?.toString() === '/XML', '7.1#8: the catalog has an XMP /Metadata stream (Type /Metadata, Subtype /XML)');
+  check(xmp.includes('Testowy dokument') && /<pdfuaid:part>1<\/pdfuaid:part>/.test(xmp), 'the XMP carries dc:title and the PDF/UA identification (pdfuaid:part 1)');
+}
 
 // --- Image DPI fix (2026-09-23): the embedded 10x10px PNG must be drawn at 10*(72/96)=7.5pt,
 // not 10pt (the old code's 1px=1pt bug) — read the actual drawn size back from the operator

@@ -13,11 +13,14 @@
 // Scope/honesty, matching the audit's established "don't overclaim" standard: this produces a
 // genuinely Tagged PDF (base ISO 32000 feature — correct reading order, headings, list/table
 // structure, image alt text) for the common HTML subset the tool's own DOMPurify allow-list
-// already advertises (app/html-to-pdf/page.tsx). It is NOT a formal PDF/UA (ISO 14289) conformance
-// claim — that requires additional strict rules and passing an external validator (veraPDF/PAC),
-// which this does not attempt. Explicitly out of scope: CSS styling (only semantic tags drive
-// layout), colspan/rowspan, nested lists beyond one level's visual indent, and per-link /Link
-// structure elements (links ARE clickable and visually marked, just not individually tagged).
+// already advertises (app/html-to-pdf/page.tsx). The e2e sample document (headings, styled runs,
+// a link, a list, a table, a quote, a rule, an image) passes the official veraPDF PDF/UA-1
+// profile with 0 failed rules (2026-09-29, see AGENTS.md) — evidence for that sample, not a
+// certification of every possible input. Links are tagged (/Link StructElem with an /OBJR to the
+// annotation, /Contents = link text), header cells carry /Scope, and the catalog has XMP metadata
+// with the PDF/UA identification. Explicitly out of scope: CSS styling (only semantic tags drive
+// layout), colspan/rowspan, and nested lists beyond one level's visual indent. The link TEXT stays
+// in its paragraph's marked content (the /Link element holds only the annotation reference).
 // A table row whose wrapped cell content is taller than a whole page (found 2026-09-23, fixed
 // 2026-09-24) is split into consecutive page-sized slices; each slice is emitted as its own /TR
 // (a StructElem's content must stay on one page here), so such a row appears as several rows in
@@ -266,6 +269,11 @@ interface RenderState {
   parentTreeByPage: PDFRef[][];
   structTreeRootRef: PDFRef;
   structTreeRootDict: PDFDict;
+  /** The StructElem whose marked content is being drawn (a link inside it becomes its child). */
+  openElem: { ref: PDFRef; dict: PDFDict } | null;
+  /** Link annotations and the /Link StructElem owning each; their /StructParent keys are
+   *  assigned once the number of pages (which own keys 0..pages-1) is known. */
+  linkAnnots: { annot: PDFDict; linkRef: PDFRef }[];
 }
 
 function newPage(state: RenderState): void {
@@ -295,11 +303,13 @@ function beginMarkedContent(state: RenderState, tag: string, parentRef: PDFRef):
   const dict = state.pdf.context.obj({ Type: 'StructElem', S: PDFName.of(tag), P: parentRef, Pg: state.page.ref, K: mcid });
   const ref = state.pdf.context.register(dict);
   state.parentTreeByPage[state.pageIndex - 1]![mcid] = ref;
+  state.openElem = { ref, dict: dict as unknown as PDFDict };
   return { mcid, ref, dict: dict as unknown as PDFDict };
 }
 
 function endMarkedContent(state: RenderState): void {
   state.page.pushOperators(PDFOperator.of(PDFOperatorNames.EndMarkedContent));
+  state.openElem = null;
 }
 
 /** A container StructElem with no marked content of its own (e.g. /L, /LI, /Table, /TR) — its
@@ -321,25 +331,43 @@ function drawLine(state: RenderState, segments: RunSegment[], x: number, y: numb
     if (seg.link) {
       const w = seg.font.widthOfTextAtSize(seg.text, seg.size);
       state.page.drawLine({ start: { x: cx, y: y - 1.5 }, end: { x: cx + w, y: y - 1.5 }, thickness: 0.5, color: rgb(seg.color.r, seg.color.g, seg.color.b) });
-      addLinkAnnotation(state, cx, y - 2, w, seg.size + 2, seg.link);
+      addLinkAnnotation(state, cx, y - 2, w, seg.size + 2, seg.link, seg.text);
     }
     cx += seg.font.widthOfTextAtSize(seg.text, seg.size);
   }
 }
 
-function addLinkAnnotation(state: RenderState, x: number, y: number, width: number, height: number, uri: string): void {
+// PDF/UA-1 (verified against veraPDF, see AGENTS.md): a link annotation must be reachable from
+// the structure tree through a /Link StructElem (7.18.5#1: its /StructParent resolves via the
+// /ParentTree to that element, which holds an /OBJR to the annotation), must carry an alternative
+// description in /Contents (7.18.5#2, 7.18.1#2), and a page with annotations needs /Tabs /S so
+// tab order follows the structure (7.18.3#1).
+function addLinkAnnotation(state: RenderState, x: number, y: number, width: number, height: number, uri: string, text: string): void {
   const target = uri;
   if (!/^https?:\/\//i.test(target) && !target.startsWith('#') && !target.startsWith('mailto:')) return; // ignore unsafe/relative schemes
   const context = state.pdf.context;
   const action = context.obj({ Type: 'Action', S: 'URI', URI: PDFString.of(target) });
   const annot = context.obj({
     Type: 'Annot', Subtype: 'Link', Rect: [x, y, x + width, y + height],
-    Border: [0, 0, 0], A: action,
+    Border: [0, 0, 0], A: action, Contents: PDFString.of(text.trim() || target),
   });
   const annotRef = context.register(annot);
   const existing = state.page.node.Annots();
   if (existing) existing.push(annotRef);
   else state.page.node.set(PDFName.of('Annots'), context.obj([annotRef]));
+  state.page.node.set(PDFName.of('Tabs'), PDFName.of('S'));
+
+  const parent = state.openElem;
+  if (!parent) return;
+  const objr = context.obj({ Type: 'OBJR', Obj: annotRef, Pg: state.page.ref });
+  const linkDict = context.obj({ Type: 'StructElem', S: PDFName.of('Link'), P: parent.ref, Pg: state.page.ref, K: [objr] });
+  const linkRef = context.register(linkDict);
+  // The parent's /K is its MCID (an integer) until it gets a structural child; it then becomes
+  // an array: the marked content first, then the /Link element(s), in reading order.
+  const k = parent.dict.get(PDFName.of('K'));
+  if (k instanceof PDFArray) k.push(linkRef);
+  else parent.dict.set(PDFName.of('K'), context.obj(k === undefined ? [linkRef] : [k, linkRef]));
+  state.linkAnnots.push({ annot: annot as unknown as PDFDict, linkRef });
 }
 
 /** Renders wrapped lines under one or more MCID scopes (splitting into a new StructElem if the
@@ -484,8 +512,10 @@ function renderTable(state: RenderState, rows: { header: boolean; cells: InlineR
     row.cells.forEach((_runs, colIdx) => {
       const tag = row.header ? 'TH' : 'TD';
       const x = MARGIN + colIdx * colWidth + cellPad;
-      const { ref, dict: _d } = beginMarkedContent(state, tag, trRef);
-      void _d;
+      const { ref, dict: cellDict } = beginMarkedContent(state, tag, trRef);
+      // PDF/UA-1 7.5#1: a header cell without /Headers+/ID must say what it heads. A <th> row
+      // here is always a row of column headers.
+      if (row.header) cellDict.set(PDFName.of('A'), state.pdf.context.obj({ O: PDFName.of('Table'), Scope: PDFName.of('Column') }));
       let cy = rowTop - size * 1.1;
       for (const line of cellLines[colIdx] ?? []) {
         drawLine(state, line, x, cy - size * 0.1);
@@ -572,6 +602,26 @@ function renderRule(state: RenderState): void {
   state.y -= 8;
 }
 
+function xmlEscape(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function buildXmp(title: string, lang: string | undefined): string {
+  const xmlLang = lang ? xmlEscape(lang) : 'x-default';
+  return `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:pdf="http://ns.adobe.com/pdf/1.3/" xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/">
+      <dc:format>application/pdf</dc:format>
+      <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${xmlEscape(title)}</rdf:li>${lang ? `<rdf:li xml:lang="${xmlLang}">${xmlEscape(title)}</rdf:li>` : ''}</rdf:Alt></dc:title>
+      <pdf:Producer>OptimaPDF</pdf:Producer>
+      <pdfuaid:part>1</pdfuaid:part>
+    </rdf:Description>
+  </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end="w"?>`;
+}
+
 // ─── Top-level orchestration ────────────────────────────────────────────────────────────────
 
 export async function htmlToTaggedPdf(html: string): Promise<Blob> {
@@ -586,6 +636,7 @@ export async function htmlToTaggedPdf(html: string): Promise<Blob> {
     pdf, fonts, page: pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT]), y: PAGE_HEIGHT - MARGIN,
     pageIndex: 0, pageMcid: 0, parentTreeByPage: [],
     structTreeRootRef, structTreeRootDict: structTreeRootDict as unknown as PDFDict,
+    openElem: null, linkAnnots: [],
   };
   // newPage() below is only used for subsequent pages; the first page (created above with
   // addPage, matching how every other block-rendering call expects `state.page` to already
@@ -624,11 +675,20 @@ export async function htmlToTaggedPdf(html: string): Promise<Blob> {
   // the array of StructElem refs owning that page's MCIDs in order (PDF32000 §14.7.4.4) — the
   // mechanism a screen reader/validator actually uses to go from "MCID 3 on page 2" back to its
   // owning structure element, distinct from (and in addition to) each StructElem's own /Pg+/K.
-  const nums: (number | PDFArray)[] = [];
+  const nums: (number | PDFArray | PDFRef)[] = [];
   state.parentTreeByPage.forEach((refs, idx) => {
     nums.push(idx, pdf.context.obj(refs.filter(Boolean)));
   });
+  // Annotations get the keys after the pages' (a key maps an annotation straight to its owning
+  // StructElem, not to an array); the tree's keys must stay in ascending order.
+  let nextKey = state.parentTreeByPage.length;
+  for (const { annot, linkRef } of state.linkAnnots) {
+    annot.set(PDFName.of('StructParent'), pdf.context.obj(nextKey));
+    nums.push(nextKey, linkRef);
+    nextKey++;
+  }
   const parentTreeRef = pdf.context.register(pdf.context.obj({ Nums: nums }));
+  state.structTreeRootDict.set(PDFName.of('ParentTreeNextKey'), pdf.context.obj(nextKey));
 
   const catalog = pdf.catalog;
   catalog.set(PDFName.of('StructTreeRoot'), structTreeRootRef);
@@ -636,8 +696,15 @@ export async function htmlToTaggedPdf(html: string): Promise<Blob> {
   catalog.set(PDFName.of('MarkInfo'), pdf.context.obj({ Marked: true }));
   catalog.set(PDFName.of('ViewerPreferences'), pdf.context.obj({ DisplayDocTitle: true }));
   if (lang) catalog.set(PDFName.of('Lang'), PDFString.of(lang));
-  pdf.setTitle(title || 'Document');
+  const docTitle = title || 'Document';
+  pdf.setTitle(docTitle);
   pdf.setProducer('OptimaPDF');
+  // PDF/UA-1 7.1#8: the catalog must carry an XMP metadata stream (with dc:title, matching the
+  // Info title), and the PDF/UA identification (pdfuaid:part) lives in it. Uncompressed so
+  // metadata readers that do not decode streams can still read it.
+  const xmp = buildXmp(docTitle, lang);
+  const metadataRef = pdf.context.register(pdf.context.stream(xmp, { Type: 'Metadata', Subtype: 'XML' }));
+  catalog.set(PDFName.of('Metadata'), metadataRef);
 
   const bytes = await pdf.save();
   return new Blob([bytes as BlobPart], { type: 'application/pdf' });
