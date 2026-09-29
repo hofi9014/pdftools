@@ -35,6 +35,8 @@
     "test:epub-manifest-validity": "npx --yes tsx tests/epub-manifest-validity.mts",
     "test:docx-paragraph-shading-border": "npx --yes tsx tests/docx-paragraph-shading-border.mts",
     "test:odt-page-breaks": "npx --yes tsx tests/odt-page-breaks.mts",
+    "test:odt-writer-layout": "npx --yes tsx tests/odt-writer-layout.mts",
+    "test:odt-textbox-shapes": "npx --yes tsx tests/odt-textbox-shapes.mts",
     "test:ocr-worker-cleanup": "npx --yes tsx tests/ocr-worker-cleanup.mts",
     "test:ocr-text-layer-scale": "npx --yes tsx tests/ocr-text-layer-scale.mts",
     "test:font-bold-weight": "npx --yes tsx tests/font-bold-weight.mts",

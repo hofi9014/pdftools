@@ -92,7 +92,18 @@ export function inferParagraphLayout(
 
   let alignment: ParagraphLayout['alignment'] = 'left';
   let leftIndentPt = 0;
-  if (gapL > 2 * ALIGN_TOLERANCE && gapR > 2 * ALIGN_TOLERANCE && Math.abs(gapL - gapR) <= ALIGN_TOLERANCE) {
+  // On a page where everything is centred (a section title page) the "column" is just the
+  // heaviest centred line, and a wider centred line starts left of it — measured against the
+  // column it looked flush-left. A block that sticks out left of the column and is centred on the
+  // PAGE is centred.
+  // The same holds for blocks IN the column when the column itself is a narrow centred stack.
+  const colCentred = Math.abs(col.left - (pageWidth - col.right)) <= 2 * ALIGN_TOLERANCE
+    && col.right - col.left < 0.6 * (pageWidth - margins.left - margins.right);
+  const pageGapR = pageWidth - (block.bounds.x + block.bounds.width);
+  const centredOnPage = (block.bounds.x < col.left - ALIGN_TOLERANCE || colCentred)
+    && block.bounds.x > 2 * ALIGN_TOLERANCE && pageGapR > 2 * ALIGN_TOLERANCE
+    && Math.abs(block.bounds.x - pageGapR) <= ALIGN_TOLERANCE;
+  if ((gapL > 2 * ALIGN_TOLERANCE && gapR > 2 * ALIGN_TOLERANCE && Math.abs(gapL - gapR) <= ALIGN_TOLERANCE) || centredOnPage) {
     alignment = 'center';
   } else if (gapR <= ALIGN_TOLERANCE && gapL > 30) {
     alignment = 'right';
