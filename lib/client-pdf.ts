@@ -125,7 +125,15 @@ export async function addPageNumbers(file: File, options: { startNumber?: number
   return pdf.save();
 }
 
-export async function addWatermark(file: File, text: string, options?: { opacity?: number; rotation?: number; fontSize?: number; position?: 'top' | 'center' | 'bottom' }): Promise<Uint8Array> {
+/** '#rrggbb' → pdf-lib colour; anything else → the default mid grey. */
+function watermarkColor(hex: string | undefined): ReturnType<typeof rgb> {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex ?? '');
+  if (!m) return rgb(0.5, 0.5, 0.5);
+  const v = parseInt(m[1]!, 16);
+  return rgb(((v >> 16) & 255) / 255, ((v >> 8) & 255) / 255, (v & 255) / 255);
+}
+
+export async function addWatermark(file: File, text: string, options?: { opacity?: number; rotation?: number; fontSize?: number; position?: 'top' | 'center' | 'bottom'; color?: string }): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
   if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
@@ -134,6 +142,7 @@ export async function addWatermark(file: File, text: string, options?: { opacity
   const rotation = options?.rotation ?? 45;
   const fontSize = options?.fontSize ?? 48;
   const position = options?.position ?? 'center';
+  const color = watermarkColor(options?.color);
 
   for (const page of pdf.getPages()) {
     const { width: rawWidth, height: rawHeight } = page.getSize();
@@ -161,7 +170,7 @@ export async function addWatermark(file: File, text: string, options?: { opacity
       vy = refY - bboxCenterOffsetY;
     }
     const { x, y } = visualToRawPoint(rawWidth, rawHeight, pageRotationDeg, vx, vy);
-    page.drawText(text, { x, y, size: fontSize, font, color: rgb(0.5, 0.5, 0.5), opacity, rotate: degrees(pageRotationDeg + rotation) });
+    page.drawText(text, { x, y, size: fontSize, font, color, opacity, rotate: degrees(pageRotationDeg + rotation) });
   }
   return pdf.save();
 }
