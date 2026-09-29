@@ -4,7 +4,7 @@
 import { PDFDocument, PDFName, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
 import type JSZip from 'jszip';
 import { applyConditionalFormatting } from './xlsx-conditional-formatting';
-import { splitAtBlankLines, findBox, splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder } from './pdf/docxLayout';
+import { splitAtBlankLines, findBox, splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder, type PageMargins } from './pdf/docxLayout';
 
 // ============================================================
 // IR TYPES (Phase 1a — without TableBlock)
@@ -39,6 +39,8 @@ export interface IRParagraphBlock {
   fill?: string;
   /** Paragraph border (Word w:pBdr) — a stroked frame around the whole paragraph (a callout box). */
   border?: string;
+  /** Horizontal alignment read from a .docx (w:jc) or .odt (fo:text-align); absent = left. */
+  align?: 'center' | 'right';
 }
 
 export interface IRHeadingBlock {
@@ -48,6 +50,10 @@ export interface IRHeadingBlock {
   bounds: IRRect;
   role?: 'header' | 'footer' | 'body';
   pageBreakBefore?: boolean;
+  align?: 'center' | 'right';
+  /** Same as IRParagraphBlock.fill / .border: a heading on a coloured band or inside a frame. */
+  fill?: string;
+  border?: string;
 }
 
 export interface IRListItemBlock {
@@ -65,6 +71,7 @@ export interface IRImageBlock {
   naturalWidth: number;
   naturalHeight: number;
   bounds: IRRect;
+  pageBreakBefore?: boolean;
 }
 
 export interface IRTableCell {
@@ -83,7 +90,20 @@ export interface IRTableBlock {
   pageBreakBefore?: boolean;
 }
 
-export type IRBlock = IRParagraphBlock | IRHeadingBlock | IRListItemBlock | IRImageBlock | IRTableBlock;
+/**
+ * A filled shape anchored to the page behind the text (a coloured page background, a full-bleed
+ * band). `bounds` is page-absolute, in points, with a TOP-LEFT origin (unlike PDF-extracted
+ * blocks); renderers draw it before the rest of its page so text stays on top. Only produced by
+ * odtToIR (ODT drawings).
+ */
+export interface IRPageShapeBlock {
+  kind: 'page-shape';
+  bounds: IRRect;
+  color: string;
+  pageBreakBefore?: boolean;
+}
+
+export type IRBlock = IRParagraphBlock | IRHeadingBlock | IRListItemBlock | IRImageBlock | IRTableBlock | IRPageShapeBlock;
 
 /** A solid filled rectangle painted on the page (PDF coordinates: y grows upward, y = bottom edge). */
 export interface IRFillRect { x: number; y: number; width: number; height: number; color: string }
@@ -657,8 +677,18 @@ function processParagraph(
   let pPrRPr: Partial<RunProps> | undefined;
   let fill: string | undefined;
   let border: string | undefined;
+  let align: 'center' | 'right' | undefined;
 
   if (pPr.length > 0) {
+    // Only the paragraph's own <w:jc> (a direct child of <w:pPr>), not one nested in a run.
+    for (let i = 0; i < pPr[0]!.childNodes.length; i++) {
+      const c = pPr[0]!.childNodes[i] as Element;
+      if (c.nodeType === 1 && c.localName === 'jc' && c.namespaceURI === WORD_NS) {
+        const v = getLocal(c, 'val');
+        if (v === 'center') align = 'center';
+        else if (v === 'right' || v === 'end') align = 'right';
+      }
+    }
     const styleEls = pPr[0]!.getElementsByTagNameNS(WORD_NS, 'pStyle');
     if (styleEls.length > 0) pStyleId = getLocal(styleEls[0]!, 'val') || undefined;
     const numPr = pPr[0]!.getElementsByTagNameNS(WORD_NS, 'numPr');
@@ -764,6 +794,9 @@ function processParagraph(
         level: headingLevel,
         runs,
         bounds,
+        ...(fill ? { fill } : {}),
+        ...(border ? { border } : {}),
+        ...(align ? { align } : {}),
       });
     } else {
       blocks.unshift({
@@ -772,6 +805,7 @@ function processParagraph(
         bounds,
         ...(fill ? { fill } : {}),
         ...(border ? { border } : {}),
+        ...(align ? { align } : {}),
       });
     }
   }
@@ -1052,6 +1086,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
     let prevTextual: (IRBlock & { bounds: IRRect }) | undefined;
     const push = (child: unknown) => allChildren.push(child);
     for (const block of blocksInReadingOrder(page.blocks, page.height)) {
+      if (block.kind === 'page-shape') continue; // ODT-reader-only; never produced from a PDF
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const layoutOpts = (): any => {
         const isText = block.kind === 'paragraph' || block.kind === 'heading' || block.kind === 'list-item';
@@ -1386,15 +1421,27 @@ export async function renderIRToPdf(
     runs: IRTextRun[],
     fontSize: number,
     indentPt: number,
+    align?: 'center' | 'right',
   ): void {
     if (runs.length === 0) return;
     const availW = pageW - MARGIN * 2 - indentPt;
     const lines = breakIntoLines(runs, fonts, availW);
-    const lineH = fontSize * 1.3;
 
     for (const line of lines) {
+      // A line is as tall as its largest run: a heading's nominal size (FONT_SIZES) is often far
+      // below the source text's real size (a 60 pt section number "1."), and a fixed step drew
+      // the next line straight through it.
+      const lineH = Math.max(fontSize, ...line.runs.map((s) => s.run.fontSize)) * 1.3;
       ensureSpace(lineH);
       let x = MARGIN + indentPt;
+      if (align) {
+        // Trailing spaces at a wrap point are not visible and must not shift the line.
+        const last = line.runs[line.runs.length - 1];
+        const trailing = last ? last.width - last.font.widthOfTextAtSize(last.run.text.trimEnd(), last.run.fontSize) : 0;
+        const lineW = line.runs.reduce((w, s) => w + s.width, 0) - trailing;
+        const slack = Math.max(0, availW - lineW);
+        x += align === 'center' ? slack / 2 : slack;
+      }
       for (const seg of line.runs) {
         currentPage!.drawText(seg.run.text, {
           x,
@@ -1409,6 +1456,52 @@ export async function renderIRToPdf(
     }
   }
 
+  function drawBlockBackground(runs: IRTextRun[], fs: number, fill: string | undefined, border: string | undefined): void {
+    if (!fill && !border) return;
+    // A shaded band (e.g. a white-on-color banner) or a bordered callout box: the rect must span
+    // the block's FULL wrapped height, so line-break first and reserve that whole height in one go
+    // — otherwise a page break could land mid-paragraph and split the rect across two pages, which
+    // pdf-lib can't express (one PDFPage per drawRectangle call).
+    const blockHeight = textBlockHeight(runs, fs);
+    ensureSpace(blockHeight);
+    const rectOpts: Parameters<PDFPage['drawRectangle']>[0] = {
+      x: MARGIN,
+      y: cursorY - blockHeight,
+      width: pageW - MARGIN * 2,
+      height: blockHeight,
+    };
+    if (fill) rectOpts.color = hexToColor(fill);
+    if (border) { rectOpts.borderColor = hexToColor(border); rectOpts.borderWidth = 1; }
+    currentPage!.drawRectangle(rectOpts);
+  }
+
+  /** Height drawTextBlock will use for these runs (each line as tall as its largest run). */
+  function textBlockHeight(runs: IRTextRun[], fontSize: number, indentPt = 0): number {
+    if (runs.length === 0) return 0;
+    return breakIntoLines(runs, fonts, pageW - MARGIN * 2 - indentPt)
+      .reduce((h, line) => h + Math.max(fontSize, ...line.runs.map((s) => s.run.fontSize)) * 1.3, 0);
+  }
+
+  /** Height of the heading run starting at k plus the first line of the block that follows it. */
+  function keepWithNextHeight(blocks: IRBlock[], k: number): number {
+    let total = 0;
+    let j = k;
+    while (j < blocks.length && blocks[j]!.kind === 'heading') {
+      const h = blocks[j] as IRHeadingBlock;
+      const fs = FONT_SIZES[Math.min(h.level, 6)] || 11;
+      total += Math.max(textBlockHeight(h.runs, fs), fs * 1.3) + fs * 0.3;
+      j++;
+    }
+    const next = blocks[j];
+    if (next && (next.kind === 'paragraph' || next.kind === 'list-item')) {
+      const fs = next.runs[0]?.fontSize || 11;
+      const firstLine = next.runs.length ? breakIntoLines(next.runs, fonts, pageW - MARGIN * 2)[0] : undefined;
+      total += Math.max(fs, ...(firstLine?.runs.map((s) => s.run.fontSize) ?? [])) * 1.3;
+    }
+    // A chain taller than a page cannot be kept together; it simply flows.
+    return Math.min(total, pageH - MARGIN * 2);
+  }
+
   async function renderBlock(block: IRBlock): Promise<void> {
     if ((block as { pageBreakBefore?: boolean }).pageBreakBefore) {
       ensurePage();
@@ -1419,7 +1512,8 @@ export async function renderIRToPdf(
       const h = block as IRHeadingBlock;
       const fs = FONT_SIZES[Math.min(h.level, 6)] || 11;
       ensureSpace(fs * 1.5);
-      drawTextBlock(h.runs, fs, 0);
+      drawBlockBackground(h.runs, fs, h.fill, h.border);
+      drawTextBlock(h.runs, fs, 0, h.align);
       cursorY -= fs * 0.3;
     } else if (block.kind === 'list-item') {
       const li = block as IRListItemBlock;
@@ -1440,30 +1534,17 @@ export async function renderIRToPdf(
       await renderImage(block as IRImageBlock);
     } else if (block.kind === 'table') {
       renderTable(block as IRTableBlock);
+    } else if (block.kind === 'page-shape') {
+      // Absolute, behind the text: odfArrangePages puts it first on its page, so everything
+      // drawn afterwards on this page lands on top. The text cursor does not move.
+      ensurePage();
+      const b = block.bounds;
+      currentPage!.drawRectangle({ x: b.x, y: pageH - (b.y + b.height), width: b.width, height: b.height, color: hexToColor(block.color) });
     } else {
       const p = block as IRParagraphBlock;
       const fs = p.runs[0]?.fontSize || 11;
-      if (p.fill || p.border) {
-        // A shaded band (e.g. a white-on-color banner) or a bordered callout box: the rect must
-        // span the paragraph's FULL wrapped height, so line-break first and reserve that whole
-        // height in one go — otherwise a page break could land mid-paragraph and split the rect
-        // across two pages, which pdf-lib can't express (one PDFPage per drawRectangle call).
-        const lines = breakIntoLines(p.runs, fonts, pageW - MARGIN * 2);
-        const lineH = fs * 1.3;
-        const blockHeight = lines.length * lineH;
-        ensureSpace(blockHeight);
-        const top = cursorY;
-        const rectOpts: Parameters<PDFPage['drawRectangle']>[0] = {
-          x: MARGIN,
-          y: top - blockHeight,
-          width: pageW - MARGIN * 2,
-          height: blockHeight,
-        };
-        if (p.fill) rectOpts.color = hexToColor(p.fill);
-        if (p.border) { rectOpts.borderColor = hexToColor(p.border); rectOpts.borderWidth = 1; }
-        currentPage!.drawRectangle(rectOpts);
-      }
-      drawTextBlock(p.runs, fs, 0);
+      drawBlockBackground(p.runs, fs, p.fill, p.border);
+      drawTextBlock(p.runs, fs, 0, p.align);
       cursorY -= fs * 0.3;
     }
   }
@@ -1666,7 +1747,27 @@ export async function renderIRToPdf(
     if (i > 0) breakPage();
     ensurePage();
 
-    for (const block of page.blocks) {
+    const blocks = page.blocks;
+    for (let k = 0; k < blocks.length; k++) {
+      const block = blocks[k]!;
+      // Keep-with-next: a heading (or a run of consecutive headings) must not be left alone at
+      // the bottom of a page with the text it introduces starting on the next one — e.g.
+      // "WZROST" / "KONWERSJI O" at the foot of one page and "10,7%" alone at the top of the next.
+      if (block.kind === 'heading') ensureSpace(keepWithNextHeight(blocks, k));
+      // A running footer (one or more consecutive footer paragraphs) sits at the foot of its
+      // page, not wherever the text flow happens to end.
+      const isFooter = (b: IRBlock | undefined) => b?.kind === 'paragraph' && b.role === 'footer';
+      if (isFooter(block) && !isFooter(blocks[k - 1])) {
+        let h = 0;
+        for (let j = k; isFooter(blocks[j]); j++) {
+          const f = blocks[j] as IRParagraphBlock;
+          const fs = f.runs[0]?.fontSize || 11;
+          h += textBlockHeight(f.runs, fs) + fs * 0.3;
+        }
+        h = Math.min(h, pageH - MARGIN * 2);
+        ensureSpace(h);
+        if (cursorY - h > MARGIN) cursorY = MARGIN + h;
+      }
       await renderBlock(block);
     }
   }
@@ -1721,12 +1822,16 @@ export interface OdfStyleDef {
    * before this paragraph/table/section", unconditionally (not a change-from-previous check
    * like Word's section breaks — ODF just marks the specific paragraph that starts a new page). */
   masterPageName?: string;
+  gPr?: Record<string, string>;  // graphic props (shapes/frames: fill, stroke), raw attributes
 }
 
 export interface OdfStyleIndex {
   styles: Map<string, OdfStyleDef>;       // key `${family}\u0000${name}`
   defaults: Map<string, OdfRunProps>;     // family -> default-style text props
   defaultParas: Map<string, Record<string, string>>;
+  pageHeightPt?: number;                  // first page layout's fo:page-height
+  pageWidthPt?: number;                   // first page layout's fo:page-width
+  masterBackgrounds?: Map<string, string>; // master page name -> page background colour (hex)
 }
 
 // Namespace-aware attribute getter (style:name, text:outline-level, fo:color, ...)
@@ -1883,7 +1988,59 @@ function odfParseStyleBlock(styleEl: Element): OdfStyleDef {
   const pe = odfChildNS(styleEl, ODF_STYLE, 'paragraph-properties');
   def.rPr = odfParseTextProps(te || null);
   def.pPr = odfParseParagraphProps(pe || null);
+  const ge = odfChildNS(styleEl, ODF_STYLE, 'graphic-properties');
+  def.gPr = odfParseParagraphProps(ge || null);
   return def;
+}
+
+/**
+ * Paragraph or graphic properties of a style merged down its parent chain (child wins), keyed by
+ * LOCAL attribute name ("break-before", "background-color", "fill-color"), since the prefix a
+ * producer binds to the XSL-FO / drawing namespaces is not guaranteed.
+ */
+function odfResolveProps(
+  index: OdfStyleIndex,
+  family: 'paragraph' | 'graphic',
+  styleName: string | undefined,
+  which: 'pPr' | 'gPr',
+): Record<string, string> {
+  const chain: OdfStyleDef[] = [];
+  const seen = new Set<string>();
+  let cur = styleName;
+  while (cur && !seen.has(cur)) {
+    seen.add(cur);
+    const def = index.styles.get(`${family}\u0000${cur}`);
+    if (!def) break;
+    chain.unshift(def);
+    cur = def.parent;
+  }
+  const out: Record<string, string> = {};
+  for (const def of chain) {
+    for (const [k, v] of Object.entries(def[which] ?? {})) out[k.slice(k.indexOf(':') + 1)] = v;
+  }
+  return out;
+}
+
+/** "#E94F1E" -> "e94f1e"; transparent / malformed / white (invisible on a white page) -> undefined. */
+function odfVisibleColor(v: string | undefined): string | undefined {
+  const m = v?.match(/^#([0-9a-fA-F]{6})$/);
+  if (!m) return undefined;
+  const hex = m[1]!.toLowerCase();
+  return hex === 'ffffff' ? undefined : hex;
+}
+
+/** Colour of a paragraph border ("0.5pt solid #e94f1e", or the fo:border-top side), if any is drawn. */
+function odfBorderColor(props: Record<string, string>): string | undefined {
+  const spec = props['border'] ?? props['border-top'];
+  if (!spec || /\bnone\b/.test(spec)) return undefined;
+  return odfVisibleColor(spec.match(/#[0-9a-fA-F]{6}/)?.[0]);
+}
+
+/** Solid fill of a shape or frame's graphic style (draw:fill-color / fo:background-color). */
+function odfGraphicFill(index: OdfStyleIndex, styleName: string | undefined): string | undefined {
+  const g = odfResolveProps(index, 'graphic', styleName, 'gPr');
+  if (g['fill'] === 'none' || g['background-transparency'] === '100%') return undefined;
+  return odfVisibleColor(g['fill-color'] ?? g['background-color']);
 }
 
 /** Parse document-styles / document-content roots into a style registry. */
@@ -1911,6 +2068,31 @@ export function parseOdfStyles(xmls: string[]): OdfStyleIndex {
       if (rp) index.defaults.set(fam, rp);
       const pp = odfParseParagraphProps(pe || null);
       if (pp) index.defaultParas.set(fam, pp);
+    }
+    if (index.pageHeightPt === undefined) {
+      const layout = doc.getElementsByTagNameNS(ODF_STYLE, 'page-layout-properties').item(0) as unknown as Element | null;
+      const h = layout ? odfParseLenPt(odfAttrNS(layout, ODF_FO, 'page-height')) : undefined;
+      const w = layout ? odfParseLenPt(odfAttrNS(layout, ODF_FO, 'page-width')) : undefined;
+      if (h) index.pageHeightPt = h;
+      if (w) index.pageWidthPt = w;
+    }
+    // Page backgrounds: master page → page layout → fo:background-color (a full-page coloured
+    // page, as the pdf-to-openoffice writer emits for a section title page).
+    const layoutBg = new Map<string, string>();
+    const layoutEls = doc.getElementsByTagNameNS(ODF_STYLE, 'page-layout');
+    for (let i = 0; i < layoutEls.length; i++) {
+      const el = layoutEls.item(i) as unknown as Element;
+      const props = odfChildNS(el, ODF_STYLE, 'page-layout-properties');
+      const bg = odfVisibleColor(props ? odfAttrNS(props, ODF_FO, 'background-color') ?? undefined : undefined);
+      const name = odfAttr(el, 'name');
+      if (bg && name) layoutBg.set(name, bg);
+    }
+    const masterEls = doc.getElementsByTagNameNS(ODF_STYLE, 'master-page');
+    for (let i = 0; i < masterEls.length; i++) {
+      const el = masterEls.item(i) as unknown as Element;
+      const name = odfAttr(el, 'name');
+      const bg = layoutBg.get(odfAttr(el, 'page-layout-name') ?? '');
+      if (name && bg) (index.masterBackgrounds ??= new Map()).set(name, bg);
     }
   }
   return index;
@@ -1949,7 +2131,7 @@ export interface OdfImageRef {
  * Scan content.xml for <draw:frame> objects embedding a <draw:image>.
  * One entry per image-bearing frame, keyed by xlink:href.
  *  - svg:width/height (frame) converted to pt.
- *  - text:anchor-type="page" => isBackground:true (decorative wallpaper, dropped).
+ *  - text:anchor-type="page" => isBackground:true (informational only; still extracted).
  */
 export function extractImagesFromOdtXml(contentXml: string): OdfImageRef[] {
   const doc = new DOMParser().parseFromString(contentXml, 'application/xml');
@@ -1975,8 +2157,8 @@ export function extractImagesFromOdtXml(contentXml: string): OdfImageRef[] {
 
 /**
  * Build the ODF image map (analog of the docxToIR image-map build): read
- * manifest.xml + content.xml, then pull raw bytes for every image-bearing,
- * NON-background frame from Pictures/.
+ * manifest.xml + content.xml, then pull raw bytes for every image-bearing
+ * frame from Pictures/.
  *  - rId   := xlink:href (Pictures/...) — ODF analogue of rel rId
  *  - source:= 'odf'
  */
@@ -1989,7 +2171,9 @@ export async function extractOdtImages(zip: JSZip): Promise<Map<string, DocxImag
 
   const imageMap = new Map<string, DocxImage>();
   for (const ref of refs) {
-    if (ref.isBackground) continue;
+    // Page-anchored images used to be skipped as "decorative wallpaper", but in real documents
+    // that is how a full-page cover or an absolutely placed photo is stored (Aspose/LibreOffice
+    // PDF conversions anchor every image to the page): dropping them lost whole cover pages.
     const entry = zip.file(ref.href);
     if (!entry) continue;
     const data = await entry.async('uint8array');
@@ -2049,14 +2233,156 @@ function odfToIRTextRun(text: string, rPr: OdfRunProps): IRTextRun {
  * T18_1 in the level-7 heading) applies to inner text nodes. Mirrors OOXML
  * resolveRunProps — paragraph style at base, span styles innermost-last.
  */
+interface OdfShapeFill { x: number; y: number; width: number; height: number; color: string }
+
+function odfRectOf(el: Element): { x: number; y: number; width: number; height: number } | null {
+  const w = odfParseLenPt(odfAttrNS(el, ODF_SVG, 'width'));
+  const h = odfParseLenPt(odfAttrNS(el, ODF_SVG, 'height'));
+  if (w === undefined || h === undefined) return null;
+  return { x: odfParseLenPt(odfAttrNS(el, ODF_SVG, 'x')) ?? 0, y: odfParseLenPt(odfAttrNS(el, ODF_SVG, 'y')) ?? 0, width: w, height: h };
+}
+
+/**
+ * Filled shapes of a drawing group. PDF→ODT converters (Aspose, LibreOffice's PDF import) draw a
+ * coloured banner as a filled <draw:custom-shape>/<draw:rect> with a transparent text frame laid
+ * over it at the same position — the colour belongs to the shape, the text to the frame.
+ */
+function odfShapeFills(groupEl: Element, index: OdfStyleIndex): OdfShapeFill[] {
+  const fills: OdfShapeFill[] = [];
+  for (let i = 0; i < groupEl.childNodes.length; i++) {
+    const n = groupEl.childNodes[i]!;
+    if (n.nodeType !== 1) continue;
+    const el = n as Element;
+    if (el.namespaceURI !== ODF_DRAW || (el.localName !== 'custom-shape' && el.localName !== 'rect')) continue;
+    const color = odfGraphicFill(index, odfAttrNS(el, ODF_DRAW, 'style-name') || undefined);
+    const rect = odfRectOf(el);
+    if (color && rect) fills.push({ ...rect, color });
+  }
+  return fills;
+}
+
+/**
+ * Filled shapes of a page-anchored group drawn at their own place behind the page's text: a
+ * full-bleed coloured page (at least 40% of the page, like a report's orange section pages), and
+ * any decorative bar/band with no text frame laid over it. A shape that DOES carry a text frame
+ * (a title banner, a footer bar with its text) is not drawn here — its colour goes to the frame's
+ * paragraphs, which flow with the text (see odfFrameBlocks).
+ */
+function odfPageBackgrounds(groupEl: Element, index: OdfStyleIndex): IRPageShapeBlock[] {
+  if (!odfIsPageAnchored(groupEl)) return [];
+  const pageArea = (index.pageWidthPt ?? ODF_A4_W) * (index.pageHeightPt ?? ODF_A4_H);
+  const textFrames: { x: number; y: number; width: number; height: number }[] = [];
+  for (let i = 0; i < groupEl.childNodes.length; i++) {
+    const n = groupEl.childNodes[i]!;
+    if (n.nodeType !== 1) continue;
+    const el = n as Element;
+    if (el.namespaceURI !== ODF_DRAW || el.localName !== 'frame' || !odfChildNS(el, ODF_DRAW, 'text-box')) continue;
+    const r = odfRectOf(el);
+    if (r) textFrames.push(r);
+  }
+  const tol = 1;
+  const carriesText = (s: OdfShapeFill) => textFrames.some((r) => r.x >= s.x - tol && r.y >= s.y - tol
+    && r.x + r.width <= s.x + s.width + tol && r.y + r.height <= s.y + s.height + tol);
+  return odfShapeFills(groupEl, index)
+    .filter((s) => s.width * s.height >= 0.4 * pageArea || !carriesText(s))
+    .map((s) => ({ kind: 'page-shape', bounds: { x: s.x, y: s.y, width: s.width, height: s.height }, color: s.color }));
+}
+
+/**
+ * Blocks carried by a <draw:frame>: its image, or the paragraphs of its <draw:text-box>. Text-box
+ * text used to be dropped entirely ("caption text is dropped"), but PDF→ODT converters put every
+ * absolutely positioned text there — banner titles, callouts, big highlighted figures — so whole
+ * headings vanished. Text-box paragraphs get the frame's own fill, or else the fill of the
+ * smallest shape in the same group that contains the frame.
+ */
+function odfFrameBlocks(
+  frameEl: Element,
+  index: OdfStyleIndex,
+  imageMap: Map<string, DocxImage>,
+  shapeFills: OdfShapeFill[],
+): IRBlock[] {
+  const img = odfFrameToIRImage(frameEl, imageMap);
+  if (img) return [img];
+  const box = odfChildNS(frameEl, ODF_DRAW, 'text-box');
+  if (!box) return [];
+  const blocks: IRBlock[] = [];
+  odfTraverseOfficeText(box, index, imageMap, blocks);
+  let fill = odfGraphicFill(index, odfAttrNS(frameEl, ODF_DRAW, 'style-name') || undefined);
+  const rect = odfRectOf(frameEl);
+  if (!fill && rect) {
+    const tol = 1;
+    let best: OdfShapeFill | undefined;
+    for (const s of shapeFills) {
+      const inside = rect.x >= s.x - tol && rect.y >= s.y - tol
+        && rect.x + rect.width <= s.x + s.width + tol && rect.y + rect.height <= s.y + s.height + tol;
+      if (inside && (!best || s.width * s.height < best.width * best.height)) best = s;
+    }
+    fill = best?.color;
+  }
+  if (fill) {
+    for (const b of blocks) if (b.kind === 'paragraph' && !b.fill) b.fill = fill;
+  }
+  // A text box anchored to the PAGE (directly, or through its drawing group) and placed in the
+  // bottom fifth of it is a running footer ("SekretyHandlu.pl @ 2020" on a dark bar): in reading
+  // order it sits wherever its anchor paragraph is — right under the page title — so it is
+  // tagged and later moved to the end of its page (see odfArrangePages).
+  if (rect && odfIsPageAnchored(frameEl) && rect.y > 0.8 * (index.pageHeightPt ?? ODF_A4_H)) {
+    for (const b of blocks) if (b.kind === 'paragraph') b.role = 'footer';
+  }
+  return blocks;
+}
+
+/** True when the frame, or the drawing group it belongs to, is anchored to the page. */
+function odfIsPageAnchored(frameEl: Element): boolean {
+  let el: Node | null = frameEl;
+  while (el && el.nodeType === 1) {
+    const e = el as Element;
+    if (e.namespaceURI === ODF_DRAW && (e.localName === 'frame' || e.localName === 'g')) {
+      if (odfAttrNS(e, ODF_TEXT, 'anchor-type') === 'page') return true;
+    }
+    el = e.parentNode;
+  }
+  return false;
+}
+
+/**
+ * Re-orders each page (the blocks between two page breaks) as: page backgrounds, body, footers.
+ * In document order a page background sits wherever its anchor paragraph is (often after the
+ * page's heading, which it would then paint over) and a running footer right under the page
+ * title; the page break stays on whichever block now starts the page.
+ */
+function odfArrangePages(blocks: IRBlock[]): IRBlock[] {
+  type Breakable = { pageBreakBefore?: boolean };
+  const pages: IRBlock[][] = [];
+  for (const b of blocks) {
+    if (pages.length === 0 || (b as Breakable).pageBreakBefore) pages.push([]);
+    pages[pages.length - 1]!.push(b);
+  }
+  const out: IRBlock[] = [];
+  for (const page of pages) {
+    const startsWithBreak = !!(page[0] as Breakable).pageBreakBefore;
+    for (const b of page) delete (b as Breakable).pageBreakBefore;
+    const isFooter = (b: IRBlock) => b.kind === 'paragraph' && b.role === 'footer';
+    const arranged = [
+      ...page.filter((b) => b.kind === 'page-shape'),
+      ...page.filter((b) => b.kind !== 'page-shape' && !isFooter(b)),
+      ...page.filter(isFooter),
+    ];
+    if (startsWithBreak) (arranged[0] as Breakable).pageBreakBefore = true;
+    out.push(...arranged);
+  }
+  return out;
+}
+
 function odfCollectRuns(
   containerEl: Element,
   index: OdfStyleIndex,
   pStyleName: string | undefined,
   spanStyles: string[],
   outRuns: IRTextRun[],
-  outImages: IRImageBlock[],
+  outImages: IRBlock[],
   imageMap: Map<string, DocxImage>,
+  shapeFills: OdfShapeFill[] = [],
 ): void {
   const children = containerEl.childNodes;
   for (let i = 0; i < children.length; i++) {
@@ -2076,17 +2402,16 @@ function odfCollectRuns(
     const local = el.localName;
     if (local === 'span') {
       const spanStyle = el.getAttributeNS(ODF_TEXT, 'style-name') || undefined;
-      odfCollectRuns(el, index, pStyleName, spanStyle ? [...spanStyles, spanStyle] : spanStyles, outRuns, outImages, imageMap);
+      odfCollectRuns(el, index, pStyleName, spanStyle ? [...spanStyles, spanStyle] : spanStyles, outRuns, outImages, imageMap, shapeFills);
     } else if (local === 's' || local === 'tab' || local === 'line-break') {
       outRuns.push(odfMakeSpaceRun(odfStylingOf(outRuns[outRuns.length - 1])));
     } else if (local === 'a') {
-      odfCollectRuns(el, index, pStyleName, spanStyles, outRuns, outImages, imageMap);
+      odfCollectRuns(el, index, pStyleName, spanStyles, outRuns, outImages, imageMap, shapeFills);
     } else if (local === 'frame') {
-      // caption <text:p> inside a frame is DROPPED — only <draw:image> is read
-      const img = odfFrameToIRImage(el, imageMap);
-      if (img) outImages.push(img);
+      outImages.push(...odfFrameBlocks(el, index, imageMap, shapeFills));
     } else if (local === 'g' && el.namespaceURI === ODF_DRAW) {
-      odfCollectRuns(el, index, pStyleName, spanStyles, outRuns, outImages, imageMap);
+      outImages.push(...odfPageBackgrounds(el, index));
+      odfCollectRuns(el, index, pStyleName, spanStyles, outRuns, outImages, imageMap, odfShapeFills(el, index));
     }
   }
 }
@@ -2096,10 +2421,8 @@ function odfFrameToIRImage(frameEl: Element, imageMap: Map<string, DocxImage>): 
   if (imgs.length === 0) return null;
   const href = odfAttrNS(imgs[0]!, XLINK, 'href');
   if (!href) return null;
-  if (odfAttrNS(frameEl, ODF_TEXT, 'anchor-type') === 'page') return null; // skip decorative bg
   // imageMap is the single source of truth for dimensions. Fallback to the frame's raw
-  // svg:width/height ONLY when the image is not in the map — effectively unreachable
-  // (page-anchored backgrounds are already skipped above).
+  // svg:width/height ONLY when the image is not in the map (missing Pictures/ entry).
   const img = imageMap.get(href);
   return {
     kind: 'image',
@@ -2119,9 +2442,9 @@ function odfMakeBlockRuns(
   index: OdfStyleIndex,
   pStyleName: string | undefined,
   imageMap: Map<string, DocxImage>,
-): { runs: IRTextRun[]; images: IRImageBlock[] } {
+): { runs: IRTextRun[]; images: IRBlock[] } {
   const runs: IRTextRun[] = [];
-  const images: IRImageBlock[] = [];
+  const images: IRBlock[] = [];
   odfCollectRuns(containerEl, index, pStyleName, [], runs, images, imageMap);
   return { runs, images };
 }
@@ -2150,25 +2473,48 @@ function odfProcessParagraph(
   imageMap: Map<string, DocxImage>,
   kind: 'paragraph' | 'heading',
   forcedLevel?: number,
-): { block?: IRParagraphBlock | IRHeadingBlock; images: IRImageBlock[] } {
+): { block?: IRParagraphBlock | IRHeadingBlock; images: IRBlock[]; breakAfter: boolean } {
   const pStyleName = odfAttrNS(pEl, ODF_TEXT, 'style-name') || undefined;
   const { runs, images } = odfMakeBlockRuns(pEl, index, pStyleName, imageMap);
   const bounds = { x: 0, y: 0, width: 0, height: 0 };
-  // FINDING (2026-09-29): odtToIR never looked for style:master-page-name, the ODF mechanism a
-  // producer (including our own pdf-to-openoffice writer) uses to mark "start a new page here" —
-  // Word's fo:break-before="page" has no equivalent attribute in the fixture that generated this
-  // real file; it uses master-page-name exclusively (53 occurrences, 0 break-before). Without
-  // this, EVERY page break from the source document was silently dropped, collapsing a real
-  // 27-page report down to 9 badly overcrowded pages when round-tripped through word-to-pdf.
+  // Page breaks come in two ODF forms and odtToIR read neither: style:master-page-name (what
+  // Aspose-based PDF→ODT converters write — a real 27-page report collapsed to 9 pages) and
+  // fo:break-before/after="page" in the paragraph properties (what LibreOffice writes for a
+  // manual page break, Ctrl+Enter, and what our own pdf-to-openoffice writer now emits).
   const pStyleDef = pStyleName ? index.styles.get(`paragraph\u0000${pStyleName}`) : undefined;
-  const pageBreakBefore = !!pStyleDef?.masterPageName;
+  const props = odfResolveProps(index, 'paragraph', pStyleName, 'pPr');
+  const pageBreakBefore = !!pStyleDef?.masterPageName || props['break-before'] === 'page';
+  const breakAfter = props['break-after'] === 'page';
+  // A master page with a background colour paints the whole page it starts.
+  const pageBg = pStyleDef?.masterPageName ? index.masterBackgrounds?.get(pStyleDef.masterPageName) : undefined;
+  if (pageBg) {
+    images.unshift({ kind: 'page-shape', color: pageBg, bounds: { x: 0, y: 0, width: index.pageWidthPt ?? ODF_A4_W, height: index.pageHeightPt ?? ODF_A4_H } });
+  }
+  const ta = props['text-align'];
+  const align = ta === 'center' ? 'center' as const : ta === 'end' || ta === 'right' ? 'right' as const : undefined;
+  // Paragraph shading and border (fo:background-color / fo:border): the ODF counterparts of
+  // Word's w:shd / w:pBdr, which renderIRToPdf already draws for .docx input.
+  const fill = odfVisibleColor(props['background-color']);
+  const border = odfBorderColor(props);
   let block: IRParagraphBlock | IRHeadingBlock | undefined;
   if (kind === 'heading') {
-    block = { kind: 'heading', level: forcedLevel ?? odfResolveHeadingLevel(pEl, index), runs, bounds, ...(pageBreakBefore ? { pageBreakBefore } : {}) };
+    block = {
+      kind: 'heading', level: forcedLevel ?? odfResolveHeadingLevel(pEl, index), runs, bounds,
+      ...(pageBreakBefore ? { pageBreakBefore } : {}),
+      ...(fill ? { fill } : {}),
+      ...(border ? { border } : {}),
+      ...(align ? { align } : {}),
+    };
   } else {
-    block = { kind: 'paragraph', runs, bounds, ...(pageBreakBefore ? { pageBreakBefore } : {}) };
+    block = {
+      kind: 'paragraph', runs, bounds,
+      ...(pageBreakBefore ? { pageBreakBefore } : {}),
+      ...(fill ? { fill } : {}),
+      ...(border ? { border } : {}),
+      ...(align ? { align } : {}),
+    };
   }
-  return { block, images };
+  return { block, images, breakAfter };
 }
 
 /** Recursively process a <text:list> at structural depth. */
@@ -2252,45 +2598,42 @@ function odfTraverseOfficeText(
   imageMap: Map<string, DocxImage>,
   out: IRBlock[],
   pendingBreak: { value: boolean } = { value: false },
+  shapeFills: OdfShapeFill[] = [],
 ): void {
   // <text:section> / <draw:g> (block level) = transparent containers -> recurse.
-  // Block-level <draw:frame> -> IRImageBlock. Caption text inside frames is dropped.
+  // Block-level <draw:frame> -> its image or its text-box paragraphs.
+  // A page break whose carrier is not kept (an empty paragraph, a paragraph holding only a
+  // drawing) waits in pendingBreak and lands on the next block that IS kept, of any kind.
+  const emit = (b: IRBlock): void => {
+    if (pendingBreak.value) { (b as { pageBreakBefore?: boolean }).pageBreakBefore = true; pendingBreak.value = false; }
+    out.push(b);
+  };
   const children = root.childNodes;
   for (let i = 0; i < children.length; i++) {
     const node = children[i]!;
     if (node.nodeType !== 1) continue;
     const el = node as Element;
     const local = el.localName;
-    if (local === 'section' || (local === 'g' && el.namespaceURI === ODF_DRAW)) {
-      odfTraverseOfficeText(el, index, imageMap, out, pendingBreak);
-    } else if (local === 'h') {
-      const { block, images } = odfProcessParagraph(el, index, imageMap, 'heading');
-      if (block) {
-        if (pendingBreak.value) { block.pageBreakBefore = true; pendingBreak.value = false; }
-        out.push(block);
-      }
-      out.push(...images);
-    } else if (local === 'p') {
-      const { block, images } = odfProcessParagraph(el, index, imageMap, 'paragraph');
-      if (block && block.runs.length > 0) {
-        if (pendingBreak.value) { block.pageBreakBefore = true; pendingBreak.value = false; }
-        out.push(block);
-      } else if (block?.pageBreakBefore) {
-        // The carrier paragraph is empty (no visible text — a page-break-only placeholder) and
-        // gets dropped above, but its page break must survive: hold it for whatever block gets
-        // kept next, instead of silently losing it along with the empty paragraph.
-        pendingBreak.value = true;
-      }
-      out.push(...images);
+    if (local === 'section') {
+      odfTraverseOfficeText(el, index, imageMap, out, pendingBreak, shapeFills);
+    } else if (local === 'g' && el.namespaceURI === ODF_DRAW) {
+      for (const bg of odfPageBackgrounds(el, index)) emit(bg);
+      odfTraverseOfficeText(el, index, imageMap, out, pendingBreak, odfShapeFills(el, index));
+    } else if (local === 'h' || local === 'p') {
+      const { block, images, breakAfter } = odfProcessParagraph(el, index, imageMap, local === 'h' ? 'heading' : 'paragraph');
+      const keep = !!block && (local === 'h' || block.runs.length > 0);
+      if (keep) emit(block);
+      else if (block?.pageBreakBefore) pendingBreak.value = true;
+      for (const im of images) emit(im);
+      if (breakAfter) pendingBreak.value = true;
     } else if (local === 'list') {
-      odfProcessList(el, index, imageMap, 0, out);
+      const items: IRBlock[] = [];
+      odfProcessList(el, index, imageMap, 0, items);
+      for (const b of items) emit(b);
     } else if (local === 'table' && el.namespaceURI === ODF_TABLE) {
-      const tbl = odfProcessTable(el, index, imageMap);
-      if (pendingBreak.value) { tbl.pageBreakBefore = true; pendingBreak.value = false; }
-      out.push(tbl);
+      emit(odfProcessTable(el, index, imageMap));
     } else if (local === 'frame' && el.namespaceURI === ODF_DRAW) {
-      const img = odfFrameToIRImage(el, imageMap);
-      if (img) out.push(img);
+      for (const b of odfFrameBlocks(el, index, imageMap, shapeFills)) emit(b);
     }
   }
 }
@@ -2313,8 +2656,9 @@ export async function odtToIRInternal(
   }
   const officeText = bodies[0] as unknown as Element;
 
-  const blocks: IRBlock[] = [];
-  odfTraverseOfficeText(officeText, index, imageMap, blocks);
+  const flow: IRBlock[] = [];
+  odfTraverseOfficeText(officeText, index, imageMap, flow);
+  const blocks = odfArrangePages(flow);
 
   return { pages: [{ width: ODF_A4_W, height: ODF_A4_H, blocks }], images: imageMap, index };
 }
@@ -3743,7 +4087,9 @@ function odtRenderScanStyles(): {
     // ODF/Word hyperlink blue+underline, same treatment as the docx writer, so it's visually
     // recognizable as a link and not just functionally clickable.
     const props: OdtRunStyle = {
-      font: r.fontName || '',
+      // A PDF font resource name ("PSWIZS+Gotham-Black") is not an installed family: cleaned the
+      // same way as for Word, and declared in office:font-face-decls (see odtRenderContentXml).
+      font: docxFontFamily(r.fontName || '') ?? '',
       size: r.fontSize,
       bold: !!r.bold,
       italic: !!r.italic,
@@ -3802,39 +4148,49 @@ interface OdtListItemT { runs: IRTextRun[]; nested: OdtListT[]; }
 interface OdtListT { children: OdtListItemT[]; }
 
 function odtRenderReconstructList(items: IRListItemBlock[]): OdtListT {
-  const stack: OdtListT[] = [];
+  // Each open list remembers the IR level of its items. A deeper item opens ONE nested list under
+  // the last item (a skip such as 0 -> 2 is one step, never two); a shallower one closes lists
+  // down to the closest level. Items of one level are always siblings: the previous depth-based
+  // clamp nested a list whose items all sat at the same level above 0 one step deeper per item
+  // (a staircase), because each item was compared with the depth built so far, not with its
+  // sibling's level.
   const root: OdtListT = { children: [] };
-  stack[0] = root;
+  const stack: { list: OdtListT; level: number }[] = [{ list: root, level: items[0]?.level ?? 0 }];
   for (const it of items) {
-    const currentDepth = stack.length - 1;
-    // Defensive clamp: never build deeper than currentDepth+1 (handles skips
-    // e.g. level 0 -> 2 or an item starting at level N with no context).
-    const depth = Math.min(it.level, currentDepth + 1);
-    while (stack.length - 1 > depth) stack.pop();
-    while (stack.length - 1 < depth) {
-      // Safe: stack[0] = root is set above and only ever pop()'d down to length 1, never 0.
-      const parentList = stack[stack.length - 1]!;
-      const parentItem = parentList.children[parentList.children.length - 1];
-      if (!parentItem) break; // cannot nest without a parent item
-      const nested: OdtListT = { children: [] };
-      parentItem.nested.push(nested);
-      stack.push(nested);
+    while (stack.length > 1 && stack[stack.length - 1]!.level > it.level) stack.pop();
+    const top = stack[stack.length - 1]!;
+    if (it.level > top.level) {
+      const parentItem = top.list.children[top.list.children.length - 1];
+      if (parentItem) {
+        const nested: OdtListT = { children: [] };
+        parentItem.nested.push(nested);
+        stack.push({ list: nested, level: it.level });
+      }
     }
-    stack[stack.length - 1]!.children.push({ runs: it.runs, nested: [] });
+    stack[stack.length - 1]!.list.children.push({ runs: it.runs, nested: [] });
   }
   return root;
 }
 
-function odtRenderListXml(node: OdtListT, nameFor: (r: IRTextRun) => string): string {
+/** A bullet list style for every level: a <text:list> without a style shows no bullets at all. */
+const ODT_LIST_STYLE_XML = `
+  <text:list-style style:name="L1">${Array.from({ length: 10 }, (_, i) =>
+    `<text:list-level-style-bullet text:level="${i + 1}" text:bullet-char="•">` +
+    `<style:list-level-properties text:list-level-position-and-space-mode="label-alignment">` +
+    `<style:list-level-label-alignment text:label-followed-by="listtab" fo:text-indent="-12pt" fo:margin-left="${18 * (i + 1)}pt"/>` +
+    `</style:list-level-properties></text:list-level-style-bullet>`).join('')}</text:list-style>`;
+
+function odtRenderListXml(node: OdtListT, nameFor: (r: IRTextRun) => string, firstParaStyle?: string, top = true): string {
   const items = node.children
-    .map((it) => {
+    .map((it, i) => {
       const inner = odtRenderRunsXml(it.runs, nameFor);
-      const p = inner ? `<text:p>${inner}</text:p>` : `<text:p/>`;
-      const nested = it.nested.map((n) => odtRenderListXml(n, nameFor)).join('');
+      const st = i === 0 && firstParaStyle ? ` text:style-name="${firstParaStyle}"` : '';
+      const p = inner ? `<text:p${st}>${inner}</text:p>` : `<text:p${st}/>`;
+      const nested = it.nested.map((n) => odtRenderListXml(n, nameFor, undefined, false)).join('');
       return `<text:list-item>${p}${nested}</text:list-item>`;
     })
     .join('');
-  return `<text:list>${items}</text:list>`;
+  return `<text:list${top ? ' text:style-name="L1"' : ''}>${items}</text:list>`;
 }
 
 function odtRenderTableXml(table: IRTableBlock, nameFor: (r: IRTextRun) => string): string {
@@ -3880,37 +4236,145 @@ function odtRenderTableXml(table: IRTableBlock, nameFor: (r: IRTextRun) => strin
 
 interface OdtPicture { path: string; data: Uint8Array; media: string; }
 
+/** Paragraph automatic styles, deduplicated by their property XML → P{n}. */
+type OdtParaStyleFn = (attrs: string, children?: string) => string;
+
+function odtParagraphStyles(): { xml: () => string; nameFor: OdtParaStyleFn } {
+  const map = new Map<string, string>();
+  return {
+    nameFor: (attrs, children = '') => {
+      // style:master-page-name belongs on <style:style>, not on the paragraph properties.
+      const master = /\s*style:master-page-name="[^"]*"/.exec(attrs)?.[0] ?? '';
+      const pp = attrs.replace(master, '');
+      const def = `${master}><style:paragraph-properties${pp}${children ? `>${children}</style:paragraph-properties>` : '/>'}`;
+      let name = map.get(def);
+      if (!name) { name = `P${map.size + 1}`; map.set(def, name); }
+      return name;
+    },
+    xml: () => [...map].map(([def, name]) =>
+      `  <style:style style:name="${name}" style:family="paragraph"${def}</style:style>`).join('\n'),
+  };
+}
+
+const odtPt = (n: number): string => `${Math.round(n * 100) / 100}pt`;
+
+/**
+ * Same layout recovery as the docx writer (renderIRToDocx), expressed as ODF paragraph
+ * properties. The writer used to emit every block as a bare <text:p> in extraction order: one
+ * endless page (no page breaks), every paragraph at the left margin, banners and callout frames
+ * gone (white-on-colour titles invisible), a table always at the top of its page, and image
+ * frames written straight into <office:text> (not allowed there — only inside a paragraph).
+ */
 function odtRenderBodyXml(
   pages: IRPageIR[],
   images: Map<string, DocxImage>,
   nameFor: (r: IRTextRun) => string,
   pictures: OdtPicture[],
+  paraStyle: OdtParaStyleFn,
+  margins: PageMargins,
+  pageBackgrounds: Set<string>,
 ): string {
   const out: string[] = [];
   let imgIdx = 0;
-  for (const page of pages) {
+  for (let pageIdx = 0; pageIdx < pages.length; pageIdx++) {
+    const page = pages[pageIdx]!;
+    // A fill covering most of the page (a coloured section title page) is the PAGE's background,
+    // written as a master page with that background: as paragraph shading it only coloured a band
+    // behind each line, leaving large white text (a 60 pt section number) white on white.
+    const pageArea = page.width * page.height;
+    const pageFill = (page.fills ?? []).filter((f) => f.width * f.height >= 0.8 * pageArea)
+      .sort((a, b) => b.width * b.height - a.width * a.height)[0];
+    const fills = pageFill ? page.fills!.filter((f) => f !== pageFill) : page.fills;
+    if (pageFill) pageBackgrounds.add(pageFill.color);
+    // One source page = one ODF page. The first element of every page but the first starts a new
+    // page through its master page (which is also how a page switches background on and off).
+    const master = pageFill ? odtBgMasterName(pageFill.color) : 'Standard';
+    let pendingBreak = pageIdx > 0 || !!pageFill;
+    const pageColumn = inferPageColumn(page);
+    let prevTextual: (IRBlock & { bounds: IRRect }) | undefined;
+    const takeBreak = (): string => (pendingBreak ? ((pendingBreak = false), ` style:master-page-name="${master}"`) : '');
+    const styleAttr = (props: string, children = ''): string =>
+      props || children ? ` text:style-name="${paraStyle(props, children)}"` : '';
+    const layoutProps = (block: IRBlock & { bounds: IRRect }, withAlign: boolean): { props: string; indentPt: number } => {
+      let props = takeBreak();
+      let indentPt = 0;
+      const rotated = 'runs' in block && (block as { runs: IRTextRun[] }).runs.some((r) => Math.abs(r.rotation) > 1);
+      const lay = inferParagraphLayout(block, prevTextual, pageColumn, margins, page.width);
+      if (withAlign && !rotated) {
+        if (lay.alignment === 'center') props += ' fo:text-align="center"';
+        else if (lay.alignment === 'right') props += ' fo:text-align="end"';
+        if (lay.leftIndentPt > 0) { indentPt = lay.leftIndentPt; props += ` fo:margin-left="${odtPt(indentPt)}"`; }
+      }
+      if (lay.spacingBeforePt > 0) props += ` fo:margin-top="${odtPt(lay.spacingBeforePt)}"`;
+      const bg = findBackgroundFill(block, fills);
+      if (bg) props += ` fo:background-color="${odtRenderColorHex(bg)}"`;
+      const box = findBox(block, page.boxes);
+      if (box) {
+        const rightIndent = Math.max(0, page.width - margins.right + 8 - (box.x + box.width));
+        props += ` fo:border="0.75pt solid ${odtRenderColorHex(box.color)}" fo:padding="4pt" fo:margin-right="${odtPt(rightIndent)}"`;
+      }
+      prevTextual = block;
+      return { props, indentPt };
+    };
+
     let listBuffer: IRListItemBlock[] = [];
+    let listStyle: string | undefined;
     const flushLists = (): void => {
       if (listBuffer.length) {
-        out.push(odtRenderListXml(odtRenderReconstructList(listBuffer), nameFor));
+        out.push(odtRenderListXml(odtRenderReconstructList(listBuffer), nameFor, listStyle));
         listBuffer = [];
+        listStyle = undefined;
       }
     };
-    for (const block of page.blocks) {
+    for (const block of blocksInReadingOrder(page.blocks, page.height)) {
+      if (block.kind === 'page-shape') continue; // ODT-reader-only; never produced from a PDF
       if (block.kind === 'list-item') {
-        listBuffer.push(block as IRListItemBlock);
+        const li = block as IRListItemBlock;
+        // A blank list item is a decorative glyph from the source design, not content.
+        if (li.runs.every((r) => r.text.trim() === '')) continue;
+        const { props } = layoutProps(li, false);
+        if (listBuffer.length === 0) listStyle = props ? paraStyle(props) : undefined;
+        listBuffer.push(li);
         continue;
       }
       flushLists();
       if (block.kind === 'paragraph') {
         const p = block as IRParagraphBlock;
-        const inner = odtRenderRunsXml(p.runs, nameFor);
-        out.push(inner ? `<text:p>${inner}</text:p>` : `<text:p/>`);
+        const { props, indentPt } = layoutProps(p, true);
+        const rotated = p.runs.some((r) => Math.abs(r.rotation) > 1);
+        const leader = rotated ? null : splitDotLeader(p.runs);
+        if (leader) {
+          // "title ..... 12": a right tab stop with a dot leader at the line's right edge. ODF tab
+          // positions are measured from the paragraph's left indent.
+          const textWidth = page.width - margins.left - margins.right;
+          const right = Math.max(Math.min(p.bounds.x + p.bounds.width - margins.left, textWidth) - indentPt, 0);
+          const tabs = `<style:tab-stops><style:tab-stop style:position="${odtPt(right)}" style:type="right" style:leader-style="dotted" style:leader-text="."/></style:tab-stops>`;
+          out.push(`<text:p${styleAttr(props, tabs)}>${odtRenderRunsXml(leader.before, nameFor)}<text:tab/>${odtRenderRunsXml(leader.after, nameFor)}</text:p>`);
+          continue;
+        }
+        // Paragraphs separated by a blank line inside one block become separate paragraphs; the
+        // blank line becomes space above (the distance beyond one normal line step).
+        const groups = rotated ? [p.runs] : splitAtBlankLines(p.runs);
+        groups.forEach((g, gi) => {
+          let own = props;
+          if (gi > 0) {
+            const prevRun = groups[gi - 1]![groups[gi - 1]!.length - 1]!;
+            const extra = prevRun.position.y - g[0]!.position.y - prevRun.fontSize * 1.2;
+            own = props.replace(/ style:master-page-name="[^"]*"/, '').replace(/ fo:margin-top="[^"]*"/, '')
+              + (extra > 0 ? ` fo:margin-top="${odtPt(Math.min(extra, 72))}"` : '');
+          }
+          const inner = odtRenderRunsXml(g, nameFor);
+          out.push(inner ? `<text:p${styleAttr(own)}>${inner}</text:p>` : `<text:p${styleAttr(own)}/>`);
+        });
       } else if (block.kind === 'heading') {
         const h = block as IRHeadingBlock;
         const lvl = Math.min(Math.max(h.level, 1), 6);
-        out.push(`<text:h text:outline-level="${lvl}">${odtRenderRunsXml(h.runs, nameFor)}</text:h>`);
+        const { props } = layoutProps(h, true);
+        out.push(`<text:h${styleAttr(props)} text:outline-level="${lvl}">${odtRenderRunsXml(h.runs, nameFor)}</text:h>`);
       } else if (block.kind === 'table') {
+        prevTextual = undefined; // a table has its own y origin; spacing after it is not inferred
+        const brk = takeBreak();
+        if (brk) out.push(`<text:p${styleAttr(brk)}/>`);
         out.push(odtRenderTableXml(block as IRTableBlock, nameFor));
       } else if (block.kind === 'image') {
         const img = block as IRImageBlock;
@@ -3919,15 +4383,24 @@ function odtRenderBodyXml(
           console.warn(`[renderIRToOdt] image block references unknown imageId: ${img.imageId}`);
           continue; // guard: unknown id skipped rather than writing a broken frame
         }
+        prevTextual = img;
         imgIdx += 1;
         const file = odtRenderUniqueFile(imgData.target, imgIdx);
         pictures.push({ path: `Pictures/${file}`, data: imgData.data, media: odtRenderMimeForTarget(imgData.target) });
+        // An image covering (nearly) the whole page is a cover or a background: placed on the page
+        // behind the text instead of inline, where it is taller than the text area.
+        const coversPage = img.bounds.width >= 0.85 * page.width && img.bounds.height >= 0.85 * page.height;
+        const placement = coversPage
+          ? `draw:style-name="frBg" text:anchor-type="paragraph" svg:x="${odtPt(img.bounds.x)}" ` +
+            `svg:y="${odtPt(Math.max(page.height - (img.bounds.y + img.bounds.height), 0))}" `
+          : `draw:style-name="frIn" text:anchor-type="as-char" `;
         out.push(
-          `<draw:frame draw:name="image${imgIdx}" text:anchor-type="as-char" ` +
+          `<text:p${styleAttr(takeBreak())}>` +
+          `<draw:frame draw:name="image${imgIdx}" ${placement}` +
             `svg:width="${img.bounds.width}pt" svg:height="${img.bounds.height}pt">` +
             `<draw:image xlink:href="Pictures/${odtXmlEsc(file)}" xlink:type="simple" ` +
             `xlink:show="embed" xlink:actuate="onLoad"/>` +
-            `</draw:frame>`
+            `</draw:frame></text:p>`
         );
       }
     }
@@ -3936,7 +4409,13 @@ function odtRenderBodyXml(
   return out.join('\n');
 }
 
-function odtRenderContentXml(body: string, styles: { name: string; props: OdtRunStyle }[]): string {
+const ODT_GRAPHIC_STYLES_XML = `
+  <style:style style:name="frIn" style:family="graphic"><style:graphic-properties style:vertical-pos="top" style:vertical-rel="baseline" fo:border="none"/></style:style>
+  <style:style style:name="frBg" style:family="graphic"><style:graphic-properties style:wrap="run-through" style:run-through="background" style:horizontal-pos="from-left" style:horizontal-rel="page" style:vertical-pos="from-top" style:vertical-rel="page" fo:border="none"/></style:style>`;
+
+function odtRenderContentXml(body: string, styles: { name: string; props: OdtRunStyle }[], paragraphStylesXml: string): string {
+  const fonts = [...new Set(styles.map((s) => s.props.font).filter(Boolean))];
+  const fontDecls = fonts.map((f) => `    <style:font-face style:name="${odtXmlEsc(f)}" svg:font-family="${odtXmlEsc(/\s/.test(f) ? `'${f}'` : f)}"/>`).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>
 <office:document-content
   xmlns:office="${ODF_OFFICE}"
@@ -3946,8 +4425,11 @@ function odtRenderContentXml(body: string, styles: { name: string; props: OdtRun
   xmlns:draw="${ODF_DRAW}"
   xmlns:svg="${ODF_SVG}"
   xmlns:table="${ODF_TABLE}"
-  xmlns:xlink="${XLINK}">
-  <office:automatic-styles>${odtRenderAutoStylesXml(styles)}
+  xmlns:xlink="${XLINK}" office:version="1.2">
+  <office:font-face-decls>
+${fontDecls}
+  </office:font-face-decls>
+  <office:automatic-styles>${odtRenderAutoStylesXml(styles)}${paragraphStylesXml ? '\n' + paragraphStylesXml : ''}${ODT_GRAPHIC_STYLES_XML}${ODT_LIST_STYLE_XML}
   </office:automatic-styles>
   <office:body>
     <office:text>
@@ -3971,10 +4453,37 @@ ${rows}
 </manifest:manifest>`;
 }
 
-const ODT_STYLES_XML = `<?xml version="1.0" encoding="UTF-8"?>
-<office:document-styles xmlns:office="${ODF_OFFICE}" xmlns:style="${ODF_STYLE}" xmlns:text="${ODF_TEXT}">
+const odtBgMasterName = (hex: string): string => `Bg_${hex.replace('#', '').toUpperCase()}`;
+
+/**
+ * Page size and margins of the source (first page), so text wraps where it wrapped in the PDF,
+ * plus one master page per full-page background colour (same geometry, coloured page).
+ */
+function odtRenderStylesXml(page: IRPageIR | undefined, margins: PageMargins, pageBackgrounds: Set<string>): string {
+  const geometry = page
+    ? `fo:page-width="${odtPt(page.width)}" fo:page-height="${odtPt(page.height)}" ` +
+      `style:print-orientation="${page.width > page.height ? 'landscape' : 'portrait'}" ` +
+      `fo:margin-top="${odtPt(margins.top)}" fo:margin-bottom="${odtPt(margins.bottom)}" ` +
+      `fo:margin-left="${odtPt(margins.left)}" fo:margin-right="${odtPt(margins.right)}"`
+    : '';
+  const bgs = [...pageBackgrounds];
+  // draw:background-size="full": the colour covers the whole sheet, margins included (LibreOffice
+  // otherwise paints only the area inside the margins).
+  const layouts = [`    <style:page-layout style:name="pm1"><style:page-layout-properties ${geometry}/></style:page-layout>`,
+    ...bgs.map((c, i) => `    <style:page-layout style:name="pmBg${i + 1}"><style:page-layout-properties ${geometry} fo:background-color="${odtRenderColorHex(c)}" draw:background-size="full"/></style:page-layout>`)];
+  const masters = [`    <style:master-page style:name="Standard" style:page-layout-name="pm1"/>`,
+    ...bgs.map((c, i) => `    <style:master-page style:name="${odtBgMasterName(c)}" style:page-layout-name="pmBg${i + 1}"/>`)];
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<office:document-styles xmlns:office="${ODF_OFFICE}" xmlns:style="${ODF_STYLE}" xmlns:text="${ODF_TEXT}" xmlns:fo="${ODF_FO}" xmlns:draw="${ODF_DRAW}" office:version="1.2">
   <office:styles/>
+  <office:automatic-styles>
+${layouts.join('\n')}
+  </office:automatic-styles>
+  <office:master-styles>
+${masters.join('\n')}
+  </office:master-styles>
 </office:document-styles>`;
+}
 
 const ODT_META_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <office:document-meta xmlns:office="${ODF_OFFICE}" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0">
@@ -3995,14 +4504,17 @@ export async function renderIRToOdt(
 
   // 2. Render body; collect picture bytes for Pictures/ + manifest.
   const pictures: OdtPicture[] = [];
-  const body = odtRenderBodyXml(pages, images, nameFor, pictures);
+  const margins = inferMargins(pages);
+  const paraStyles = odtParagraphStyles();
+  const pageBackgrounds = new Set<string>();
+  const body = odtRenderBodyXml(pages, images, nameFor, pictures, paraStyles.nameFor, margins, pageBackgrounds);
 
   // 3. Assemble package — mimetype MUST be the first, uncompressed ZIP entry.
   const JSZip = (await import('jszip')).default;
   const zip = new JSZip();
   zip.file('mimetype', ODT_MIME, { compression: 'STORE' });
-  zip.file('content.xml', odtRenderContentXml(body, styles));
-  zip.file('styles.xml', ODT_STYLES_XML);
+  zip.file('content.xml', odtRenderContentXml(body, styles, paraStyles.xml()));
+  zip.file('styles.xml', odtRenderStylesXml(pages[0], margins, pageBackgrounds));
   zip.file('meta.xml', ODT_META_XML);
   zip.file('META-INF/manifest.xml', odtRenderManifestXml(pictures));
   for (const pic of pictures) zip.file(pic.path, pic.data);
