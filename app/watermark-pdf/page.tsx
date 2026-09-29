@@ -7,6 +7,11 @@ import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 
+// Grey (the previous fixed colour, now the default), red, blue, green, black, white (for dark pages).
+const WATERMARK_COLORS = ['#808080', '#E53935', '#1E63D6', '#2E7D32', '#000000', '#FFFFFF'];
+// addWatermark's default angle; the preview shows the same one.
+const WATERMARK_ROTATION = 45;
+
 export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
   const [file, setFile] = useState<File | null>(null);
@@ -14,6 +19,7 @@ export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale
   const [opacity, setOpacity] = useState('50');
   const [position, setPosition] = useState('center');
   const [fontSize, setFontSize] = useState('40');
+  const [color, setColor] = useState(WATERMARK_COLORS[0]!);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -40,6 +46,8 @@ export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale
         opacity: parseInt(opacity, 10),
         fontSize: parseInt(fontSize, 10),
         position: position as 'top' | 'center' | 'bottom',
+        rotation: WATERMARK_ROTATION,
+        color,
       });
       const blob = await downloadPdf(result, file.name.replace('.pdf', '_znak_wodny.pdf'));
       processedBlobRef.current = blob;
@@ -97,15 +105,18 @@ export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale
         {text && (
           <div className="tool-card rounded-2xl border p-6 mb-6">
             <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3">{t('page.watermark.preview', locale)}</h3>
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl h-32 flex items-center justify-center relative overflow-hidden border border-gray-200 dark:border-gray-700">
+            {/* Same colour, opacity and angle as the file gets (it used to show red and level text
+                while the PDF got grey text at 45°). The page stays white like a document page. */}
+            <div className="bg-white rounded-xl h-32 flex items-center justify-center relative overflow-hidden border border-gray-200 dark:border-gray-700">
               <div className="absolute inset-0 flex items-center justify-center">
-               <span style={{
-  fontSize: `${Math.min(parseInt(fontSize) * 0.8, 48)}px`,
-  opacity: parseInt(opacity) / 100,
-  color: '#FF0000',
-  fontWeight: 'bold',
-  whiteSpace: 'nowrap',
-}}>
+                <span style={{
+                  fontSize: `${Math.min(parseInt(fontSize) * 0.6, 36)}px`,
+                  opacity: parseInt(opacity) / 100,
+                  color,
+                  whiteSpace: 'nowrap',
+                  transform: `rotate(-${WATERMARK_ROTATION}deg)`,
+                  textShadow: color.toUpperCase() === '#FFFFFF' ? '0 0 1px #555' : undefined,
+                }}>
                   {text}
                 </span>
               </div>
@@ -184,6 +195,20 @@ export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale
                   {opt.label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Kolor */}
+          <div>
+            <label htmlFor="watermarkColor" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('page.watermark.color_label', locale)}</label>
+            <div className="flex flex-wrap items-center gap-2">
+              {WATERMARK_COLORS.map(c => (
+                <button key={c} type="button" onClick={() => setColor(c)} aria-label={c} aria-pressed={color.toUpperCase() === c}
+                  className={`w-9 h-9 rounded-full border-2 transition ${color.toUpperCase() === c ? 'border-blue-500 dark:border-blue-400 ring-2 ring-blue-300 dark:ring-blue-600' : 'border-gray-300 dark:border-gray-600'}`}
+                  style={{ backgroundColor: c }} />
+              ))}
+              <input id="watermarkColor" type="color" value={color.toLowerCase()} onChange={e => setColor(e.target.value.toUpperCase())}
+                className="w-12 h-9 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer bg-transparent" />
             </div>
           </div>
         </div>
