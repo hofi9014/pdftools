@@ -41,6 +41,7 @@
     "test:compare-unrelated-notice": "npx --yes tsx tests/compare-unrelated-notice.mts",
     "test:batch-partial-failure": "npx --yes tsx tests/batch-partial-failure.mts",
     "test:pl-tool-names": "npx --yes tsx tests/pl-tool-names.mts",
+    "test:excel-to-pdf-rich": "npx --yes tsx tests/excel-to-pdf-rich.mts",
     "test:ocr-worker-cleanup": "npx --yes tsx tests/ocr-worker-cleanup.mts",
     "test:ocr-text-layer-scale": "npx --yes tsx tests/ocr-text-layer-scale.mts",
     "test:font-bold-weight": "npx --yes tsx tests/font-bold-weight.mts",

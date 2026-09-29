@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { officeToPdf } from '@/lib/client-pdf';
+import { xlsxToIR, renderSpreadsheetIRToPdf, detectUnsupportedScript } from '@/lib/client-pdf-docx';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -38,7 +39,20 @@ export default function ExcelToPDF({ locale: forcedLocale }: { locale?: Locale }
     setSuccess(false);
 
     try {
-      const blob = await officeToPdf(file);
+      // The spreadsheet renderer draws the real sheet: grid, merged cells, column widths, dates and
+      // times in their cell format, cell colours, a repeated header row, one PDF section per
+      // sheet. officeToPdf only dumps each row's raw cell values as tab-separated text (dates as
+      // serial numbers such as 46235, times as 0.3333…) and stays as the fallback — for a file the
+      // spreadsheet reader cannot parse, or text in a script the embedded font cannot draw.
+      let blob: Blob;
+      try {
+        const ir = await xlsxToIR(file);
+        const cellText = ir.sheets.flatMap((s) => s.cells.flatMap((row) => (row ?? []).map((c) => c?.display ?? ''))).join(' ');
+        blob = detectUnsupportedScript(cellText) ? await officeToPdf(file) : await renderSpreadsheetIRToPdf(ir);
+      } catch (irErr) {
+        console.error('xlsxToIR/renderSpreadsheetIRToPdf failed, falling back:', irErr);
+        blob = await officeToPdf(file);
+      }
       processedBlobRef.current = blob;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
