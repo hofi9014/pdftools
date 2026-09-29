@@ -35,6 +35,10 @@ export interface IRParagraphBlock {
   role?: 'header' | 'footer' | 'body';
   /** The block starts on a new page (Word: page break before, a manual page break, a next-page section break). */
   pageBreakBefore?: boolean;
+  /** Paragraph shading (Word w:shd fill) — a solid background color band behind the whole paragraph. */
+  fill?: string;
+  /** Paragraph border (Word w:pBdr) — a stroked frame around the whole paragraph (a callout box). */
+  border?: string;
 }
 
 export interface IRHeadingBlock {
@@ -651,6 +655,8 @@ function processParagraph(
   let pStyleId: string | undefined;
   let numPrEl: Element | null = null;
   let pPrRPr: Partial<RunProps> | undefined;
+  let fill: string | undefined;
+  let border: string | undefined;
 
   if (pPr.length > 0) {
     const styleEls = pPr[0]!.getElementsByTagNameNS(WORD_NS, 'pStyle');
@@ -659,6 +665,27 @@ function processParagraph(
     if (numPr.length > 0) numPrEl = numPr[0]!;
     const rPr = pPr[0]!.getElementsByTagNameNS(WORD_NS, 'rPr');
     if (rPr.length > 0) pPrRPr = parseRPr(rPr[0]!) || undefined;
+    // A paragraph-level background color band (w:shd) or bordered callout box (w:pBdr) — the
+    // writer direction (pdfToWordIR → renderIRToDocx) has produced both of these since the
+    // "ramki wokół treści (callout)" fix, but this reader never looked for either, so any real
+    // .docx carrying one (including our own pdf-to-word output, round-tripped back through
+    // word-to-pdf) silently lost the background/border here — confirmed on a real document via
+    // docx-preview (an independent Word renderer: shows the band and box correctly) vs this
+    // engine's own PDF output (shows neither).
+    const shd = pPr[0]!.getElementsByTagNameNS(WORD_NS, 'shd')[0];
+    if (shd) {
+      const shdFill = getLocal(shd, 'fill');
+      if (shdFill && /^[0-9a-fA-F]{6}$/.test(shdFill)) fill = shdFill.toLowerCase();
+    }
+    const pBdr = pPr[0]!.getElementsByTagNameNS(WORD_NS, 'pBdr')[0];
+    if (pBdr) {
+      const top = pBdr.getElementsByTagNameNS(WORD_NS, 'top')[0];
+      const borderColor = top ? getLocal(top, 'color') : undefined;
+      const borderVal = top ? getLocal(top, 'val') : undefined;
+      if (borderColor && borderVal && borderVal !== 'nil' && borderVal !== 'none' && /^[0-9a-fA-F]{6}$/.test(borderColor)) {
+        border = borderColor.toLowerCase();
+      }
+    }
   }
 
   // Check for images in this paragraph (direct children only — skip textboxes)
@@ -743,6 +770,8 @@ function processParagraph(
         kind: 'paragraph',
         runs,
         bounds,
+        ...(fill ? { fill } : {}),
+        ...(border ? { border } : {}),
       });
     }
   }
@@ -1414,6 +1443,26 @@ export async function renderIRToPdf(
     } else {
       const p = block as IRParagraphBlock;
       const fs = p.runs[0]?.fontSize || 11;
+      if (p.fill || p.border) {
+        // A shaded band (e.g. a white-on-color banner) or a bordered callout box: the rect must
+        // span the paragraph's FULL wrapped height, so line-break first and reserve that whole
+        // height in one go — otherwise a page break could land mid-paragraph and split the rect
+        // across two pages, which pdf-lib can't express (one PDFPage per drawRectangle call).
+        const lines = breakIntoLines(p.runs, fonts, pageW - MARGIN * 2);
+        const lineH = fs * 1.3;
+        const blockHeight = lines.length * lineH;
+        ensureSpace(blockHeight);
+        const top = cursorY;
+        const rectOpts: Parameters<PDFPage['drawRectangle']>[0] = {
+          x: MARGIN,
+          y: top - blockHeight,
+          width: pageW - MARGIN * 2,
+          height: blockHeight,
+        };
+        if (p.fill) rectOpts.color = hexToColor(p.fill);
+        if (p.border) { rectOpts.borderColor = hexToColor(p.border); rectOpts.borderWidth = 1; }
+        currentPage!.drawRectangle(rectOpts);
+      }
       drawTextBlock(p.runs, fs, 0);
       cursorY -= fs * 0.3;
     }
@@ -1668,6 +1717,10 @@ export interface OdfStyleDef {
   defaultOutlineLevel?: number;  // style:default-outline-level (headings)
   rPr?: OdfRunProps;
   pPr?: Record<string, string>;  // paragraph props (captured, not mapped to IR run)
+  /** style:master-page-name — per ODF 1.2 §19.502, its presence means "insert a page break
+   * before this paragraph/table/section", unconditionally (not a change-from-previous check
+   * like Word's section breaks — ODF just marks the specific paragraph that starts a new page). */
+  masterPageName?: string;
 }
 
 export interface OdfStyleIndex {
@@ -1820,10 +1873,12 @@ function odfParseStyleBlock(styleEl: Element): OdfStyleDef {
   const parent = odfAttr(styleEl, 'parent-style-name');
   const display = odfAttr(styleEl, 'display-name');
   const olevel = odfAttr(styleEl, 'default-outline-level');
+  const masterPage = odfAttr(styleEl, 'master-page-name');
   (def as unknown as { name?: string }).name = name || '';
   if (parent) def.parent = parent;
   if (display) def.displayName = display;
   if (olevel) def.defaultOutlineLevel = parseInt(olevel, 10);
+  if (masterPage) def.masterPageName = masterPage;
   const te = odfChildNS(styleEl, ODF_STYLE, 'text-properties');
   const pe = odfChildNS(styleEl, ODF_STYLE, 'paragraph-properties');
   def.rPr = odfParseTextProps(te || null);
@@ -2099,11 +2154,19 @@ function odfProcessParagraph(
   const pStyleName = odfAttrNS(pEl, ODF_TEXT, 'style-name') || undefined;
   const { runs, images } = odfMakeBlockRuns(pEl, index, pStyleName, imageMap);
   const bounds = { x: 0, y: 0, width: 0, height: 0 };
+  // FINDING (2026-09-29): odtToIR never looked for style:master-page-name, the ODF mechanism a
+  // producer (including our own pdf-to-openoffice writer) uses to mark "start a new page here" —
+  // Word's fo:break-before="page" has no equivalent attribute in the fixture that generated this
+  // real file; it uses master-page-name exclusively (53 occurrences, 0 break-before). Without
+  // this, EVERY page break from the source document was silently dropped, collapsing a real
+  // 27-page report down to 9 badly overcrowded pages when round-tripped through word-to-pdf.
+  const pStyleDef = pStyleName ? index.styles.get(`paragraph\u0000${pStyleName}`) : undefined;
+  const pageBreakBefore = !!pStyleDef?.masterPageName;
   let block: IRParagraphBlock | IRHeadingBlock | undefined;
   if (kind === 'heading') {
-    block = { kind: 'heading', level: forcedLevel ?? odfResolveHeadingLevel(pEl, index), runs, bounds };
+    block = { kind: 'heading', level: forcedLevel ?? odfResolveHeadingLevel(pEl, index), runs, bounds, ...(pageBreakBefore ? { pageBreakBefore } : {}) };
   } else {
-    block = { kind: 'paragraph', runs, bounds };
+    block = { kind: 'paragraph', runs, bounds, ...(pageBreakBefore ? { pageBreakBefore } : {}) };
   }
   return { block, images };
 }
@@ -2130,8 +2193,11 @@ function odfProcessList(
         const forced = el.localName === 'h' ? (parseInt(odfAttrNS(el, ODF_TEXT, 'outline-level') || '', 10) || undefined) : undefined;
         const { block, images } = odfProcessParagraph(el, index, imageMap, kind, forced);
         const bounds = { x: 0, y: 0, width: 0, height: 0 };
-        // list-item level ALWAYS = STRUCTURAL nesting depth (never heading outline-level)
-        if (block) out.push({ kind: 'list-item', marker: '•', level: depth, runs: block.runs, bounds });
+        // list-item level ALWAYS = STRUCTURAL nesting depth (never heading outline-level).
+        // pageBreakBefore must still carry over — a heading/paragraph nested in a list (a real
+        // shape produced by at least one export pipeline) can be the element that marks a page
+        // break, and building a fresh object literal here silently dropped it.
+        if (block) out.push({ kind: 'list-item', marker: '•', level: depth, runs: block.runs, bounds, ...(block.pageBreakBefore ? { pageBreakBefore: true } : {}) });
         for (const im of images) out.push(im);
       }
       if (el.localName === 'list') {
@@ -2185,6 +2251,7 @@ function odfTraverseOfficeText(
   index: OdfStyleIndex,
   imageMap: Map<string, DocxImage>,
   out: IRBlock[],
+  pendingBreak: { value: boolean } = { value: false },
 ): void {
   // <text:section> / <draw:g> (block level) = transparent containers -> recurse.
   // Block-level <draw:frame> -> IRImageBlock. Caption text inside frames is dropped.
@@ -2195,19 +2262,32 @@ function odfTraverseOfficeText(
     const el = node as Element;
     const local = el.localName;
     if (local === 'section' || (local === 'g' && el.namespaceURI === ODF_DRAW)) {
-      odfTraverseOfficeText(el, index, imageMap, out);
+      odfTraverseOfficeText(el, index, imageMap, out, pendingBreak);
     } else if (local === 'h') {
       const { block, images } = odfProcessParagraph(el, index, imageMap, 'heading');
-      if (block) out.push(block);
+      if (block) {
+        if (pendingBreak.value) { block.pageBreakBefore = true; pendingBreak.value = false; }
+        out.push(block);
+      }
       out.push(...images);
     } else if (local === 'p') {
       const { block, images } = odfProcessParagraph(el, index, imageMap, 'paragraph');
-      if (block && block.runs.length > 0) out.push(block);
+      if (block && block.runs.length > 0) {
+        if (pendingBreak.value) { block.pageBreakBefore = true; pendingBreak.value = false; }
+        out.push(block);
+      } else if (block?.pageBreakBefore) {
+        // The carrier paragraph is empty (no visible text — a page-break-only placeholder) and
+        // gets dropped above, but its page break must survive: hold it for whatever block gets
+        // kept next, instead of silently losing it along with the empty paragraph.
+        pendingBreak.value = true;
+      }
       out.push(...images);
     } else if (local === 'list') {
       odfProcessList(el, index, imageMap, 0, out);
     } else if (local === 'table' && el.namespaceURI === ODF_TABLE) {
-      out.push(odfProcessTable(el, index, imageMap));
+      const tbl = odfProcessTable(el, index, imageMap);
+      if (pendingBreak.value) { tbl.pageBreakBefore = true; pendingBreak.value = false; }
+      out.push(tbl);
     } else if (local === 'frame' && el.namespaceURI === ODF_DRAW) {
       const img = odfFrameToIRImage(el, imageMap);
       if (img) out.push(img);
