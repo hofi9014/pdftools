@@ -3256,6 +3256,38 @@ export async function pdfTablesToCells(file: File): Promise<PdfTablesToCellsPage
   return pdfTablesToCellsFromScaffolds(scaffolds);
 }
 
+/**
+ * The wrapped lines of a tall merged cell (a 4-row "activities" description) fall into the grid
+ * rows the merge covers. The exact-position pass above only finds a cell at the merge's top-left
+ * (and at interior positions that happen to have a cell of their own), so the lines sitting in
+ * the other covered rows matched no cell and were dropped: "Wprowadzanie zleceń, obliczanie
+ * czasu pracy, …" came back as "Wprowadzanie" plus a fragment. Runs left unassigned that lie
+ * inside a merge whose anchor ALREADY holds text are added to that anchor. A merge whose anchor
+ * is blank is left alone: on this path such merges can be false (see the "false cs2 merge" /
+ * coversValued handling in AGENTS.md), and giving one text would make it swallow real cells.
+ */
+function assignLeftoverRunsToTextAnchors(
+  assignments: CellTextAssignment[],
+  runs: IRTextRun[],
+  cells: GridCell[],
+  cluster: TableCluster,
+  pageHeight: number,
+): void {
+  const anchorsWithText = new Set<GridCell>();
+  for (const a of assignments) {
+    if ((a.cell.rowspan > 1 || a.cell.colspan > 1) && (runs[a.runIndex]?.text.trim() ?? '') !== '') anchorsWithText.add(a.cell);
+  }
+  if (anchorsWithText.size === 0) return;
+  const assigned = new Set(assignments.map((a) => a.runIndex));
+  const leftover: number[] = [];
+  runs.forEach((r, i) => { if (!assigned.has(i) && r.text.trim() !== '') leftover.push(i); });
+  if (leftover.length === 0) return;
+  const extra = assignTextRunsToCells(leftover.map((i) => runs[i]!), [...anchorsWithText], cluster.xEdges, cluster.yEdges, pageHeight, true);
+  for (const e of extra) assignments.push({ cell: e.cell, runIndex: leftover[e.runIndex]! });
+  // Keep reading order within each cell: the cell's text is its runs in run order.
+  assignments.sort((p, q) => p.runIndex - q.runIndex);
+}
+
 function pdfTablesToCellsFromScaffolds(scaffolds: PageTableScaffold[]): PdfTablesToCellsPage[] {
   const result: PdfTablesToCellsPage[] = [];
 
@@ -3264,6 +3296,7 @@ function pdfTablesToCellsFromScaffolds(scaffolds: PageTableScaffold[]): PdfTable
     for (const cluster of tableClusters) {
       const cells = detectMergesByTopology(cluster);
       const assignments = assignTextRunsToCells(textRuns, cells, cluster.xEdges, cluster.yEdges, pageHeight);
+      assignLeftoverRunsToTextAnchors(assignments, textRuns, cells, cluster, pageHeight);
       clusters.push({
         xEdges: cluster.xEdges,
         yEdges: cluster.yEdges,
@@ -3348,7 +3381,8 @@ function clusterCellText(cluster: PdfTableClusterResult, row: number, col: numbe
   for (const { cell, runIndex } of cluster.assignments) {
     if (cell.row === row && cell.col === col) parts.push(cluster.textRuns[runIndex]?.text ?? '');
   }
-  return parts.join(' ').trim();
+  // Runs often end with their own space, so joining with ' ' doubled it ("Godzina  rozpoczęcia").
+  return parts.join(' ').replace(/\s+/g, ' ').trim();
 }
 
 /**
