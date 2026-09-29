@@ -39,6 +39,8 @@
     "test:odt-textbox-shapes": "npx --yes tsx tests/odt-textbox-shapes.mts",
     "test:watermark-color": "npx --yes tsx tests/watermark-color.mts",
     "test:compare-unrelated-notice": "npx --yes tsx tests/compare-unrelated-notice.mts",
+    "test:batch-partial-failure": "npx --yes tsx tests/batch-partial-failure.mts",
+    "test:pl-tool-names": "npx --yes tsx tests/pl-tool-names.mts",
     "test:ocr-worker-cleanup": "npx --yes tsx tests/ocr-worker-cleanup.mts",
     "test:ocr-text-layer-scale": "npx --yes tsx tests/ocr-text-layer-scale.mts",
     "test:font-bold-weight": "npx --yes tsx tests/font-bold-weight.mts",

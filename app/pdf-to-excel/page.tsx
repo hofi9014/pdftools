@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import JSZip from 'jszip';
 import { pdfToIRSpreadsheet } from '@/lib/client-pdf';
 import { renderIRSpreadsheetToXlsx } from '@/lib/client-pdf-docx';
+import { runBatch } from '@/lib/batch';
 import { useLocale } from '@/lib/locale-context';
 import { t, isRtlLocale, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -17,6 +18,8 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [warnings, setWarnings] = useState<number>(0);
+  const [failed, setFailed] = useState<{ name: string; message: string }[]>([]);
+  const [zipped, setZipped] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
   const downloadFileNameRef = useRef('');
@@ -30,12 +33,14 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
     setFiles(prev => [...prev, ...pdfs]);
     setSuccess(false);
     setWarnings(0);
+    setFailed([]);
   };
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
     setSuccess(false);
     setWarnings(0);
+    setFailed([]);
   };
 
   const handleSubmit = async () => {
@@ -45,25 +50,31 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
     setSuccess(false);
     setProgress(0);
     setWarnings(0);
-
-    const batchResults: { name: string; data: Blob }[] = [];
+    setFailed([]);
 
     try {
       let warnCount = 0;
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]!;
+      // One file that cannot be converted (e.g. no table in it) no longer aborts the batch: the
+      // rest is still downloaded and the failures are listed with their reason.
+      const batch = await runBatch(files, async (file) => {
         const { spreadsheet, warnings } = await pdfToIRSpreadsheet(file);
         warnCount += warnings.length;
-        const blob = await renderIRSpreadsheetToXlsx(spreadsheet);
-        batchResults.push({ name: file.name.replace(/\.pdf$/i, '.xlsx'), data: blob });
-        setProgress(i + 1);
-      }
+        return { name: file.name.replace(/\.pdf$/i, '.xlsx'), data: await renderIRSpreadsheetToXlsx(spreadsheet) };
+      }, setProgress);
       setWarnings(warnCount);
+      setFailed(batch.failed.map((f) => ({ name: f.item.name, message: f.message })));
+      const batchResults = batch.ok.map((r) => r.result);
+      if (batchResults.length === 0) {
+        // Nothing converted: a single file's own message is the clearest error.
+        setError(files.length === 1 ? batch.failed[0]!.message : t('page.excel.all_failed', locale));
+        return;
+      }
 
       if (batchResults.length === 1) {
         const r = batchResults[0]!;
         processedBlobRef.current = r.data;
         downloadFileNameRef.current = r.name;
+        setZipped(false);
         const url = URL.createObjectURL(r.data);
         const a = document.createElement('a');
         a.href = url;
@@ -76,6 +87,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         processedBlobRef.current = zipBlob;
         downloadFileNameRef.current = 'excels.zip';
+        setZipped(true);
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
@@ -126,7 +138,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
         <div className="tool-card rounded-2xl shadow-sm border mb-6">
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
             <p className="font-medium text-gray-700 dark:text-gray-300">{files.length} {t('files.count', locale)}</p>
-            <button onClick={() => { setFiles([]); setSuccess(false); setWarnings(0); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
+            <button onClick={() => { setFiles([]); setSuccess(false); setWarnings(0); setFailed([]); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
           </div>
           {files.map((file, i) => (
             <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -163,10 +175,27 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
         </ul>
       </div>
 
-      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">
+          ⚠️ {error}
+          {!success && failed.length > 1 && (
+            <ul data-testid="batch-all-failed" className={`text-sm list-disc space-y-1 mt-2 ${isRtlLocale(locale) ? 'pr-5' : 'pl-5'}`}>
+              {failed.map((f, i) => <li key={i}><span className="font-medium">{f.name}</span>: {f.message}</li>)}
+            </ul>
+          )}
+        </div>
+      )}
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
-          ✅ {t('result.success', locale)} {files.length > 1 ? t('page.excel.success_zip', locale) : t('page.excel.success_single', locale)}
+          ✅ {t('result.success', locale)} {zipped ? t('page.excel.success_zip', locale) : t('page.excel.success_single', locale)}
+        </div>
+      )}
+      {failed.length > 0 && success && (
+        <div data-testid="batch-failed" className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300 rounded-xl p-4 mb-6">
+          <p className="font-medium mb-1">⚠️ {t('page.excel.partial_failed', locale, { failed: String(failed.length), total: String(files.length) })}</p>
+          <ul className={`text-sm list-disc space-y-1 ${isRtlLocale(locale) ? 'pr-5' : 'pl-5'}`}>
+            {failed.map((f, i) => <li key={i}><span className="font-medium">{f.name}</span>: {f.message}</li>)}
+          </ul>
         </div>
       )}
       {success && warnings > 0 && (
