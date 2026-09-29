@@ -5248,14 +5248,19 @@ export async function convertToPdfA(file: File): Promise<Uint8Array> {
 
   // 6. Add OutputIntent for sRGB
   try {
-    const srgbProfile = new Uint8Array([
-      0x00, 0x00, 0x0C, 0x48, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF6, 0xD6,
-      0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0xD3, 0x2D, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    ]);
+    // FINDING (2026-09-29): this used to be a hand-written 72-byte array whose own header
+    // (first 4 bytes) DECLARED a profile size of 3144 bytes — but the array was truncated to
+    // 72 actual bytes and had all-zero bytes where the ICC spec mandates the literal ASCII
+    // signature "acsp" at offset 36. Every PDF/A validator (including Adobe Acrobat, which
+    // checks OutputIntent profiles strictly for PDF/A conformance) rejected this as a corrupt
+    // ICC profile — exactly the "nieprawidłowa przestrzeń koloru" (invalid color space) error
+    // a user reported seeing in Acrobat. Fixed by embedding the real, standard sRGB
+    // IEC61966-2.1 profile (the same file Windows ships as
+    // "sRGB Color Space Profile.icm" and countless other tools bundle for this exact purpose)
+    // as a static asset, fetched the same way embedLiberationSans() fetches its font file.
+    const srgbRes = await fetch('/icc/sRGB-IEC61966-2.1.icc');
+    if (!srgbRes.ok) throw new Error('ICC profile fetch failed: sRGB-IEC61966-2.1.icc');
+    const srgbProfile = new Uint8Array(await srgbRes.arrayBuffer());
     const srgbStream = pdfDoc.context.stream(srgbProfile, { N: 3 });
     const srgbRef = pdfDoc.context.register(srgbStream);
     const outputIntent = pdfDoc.context.obj({
