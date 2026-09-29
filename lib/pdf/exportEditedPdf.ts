@@ -1,5 +1,6 @@
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, type PDFFont } from 'pdf-lib';
 import { embedFont } from './fonts';
+import { embedLiberationSans } from '../client-pdf';
 
 export interface TextEdit {
   id: string
@@ -89,35 +90,58 @@ export async function applyTextEdits(pdfDoc: PDFDocument, textEdits: TextEdit[],
 
     if (!edit.newText || edit.newText.trim().length === 0) continue;
 
+    let font: PDFFont;
     try {
-      const font = await embedFont(pdfDoc, edit.fontFamily || 'Noto Sans', edit.bold ? 700 : 400, edit.italic);
-      const lines = edit.newText.split('\n');
-      const lineHeight = edit.fontSize * 1.2;
-      const color = hexToRgb(edit.color || '#000000');
-
-      const checkFit = (text: string, size: number) => font.widthOfTextAtSize(text, size) <= edit.width;
-
-      let finalSize = edit.fontSize;
-      // Safe: String.split always returns a non-empty array, so lines[0] and lines[li]
-      // (li < lines.length) always exist.
-      if (!checkFit(lines[0]!, finalSize)) {
-        while (finalSize > 6 && !checkFit(lines[0]!, finalSize)) finalSize -= 0.5;
-      }
-
-      for (let li = 0; li < lines.length; li++) {
-        const lineY = pdfY + edit.height - (li + 1) * lineHeight;
-        if (lineY < 0) break;
-        page.drawText(lines[li]!, { x: edit.x, y: lineY, size: finalSize, font, color: rgb(color.r, color.g, color.b) });
-      }
+      font = await embedFont(pdfDoc, edit.fontFamily || 'Noto Sans', edit.bold ? 700 : 400, edit.italic);
     } catch {
-      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      const color = hexToRgb(edit.color || '#000000');
-      const lines = edit.newText.split('\n');
-      const lineHeight = edit.fontSize * 1.2;
-      for (let li = 0; li < lines.length; li++) {
-        page.drawText(lines[li]!, { x: edit.x, y: pdfY + edit.height - (li + 1) * lineHeight, size: edit.fontSize, font, color: rgb(color.r, color.g, color.b) });
-      }
+      font = await fallbackFont(pdfDoc);
     }
+    const lines = edit.newText.split('\n').map((l) => drawableText(font, l));
+    const lineHeight = edit.fontSize * 1.2;
+    const color = hexToRgb(edit.color || '#000000');
+
+    const checkFit = (text: string, size: number) => font.widthOfTextAtSize(text, size) <= edit.width;
+
+    let finalSize = edit.fontSize;
+    // Safe: String.split always returns a non-empty array, so lines[0] and lines[li]
+    // (li < lines.length) always exist.
+    if (!checkFit(lines[0]!, finalSize)) {
+      while (finalSize > 6 && !checkFit(lines[0]!, finalSize)) finalSize -= 0.5;
+    }
+
+    for (let li = 0; li < lines.length; li++) {
+      const lineY = pdfY + edit.height - (li + 1) * lineHeight;
+      if (lineY < 0) break;
+      page.drawText(lines[li]!, { x: edit.x, y: lineY, size: finalSize, font, color: rgb(color.r, color.g, color.b) });
+    }
+  }
+}
+
+// When the chosen web font cannot be loaded (offline, blocked font request), the edit used to
+// fall back to StandardFonts.Helvetica — WinAnsi, which THROWS on "ą", "ż", "ł", so every Polish
+// edit then failed the whole export. The fallback is now LiberationSans, served from this site
+// (the same file embedLiberationSans uses); Helvetica stays only as the last resort if even that
+// request fails, with drawableText() replacing the characters it cannot encode.
+async function fallbackFont(pdfDoc: PDFDocument): Promise<PDFFont> {
+  try {
+    return await embedLiberationSans(pdfDoc);
+  } catch {
+    return pdfDoc.embedFont(StandardFonts.Helvetica);
+  }
+}
+
+/** The text with every character the font cannot encode replaced by "?" (only standard fonts
+ *  throw on unencodable characters; an embedded TrueType font draws .notdef instead). */
+export function drawableText(font: PDFFont, text: string): string {
+  try {
+    font.widthOfTextAtSize(text, 10);
+    return text;
+  } catch {
+    let out = '';
+    for (const ch of text) {
+      try { font.widthOfTextAtSize(ch, 10); out += ch; } catch { out += '?'; }
+    }
+    return out;
   }
 }
 
