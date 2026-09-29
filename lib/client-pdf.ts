@@ -852,7 +852,10 @@ export async function pdfToEpub(file: File): Promise<Blob> {
   );
   const hasStructure = hasHeadings || hasBold || hasParagraphBreaks;
 
-  const now = new Date().toISOString().replace(/[TZ:.\-]/g, '').slice(0, 14);
+  // A raw timestamp ("20260929091500") is NOT a valid UUID — the "urn:uuid:" scheme requires an
+  // actual RFC 4122 UUID (8-4-4-4-12 hex groups). EPUBCheck-class validators (which Kindle
+  // Previewer runs internally before converting) flag this as invalid identifier metadata.
+  const bookUuid = crypto.randomUUID();
 
   const pageXhtml: string[] = hasStructure
     ? pageStructuredBlocks.map((blocks, i) => {
@@ -907,10 +910,11 @@ ${body}
   <metadata>
     <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">${title}</dc:title>
     <dc:language xmlns:dc="http://purl.org/dc/elements/1.1/">pl</dc:language>
-    <dc:identifier xmlns:dc="http://purl.org/dc/elements/1.1/" id="BookId">urn:uuid:${now}</dc:identifier>
+    <dc:identifier xmlns:dc="http://purl.org/dc/elements/1.1/" id="BookId">urn:uuid:${bookUuid}</dc:identifier>
   </metadata>
   <manifest>
     <item id="style" href="style.css" media-type="text/css"/>
+    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
 ${manifest}
   </manifest>
   <spine toc="ncx">
@@ -922,7 +926,7 @@ ${spine}
 <!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
-    <meta name="dtb:uid" content="urn:uuid:${now}"/>
+    <meta name="dtb:uid" content="urn:uuid:${bookUuid}"/>
     <meta name="dtb:depth" content="1"/>
     <meta name="dtb:totalPageCount" content="0"/>
     <meta name="dtb:maxPageNumber" content="0"/>
