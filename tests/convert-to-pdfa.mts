@@ -27,8 +27,19 @@
 // pdfDoc.catalog directly — proving the mutations actually land in the saved bytes, not just
 // that the function didn't throw.
 
+import { readFileSync } from 'node:fs';
 import { PDFDocument, PDFName, PDFDict, PDFArray, PDFRawStream } from 'pdf-lib';
 import { convertToPdfA } from '../lib/client-pdf';
+
+// convertToPdfA fetches its embedded sRGB ICC profile from a static asset (same pattern as
+// embedLiberationSans fetching its font file) — mock it to serve the real file from disk.
+const iccBytes = readFileSync('public/icc/sRGB-IEC61966-2.1.icc');
+const realFetch = globalThis.fetch;
+globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+  const url = typeof input === 'string' ? input : input.toString();
+  if (url.includes('/icc/sRGB-IEC61966-2.1.icc')) return new Response(new Uint8Array(iccBytes), { status: 200 });
+  return realFetch(input, init);
+}) as typeof fetch;
 
 let fails = 0;
 function check(cond: boolean, msg: string): void {
@@ -91,6 +102,21 @@ if (outputIntents && outputIntents.size() === 1) {
   check(intentDict.get(PDFName.of('S'))?.toString() === '/GTS_PDFA1', 'OutputIntent dict has S = GTS_PDFA1');
   const destProfile = intentDict.lookupMaybe(PDFName.of('DestOutputProfile'), PDFRawStream);
   check(!!destProfile, 'OutputIntent DestOutputProfile resolves to a real ICC stream, not a dangling ref');
+  if (destProfile) {
+    // FINDING (2026-09-29): the embedded profile used to be a hand-written, truncated 72-byte
+    // array whose own header claimed a 3144-byte profile — missing the mandatory ICC "acsp"
+    // signature at offset 36 entirely. Every PDF/A validator (Adobe Acrobat included) rejected
+    // it as a corrupt color profile. These checks verify the embedded bytes are now a
+    // STRUCTURALLY VALID ICC profile, not just "some bytes are present".
+    const bytes = destProfile.contents;
+    check(bytes.length >= 128, `embedded ICC profile is at least the mandatory 128-byte header (got ${bytes.length})`);
+    const declaredSize = (bytes[0]! << 24) | (bytes[1]! << 16) | (bytes[2]! << 8) | bytes[3]!;
+    check(declaredSize === bytes.length, `ICC header's declared profile size matches actual byte length (declared ${declaredSize >>> 0}, actual ${bytes.length})`);
+    const signature = Buffer.from(bytes.slice(36, 40)).toString('ascii');
+    check(signature === 'acsp', `ICC profile has the mandatory "acsp" signature at offset 36 (got ${JSON.stringify(signature)})`);
+    const colorSpace = Buffer.from(bytes.slice(16, 20)).toString('ascii').trim();
+    check(colorSpace === 'RGB', `ICC profile declares an RGB color space (got ${JSON.stringify(colorSpace)})`);
+  }
 }
 
 // Regression guard: the flatten/title/author/creator side of the function (never buggy, uses
