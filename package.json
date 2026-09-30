@@ -152,7 +152,8 @@
     "test:docx-page-breaks": "npx --yes tsx tests/docx-page-breaks.mts",
     "test:xlsx-pdf-xlsx-rowspan-continuation": "npx --yes tsx tests/xlsx-pdf-xlsx-rowspan-continuation.mts",
     "test:text-ctm-geometry": "npx --yes tsx tests/text-ctm-geometry.mts",
-    "test:text-color-graphics-state": "npx --yes tsx tests/text-color-graphics-state.mts"
+    "test:text-color-graphics-state": "npx --yes tsx tests/text-color-graphics-state.mts",
+    "test:line-breaks-and-shared-boxes": "npx --yes tsx tests/line-breaks-and-shared-boxes.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

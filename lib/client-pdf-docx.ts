@@ -566,8 +566,12 @@ function getText(el: Element): string {
     const node = children[i]!;
     if (node.nodeType !== 1) continue;
     const child = node as Element;
-    if (child.localName === 't' && child.namespaceURI === WORD_NS) {
+    if (child.namespaceURI !== WORD_NS) continue;
+    if (child.localName === 't') {
       s += child.textContent || '';
+    } else if (child.localName === 'cr' || (child.localName === 'br' && (getLocal(child, 'type') ?? 'textWrapping') === 'textWrapping')) {
+      // Shift+Enter line break: the same paragraph continues on a new line (breakIntoLines).
+      s += '\n';
     }
   }
   return s;
@@ -1353,8 +1357,20 @@ function breakIntoLines(
 
   for (const run of runs) {
     const words = run.text.split(/(?<=\s)/);
-    for (const word of words) {
-      if (!word) continue;
+    for (const rawWord of words) {
+      if (!rawWord) continue;
+      // A "\n" inside a run is a line break within the paragraph (Word <w:br/>, ODF
+      // <text:line-break/>): end the current line there. An empty line keeps its height through
+      // an empty run in the same style.
+      const hardBreak = rawWord.endsWith('\n');
+      const word = hardBreak ? rawWord.slice(0, -1) : rawWord;
+      if (hardBreak && !word) {
+        if (currentLine.length === 0) currentLine.push({ run: { ...run, text: '' }, font: pickFont(fonts, run.bold, run.italic), width: 0 });
+        lines.push({ runs: currentLine, width: currentWidth });
+        currentLine = [];
+        currentWidth = 0;
+        continue;
+      }
       const wordRun: IRTextRun = { ...run, text: word };
       const w = measureText(fonts, wordRun);
       if (currentLine.length > 0 && currentWidth + w > maxLineWidth) {
@@ -1364,6 +1380,11 @@ function breakIntoLines(
       }
       currentLine.push({ run: wordRun, font: pickFont(fonts, run.bold, run.italic), width: w });
       currentWidth += w;
+      if (hardBreak) {
+        lines.push({ runs: currentLine, width: currentWidth });
+        currentLine = [];
+        currentWidth = 0;
+      }
     }
   }
   if (currentLine.length > 0) lines.push({ runs: currentLine, width: currentWidth });
@@ -1458,6 +1479,7 @@ export async function renderIRToPdf(
 
   function drawBlockBackground(runs: IRTextRun[], fs: number, fill: string | undefined, border: string | undefined): void {
     if (!fill && !border) return;
+    if (inBorderGroup) return; // drawn once for the whole group by the render loop
     // A shaded band (e.g. a white-on-color banner) or a bordered callout box: the rect must span
     // the block's FULL wrapped height, so line-break first and reserve that whole height in one go
     // — otherwise a page break could land mid-paragraph and split the rect across two pages, which
@@ -1473,6 +1495,40 @@ export async function renderIRToPdf(
     if (fill) rectOpts.color = hexToColor(fill);
     if (border) { rectOpts.borderColor = hexToColor(border); rectOpts.borderWidth = 1; }
     currentPage!.drawRectangle(rectOpts);
+  }
+
+  // Consecutive paragraphs/headings with the same border (and fill) are ONE box: several
+  // paragraphs inside one ODF text frame, or Word paragraphs sharing identical w:pBdr (which Word
+  // itself draws as a single box). Drawing a box per block left a stack of separate frames.
+  let inBorderGroup = false;
+  const boxKey = (b: IRBlock | undefined): string | undefined =>
+    (b?.kind === 'paragraph' || b?.kind === 'heading') && b.border ? `${b.border}|${b.fill ?? ''}` : undefined;
+  /** Height renderBlock uses for a paragraph or heading, including the gap after it. */
+  function blockFlowHeight(b: IRParagraphBlock | IRHeadingBlock): { h: number; gap: number } {
+    const fs = b.kind === 'heading' ? FONT_SIZES[Math.min(b.level, 6)] || 11 : b.runs[0]?.fontSize || 11;
+    return { h: textBlockHeight(b.runs, fs), gap: fs * 0.3 };
+  }
+  /** Draws the shared box of the border group starting at k; returns the index after the group. */
+  function drawBorderGroup(blocks: IRBlock[], k: number): number {
+    const key = boxKey(blocks[k]);
+    let end = k + 1;
+    while (end < blocks.length && boxKey(blocks[end]) === key && !(blocks[end] as { pageBreakBefore?: boolean }).pageBreakBefore) end++;
+    let total = 0;
+    for (let j = k; j < end; j++) {
+      const { h, gap } = blockFlowHeight(blocks[j] as IRParagraphBlock | IRHeadingBlock);
+      total += h + (j < end - 1 ? gap : 0);
+    }
+    const first = blocks[k] as IRParagraphBlock | IRHeadingBlock;
+    // A group taller than a page cannot be one rect; its blocks then get their own boxes.
+    if (end - k < 2 || total > pageH - MARGIN * 2) return k + 1;
+    ensureSpace(total);
+    const rectOpts: Parameters<PDFPage['drawRectangle']>[0] = {
+      x: MARGIN, y: cursorY - total, width: pageW - MARGIN * 2, height: total,
+      borderColor: hexToColor(first.border!), borderWidth: 1,
+    };
+    if (first.fill) rectOpts.color = hexToColor(first.fill);
+    currentPage!.drawRectangle(rectOpts);
+    return end;
   }
 
   /** Height drawTextBlock will use for these runs (each line as tall as its largest run). */
@@ -1748,12 +1804,26 @@ export async function renderIRToPdf(
     ensurePage();
 
     const blocks = page.blocks;
+    let groupEnd = -1;
     for (let k = 0; k < blocks.length; k++) {
       const block = blocks[k]!;
+      if (k >= groupEnd) {
+        inBorderGroup = false;
+        if (boxKey(block) && (block as { pageBreakBefore?: boolean }).pageBreakBefore) {
+          ensurePage();
+          if (cursorY < pageH - MARGIN - 1) breakPage();
+          ensurePage(); // renderBlock then finds the cursor at the top and does not break again
+        }
+        if (boxKey(block)) {
+          groupEnd = drawBorderGroup(blocks, k);
+          inBorderGroup = groupEnd > k + 1;
+        }
+      }
       // Keep-with-next: a heading (or a run of consecutive headings) must not be left alone at
       // the bottom of a page with the text it introduces starting on the next one — e.g.
       // "WZROST" / "KONWERSJI O" at the foot of one page and "10,7%" alone at the top of the next.
-      if (block.kind === 'heading') ensureSpace(keepWithNextHeight(blocks, k));
+      // Inside a box group the whole group already has its space.
+      if (block.kind === 'heading' && !inBorderGroup) ensureSpace(keepWithNextHeight(blocks, k));
       // A running footer (one or more consecutive footer paragraphs) sits at the foot of its
       // page, not wherever the text flow happens to end.
       const isFooter = (b: IRBlock | undefined) => b?.kind === 'paragraph' && b.role === 'footer';
@@ -2412,7 +2482,10 @@ function odfCollectRuns(
     if (local === 'span') {
       const spanStyle = el.getAttributeNS(ODF_TEXT, 'style-name') || undefined;
       odfCollectRuns(el, index, pStyleName, spanStyle ? [...spanStyles, spanStyle] : spanStyles, outRuns, outImages, imageMap, shapeFills);
-    } else if (local === 's' || local === 'tab' || local === 'line-break') {
+    } else if (local === 'line-break') {
+      // Shift+Enter line break: the same paragraph continues on a new line (breakIntoLines).
+      outRuns.push({ ...odfMakeSpaceRun(odfStylingOf(outRuns[outRuns.length - 1])), text: '\n' });
+    } else if (local === 's' || local === 'tab') {
       outRuns.push(odfMakeSpaceRun(odfStylingOf(outRuns[outRuns.length - 1])));
     } else if (local === 'a') {
       odfCollectRuns(el, index, pStyleName, spanStyles, outRuns, outImages, imageMap, shapeFills);
