@@ -5,6 +5,8 @@ import JSZip from 'jszip';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import { runBatch, batchFailures, type BatchFailure } from '@/lib/batch';
+import BatchFailures from '@/components/BatchFailures';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 
@@ -18,6 +20,7 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
+  const [failed, setFailed] = useState<BatchFailure[]>([]);
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
@@ -44,12 +47,14 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
     if (pdfs.length !== arr.length) setError(t('page.jpg.skipped_nonpdf', locale));
     else setError('');
     setFiles(prev => [...prev, ...pdfs]);
+    setFailed([]);
     clearImages();
     setSuccess(false);
   };
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
+    setFailed([]);
     clearImages();
     setSuccess(false);
   };
@@ -61,19 +66,25 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
     clearImages();
     setSuccess(false);
     setProgress(0);
+    setFailed([]);
 
     try {
       const q = parseInt(quality, 10);
       const s = parseFloat(scale) || 2;
-      const allResults: { fileIdx: number; page: number; blob: Blob; url: string }[] = [];
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]!;
-        const qualityVal = format === 'jpeg' || format === 'webp' ? (isNaN(q) ? 0.9 : q / 100) : undefined;
-        const results = await extractImagesFromPdf(file, { format, scale: s, quality: qualityVal });
-        results.forEach(r => allResults.push({ fileIdx: i, ...r }));
-        setProgress(i + 1);
+      const qualityVal = format === 'jpeg' || format === 'webp' ? (isNaN(q) ? 0.9 : q / 100) : undefined;
+      // One file that cannot be rendered no longer aborts the batch: the images of the other
+      // files are still downloaded and the failures are listed with their reason.
+      const batch = await runBatch(files, (file) => extractImagesFromPdf(file, { format, scale: s, quality: qualityVal }), setProgress);
+      setFailed(batchFailures(batch));
+      if (batch.ok.length === 0) {
+        if (files.length === 1) setError(batch.failed[0]!.message);
+        return;
       }
+      const allResults: { fileIdx: number; page: number; blob: Blob; url: string }[] = [];
+      batch.ok.forEach(({ item, result }) => {
+        const fileIdx = files.indexOf(item);
+        result.forEach(r => allResults.push({ fileIdx, ...r }));
+      });
 
       if (allResults.length === 0) throw new Error(t('page.jpg.no_results', locale));
       setImages(allResults);
@@ -135,7 +146,7 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
         <div className="tool-card rounded-2xl shadow-sm border mb-6">
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
             <p className="font-medium text-gray-700 dark:text-gray-300">{`${files.length} ${t('files.count', locale)}`}</p>
-            <button onClick={() => { setFiles([]); clearImages(); setSuccess(false); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
+            <button onClick={() => { setFiles([]); clearImages(); setSuccess(false); setFailed([]); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
           </div>
           {files.map((file, i) => (
             <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -189,6 +200,7 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
       {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">✅ {t('result.zip', locale)}</div>}
+      {!loading && <BatchFailures failed={failed} total={files.length} locale={locale} />}
       {success && processedBlobRef.current && (
         <div className="flex justify-center mb-6">
           <CloudFileSaver blob={processedBlobRef.current} fileName={downloadFileNameRef.current} />

@@ -7,6 +7,8 @@ import JSZip from 'jszip';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import { runBatch, batchFailures, type BatchFailure } from '@/lib/batch';
+import BatchFailures from '@/components/BatchFailures';
 
 export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -14,6 +16,7 @@ export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } 
   const [rotation, setRotation] = useState<'90' | '180' | '270'>('90');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [failed, setFailed] = useState<BatchFailure[]>([]);
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
@@ -26,11 +29,13 @@ export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } 
     if (pdfs.length !== arr.length) setError(t('page.rotate.not_pdf', locale));
     else setError('');
     setFiles(prev => [...prev, ...pdfs]);
+    setFailed([]);
     setSuccess(false);
   };
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
+    setFailed([]);
     setSuccess(false);
   };
 
@@ -39,15 +44,18 @@ export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } 
     setLoading(true);
     setError('');
     setSuccess(false);
+    setFailed([]);
 
     try {
       const angle = Number(rotation) as 90 | 180 | 270;
-      const results: { data: Uint8Array; name: string }[] = [];
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]!;
-        const data = await rotatePDF(file, angle);
-        results.push({ data, name: file.name.replace('.pdf', '_obrócony.pdf') });
+      // One file that cannot be rotated (e.g. password-protected) no longer aborts the batch.
+      const batch = await runBatch(files, async (file) =>
+        ({ data: await rotatePDF(file, angle), name: file.name.replace('.pdf', '_obrócony.pdf') }));
+      setFailed(batchFailures(batch));
+      const results = batch.ok.map((r) => r.result);
+      if (results.length === 0) {
+        if (files.length === 1) setError(batch.failed[0]!.message);
+        return;
       }
 
       if (results.length === 1) {
@@ -110,7 +118,7 @@ export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } 
           <div className="tool-card rounded-2xl border mb-6">
             <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
               <p className="font-medium text-gray-700 dark:text-gray-300">{files.length} {t('files.count', locale)}</p>
-              <button onClick={() => setFiles([])} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
+              <button onClick={() => { setFiles([]); setFailed([]); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
             </div>
             {files.map((file, i) => (
               <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -147,6 +155,7 @@ export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } 
 
         {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
         {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">✅ {t('result.success', locale)}</div>}
+        {!loading && <BatchFailures failed={failed} total={files.length} locale={locale} />}
         {success && processedBlobRef.current && (
           <div className="flex justify-center mb-6">
             <CloudFileSaver blob={processedBlobRef.current} fileName={downloadFileNameRef.current} />

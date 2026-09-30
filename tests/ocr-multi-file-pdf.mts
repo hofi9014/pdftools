@@ -37,15 +37,11 @@ check(!/if \(i === 0\) setPdfData/.test(src), 'the "only keep file #0" pattern i
 check(!/import JSZip from 'jszip'/.test(src), 'the dead, never-used JSZip import is gone');
 check(src.includes("import { downloadZip } from '@/lib/client-pdf'"), 'imports the shared, already-tested downloadZip helper instead');
 
-// The OCR loop must push every file's result unconditionally (no `if (i === 0)` guard),
-// into a plain array collected across the whole loop.
-const loopMatch = src.match(/for \(let i = 0; i < files\.length; i\+\+\) \{[\s\S]*?\n {6}\}/);
-check(!!loopMatch, 'sanity: found the OCR per-file loop');
-if (loopMatch) {
-  const loopBody = loopMatch[0];
-  check(/pdfEntries\.push\(\{[^}]*data: result\.pdfData/.test(loopBody), 'every loop iteration unconditionally pushes result.pdfData into pdfEntries (not gated by file index)');
-  check(!/if \(i === 0\)/.test(loopBody), 'no "only the first file" conditional remains anywhere in the loop');
-}
+// Every successfully recognised file must keep its OCR'd PDF (no `if (i === 0)` guard). The
+// loop now runs through runBatch, so each file returns its own PDF and all are collected.
+check(/return \{ text: result\.text, pdf: \{ name: [^}]*data: result\.pdfData \} \}/.test(src), 'every file returns its own result.pdfData from the batch step');
+check(/const pdfEntries = batch\.ok\.map\(\(r\) => r\.result\.pdf\)/.test(src), 'the PDFs of ALL successful files are collected, not just the first');
+check(!/if \(i === 0\)/.test(src), 'no "only the first file" conditional remains');
 
 // downloadPDF must branch on how many results there are, and use the ZIP helper for >1 —
 // matching the "All pages processed! Download ZIP" promise shown to the user in that case.

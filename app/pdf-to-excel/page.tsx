@@ -3,12 +3,13 @@ import { useState, useRef } from 'react';
 import JSZip from 'jszip';
 import { pdfToIRSpreadsheet } from '@/lib/client-pdf';
 import { renderIRSpreadsheetToXlsx } from '@/lib/client-pdf-docx';
-import { runBatch } from '@/lib/batch';
+import { runBatch, batchFailures, type BatchFailure } from '@/lib/batch';
 import { useLocale } from '@/lib/locale-context';
 import { t, isRtlLocale, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
+import BatchFailures from '@/components/BatchFailures';
 
 export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -18,7 +19,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [warnings, setWarnings] = useState<number>(0);
-  const [failed, setFailed] = useState<{ name: string; message: string }[]>([]);
+  const [failed, setFailed] = useState<BatchFailure[]>([]);
   const [zipped, setZipped] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
@@ -62,11 +63,12 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
         return { name: file.name.replace(/\.pdf$/i, '.xlsx'), data: await renderIRSpreadsheetToXlsx(spreadsheet) };
       }, setProgress);
       setWarnings(warnCount);
-      setFailed(batch.failed.map((f) => ({ name: f.item.name, message: f.message })));
+      setFailed(batchFailures(batch));
       const batchResults = batch.ok.map((r) => r.result);
       if (batchResults.length === 0) {
-        // Nothing converted: a single file's own message is the clearest error.
-        setError(files.length === 1 ? batch.failed[0]!.message : t('page.excel.all_failed', locale));
+        // Nothing converted: a single file's own message is the clearest error; for several
+        // files BatchFailures lists every reason.
+        if (files.length === 1) setError(batch.failed[0]!.message);
         return;
       }
 
@@ -178,11 +180,6 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">
           ⚠️ {error}
-          {!success && failed.length > 1 && (
-            <ul data-testid="batch-all-failed" className={`text-sm list-disc space-y-1 mt-2 ${isRtlLocale(locale) ? 'pr-5' : 'pl-5'}`}>
-              {failed.map((f, i) => <li key={i}><span className="font-medium">{f.name}</span>: {f.message}</li>)}
-            </ul>
-          )}
         </div>
       )}
       {success && (
@@ -190,14 +187,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
           ✅ {t('result.success', locale)} {zipped ? t('page.excel.success_zip', locale) : t('page.excel.success_single', locale)}
         </div>
       )}
-      {failed.length > 0 && success && (
-        <div data-testid="batch-failed" className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300 rounded-xl p-4 mb-6">
-          <p className="font-medium mb-1">⚠️ {t('page.excel.partial_failed', locale, { failed: String(failed.length), total: String(files.length) })}</p>
-          <ul className={`text-sm list-disc space-y-1 ${isRtlLocale(locale) ? 'pr-5' : 'pl-5'}`}>
-            {failed.map((f, i) => <li key={i}><span className="font-medium">{f.name}</span>: {f.message}</li>)}
-          </ul>
-        </div>
-      )}
+      {!loading && <BatchFailures failed={failed} total={files.length} locale={locale} />}
       {success && warnings > 0 && (
         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 rounded-xl p-4 mb-6">
           ⚠️ {t('page.excel.warn_formatting', locale)}
