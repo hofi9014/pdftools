@@ -35,7 +35,7 @@ const { xlsxToIR, renderSpreadsheetIRToPdf } = await import('../lib/client-pdf-d
 const pdfjs = await import('pdfjs-dist');
 const {
   keepMergeTogether, spreadsheetMergeSpans, spreadsheetSpillCols, spreadsheetCoveredSlots, spreadsheetWrapText,
-  spreadsheetRowHeightsPt, spreadsheetRowChunks, spreadsheetCellAlign,
+  spreadsheetRowHeightsPt, spreadsheetRowChunks, spreadsheetCellAlign, spreadsheetSplitTallRows,
 } = await import('../lib/client-pdf-docx.ts');
 type Sheet = Parameters<typeof spreadsheetMergeSpans>[0];
 type Cell = NonNullable<Sheet['cells'][number][number]>;
@@ -107,6 +107,45 @@ for (const [ch, n] of want) lost += Math.max(0, n - (got.get(ch) ?? 0));
 check(lost === 0, `every character of every cell is in the PDF (${lost} missing)`);
 const tras = (text.match(/tras/g) ?? []).length;
 check(tras >= 93, `all 93 activity descriptions end with "…przebiegiem tras" (${tras})`);
+
+console.log('\n=== font sizes and row heights from the file; rows taller than a page ===');
+check(ir.defaultFontSize === 11, `the workbook default font size is read (${ir.defaultFontSize})`);
+const sizes = new Set(ir.sheets.flatMap((sh) => sh.cells.flatMap((row) => row.map((c) => c?.fmt?.fontSize).filter((v) => v !== undefined))));
+check(sizes.has(12) && sizes.has(9) && !sizes.has(11), `cell font sizes other than the default are read (${[...sizes].join(', ')})`);
+check(ir.sheets[0]!.rowHeights?.[5] === 49.5, `a row height set in the file is read (row 6: ${ir.sheets[0]!.rowHeights?.[5]})`);
+{
+  const sh = { ...sheetOf([[cell('x')], [cell('y')], [cell('z')]]), rowHeights: [undefined, 80, 5] };
+  const h = spreadsheetRowHeightsPt(sh, [60], { fontSize: 10, lineH: 11, pad: 3, measure: avg });
+  check(h[1] === 80 && h[0] === 17 && h[2] === 17, `the file height is kept as a minimum, never cutting a row (${h.join(', ')})`);
+  const split = spreadsheetSplitTallRows(sheetOf([[cell('a')], [cell('long', { rowspan: 1 })], [cell('b')]]), [17, 2006, 17], 500, 0, () => 11, 3);
+  check(split.rowHt.length > 3 && split.rowHt.every((v) => v <= 500), `a row taller than the page becomes rows no taller than a page (${split.rowHt.map((v) => Math.round(v)).join(', ')})`);
+  check(split.sheet.cells[1]![0]!.rowspan === split.rowHt.length - 2, 'its cell spans all of them');
+}
+const words = Array.from({ length: 1500 }, (_, i) => `word${i}`).join(' ');
+const tallIr = { kind: 'spreadsheet' as const, defaultFontSize: 11, sheets: [{ ...sheetOf([
+  [cell('Big title', { fmt: { fontSize: 22 } }), cell('Normal')],
+  [cell(words, { fmt: { wrap: true } }), cell('next to the long text')],
+  [cell('after'), cell('the end')],
+]), columnWidths: [30, 30] }] };
+const tallDoc = await pdfjs.getDocument({ data: new Uint8Array(await (await renderSpreadsheetIRToPdf(tallIr)).arrayBuffer()) }).promise;
+let tallText = '';
+let lowest = Infinity;
+let bigSize = 0;
+let normalSize = 0;
+for (let p = 1; p <= tallDoc.numPages; p++) {
+  for (const it of (await (await tallDoc.getPage(p)).getTextContent()).items) {
+    if (!('str' in it) || !it.str.trim()) continue;
+    tallText += ' ' + it.str;
+    lowest = Math.min(lowest, it.transform[5]);
+    if (it.str === 'Big title') bigSize = Math.abs(it.transform[3]);
+    if (it.str === 'Normal') normalSize = Math.abs(it.transform[3]);
+  }
+}
+check(Math.abs(bigSize - 20) < 0.5 && Math.abs(normalSize - 10) < 0.5, `a 22 pt cell is drawn at twice the default size (${bigSize.toFixed(1)} / ${normalSize.toFixed(1)} pt)`);
+const missing = Array.from({ length: 1500 }, (_, i) => `word${i}`).filter((w) => !new RegExp(`\\b${w}\\b`).test(tallText));
+check(tallDoc.numPages > 2 && missing.length === 0, `every word of a row taller than a page is drawn, over ${tallDoc.numPages} pages (${missing.length} missing)`);
+check(lowest >= 49, `no text is drawn below the bottom margin (lowest baseline ${lowest.toFixed(1)})`);
+check(/after/.test(tallText) && /the end/.test(tallText), 'the rows after it follow');
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);
