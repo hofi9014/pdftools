@@ -133,6 +133,10 @@ export interface IRSpreadsheetRunFormat {
   italic?: boolean;
   colorHex?: string;
   fillHex?: string;
+  /** Horizontal alignment set on the cell (styles.xml <alignment horizontal>); absent = by type. */
+  hAlign?: 'left' | 'center' | 'right';
+  /** "Wrap text" is on (<alignment wrapText="1">). Text without it spills into empty cells. */
+  wrap?: boolean;
 }
 
 export interface IRSpreadsheetCell {
@@ -2827,6 +2831,20 @@ interface XlsxStyle {
   italic?: boolean;
   colorHex?: string;
   fillHex?: string;
+  hAlign?: 'left' | 'center' | 'right';
+  wrap?: boolean;
+}
+
+/** <alignment> of a cellXfs <xf>: horizontal alignment and "wrap text". */
+function xlsxAlignment(xf: Element): { hAlign?: 'left' | 'center' | 'right'; wrap?: boolean } {
+  const al = xf.getElementsByTagNameNS(XLSX_NS, 'alignment')[0];
+  if (!al) return {};
+  const h = xlsxGetAttr(al, 'horizontal');
+  const hAlign = h === 'center' || h === 'centerContinuous' ? 'center'
+    : h === 'right' ? 'right'
+      : h === 'left' || h === 'fill' || h === 'justify' || h === 'distributed' ? 'left' : undefined;
+  const w = xlsxGetAttr(al, 'wrapText');
+  return { hAlign, wrap: w === '1' || w === 'true' ? true : undefined };
 }
 
 function xlsxIsDateLike(style: XlsxStyle | undefined): boolean {
@@ -2957,7 +2975,7 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
           }
         }
       }
-      xfs.push({ numFmtId, formatCode: customFormats.get(numFmtId), bold, italic, colorHex, fillHex });
+      xfs.push({ numFmtId, formatCode: customFormats.get(numFmtId), bold, italic, colorHex, fillHex, ...xlsxAlignment(xf) });
     }
   }
 
@@ -3212,12 +3230,15 @@ export async function xlsxToIR(file: File): Promise<IRSpreadsheet> {
         }
 
         const fmt: IRSpreadsheetRunFormat | undefined = style &&
-          (style.bold !== undefined || style.italic !== undefined || style.colorHex || style.fillHex)
+          (style.bold !== undefined || style.italic !== undefined || style.colorHex || style.fillHex
+            || style.hAlign || style.wrap)
           ? {
             bold: style.bold,
             italic: style.italic,
             colorHex: style.colorHex,
             fillHex: style.fillHex,
+            ...(style.hAlign ? { hAlign: style.hAlign } : {}),
+            ...(style.wrap ? { wrap: true } : {}),
           }
           : undefined;
 
@@ -3511,17 +3532,11 @@ export function spreadsheetWrapLines(
   maxWidthPt: number,
   fontSize: number,
   measure: SpreadsheetCellMeasure = spreadsheetAvgMeasure,
+  bold = false,
+  italic = false,
 ): number {
   if (maxWidthPt <= 0 || text === '') return 1;
-  let lines = 1;
-  let w = 0;
-  for (const word of text.split(/(?<=\s)/)) {
-    if (!word) continue;
-    const wordW = measure(word, fontSize, false, false);
-    if (w > 0 && w + wordW > maxWidthPt) { lines++; w = 0; }
-    w += wordW;
-  }
-  return lines;
+  return spreadsheetWrapText(text, maxWidthPt, fontSize, measure, bold, italic).length;
 }
 
 export interface SpreadsheetRowHeightsOpts {
@@ -3529,6 +3544,13 @@ export interface SpreadsheetRowHeightsOpts {
   lineH?: number;      // default 11
   pad?: number;        // default 3
   measure?: SpreadsheetCellMeasure;
+  /**
+   * The page column fragments and frozen column count. A cell merged across a fragment boundary
+   * is drawn once per page in the part visible there, so its row must fit the text wrapped in the
+   * NARROWEST visible part — not in the full merged width, which clipped the text.
+   */
+  fragments?: readonly SpreadsheetColFragment[];
+  frozenCols?: number;
 }
 
 // Row heights in pt, mirroring renderTable()'s two-pass semantics:
@@ -3547,11 +3569,27 @@ export function spreadsheetRowHeightsPt(
   const minH = lineH + pad * 2;
   const nRows = sheet.cells.length;
 
+  const G = opts.frozenCols ?? 0;
+  const visibleWidth = (col: number, cs: number): number => {
+    const full = colWidthsPt.slice(col, col + cs).reduce((a, b) => a + b, 0);
+    if (!opts.fragments) return full;
+    let narrowest = full;
+    for (const f of opts.fragments) {
+      let w = 0;
+      for (let c = col; c < col + cs; c++) if (c < G || (c >= f.start && c < f.end)) w += colWidthsPt[c] ?? 0;
+      if (w > 0 && w < narrowest) narrowest = w;
+    }
+    return narrowest;
+  };
+  const covered = spreadsheetCoveredSlots(sheet);
+  const fragEnd = (col: number): number =>
+    opts.fragments?.find((f) => col >= f.start && col < f.end)?.end ?? (col < G ? G : colWidthsPt.length);
   const cellHeight = (row: number, col: number, cell: IRSpreadsheetCell): number => {
     const cs = Math.max(cell.colspan || 1, 1);
-    const inner = colWidthsPt.slice(col, col + cs).reduce((a, b) => a + b, 0) - pad * 2;
+    const spill = spreadsheetSpillCols(sheet, covered, row, col, fragEnd(col));
+    const inner = visibleWidth(col, cs) + colWidthsPt.slice(col + 1, col + 1 + spill).reduce((a, b) => a + b, 0) - pad * 2;
     if (inner <= 0) return minH;
-    return Math.max(spreadsheetWrapLines(cell.display, inner, fontSize, measure) * lineH + pad * 2, minH);
+    return Math.max(spreadsheetWrapLines(cell.display, inner, fontSize, measure, cell.fmt?.bold ?? false, cell.fmt?.italic ?? false) * lineH + pad * 2, minH);
   };
 
   const baseH: number[] = new Array(nRows).fill(minH);
@@ -3602,6 +3640,9 @@ export function spreadsheetColFragments(
   const headerW = colWidthsPt.slice(0, G).reduce((a, b) => a + b, 0);
   const budget = availableW - headerW;
 
+  // Column fragments are NOT moved to keep a merged cell together (rows are): the PDF→Excel
+  // reader tells fragments apart by their columns, and a merge split between fragments loses
+  // no text — its rows are sized for the narrowest visible part (spreadsheetRowHeightsPt).
   const fragments: SpreadsheetColFragment[] = [];
   let runStart = G;
   let runWidth = 0;
@@ -3625,6 +3666,47 @@ export interface SpreadsheetRowChunk {
   end: number;
 }
 
+/** [first, last] grid index covered by every merged cell spanning more than one row / column. */
+export function spreadsheetMergeSpans(sheet: IRSheet, axis: 'row' | 'col'): Array<[number, number]> {
+  const out: Array<[number, number]> = [];
+  sheet.cells.forEach((row, r) => row.forEach((cell, c) => {
+    if (!cell) return;
+    const n = Math.max((axis === 'row' ? cell.rowspan : cell.colspan) || 1, 1);
+    const a = axis === 'row' ? r : c;
+    if (n > 1) out.push([a, a + n - 1]);
+  }));
+  return out;
+}
+
+/**
+ * Where to break a page run that would otherwise break before index `at`: at the start of the
+ * earliest merged cell crossing that boundary that fits on a page by itself, so its text is not
+ * cut across two pages: a merged cell split by a page break always lost at least one line of
+ * text (each piece has its own top and bottom padding). A merge that starts at the run's own
+ * start, or does not fit a page anyway, is split as before.
+ */
+export function keepMergeTogether(
+  spans: ReadonlyArray<[number, number]>,
+  at: number,
+  runStart: number,
+  sizes: readonly number[],
+  budget: number,
+): number {
+  // Moving the break can land it inside another merge, so repeat until it settles.
+  let cur = at;
+  for (;;) {
+    let best = cur;
+    for (const [s, e] of spans) {
+      if (s >= cur || e < cur || s <= runStart || s >= best) continue;
+      let size = 0;
+      for (let i = s; i <= e; i++) size += sizes[i] ?? 0;
+      if (size <= budget) best = s;
+    }
+    if (best === cur) return cur;
+    cur = best;
+  }
+}
+
 // Vertical pagination (greedy), same invariant as columns: chunks are
 // contiguous body-row runs, header rows [0,H) prepended verbatim per page.
 // A single row taller than the available height is never split.
@@ -3639,15 +3721,17 @@ export function spreadsheetRowChunks(
   if (nRows === 0) return [];
 
   const chunks: SpreadsheetRowChunk[] = [];
+  const spans = spreadsheetMergeSpans(sheet, 'row');
   let runStart = H;
   let runH = 0;
   // Safe: r is bounded to [H, nRows) by the loop condition, matching rowHeightsPt.length.
   for (let r = H; r < nRows; r++) {
     const rh = rowHeightsPt[r]!;
     if (runH > 0 && runH + rh > availableH) {
-      chunks.push({ start: runStart, end: r });
-      runStart = r;
-      runH = 0;
+      const at = keepMergeTogether(spans, r, runStart, rowHeightsPt, availableH);
+      chunks.push({ start: runStart, end: at });
+      runStart = at;
+      runH = rowHeightsPt.slice(at, r).reduce((a, b) => a + b, 0);
     }
     runH += rh;
   }
@@ -3684,34 +3768,92 @@ export function spreadsheetFragmentColsX(
   return out;
 }
 
-// Cell alignment: strings/blank → left; numeric types → right.
-// Mirrors renderTable's alignment rule (line ~1232).
-export function spreadsheetCellAlign(cell: IRSpreadsheetCell): 'left' | 'right' {
+// Cell alignment: the cell's own horizontal alignment when the file sets one; otherwise
+// strings/blank → left, numeric types → right (Excel's "General"; mirrors renderTable).
+export function spreadsheetCellAlign(cell: IRSpreadsheetCell): 'left' | 'center' | 'right' {
+  if (cell.fmt?.hAlign) return cell.fmt.hAlign;
   if (cell.type === 'string' || cell.type === 'empty' || cell.display === '') return 'left';
   return 'right';
+}
+
+/**
+ * How many empty cells to the right a cell's text may run into, like Excel: only a single,
+ * left-aligned text cell without "wrap text", into cells that are empty, unfilled and not part
+ * of a merge, stopping at `limitEnd` (the page's last column). Such text used to wrap inside its
+ * own narrow cell and push the row height up instead.
+ */
+export function spreadsheetSpillCols(sheet: IRSheet, covered: ReadonlySet<string>, r: number, c: number, limitEnd: number): number {
+  const cell = sheet.cells[r]?.[c];
+  if (!cell || !cell.display || cell.fmt?.wrap) return 0;
+  if ((cell.colspan || 1) > 1 || (cell.rowspan || 1) > 1) return 0;
+  if (cell.type !== 'string' || spreadsheetCellAlign(cell) !== 'left') return 0;
+  let n = 0;
+  for (let k = c + 1; k < limitEnd; k++) {
+    if (covered.has(`${r},${k}`)) break;
+    const nb = sheet.cells[r]?.[k];
+    if (nb && (nb.display !== '' || nb.fmt?.fillHex || (nb.colspan || 1) > 1 || (nb.rowspan || 1) > 1)) break;
+    n++;
+  }
+  return n;
+}
+
+/** Grid slots covered by a merged cell (not its anchor): "row,col". */
+export function spreadsheetCoveredSlots(sheet: IRSheet): Set<string> {
+  const out = new Set<string>();
+  sheet.cells.forEach((row, r) => row.forEach((cell, c) => {
+    if (!cell) return;
+    const cs = Math.max(cell.colspan || 1, 1);
+    const rs = Math.max(cell.rowspan || 1, 1);
+    for (let rr = r; rr < r + rs; rr++) for (let cc = c; cc < c + cs; cc++) if (rr !== r || cc !== c) out.add(`${rr},${cc}`);
+  }));
+  return out;
 }
 
 // Wrap text into lines (array of strings). Same word-splitting as
 // spreadsheetWrapLines but returns the actual lines, not just the count.
 // Uses trailing-space-preserving split /(?<=\s)/ so words keep their spaces.
+/** Pieces of `word`, each as wide as fits in maxWidthPt (at least one character each). */
+function splitWordToWidth(
+  word: string, maxWidthPt: number, fontSize: number, measure: SpreadsheetCellMeasure, bold: boolean, italic: boolean,
+): string[] {
+  const out: string[] = [];
+  let cur = '';
+  for (const ch of word) {
+    if (cur && ch.trim() && measure(cur + ch, fontSize, bold, italic) > maxWidthPt) { out.push(cur); cur = ''; }
+    cur += ch;
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+
+// A line break typed in the cell (Alt+Enter, "\n") starts a new line; words are measured in the
+// cell's own weight/style, since bold text is wider than regular and overran the cell.
 export function spreadsheetWrapText(
   text: string,
   maxWidthPt: number,
   fontSize: number,
   measure: SpreadsheetCellMeasure,
+  bold = false,
+  italic = false,
 ): string[] {
   if (text === '' || maxWidthPt <= 0) return [text || ''];
-  const words = text.split(/(?<=\s)/);
   const lines: string[] = [];
-  let cur = '';
-  let curW = 0;
-  for (const w of words) {
-    if (!w) continue;
-    const ww = measure(w, fontSize, false, false);
-    if (curW > 0 && curW + ww > maxWidthPt) { lines.push(cur); cur = w; curW = ww; }
-    else { cur += w; curW += ww; }
+  const paras = text.replace(/\s+$/, '').split(/\r?\n/);
+  for (const para of paras) {
+    let cur = '';
+    let curW = 0;
+    for (const word of para.split(/(?<=\s)/)) {
+      if (!word) continue;
+      // A single word wider than the cell is broken between characters, as Excel does, instead
+      // of running over the neighbouring cells.
+      for (const w of measure(word.trimEnd(), fontSize, bold, italic) > maxWidthPt ? splitWordToWidth(word, maxWidthPt, fontSize, measure, bold, italic) : [word]) {
+        const ww = measure(w, fontSize, bold, italic);
+        if (curW > 0 && curW + ww > maxWidthPt) { lines.push(cur); cur = w; curW = ww; }
+        else { cur += w; curW += ww; }
+      }
+    }
+    lines.push(cur);
   }
-  if (cur) lines.push(cur);
   return lines.length > 0 ? lines : [''];
 }
 
@@ -3776,6 +3918,8 @@ export interface DrawSpreadsheetCellOpts {
    * show nothing new at all). Default 0 (draw from the start, the normal single-page case).
    */
   startLine?: number;
+  /** Width available to the text when it spills into empty cells to the right (>= the cell width). */
+  textWidth?: number;
 }
 
 /**
@@ -3818,12 +3962,12 @@ export function drawSpreadsheetCell(
   const bold  = cell.fmt?.bold   ?? false;
   const italic = cell.fmt?.italic ?? false;
   const font  = ssPickFont(fonts, bold, italic);
-  const innerW = w - pad * 2;
+  const innerW = Math.max(w, opts.textWidth ?? 0) - pad * 2;
   if (innerW <= 0) return startLine;
 
   const measure: SpreadsheetCellMeasure = (t, fs, b, i) =>
     ssPickFont(fonts, b, i).widthOfTextAtSize(t, fs);
-  const lines = spreadsheetWrapText(cell.display, innerW, fontSize, measure);
+  const lines = spreadsheetWrapText(cell.display, innerW, fontSize, measure, bold, italic);
 
   let textY = y - pad - fontSize;
   const bottomLimit = y - h + pad;
@@ -3832,7 +3976,7 @@ export function drawSpreadsheetCell(
     if (clipText && textY < bottomLimit) break;
     const line = lines[i]!;
     const lw = font.widthOfTextAtSize(line, fontSize);
-    const tx = align === 'right' ? x + w - pad - lw : x + pad;
+    const tx = align === 'right' ? x + w - pad - lw : align === 'center' ? x + (w - lw) / 2 : x + pad;
     page.drawText(line, { x: tx, y: textY, size: fontSize, font, color: cell.fmt?.colorHex ? hexToColor(cell.fmt.colorHex) : rgb(0, 0, 0) });
     textY -= lineH;
     i++;
@@ -3957,21 +4101,22 @@ export async function renderSpreadsheetIRToPdf(
     if (nRows === 0 || nCols === 0) continue;
 
     const colPt = spreadsheetColWidthsPt(sheet);
-    const rowHt = spreadsheetRowHeightsPt(sheet, colPt, {
-      fontSize: FONT_SIZE, lineH: LINE_H, pad: PAD, measure,
-    });
     const H = sheet.frozenRows === undefined ? Math.min(inferHeaderRowCount(sheet), nRows) : Math.min(Math.max(sheet.frozenRows, 0), nRows);
     const G = sheet.frozenCols === undefined ? 0 : Math.min(Math.max(sheet.frozenCols, 0), nCols);
+    const fragments = spreadsheetColFragments(sheet, colPt, availableW, G);
+    const rowHt = spreadsheetRowHeightsPt(sheet, colPt, {
+      fontSize: FONT_SIZE, lineH: LINE_H, pad: PAD, measure, fragments, frozenCols: G,
+    });
     const headerW = colPt.slice(0, G).reduce((a, b) => a + b, 0);
     const headerBlockPt = rowHt.slice(0, H).reduce((a, b) => a + b, 0);
     const bodyBudget = PAGE_H - MARGIN * 2 - TITLE_PT - headerBlockPt;
 
-    const fragments = spreadsheetColFragments(sheet, colPt, availableW, G);
     const chunks = spreadsheetRowChunks(sheet, rowHt, bodyBudget, H);
     // One entry per chunk boundary: cells whose merge is still open when that chunk's body starts
     // (see findCarryOverCells) — precomputed once per sheet since it only depends on rows/chunks,
     // not on which column fragment is currently being paged.
     const carryPerChunk = chunks.map((ch) => findCarryOverCells(sheet, ch.start));
+    const covered = spreadsheetCoveredSlots(sheet);
 
     // Frozen header columns: X offsets within the header block (left of body).
     const headerColsX = spreadsheetFragmentColsX(colPt, { start: 0, end: G });
@@ -4000,7 +4145,8 @@ export async function renderSpreadsheetIRToPdf(
         const confirmedCarryCols = new Set<number>();
 
         if (firstPageOfSheet) {
-          page.drawText(sheet.name, { x: MARGIN, y: PAGE_H - MARGIN - TITLE_PT, size: TITLE_PT, font: fonts.bold, color: black });
+          // Baseline a quarter of the title size above the table top, so descenders clear it.
+          page.drawText(sheet.name, { x: MARGIN, y: PAGE_H - MARGIN - TITLE_PT * 0.75, size: TITLE_PT, font: fonts.bold, color: black });
         }
         y -= TITLE_PT;
 
@@ -4024,7 +4170,9 @@ export async function renderSpreadsheetIRToPdf(
           for (let cc = clip.colStart; cc < clip.colEnd; cc++) w += colPt[cc] ?? 0;
           let h = 0;
           for (let rr = clip.rowStart; rr < clip.rowEnd; rr++) h += rowHt[rr] ?? 0;
-          drawSpreadsheetCell(page, cell, leftX, y, w, h, fonts, drawOpts);
+          const spill = rs > 1 ? 0 : spreadsheetSpillCols(sheet, covered, row, c, colBandEnd);
+          const textWidth = w + colPt.slice(c + 1, c + 1 + spill).reduce((a, b) => a + b, 0);
+          drawSpreadsheetCell(page, cell, leftX, y, w, h, fonts, spill > 0 ? { ...drawOpts, textWidth } : drawOpts);
         };
 
         // Tracked draw: used for BODY rows and the carry-over pass, where a rowspan cell can
@@ -4049,7 +4197,9 @@ export async function renderSpreadsheetIRToPdf(
             const next = drawSpreadsheetCell(page, cell, leftX, y, w, h, fonts, { ...drawOpts, startLine });
             linesDrawn.set(key, next);
           } else {
-            drawSpreadsheetCell(page, cell, leftX, y, w, h, fonts, drawOpts);
+            const spill = spreadsheetSpillCols(sheet, covered, row, c, colBandEnd);
+            const textWidth = w + colPt.slice(c + 1, c + 1 + spill).reduce((a, b) => a + b, 0);
+            drawSpreadsheetCell(page, cell, leftX, y, w, h, fonts, spill > 0 ? { ...drawOpts, textWidth } : drawOpts);
           }
         };
         const drawBodyClipped = (
@@ -4088,9 +4238,10 @@ export async function renderSpreadsheetIRToPdf(
           for (const e of bodyColsX) drawBodyClipped(r, e.c, frag.start, frag.end, ch.start, ch.end);
           y -= rowHt[r] ?? 0;
         }
-        if (confirmedCarryCols.size > 0) {
-          page.node.set(PDFName.of(ROWSPAN_CONTINUES_KEY), pdfDoc.context.obj([...confirmedCarryCols]));
-        }
+        // Written on EVERY page, empty when nothing continues: the list is then exhaustive, so the
+        // reader can also tell that a merge starting at the top of this page is NOT the rest of
+        // the one ending the previous page (rows are kept together, so that is the common case).
+        page.node.set(PDFName.of(ROWSPAN_CONTINUES_KEY), pdfDoc.context.obj([...confirmedCarryCols]));
         firstPageOfSheet = false;
       }
     }
