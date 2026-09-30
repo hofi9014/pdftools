@@ -25,3 +25,10 @@ export async function runBatch<T, R>(
   }
   return out;
 }
+
+export interface BatchFailure { name: string; message: string }
+
+/** The failed files of a batch over File objects, as shown by components/BatchFailures. */
+export function batchFailures<R>(batch: BatchResult<File, R>): BatchFailure[] {
+  return batch.failed.map((f) => ({ name: f.item.name, message: f.message }));
+}

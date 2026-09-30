@@ -8,6 +8,8 @@ import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import { RecommendedSize } from '@/components/UploadInfo';
+import { runBatch, batchFailures, type BatchFailure } from '@/lib/batch';
+import BatchFailures from '@/components/BatchFailures';
 
 export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -16,7 +18,8 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
-  const [results, setResults] = useState<{ name: string; originalSize: number; compressedSize: number }[]>([]);
+  const [results, setResults] = useState<{ fileIdx: number; name: string; originalSize: number; compressedSize: number }[]>([]);
+  const [failed, setFailed] = useState<BatchFailure[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
 
@@ -34,11 +37,13 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
     else setError('');
     setFiles(prev => [...prev, ...pdfs]);
     setResults([]);
+    setFailed([]);
   };
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
     setResults([]);
+    setFailed([]);
   };
 
   const totalSavings = results.length > 0
@@ -51,19 +56,24 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
     setError('');
     setResults([]);
     setProgress(0);
-
-    const batchResults: { name: string; originalSize: number; compressedSize: number; data: Blob }[] = [];
+    setFailed([]);
 
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]!;
+      // One file that cannot be compressed (e.g. password-protected) no longer aborts the batch:
+      // the rest is downloaded and the failures are listed with their reason.
+      const batch = await runBatch(files, async (file) => {
         const result = await compressPDFClient(file, level as 'low' | 'recommended' | 'extreme');
         const blob = new Blob([result as BlobPart], { type: 'application/pdf' });
-        batchResults.push({ name: file.name.replace('.pdf', '_skompresowany.pdf'), originalSize: file.size, compressedSize: blob.size, data: blob });
-        setProgress(i + 1);
+        return { fileIdx: files.indexOf(file), name: file.name.replace('.pdf', '_skompresowany.pdf'), originalSize: file.size, compressedSize: blob.size, data: blob };
+      }, setProgress);
+      setFailed(batchFailures(batch));
+      const batchResults = batch.ok.map((r) => r.result);
+      if (batchResults.length === 0) {
+        if (files.length === 1) setError(batch.failed[0]!.message);
+        return;
       }
 
-      setResults(batchResults.map(r => ({ name: r.name, originalSize: r.originalSize, compressedSize: r.compressedSize })));
+      setResults(batchResults.map(r => ({ fileIdx: r.fileIdx, name: r.name, originalSize: r.originalSize, compressedSize: r.compressedSize })));
 
       if (batchResults.length === 1) {
         const r = batchResults[0]!;
@@ -128,16 +138,15 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
         <div className="tool-card rounded-2xl shadow-sm border mb-6">
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
             <p className="font-medium text-gray-700 dark:text-gray-300">{files.length} {t('files.count', locale)}</p>
-            <button onClick={() => { setFiles([]); setResults([]); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
+            <button onClick={() => { setFiles([]); setResults([]); setFailed([]); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
           </div>
           {files.map((file, i) => {
-            // Matched by INDEX, not by name prefix: `results` is always either empty or a
-            // direct 1:1, same-order map of `files` (both handleFiles/removeFile reset it to
-            // [] whenever files changes, and handleCompressAll rebuilds it by iterating
-            // `files` in order) — matching by name prefix instead let two files sharing a
-            // prefix (e.g. "report.pdf" and "report2.pdf") swap results, since
-            // "report2_skompresowany.pdf".startsWith("report") is also true.
-            const fileResult = results.length === files.length ? results[i] : undefined;
+            // Matched by the file's INDEX, not by name prefix: every result records the index
+            // of the file it came from (handleFiles/removeFile reset `results` whenever `files`
+            // changes, and a file that failed has no result) — matching by name prefix instead
+            // let two files sharing a prefix (e.g. "report.pdf" and "report2.pdf") swap
+            // results, since "report2_skompresowany.pdf".startsWith("report") is also true.
+            const fileResult = results.find((r) => r.fileIdx === i);
             const savingsRatio = fileResult ? 1 - fileResult.compressedSize / fileResult.originalSize : 0;
             return (
               <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -194,6 +203,7 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
           <CloudFileSaver blob={processedBlobRef.current} fileName={results[0]!.name} />
         </div>
       )}
+      {!loading && <BatchFailures failed={failed} total={files.length} locale={locale} />}
 
       <div className="tool-card rounded-2xl border p-6 mb-6">
         <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.compress.level_title', locale)}</h3>

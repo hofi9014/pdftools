@@ -5,6 +5,8 @@ import { pdfToWord, pdfToWordIR } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import { runBatch, batchFailures, type BatchFailure } from '@/lib/batch';
+import BatchFailures from '@/components/BatchFailures';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 
@@ -14,8 +16,10 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
+  const [failed, setFailed] = useState<BatchFailure[]>([]);
   const [success, setSuccess] = useState(false);
   const [fallbackUsed, setFallbackUsed] = useState(false);
+  const [zipped, setZipped] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
   const downloadFileNameRef = useRef('');
@@ -27,11 +31,13 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
     if (pdfs.length !== arr.length) setError(t('page.word.skipped_nonpdf', locale));
     else setError('');
     setFiles(prev => [...prev, ...pdfs]);
+    setFailed([]);
     setSuccess(false);
   };
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
+    setFailed([]);
     setSuccess(false);
   };
 
@@ -42,12 +48,12 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
     setSuccess(false);
     setFallbackUsed(false);
     setProgress(0);
-
-    const batchResults: { name: string; data: Blob }[] = [];
+    setFailed([]);
 
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]!;
+      // One file that cannot be converted no longer aborts the batch: the rest is downloaded
+      // and the failures are listed with their reason.
+      const batch = await runBatch(files, async (file) => {
         let blob: Blob;
         try {
           blob = await pdfToWordIR(file);
@@ -56,9 +62,15 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
           blob = await pdfToWord(file);
           setFallbackUsed(true);
         }
-        batchResults.push({ name: file.name.replace('.pdf', '.docx'), data: blob });
-        setProgress(i + 1);
+        return { name: file.name.replace('.pdf', '.docx'), data: blob };
+      }, setProgress);
+      setFailed(batchFailures(batch));
+      const batchResults = batch.ok.map((r) => r.result);
+      if (batchResults.length === 0) {
+        if (files.length === 1) setError(batch.failed[0]!.message);
+        return;
       }
+      setZipped(batchResults.length > 1);
 
       if (batchResults.length === 1) {
         const r = batchResults[0]!;
@@ -126,7 +138,7 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
         <div className="tool-card rounded-2xl shadow-sm border mb-6">
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
             <p className="font-medium text-gray-700 dark:text-gray-300">{`${files.length} ${t('files.count', locale)}`}</p>
-            <button onClick={() => { setFiles([]); setSuccess(false); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
+            <button onClick={() => { setFiles([]); setSuccess(false); setFailed([]); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
           </div>
           {files.map((file, i) => (
             <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -170,9 +182,10 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
       )}
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
-          ✅ {files.length > 1 ? t('result.zip', locale) : t('result.success', locale)}
+          ✅ {zipped ? t('result.zip', locale) : t('result.success', locale)}
         </div>
       )}
+      {!loading && <BatchFailures failed={failed} total={files.length} locale={locale} />}
       {success && processedBlobRef.current && (
         <div className="flex justify-center mb-6">
           <CloudFileSaver blob={processedBlobRef.current} fileName={downloadFileNameRef.current} />

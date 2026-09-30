@@ -39,8 +39,10 @@ function oldPrefixMatch(files: { name: string }[], results: Result[], fileIdx: n
   return results.find(r => r.name.startsWith(file.name.replace('.pdf', '')));
 }
 
+// Results carry the index of the file they came from (a failed file has no result, so a plain
+// results[i] no longer lines up once a batch can partially fail — see batch-partial-failure).
 function newIndexMatch(files: { name: string }[], results: Result[], fileIdx: number): Result | undefined {
-  return results.length === files.length ? results[fileIdx] : undefined;
+  return results.map((r, i) => ({ ...r, fileIdx: i })).find((r) => r.fileIdx === fileIdx);
 }
 
 // Exact reproduction of the live browser scenario: report2.pdf uploaded first, report.pdf
@@ -77,7 +79,8 @@ const { dirname, join } = await import('node:path');
 const here = dirname(fileURLToPath(import.meta.url));
 const src = readFileSync(join(here, '..', 'app', 'compress', 'page.tsx'), 'utf-8');
 check(!src.includes('r.name.startsWith(file.name.replace'), 'the old prefix-matching lookup is gone from the source');
-check(src.includes('results.length === files.length ? results[i] : undefined'), 'the new index-based lookup is present');
+check(src.includes('results.find((r) => r.fileIdx === i)'), 'the index-based lookup (by the file index each result records) is present');
+check(/fileIdx: files\.indexOf\(file\)/.test(src), 'each result records the index of its own file');
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);

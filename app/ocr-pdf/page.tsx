@@ -3,6 +3,8 @@ import { useState, useRef } from 'react';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import { runBatch, batchFailures, type BatchFailure } from '@/lib/batch';
+import BatchFailures from '@/components/BatchFailures';
 import { downloadZip } from '@/lib/client-pdf';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
@@ -59,6 +61,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
   const [progress, setProgress] = useState(0);
   const [progressLabel, setProgressLabel] = useState('');
   const [error, setError] = useState('');
+  const [failed, setFailed] = useState<BatchFailure[]>([]);
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
@@ -75,6 +78,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
     if (pdfs.length !== arr.length) setError(t('page.ocr.not_pdf', locale));
     else setError('');
     setFiles(prev => [...prev, ...pdfs]);
+    setFailed([]);
     setSuccess(false);
     setOcrDone(false);
     setRecognizedText('');
@@ -83,6 +87,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
+    setFailed([]);
     setSuccess(false);
     setOcrDone(false);
     setRecognizedText('');
@@ -98,17 +103,18 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
     setOcrDone(false);
     setRecognizedText('');
     setPdfResults([]);
+    setFailed([]);
 
     try {
       const { ocrPdfClient } = await import('@/lib/client-ocr');
-      const allText: string[] = [];
-      const pdfEntries: { name: string; data: Uint8Array }[] = [];
       let totalPages = 0;
       let completedPages = 0;
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]!;
+      // One file that cannot be recognised (e.g. password-protected) no longer aborts the batch:
+      // every other file's text and OCR'd PDF are kept and the failures are listed.
+      const batch = await runBatch(files, async (file) => {
         setProgressLabel(t('page.ocr.progress_start', locale).replace('{page}', String(completedPages + 1)));
+        totalPages = 0;
         const result = await ocrPdfClient(file, language, (page, total) => {
           totalPages = total;
           completedPages = completedPages - (completedPages % Math.max(1, totalPages)) + page - 1;
@@ -116,10 +122,16 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
           setProgressLabel(t('page.ocr.progress', locale).replace('{page}', String(page)).replace('{total}', String(total)));
         });
         completedPages += totalPages;
-        allText.push(result.text);
-        pdfEntries.push({ name: file.name.replace('.pdf', '_ocr.pdf'), data: result.pdfData });
         setProgress(completedPages);
+        return { text: result.text, pdf: { name: file.name.replace('.pdf', '_ocr.pdf'), data: result.pdfData } };
+      });
+      setFailed(batchFailures(batch));
+      if (batch.ok.length === 0) {
+        if (files.length === 1) setError(batch.failed[0]!.message);
+        return;
       }
+      const allText = batch.ok.map((r) => r.result.text);
+      const pdfEntries = batch.ok.map((r) => r.result.pdf);
 
       setPdfResults(pdfEntries);
       const combinedText = allText.join('\n\n');
@@ -206,7 +218,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
         <div className="tool-card rounded-2xl shadow-sm border mb-6">
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
             <p className="font-medium text-gray-700 dark:text-gray-300">{files.length} {t('files.count', locale)}</p>
-            <button onClick={() => { setFiles([]); setSuccess(false); setOcrDone(false); setRecognizedText(''); setPdfResults([]); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
+            <button onClick={() => { setFiles([]); setSuccess(false); setOcrDone(false); setRecognizedText(''); setPdfResults([]); setFailed([]); }} className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">{t('btn.clear', locale)}</button>
           </div>
           {files.map((file, i) => (
             <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -260,9 +272,10 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
 
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
-          ✅ {files.length > 1 ? t('page.ocr.success_zip', locale) : t('page.ocr.success_single', locale)}
+          ✅ {pdfResults.length > 1 ? t('page.ocr.success_zip', locale) : t('page.ocr.success_single', locale)}
         </div>
       )}
+      {!loading && <BatchFailures failed={failed} total={files.length} locale={locale} />}
       {success && processedBlobRef.current && (
         <div className="flex justify-center mb-6">
           <CloudFileSaver blob={processedBlobRef.current} fileName={downloadFileNameRef.current} />
