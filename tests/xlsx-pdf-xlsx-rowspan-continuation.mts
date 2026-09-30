@@ -30,7 +30,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 import { register } from 'node:module';
-import { PDFDocument, PDFName } from 'pdf-lib';
+import { PDFArray, PDFDocument, PDFName } from 'pdf-lib';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, '..');
@@ -149,17 +149,35 @@ async function main(): Promise<number> {
     ir.sheets.every((s) => s.frozenRows === undefined),
     ir.sheets.map((s) => s.frozenRows).join(','));
 
-  const pdfBlob = await renderSpreadsheetIRToPdf(ir);
-  const pdfBytes = new Uint8Array(await pdfBlob.arrayBuffer());
-  const pdfFile = new File([pdfBytes], 'r.pdf', { type: 'application/pdf' });
+  // Tall merged cells that fit on a page are no longer split by a page break (the renderer keeps
+  // them together — a split always cut a line of text), so the default A4 render has no
+  // continuations at all; every page still declares its (empty) continuation list.
+  const exactOf = (origSheet: (typeof ir.sheets)[number], rtSheet: (typeof ir.sheets)[number] | undefined): number => {
+    let n = 0;
+    for (const m of origSheet.mergedRanges) {
+      if (m.rowspan < 3) continue;
+      const found = rtSheet?.mergedRanges.find((mm) => mm.row === m.row && mm.col === m.col);
+      if (found && found.rowspan === m.rowspan) n++;
+    }
+    return n;
+  };
+  const countMarkers = async (bytes: Uint8Array) => {
+    const doc = await PDFDocument.load(bytes);
+    let pages = 0, carries = 0;
+    for (const page of doc.getPages()) {
+      const v = page.node.get(PDFName.of('OptimaRowspanContinues'));
+      if (v instanceof PDFArray) { pages++; carries += v.size(); }
+    }
+    return { pages, carries, total: doc.getPageCount() };
+  };
 
-  const { spreadsheet: rt, warnings } = await pdfToIRSpreadsheet(pdfFile);
+  const pdfBytes = new Uint8Array(await (await renderSpreadsheetIRToPdf(ir)).arrayBuffer());
+  const { spreadsheet: rt, warnings } = await pdfToIRSpreadsheet(new File([pdfBytes], 'r.pdf', { type: 'application/pdf' }));
   check('3 sheets recovered', rt.sheets.length === 3, `got ${rt.sheets.length}`);
-
   const expected = [
-    { name: 'Arkusz1', rowspan3plus: 94, exactMatch: 81 },
-    { name: 'Arkusz2', rowspan3plus: 94, exactMatch: 66 },
-    { name: 'Arkusz3', rowspan3plus: 94, exactMatch: 66 },
+    { name: 'Arkusz1', rowspan3plus: 94, exactMatch: 93 },
+    { name: 'Arkusz2', rowspan3plus: 94, exactMatch: 94 },
+    { name: 'Arkusz3', rowspan3plus: 94, exactMatch: 94 },
   ];
   for (let i = 0; i < expected.length; i++) {
     const e = expected[i]!;
@@ -167,72 +185,49 @@ async function main(): Promise<number> {
     const rtSheet = rt.sheets.find((s) => s.name === e.name);
     check(`${e.name}: all 111 rows recovered (was collapsing to ~16-21 before this fix)`,
       rtSheet?.cells.length === 111, `got ${rtSheet?.cells.length}`);
-
-    const origTall = origSheet.mergedRanges.filter((m) => m.rowspan >= 3);
-    check(`${e.name}: ${e.rowspan3plus} rowspan>=3 merges in the source`, origTall.length === e.rowspan3plus,
-      `got ${origTall.length}`);
-    let exactMatch = 0;
-    for (const m of origTall) {
-      const found = rtSheet?.mergedRanges.find((mm) => mm.row === m.row && mm.col === m.col);
-      if (found && found.rowspan === m.rowspan) exactMatch++;
-    }
-    check(`${e.name}: ${e.exactMatch} of those recovered with the exact original rowspan (confirmed continuations glued)`,
-      exactMatch === e.exactMatch, `got ${exactMatch}`);
+    check(`${e.name}: ${e.rowspan3plus} rowspan>=3 merges in the source`,
+      origSheet.mergedRanges.filter((m) => m.rowspan >= 3).length === e.rowspan3plus);
+    const exact = exactOf(origSheet, rtSheet);
+    check(`${e.name}: ${e.exactMatch} of those recovered with the exact original rowspan (81/66/66 when merges were split)`,
+      exact === e.exactMatch, `got ${exact}`);
   }
-
   check('no false header-mismatch warnings (the H=0 catastrophic-loss bug)',
     !warnings.some((w) => w.kind === 'header-mismatch'), JSON.stringify(warnings.filter((w) => w.kind === 'header-mismatch')));
-  const ambiguous = warnings.filter((w) => w.kind === 'merge-continuation-ambiguous');
-  check('exactly 3 genuinely-ambiguous splits remain correctly un-glued (not silently merged)',
-    ambiguous.length === 3, JSON.stringify(ambiguous));
+  const a4 = await countMarkers(pdfBytes);
+  check('every page declares its continuation list, and nothing continues on A4', a4.pages === a4.total && a4.carries === 0, JSON.stringify(a4));
+  check('declared pages leave no "ambiguous" warnings (a merge starting a page is known not to continue)',
+    !warnings.some((w) => w.kind === 'merge-continuation-ambiguous'), JSON.stringify(warnings.filter((w) => w.kind === 'merge-continuation-ambiguous')));
 
   // ---------------------------------------------------------------------------
-  // Part 3: strip the confirmation marker from the SAME real, rendered PDF and re-run the round
-  // trip — proves the fallback safety net on real (not synthetic) geometry: without the marker,
-  // every one of those previously-glued merges must fall back to the old conservative behaviour
-  // (an ambiguous warning, never a silent glue), exactly as it would for a third-party PDF or one
-  // this app rendered before the marker existed.
+  // Part 3: a real split. A merged block taller than a page cannot be kept together: the renderer
+  // splits it, draws the rest on the next page and marks it; the reader glues it back. Stripping
+  // the marker from the SAME rendered PDF proves the fallback on real geometry: the glue is lost
+  // and reported as ambiguous instead (never a silent wrong merge), as for any third-party PDF.
   // ---------------------------------------------------------------------------
-  const strippedDoc = await PDFDocument.load(pdfBytes);
-  let strippedMarkers = 0;
-  for (const page of strippedDoc.getPages()) {
-    if (page.node.get(PDFName.of('OptimaRowspanContinues'))) {
-      page.node.delete(PDFName.of('OptimaRowspanContinues'));
-      strippedMarkers++;
-    }
-  }
-  check('marker-strip precondition: the real PDF actually carried markers to strip', strippedMarkers > 0, `${strippedMarkers} pages`);
-  const strippedBytes = await strippedDoc.save();
-  const strippedFile = new File([strippedBytes], 'stripped.pdf', { type: 'application/pdf' });
-  const { spreadsheet: rtStripped, warnings: warningsStripped } = await pdfToIRSpreadsheet(strippedFile);
-
-  // A plain "does this exact (row,col,rowspan) still match" per-cell check can't tell "genuinely
-  // glued from two split pieces" apart from "always fit on one page, marker never involved" — most
-  // of the exactMatch counts above are the latter. What the marker mechanism can actually be
-  // blamed for is the DIFFERENCE: exactly how many matches disappear, and how many MORE ambiguous
-  // warnings appear, once its only source of truth (the marker) is gone.
-  const strippedExpected = [
-    { name: 'Arkusz1', exactMatch: 78 },
-    { name: 'Arkusz2', exactMatch: 63 },
-    { name: 'Arkusz3', exactMatch: 63 },
-  ];
-  for (let i = 0; i < strippedExpected.length; i++) {
-    const e = strippedExpected[i]!;
-    const origSheet = ir.sheets[i]!;
-    const strippedSheet = rtStripped.sheets.find((s) => s.name === e.name);
-    let exactMatch = 0;
-    for (const m of origSheet.mergedRanges) {
-      if (m.rowspan < 3) continue;
-      const found = strippedSheet?.mergedRanges.find((mm) => mm.row === m.row && mm.col === m.col);
-      if (found && found.rowspan === m.rowspan) exactMatch++;
-    }
-    const withMarker = expected[i]!.exactMatch;
-    check(`${e.name}: stripping the marker loses exactly 3 previously-confirmed glues (${withMarker} -> ${e.exactMatch})`,
-      exactMatch === e.exactMatch, `got ${exactMatch}`);
-  }
-  const ambiguousStripped = warningsStripped.filter((w) => w.kind === 'merge-continuation-ambiguous');
-  check('marker-strip: the 9 merges that lost their glue (3 sheets x 3) now correctly report ambiguous instead of a silent wrong merge',
-    ambiguousStripped.length === ambiguous.length + 9, `expected ${ambiguous.length + 9}, got ${ambiguousStripped.length}`);
+  const N = 90;
+  const tallCells = Array.from({ length: N }, (_, r) => [
+    r === 0 ? { display: 'Opis', type: 'string' as const, raw: 'Opis', colspan: 1, rowspan: 1 }
+      : r === 1 ? { display: 'SPLIT TOP', type: 'string' as const, raw: 'SPLIT TOP', colspan: 1, rowspan: 70 }
+        : r < 71 ? undefined : { display: `after ${r}`, type: 'string' as const, raw: `after ${r}`, colspan: 1, rowspan: 1 },
+    r === 0 ? { display: 'Nr', type: 'string' as const, raw: 'Nr', colspan: 1, rowspan: 1 }
+      : { display: `r${r}`, type: 'string' as const, raw: `r${r}`, colspan: 1, rowspan: 1 },
+  ]);
+  const tallIr = { kind: 'spreadsheet' as const, sheets: [{ kind: 'sheet' as const, name: 'Arkusz1', cells: tallCells, columnWidths: [20, 20], mergedRanges: [{ row: 1, col: 0, rowspan: 70, colspan: 1 }] }] };
+  const tallBytes = new Uint8Array(await (await renderSpreadsheetIRToPdf(tallIr)).arrayBuffer());
+  const tall = await countMarkers(tallBytes);
+  check('a merge taller than a page is split and its continuation marked', tall.carries > 0, JSON.stringify(tall));
+  const { spreadsheet: rtTall, warnings: wTall } = await pdfToIRSpreadsheet(new File([tallBytes], 't.pdf', { type: 'application/pdf' }));
+  const tallMerge = (sh: (typeof rtTall.sheets)[number] | undefined) => sh?.mergedRanges.find((m) => m.row === 1 && m.col === 0);
+  check('with the marker the split merge is glued back to its full 70 rows', tallMerge(rtTall.sheets[0])?.rowspan === 70 && rtTall.sheets[0]?.cells.length === N,
+    `rowspan ${tallMerge(rtTall.sheets[0])?.rowspan}, rows ${rtTall.sheets[0]?.cells.length}`);
+  check('with the marker: no ambiguous warning', !wTall.some((w) => w.kind === 'merge-continuation-ambiguous'));
+  const strippedDoc = await PDFDocument.load(tallBytes);
+  for (const page of strippedDoc.getPages()) page.node.delete(PDFName.of('OptimaRowspanContinues'));
+  const { spreadsheet: rtStripped, warnings: wStripped } = await pdfToIRSpreadsheet(new File([await strippedDoc.save()], 'x.pdf', { type: 'application/pdf' }));
+  check('without the marker the split merge is NOT glued (two separate pieces)', (tallMerge(rtStripped.sheets[0])?.rowspan ?? 0) < 70,
+    `rowspan ${tallMerge(rtStripped.sheets[0])?.rowspan}`);
+  check('without the marker the split is reported ambiguous', wStripped.filter((w) => w.kind === 'merge-continuation-ambiguous').length >= tall.carries,
+    `${wStripped.filter((w) => w.kind === 'merge-continuation-ambiguous').length} ambiguous for ${tall.carries} splits`);
 
   console.log('=== xlsx -> PDF -> xlsx: cross-page rowspan continuation ===');
   let allOk = true;

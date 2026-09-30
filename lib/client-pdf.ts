@@ -3617,9 +3617,12 @@ function buildFragmentGrid(pages: MergeBandPage[], continuationMarkers: Map<numb
       const ci = clusterColIndex(xEdges, localX, cell.col);
       const prevAnchorRow = prevBottom.get(ci);
       if (prevAnchorRow === undefined) continue;
-      const confirmed = continuationMarkers.get(page.page)?.has(ci) ?? false;
+      const declared = continuationMarkers.get(page.page);
+      const confirmed = declared?.has(ci) ?? false;
       if (!confirmed) {
-        warnings.push({ kind: 'merge-continuation-ambiguous', page: page.page, col: ci });
+        // A page carrying our renderer's marker lists EVERY continuation, so an unlisted merge is
+        // a new cell (no warning); without the marker (any other PDF) it stays ambiguous.
+        if (!declared) warnings.push({ kind: 'merge-continuation-ambiguous', page: page.page, col: ci });
         continue;
       }
       const m = merges.find((mm) => mm.row === prevAnchorRow && mm.col === ci);
@@ -3892,7 +3895,7 @@ async function readRowspanContinuationMarkers(file: File): Promise<Map<number, S
         const v = entry.get(j);
         if (v instanceof PDFNumber) cols.add(v.asNumber());
       }
-      if (cols.size > 0) markers.set(i + 1, cols);
+      markers.set(i + 1, cols); // an empty list still declares "nothing continues onto this page"
     }
   } catch {
     // Fall through with whatever was collected (typically nothing) — see docblock.
