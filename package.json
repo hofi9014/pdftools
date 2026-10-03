@@ -161,6 +161,7 @@
     "test:dependency-advisories": "npx --yes tsx tests/dependency-advisories.mts",
     "test:ocr-engine-options": "npx --yes tsx tests/ocr-engine-options.mts",
     "test:e2e-ocr-real-scan": "npx --yes tsx e2e/ocr-real-scan.mts",
+    "test:test-helpers-tracked": "npx --yes tsx tests/test-helpers-tracked.mts",
     "test:vercelignore-keeps-app-files": "npx --yes tsx tests/vercelignore-keeps-app-files.mts"
   },
   "dependencies": {
