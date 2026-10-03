@@ -50,16 +50,34 @@ check(removed.length === 0, `no app/lib/components/public/config file is ignored
 const proxy = readFileSync(join(ROOT, 'proxy.ts'), 'utf8');
 check(/export function proxy\(/.test(proxy) && /matcher:\s*\[\s*'\/api\/:path\*'/.test(proxy), 'proxy.ts exports proxy() and matches /api/*');
 
-console.log('\n=== the page matcher covers legacy URLs but not static files ===');
+console.log('\n=== the page matcher covers legacy URLs but not static files or localized pages ===');
 // The matcher as written in the source ('/((?!…).*)', with "\\." for a literal dot).
 const pageMatcher = /'(\/\(\(\?![^']+)'/.exec(proxy)?.[1]?.replace(/\\\\/g, '\\');
 check(!!pageMatcher, 'found the page matcher');
 const mre = new RegExp('^' + pageMatcher + '$');
-for (const path of ['/', '/merge', '/pdf-to-word', '/privacy', '/pl/merge']) check(mre.test(path), `runs for ${path}`);
+// Every path the proxy redirects must still reach it — including the ones that merely START
+// with the letters of a locale code ("/faq" ~ fa, "/delete-pages" ~ de, "/protect-pdf" ~ pt…).
+const legacy = [.../LEGACY_PATHS = new Set\(\[([\s\S]*?)\]\)/.exec(proxy)![1]!.matchAll(/'([^']*)'/g)].map((m) => m[1]!);
+check(legacy.length >= 50, `sanity: read the legacy path list (${legacy.length})`);
+const missed = legacy.filter((s) => !mre.test('/' + s));
+check(missed.length === 0, `runs for all ${legacy.length} legacy paths (missed: ${missed.join(', ')})`);
+for (const path of ['/', '/merge', '/faq', '/delete-pages', '/protect-pdf']) check(mre.test(path), `runs for ${path}`);
 for (const path of ['/pdfjs-dist/cmaps/78-H.bcmap', '/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf', '/tesseract/tesseract-core.wasm',
   '/sw.js', '/manifest.json', '/dropbox-oauth.html', '/icc/sRGB-IEC61966-2.1.icc', '/logo.png', '/_next/static/chunks/a.js', '/api/ai', '/guides/pl/x', '/sitemap.xml']) {
   check(!mre.test(path), `skips ${path}`);
 }
+
+// Localized pages are the canonical URLs and need nothing from the proxy: putting it in front of
+// them doubled their server wait on production (~100 ms vs ~50 ms) and cost one function
+// invocation per page view and per <Link> prefetch.
+const locales = [.../const LOCALES = \[([^\]]*)\]/.exec(proxy)![1]!.matchAll(/'([a-z]{2})'/g)].map((m) => m[1]!);
+const i18nLocales = [.../export const locales = \[([^\]]*)\]/.exec(readFileSync(join(ROOT, 'lib/i18n.ts'), 'utf8'))![1]!.matchAll(/'([a-z]{2})'/g)].map((m) => m[1]!);
+const matcherLocales = /\(\?:((?:[a-z]{2}\|)+[a-z]{2})\)\(\?:\/\|\$\)/.exec(pageMatcher ?? '')?.[1]?.split('|') ?? [];
+check(locales.length === 16, `sanity: read LOCALES from proxy.ts (${locales.length})`);
+check([...locales].sort().join() === [...i18nLocales].sort().join(), 'proxy.ts LOCALES equals lib/i18n.ts locales');
+check([...locales].sort().join() === [...matcherLocales].sort().join(), `the matcher's locale list equals LOCALES (${matcherLocales.length})`);
+const stillMatched = locales.flatMap((l) => [`/${l}`, `/${l}/merge`, `/${l}/guide`]).filter((p) => mre.test(p));
+check(stillMatched.length === 0, `skips every /{locale} and /{locale}/… path (${stillMatched.slice(0, 5).join(', ')})`);
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);
