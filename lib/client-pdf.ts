@@ -3,6 +3,7 @@ import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePages, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
 import { renderIRToDocx, type IRTextRun, type IRImageBlock, type IRTableCell, type IRBlock, type IRRect, type IRPageIR, type IRFillRect, type IRBoxRect, type IRSpreadsheetCell, type IRSheet, type IRSpreadsheet, type IRConditionalFormattingRule, ptToXlsxCharWidth } from './client-pdf-docx';
+import { detectTextColumns, mergeColumnLines } from './pdf/textColumns';
 import type { IRSlide, IRSlideElement, IRDeck, IRPtRect, IRTextContent } from './client-pptx';
 import { getFontFamily } from './pdf/fonts';
 
@@ -2905,22 +2906,30 @@ function reseatScriptRuns(group: IRTextRun[], yTolerance: number): void {
   group.splice(0, group.length, ...result);
 }
 
+/** The font size most of the page's characters are set in. */
+function pageBodyFontSize(textRuns: IRTextRun[]): number {
+  const sizeStats: Record<string, number> = {};
+  for (const tr of textRuns) {
+    const key = tr.fontSize.toFixed(1);
+    sizeStats[key] = (sizeStats[key] || 0) + tr.text.length;
+  }
+  let bodyFontSize = 12;
+  let maxChars = 0;
+  for (const [sizeStr, chars] of Object.entries(sizeStats)) {
+    if (chars > maxChars) { maxChars = chars; bodyFontSize = parseFloat(sizeStr); }
+  }
+  return bodyFontSize;
+}
+
 function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPageIR[] {
   const pages: IRPageIR[] = [];
 
-  for (const { pageWidth, pageHeight, textRuns, images, tableClusters, fillRects, bulletDots, boxes } of scaffolds) {
-    // --- Compute bodyFontSize ---
-    const sizeStats: Record<string, number> = {};
-    for (const tr of textRuns) {
-      const key = tr.fontSize.toFixed(1);
-      sizeStats[key] = (sizeStats[key] || 0) + tr.text.length;
-    }
-    let bodyFontSize = 12;
-    let maxChars = 0;
-    for (const [sizeStr, chars] of Object.entries(sizeStats)) {
-      if (chars > maxChars) { maxChars = chars; bodyFontSize = parseFloat(sizeStr); }
-    }
-
+  // The blocks of one page — or of one band of a two-column page (see lib/pdf/textColumns.ts):
+  // the grouping below is identical in both cases, only the set of runs differs.
+  const buildBlocks = (
+    { pageHeight, textRuns, images, tableClusters, bulletDots }: Pick<PageTableScaffold, 'pageHeight' | 'textRuns' | 'images' | 'tableClusters' | 'bulletDots'>,
+    bodyFontSize: number,
+  ): IRBlock[] => {
     // --- Group runs into blocks ---
     const blocks: IRBlock[] = [];
     const used = new Set<number>();
@@ -3220,7 +3229,49 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
     }
 
     applyShapeBullets(blocks, bulletDots);
-    pages.push({ width: pageWidth, height: pageHeight, blocks, ...(fillRects.length > 0 ? { fills: fillRects } : {}), ...(boxes.length > 0 ? { boxes } : {}) });
+    return blocks;
+  };
+
+  for (const scaffold of scaffolds) {
+    const { pageWidth, pageHeight, textRuns, fillRects, boxes } = scaffold;
+    const bodyFontSize = pageBodyFontSize(textRuns);
+    // Two columns of running text are read column by column. Not attempted on a page with a
+    // detected table (its cells own their runs), and never applied unless detectTextColumns is
+    // sure — every other page goes through buildBlocks exactly as before.
+    const split = scaffold.tableClusters.length === 0 ? detectTextColumns(textRuns) : null;
+    let blocks: IRBlock[];
+    if (!split) {
+      blocks = buildBlocks(scaffold, bodyFontSize);
+    } else {
+      blocks = [];
+      const [leftCol, rightCol] = split.columns;
+      const gutter = (leftCol.x + leftCol.width + rightCol.x) / 2;
+      const columnRuns = [...split.bands[1], ...split.bands[2]];
+      const areaTop = Math.max(...columnRuns.map((r) => r.position.y + r.height));
+      const areaBottom = Math.min(...columnRuns.map((r) => r.position.y));
+      split.bands.forEach((bandRuns, band) => {
+        // Pictures are placed once (first band) and then filed under the band they sit in.
+        const built = buildBlocks({ ...scaffold, textRuns: bandRuns, images: band === 0 ? scaffold.images : [] }, bodyFontSize);
+        // Within a column, the lines of a paragraph are joined (elsewhere each stays as it was).
+        const part = band === 1 || band === 2 ? mergeColumnLines(built, split.columns[band - 1]!) : built;
+        for (const b of part) {
+          if (b.kind === 'image') {
+            const midY = b.bounds.y + b.bounds.height / 2;
+            const midX = b.bounds.x + b.bounds.width / 2;
+            b.flow = midY > areaTop ? 0 : midY < areaBottom ? 3 : midX < gutter ? 1 : 2;
+          } else if (b.kind !== 'page-shape') {
+            b.flow = band;
+          }
+          blocks.push(b);
+        }
+      });
+    }
+    pages.push({
+      width: pageWidth, height: pageHeight, blocks,
+      ...(fillRects.length > 0 ? { fills: fillRects } : {}),
+      ...(boxes.length > 0 ? { boxes } : {}),
+      ...(split ? { columns: split.columns } : {}),
+    });
   }
 
   return pages;

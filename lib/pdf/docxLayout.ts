@@ -41,6 +41,12 @@ function median(values: number[]): number {
  * indented items are measured against this, not against the page edge or other pages.
  */
 export function inferPageColumn(page: IRPageIR): PageColumn | null {
+  // A two-column page: the text area runs from the left column's left edge to the right
+  // column's right edge. (The "dominant left edge" below would be whichever column is heavier.)
+  if (page.columns) {
+    const [l, r] = page.columns;
+    return { left: l.x, right: r.x + r.width };
+  }
   const blocks = page.blocks.filter(isTextualBlock);
   if (blocks.length === 0) return null;
   const weight = new Map<number, number>();
@@ -76,6 +82,27 @@ export function inferMargins(pages: IRPageIR[]): PageMargins {
     right: clamp(first.width - median(cols.map((c) => c.right)), MIN_MARGIN, MAX_MARGIN),
     top: clamp(minTopGap, MIN_MARGIN, MAX_MARGIN),
     bottom: clamp(minBottom, MIN_MARGIN, MAX_MARGIN),
+  };
+}
+
+/**
+ * What a block of a two-column page is measured against: its OWN column, as if that column were
+ * the page. Without it a right-column paragraph looked indented by half a page (or right-aligned)
+ * once written below the left column. Blocks outside the columns keep the page frame.
+ */
+export function columnLayoutFrame(
+  block: IRBlock,
+  page: IRPageIR,
+  pageColumn: PageColumn | null,
+  margins: PageMargins,
+): { column: PageColumn | null; margins: PageMargins; pageWidth: number } {
+  const flow = (block as { flow?: number }).flow;
+  const col = page.columns && (flow === 1 || flow === 2) ? page.columns[flow - 1] : undefined;
+  if (!col) return { column: pageColumn, margins, pageWidth: page.width };
+  return {
+    column: { left: col.x, right: col.x + col.width },
+    margins: { ...margins, left: col.x },
+    pageWidth: col.x + col.width + margins.right,
   };
 }
 
@@ -166,7 +193,11 @@ export function separateLines<T extends { text: string; fontSize: number; positi
  */
 export function blocksInReadingOrder(blocks: IRBlock[], pageHeight: number): IRBlock[] {
   const top = (b: IRBlock): number => (b.kind === 'table' ? b.bounds.y : pageHeight - (b.bounds.y + b.bounds.height));
-  return blocks.map((b, i) => ({ b, i, t: top(b) })).sort((p, q) => (p.t - q.t) || (p.i - q.i)).map((x) => x.b);
+  // On a two-column page the reading band comes first (above, left column, right column,
+  // below); within a band, and on every other page (no `flow`), top to bottom as before.
+  const flow = (b: IRBlock): number => (b as { flow?: number }).flow ?? 0;
+  return blocks.map((b, i) => ({ b, i, t: top(b), f: flow(b) }))
+    .sort((p, q) => (p.f - q.f) || (p.t - q.t) || (p.i - q.i)).map((x) => x.b);
 }
 
 /**

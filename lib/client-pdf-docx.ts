@@ -4,7 +4,7 @@
 import { PDFDocument, PDFName, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
 import type JSZip from 'jszip';
 import { applyConditionalFormatting } from './xlsx-conditional-formatting';
-import { splitAtBlankLines, findBox, splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, findBackgroundFill, separateLines, blocksInReadingOrder, type PageMargins } from './pdf/docxLayout';
+import { splitAtBlankLines, findBox, splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, columnLayoutFrame, findBackgroundFill, separateLines, blocksInReadingOrder, type PageMargins } from './pdf/docxLayout';
 
 // ============================================================
 // IR TYPES (Phase 1a — without TableBlock)
@@ -41,6 +41,11 @@ export interface IRParagraphBlock {
   border?: string;
   /** Horizontal alignment read from a .docx (w:jc) or .odt (fo:text-align); absent = left. */
   align?: 'center' | 'right';
+  /**
+   * Reading band on a two-column page (PDF extraction only): 0 above the columns, 1 left column,
+   * 2 right column, 3 below. Writers read band by band instead of purely top to bottom.
+   */
+  flow?: number;
 }
 
 export interface IRHeadingBlock {
@@ -50,6 +55,7 @@ export interface IRHeadingBlock {
   bounds: IRRect;
   role?: 'header' | 'footer' | 'body';
   pageBreakBefore?: boolean;
+  flow?: number;
   align?: 'center' | 'right';
   /** Same as IRParagraphBlock.fill / .border: a heading on a coloured band or inside a frame. */
   fill?: string;
@@ -63,6 +69,7 @@ export interface IRListItemBlock {
   runs: IRTextRun[];
   bounds: IRRect;
   pageBreakBefore?: boolean;
+  flow?: number;
 }
 
 export interface IRImageBlock {
@@ -72,6 +79,7 @@ export interface IRImageBlock {
   naturalHeight: number;
   bounds: IRRect;
   pageBreakBefore?: boolean;
+  flow?: number;
 }
 
 export interface IRTableCell {
@@ -88,6 +96,7 @@ export interface IRTableBlock {
   bounds: IRRect;
   columnWidths: number[];
   pageBreakBefore?: boolean;
+  flow?: number;
 }
 
 /**
@@ -119,6 +128,8 @@ export interface IRPageIR {
   fills?: IRFillRect[];
   /** Stroked frames around content (callout boxes); writers turn them into paragraph borders. */
   boxes?: IRBoxRect[];
+  /** The two text columns of a two-column page (left, right), in points; blocks carry `flow`. */
+  columns?: [{ x: number; width: number }, { x: number; width: number }];
 }
 
 // ============================================================
@@ -1108,7 +1119,8 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
         const o: any = {};
         if (pendingBreak) { o.pageBreakBefore = true; pendingBreak = false; }
         if (isText) {
-          const lay = inferParagraphLayout(block as IRBlock & { bounds: IRRect }, prevTextual, pageColumn, margins, page.width);
+          const frame = columnLayoutFrame(block, page, pageColumn, margins);
+          const lay = inferParagraphLayout(block as IRBlock & { bounds: IRRect }, prevTextual, frame.column, frame.margins, frame.pageWidth);
           if (block.kind !== 'list-item') {
             if (lay.alignment !== 'left') o.alignment = ALIGN[lay.alignment];
             if (lay.leftIndentPt > 0) o.indent = { left: twips(lay.leftIndentPt) };
@@ -4639,7 +4651,8 @@ function odtRenderBodyXml(
       let props = takeBreak();
       let indentPt = 0;
       const rotated = 'runs' in block && (block as { runs: IRTextRun[] }).runs.some((r) => Math.abs(r.rotation) > 1);
-      const lay = inferParagraphLayout(block, prevTextual, pageColumn, margins, page.width);
+      const frame = columnLayoutFrame(block, page, pageColumn, margins);
+      const lay = inferParagraphLayout(block, prevTextual, frame.column, frame.margins, frame.pageWidth);
       if (withAlign && !rotated) {
         if (lay.alignment === 'center') props += ' fo:text-align="center"';
         else if (lay.alignment === 'right') props += ' fo:text-align="end"';
