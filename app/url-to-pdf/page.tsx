@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
+import { apiErrorFromResponse, apiErrorText, apiFetch } from '@/lib/api-error';
 import { getToolIcon } from '@/lib/icons';
 
 export default function UrlToPdf({ locale: forcedLocale }: { locale?: Locale } = {}) {
@@ -24,12 +25,12 @@ export default function UrlToPdf({ locale: forcedLocale }: { locale?: Locale } =
     setSuccess(false);
 
     try {
-      const res = await fetch('/api/url-to-pdf', {
+      const res = await apiFetch('/api/url-to-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: normalizedUrl }),
       });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      if (!res.ok) throw await apiErrorFromResponse(res, t('error.generic', locale));
 
       const blob = await res.blob();
       processedBlobRef.current = blob;
@@ -41,7 +42,7 @@ export default function UrlToPdf({ locale: forcedLocale }: { locale?: Locale } =
       URL.revokeObjectURL(urlObj);
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(apiErrorText(err, locale));
     } finally {
       setLoading(false);
     }

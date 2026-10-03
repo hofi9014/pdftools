@@ -4,6 +4,7 @@ import { extractTextFromPDF } from '@/lib/client-pdf';
 import { summarizeText } from '@/lib/client-ai';
 import { useLocale } from '@/lib/locale-context';
 import { t, isRtlLocale, type Locale } from '@/lib/i18n';
+import { apiErrorText } from '@/lib/api-error';
 import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
 
@@ -31,7 +32,7 @@ export default function AiSummary({ locale: forcedLocale }: { locale?: Locale } 
       if (!text.trim()) { throw new Error(t('page.aisummary.no_text', locale)); }
       const result = await summarizeText(text);
       setSummary(result);
-    } catch (err: unknown) { setError(err instanceof Error ? err.message : t('error.generic', locale)); }
+    } catch (err: unknown) { setError(apiErrorText(err, locale)); }
     finally { setLoading(false); }
   }, [file]);
 

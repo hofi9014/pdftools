@@ -75,5 +75,26 @@ console.log('=== B1: CSRF origin check on proxy.ts ===');
   check(res.status !== 403, `GET request bypasses the CSRF check regardless of Origin, as designed (got ${res.status})`);
 }
 
+console.log('\n=== same-origin requests on any host the app is served from ===');
+// The fixed list alone made the app reject its OWN API calls everywhere except the two
+// production domains: on each Vercel preview deployment and on a local server on another port.
+function onHost(host: string, opts: { origin?: string; referer?: string }): NextRequest {
+  const headers: Record<string, string> = { host };
+  if (opts.origin) headers['origin'] = opts.origin;
+  if (opts.referer) headers['referer'] = opts.referer;
+  return new NextRequest(`https://${host}/api/ai`, { method: 'POST', headers });
+}
+{
+  const preview = 'optimapdf-abc123-hofi.vercel.app';
+  check(proxy(onHost(preview, { origin: `https://${preview}` })).status !== 403, 'a preview deployment may call its own API (Origin = its own host)');
+  check(proxy(onHost(preview, { referer: `https://${preview}/pl/url-to-pdf` })).status !== 403, 'same with only a Referer');
+  check(proxy(onHost(preview, { origin: 'https://someone-else.vercel.app' })).status === 403, 'another *.vercel.app site is still REJECTED on the preview');
+  check(proxy(onHost(preview, { origin: `https://${preview}.evil.com` })).status === 403, 'a look-alike of the preview host is REJECTED');
+  check(proxy(onHost('optimapdf.com', { origin: `https://${preview}` })).status === 403, 'a preview origin calling PRODUCTION is still REJECTED');
+  check(proxy(onHost('localhost:3100', { origin: 'http://localhost:3100' })).status !== 403, 'a local server on another port may call its own API');
+  check(proxy(onHost('optimapdf.com', { origin: 'https://evil.example' })).status === 403, 'a foreign origin calling production is REJECTED');
+  check(proxy(onHost('optimapdf.com', {})).status === 403, 'no Origin and no Referer is still REJECTED');
+}
+
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);

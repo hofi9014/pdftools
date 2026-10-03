@@ -1,3 +1,4 @@
+import { apiErrorFromResponse, apiFetch } from '@/lib/api-error';
 const MAX_TEXT_LENGTH = 12000;
 const MAX_SUMMARY_TRANSLATE_LENGTH = 120000;
 
@@ -26,46 +27,37 @@ function truncateWithNotice(text: string, maxLen: number): string {
 export async function askAI(text: string, question: string): Promise<string> {
   const truncated = truncateWithNotice(text, MAX_TEXT_LENGTH);
 
-  const res = await fetch('/api/ai', {
+  const res = await apiFetch('/api/ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ task: 'chat', text: truncated, question }),
   });
 
-  if (!res.ok) {
-    const data = await res.json();
-    throw new Error(data.error || 'Usługa AI tymczasowo niedostępna');
-  }
+  if (!res.ok) throw await apiErrorFromResponse(res, 'Usługa AI tymczasowo niedostępna');
   const data = await res.json();
   return data.content;
 }
 
 export async function summarizeText(text: string): Promise<string> {
-  const res = await fetch('/api/ai', {
+  const res = await apiFetch('/api/ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ task: 'summary', text: truncateWithNotice(text, MAX_SUMMARY_TRANSLATE_LENGTH) }),
   });
 
-  if (!res.ok) {
-    const data = await res.json();
-    throw new Error(data.error || 'Usługa AI tymczasowo niedostępna');
-  }
+  if (!res.ok) throw await apiErrorFromResponse(res, 'Usługa AI tymczasowo niedostępna');
   const data = await res.json();
   return data.content;
 }
 
 export async function translateText(text: string, targetLang: string): Promise<string> {
-  const res = await fetch('/api/ai', {
+  const res = await apiFetch('/api/ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ task: 'translate', text: truncateWithNotice(text, MAX_SUMMARY_TRANSLATE_LENGTH), language: targetLang }),
   });
 
-  if (!res.ok) {
-    const data = await res.json();
-    throw new Error(data.error || 'Usługa AI tymczasowo niedostępna');
-  }
+  if (!res.ok) throw await apiErrorFromResponse(res, 'Usługa AI tymczasowo niedostępna');
   const data = await res.json();
   return data.content;
 }

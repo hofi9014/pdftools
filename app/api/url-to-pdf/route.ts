@@ -7,6 +7,8 @@ import * as https from 'https';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { MAX_UPLOAD_BYTES } from '@/lib/upload-limit';
+import { apiErrorBody } from '@/lib/api-error-codes';
+import { checkWindowLimit } from '@/lib/window-rate-limit';
 
 // Built on Node's own SSRF-prevention primitive (net.BlockList, since v15) rather
 // than hand-rolled prefix checks: it normalizes IPv6 (expanded/compressed forms
@@ -183,11 +185,30 @@ export async function embedServerFont(pdf: import('pdf-lib').PDFDocument): Promi
   return pdf.embedFont(new Uint8Array(fontBytes));
 }
 
+// This endpoint fetches an arbitrary address from the server. The proxy's 30 requests/minute
+// counter lives in one instance's memory; this one is shared by all instances (Upstash, with
+// an in-memory fallback) — see lib/window-rate-limit.ts.
+export const URL_TO_PDF_LIMIT = 30;
+export const URL_TO_PDF_WINDOW_SECONDS = 600;
+
+function clientIp(request: Request): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0]!.trim();
+  return request.headers.get('x-real-ip') || 'unknown';
+}
+
 export async function POST(request: Request) {
   try {
+    const limit = await checkWindowLimit({ name: 'url2pdf', key: clientIp(request), limit: URL_TO_PDF_LIMIT, windowSeconds: URL_TO_PDF_WINDOW_SECONDS });
+    if (!limit.allowed) {
+      return Response.json(
+        apiErrorBody('rate_limited', 'Zbyt wiele żądań. Spróbuj ponownie za chwilę.'),
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } },
+      );
+    }
     const { url } = await request.json();
     if (!url || typeof url !== 'string') {
-      return Response.json({ error: 'Nie przesłano adresu URL.' }, { status: 400 });
+      return Response.json(apiErrorBody('url_invalid', 'Nie przesłano adresu URL.'), { status: 400 });
     }
 
     let normalizedUrl = url.trim();
@@ -199,17 +220,17 @@ export async function POST(request: Request) {
     try {
       parsed = new URL(normalizedUrl);
     } catch {
-      return Response.json({ error: 'Nieprawidłowy adres URL.' }, { status: 400 });
+      return Response.json(apiErrorBody('url_invalid', 'Nieprawidłowy adres URL.'), { status: 400 });
     }
 
     // Only allow http/https
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      return Response.json({ error: 'Dozwolone tylko protokoły HTTP/HTTPS.' }, { status: 400 });
+      return Response.json(apiErrorBody('url_invalid', 'Dozwolone tylko protokoły HTTP/HTTPS.'), { status: 400 });
     }
 
     // Restrict to port 80 and 443 only
     if (parsed.port && parsed.port !== '' && parsed.port !== '80' && parsed.port !== '443') {
-      return Response.json({ error: 'Dozwolone tylko porty 80 i 443.' }, { status: 400 });
+      return Response.json(apiErrorBody('url_invalid', 'Dozwolone tylko porty 80 i 443.'), { status: 400 });
     }
 
     // DNS rebinding guard: resolve the hostname exactly once, validate every
@@ -222,7 +243,7 @@ export async function POST(request: Request) {
     if (isIP(parsed.hostname)) {
       const family = isIP(parsed.hostname);
       if (isPrivateOrReservedAddress(parsed.hostname)) {
-        return Response.json({ error: 'Adres URL jest zablokowany.' }, { status: 403 });
+        return Response.json(apiErrorBody('url_blocked', 'Adres URL jest zablokowany.'), { status: 403 });
       }
       validatedAddresses = [{ address: parsed.hostname, family }];
     } else {
@@ -230,14 +251,14 @@ export async function POST(request: Request) {
       try {
         addresses = await dns.lookup(parsed.hostname, { all: true });
       } catch {
-        return Response.json({ error: 'Nie udało się rozwiązać adresu URL.' }, { status: 400 });
+        return Response.json(apiErrorBody('url_unresolved', 'Nie udało się rozwiązać adresu URL.'), { status: 400 });
       }
       if (addresses.length === 0) {
-        return Response.json({ error: 'Nie udało się rozwiązać adresu URL.' }, { status: 400 });
+        return Response.json(apiErrorBody('url_unresolved', 'Nie udało się rozwiązać adresu URL.'), { status: 400 });
       }
       for (const { address } of addresses) {
         if (isPrivateOrReservedAddress(address)) {
-          return Response.json({ error: 'Adres URL jest zablokowany.' }, { status: 403 });
+          return Response.json(apiErrorBody('url_blocked', 'Adres URL jest zablokowany.'), { status: 403 });
         }
       }
       validatedAddresses = addresses;
@@ -247,14 +268,14 @@ export async function POST(request: Request) {
 
     // Don't follow redirects that could lead to internal resources
     if (outcome.kind === 'redirect') {
-      return Response.json({ error: 'Przekierowania nie są obsługiwane.' }, { status: 400 });
+      return Response.json(apiErrorBody('url_redirect', 'Przekierowania nie są obsługiwane.'), { status: 400 });
     }
 
     if (outcome.kind === 'bad-status') throw new Error('Nie udało się pobrać strony');
 
     if (outcome.kind === 'too-large') {
       return Response.json(
-        { error: `Strona jest za duża. Maksymalny rozmiar: ${MAX_UPLOAD_BYTES / 1024 / 1024}MB.` },
+        apiErrorBody('too_large', `Strona jest za duża. Maksymalny rozmiar: ${MAX_UPLOAD_BYTES / 1024 / 1024}MB.`, { mb: MAX_UPLOAD_BYTES / 1024 / 1024 }),
         { status: 413 }
       );
     }
@@ -290,6 +311,6 @@ export async function POST(request: Request) {
       headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="strona.pdf"` },
     });
   } catch (err) {
-    return Response.json({ error: 'Wystąpił błąd podczas przetwarzania URL.' }, { status: 500 });
+    return Response.json(apiErrorBody('url_failed', 'Wystąpił błąd podczas przetwarzania URL.'), { status: 500 });
   }
 }

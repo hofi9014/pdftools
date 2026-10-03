@@ -4,6 +4,7 @@ import { extractTextFromPDF } from '@/lib/client-pdf';
 import { askAI } from '@/lib/client-ai';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
+import { apiErrorText } from '@/lib/api-error';
 import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
 
@@ -61,7 +62,7 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
     try {
       const answer = await askAI(extractedText, q);
       setMessages(prev => [...prev, { role: 'assistant', content: answer }]);
-    } catch (err: unknown) { setError(err instanceof Error ? err.message : t('error.generic', locale)); }
+    } catch (err: unknown) { setError(apiErrorText(err, locale)); }
     finally { setAsking(false); }
   };
 
