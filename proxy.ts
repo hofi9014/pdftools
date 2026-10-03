@@ -100,7 +100,7 @@ export function proxy(request: NextRequest) {
     if (!checkRateLimit(ip)) {
       console.warn(`[RATE LIMIT] ${method} ${pathname} ip=${ip}`);
       return NextResponse.json(
-        { error: 'Zbyt wiele żądań. Spróbuj ponownie za chwilę.' },
+        { error: 'Zbyt wiele żądań. Spróbuj ponownie za chwilę.', code: 'rate_limited' },
         { status: 429, headers: { 'Retry-After': '60' } }
       );
     }
@@ -111,10 +111,17 @@ export function proxy(request: NextRequest) {
       // like "https://optimapdf.com.evil.com" through, since it starts with an allowed
       // origin too. new URL(...).origin normalizes both a bare Origin header and a full
       // Referer URL (which carries a path) to the same comparable form.
+      // A request whose Origin is the very host it is addressed to is same-origin by definition
+      // and cannot be a cross-site forgery (a foreign page cannot make a browser send our host
+      // as its Origin). Without this, the fixed list above rejected the app's own API calls on
+      // every address it is served from besides the two production domains — each Vercel
+      // preview deployment (*.vercel.app) and a local server on any port other than 3000.
+      const ownHost = request.headers.get('host') || request.nextUrl.host;
       let originIsAllowed = false;
       if (originHeader) {
         try {
-          originIsAllowed = ALLOWED_ORIGINS.includes(new URL(originHeader).origin);
+          const origin = new URL(originHeader);
+          originIsAllowed = ALLOWED_ORIGINS.includes(origin.origin) || (!!ownHost && origin.host === ownHost);
         } catch {
           originIsAllowed = false;
         }
@@ -123,7 +130,7 @@ export function proxy(request: NextRequest) {
         const reportedOrigin = originHeader || '<none>';
         console.warn(`[CSRF] ${method} ${pathname} origin=${reportedOrigin} ip=${ip}`);
         return NextResponse.json(
-          { error: 'Nieautoryzowane źródło żądania.' },
+          { error: 'Nieautoryzowane źródło żądania.', code: 'forbidden' },
           { status: 403 }
         );
       }
@@ -135,7 +142,7 @@ export function proxy(request: NextRequest) {
         if (!isNaN(size) && size > MAX_FILE_SIZE_BYTES) {
           console.warn(`[FILE TOO LARGE] ${method} ${pathname} size=${size} ip=${ip}`);
           return NextResponse.json(
-            { error: `Plik jest za duży. Maksymalny rozmiar: ${MAX_FILE_SIZE_BYTES / 1024 / 1024}MB.` },
+            { error: `Plik jest za duży. Maksymalny rozmiar: ${MAX_FILE_SIZE_BYTES / 1024 / 1024}MB.`, code: 'too_large', params: { mb: MAX_FILE_SIZE_BYTES / 1024 / 1024 } },
             { status: 413 }
           );
         }
