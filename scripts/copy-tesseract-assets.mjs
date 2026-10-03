@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, readdirSync, writeFileSync } from 'fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -22,22 +22,41 @@ for (const f of readdirSync(coreDir)) {
   }
 }
 
-// traineddata - download gzipped from jsdelivr (smaller, reliable extension)
+// traineddata - download gzipped from jsdelivr (smaller, reliable extension).
+// EVERY language the OCR page offers (lib/ocr-languages.json) — only pol and eng used to be
+// fetched, so the other 31 choices in the language list had no data on the server (404) and
+// the tool spun forever on them. About 65 MB in total; a file already present is kept, so only
+// the first install/build downloads.
 async function downloadLangData() {
-  const langs = ['pol', 'eng'];
+  const langs = JSON.parse(readFileSync(join(root, 'lib', 'ocr-languages.json'), 'utf8'));
+  const failed = [];
+  let downloaded = 0;
   for (const lang of langs) {
     const url = `https://cdn.jsdelivr.net/npm/@tesseract.js-data/${lang}/4.0.0_best_int/${lang}.traineddata.gz`;
     const outPath = join(langDest, `${lang}.traineddata.gz`);
-    try {
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const buf = Buffer.from(await resp.arrayBuffer());
-      writeFileSync(outPath, buf);
-      console.log(`  ${lang}.traineddata.gz downloaded (${(buf.length / 1024 / 1024).toFixed(1)} MB)`);
-    } catch (e) {
-      console.error(`  Failed to download ${lang} traineddata: ${e.message}`);
+    if (existsSync(outPath) && statSync(outPath).size > 100_000) continue;
+    let lastError = '';
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const buf = Buffer.from(await resp.arrayBuffer());
+        // gzip magic — never save an error page under a data file's name
+        if (buf.length < 100_000 || buf[0] !== 0x1f || buf[1] !== 0x8b) throw new Error(`not a gzip file (${buf.length} bytes)`);
+        writeFileSync(outPath, buf);
+        downloaded++;
+        lastError = '';
+        break;
+      } catch (e) {
+        lastError = e.message;
+      }
     }
+    if (lastError) failed.push(`${lang} (${lastError})`);
   }
+  console.log(`  OCR language data: ${langs.length - failed.length}/${langs.length} present (${downloaded} downloaded now)`);
+  // Not fatal: the page reports a language without data instead of hanging, and a CDN outage
+  // must not block a deployment.
+  if (failed.length) console.error(`  MISSING OCR language data: ${failed.join(', ')}`);
 }
 
 await downloadLangData();

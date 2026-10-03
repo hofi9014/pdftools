@@ -157,6 +157,9 @@
     "test:excel-to-pdf-layout": "npx --yes tsx tests/excel-to-pdf-layout.mts",
     "test:pdf-encrypt-library-literal-strings": "npx --yes tsx tests/pdf-encrypt-library-literal-strings.mts",
     "test:pdfjs-worker-version-match": "npx --yes tsx tests/pdfjs-worker-version-match.mts",
+    "test:dependency-advisories": "npx --yes tsx tests/dependency-advisories.mts",
+    "test:ocr-engine-options": "npx --yes tsx tests/ocr-engine-options.mts",
+    "test:e2e-ocr-real-scan": "npx --yes tsx e2e/ocr-real-scan.mts",
     "test:vercelignore-keeps-app-files": "npx --yes tsx tests/vercelignore-keeps-app-files.mts"
   },
   "dependencies": {

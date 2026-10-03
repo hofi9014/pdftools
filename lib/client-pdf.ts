@@ -84,12 +84,12 @@ export async function rotatePDF(file: File, angle: 90 | 180 | 270): Promise<Uint
 // The text itself is drawn with an added `rotate: pageRotation` (verified empirically via
 // pdf.js's composed transform matrix: drawing with rotate=+pageRotation, not -pageRotation,
 // is what cancels the page's own clockwise /Rotate and keeps the glyphs upright on screen).
-function visualPageSize(rawWidth: number, rawHeight: number, rotationDeg: number): { width: number; height: number } {
+export function visualPageSize(rawWidth: number, rawHeight: number, rotationDeg: number): { width: number; height: number } {
   const rot = ((rotationDeg % 360) + 360) % 360;
   return rot === 90 || rot === 270 ? { width: rawHeight, height: rawWidth } : { width: rawWidth, height: rawHeight };
 }
 
-function visualToRawPoint(rawWidth: number, rawHeight: number, rotationDeg: number, vx: number, vy: number): { x: number; y: number } {
+export function visualToRawPoint(rawWidth: number, rawHeight: number, rotationDeg: number, vx: number, vy: number): { x: number; y: number } {
   const rot = ((rotationDeg % 360) + 360) % 360;
   if (rot === 90) return { x: rawWidth - vy, y: vx };
   if (rot === 180) return { x: rawWidth - vx, y: rawHeight - vy };
