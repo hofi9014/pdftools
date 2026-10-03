@@ -156,7 +156,8 @@
     "test:line-breaks-and-shared-boxes": "npx --yes tsx tests/line-breaks-and-shared-boxes.mts",
     "test:excel-to-pdf-layout": "npx --yes tsx tests/excel-to-pdf-layout.mts",
     "test:pdf-encrypt-library-literal-strings": "npx --yes tsx tests/pdf-encrypt-library-literal-strings.mts",
-    "test:pdfjs-worker-version-match": "npx --yes tsx tests/pdfjs-worker-version-match.mts"
+    "test:pdfjs-worker-version-match": "npx --yes tsx tests/pdfjs-worker-version-match.mts",
+    "test:vercelignore-keeps-app-files": "npx --yes tsx tests/vercelignore-keeps-app-files.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
