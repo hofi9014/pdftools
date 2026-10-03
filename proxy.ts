@@ -162,8 +162,12 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // The page matcher skips anything that ends in a file extension: every legacy path this proxy
+  // redirects is extension-less, while public/ holds hundreds of static files (pdf.js CMaps and
+  // fonts, the OCR WASM and language data, the service worker, the OAuth helper pages) that
+  // would otherwise each invoke the proxy for nothing.
   matcher: [
     '/api/:path*',
-    '/((?!api|_next/static|_next/image|_next/data|favicon\\.ico|sitemap\\.xml|robots\\.txt|icon|guides).*)',
+    '/((?!api|_next/static|_next/image|_next/data|favicon\\.ico|sitemap\\.xml|robots\\.txt|icon|guides|.*\\.[a-zA-Z0-9]+$).*)',
   ],
 };

@@ -9,7 +9,6 @@ AGENTS.md
 CLAUDE.md
 struktura.txt
 diagnose.ts
-proxy.ts
 *.traineddata
 test-*
 *.pdf
