@@ -106,7 +106,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
     setFailed([]);
 
     try {
-      const { ocrPdfClient } = await import('@/lib/client-ocr');
+      const { ocrPdfClient, OcrError } = await import('@/lib/client-ocr');
       let totalPages = 0;
       let completedPages = 0;
 
@@ -120,6 +120,11 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
           completedPages = completedPages - (completedPages % Math.max(1, totalPages)) + page - 1;
           setProgress(completedPages + page);
           setProgressLabel(t('page.ocr.progress', locale).replace('{page}', String(page)).replace('{total}', String(total)));
+        }).catch((err: unknown) => {
+          if (err instanceof OcrError && err.code === 'language-unavailable') {
+            throw new Error(t('page.ocr.err_language_unavailable', locale));
+          }
+          throw err;
         });
         completedPages += totalPages;
         setProgress(completedPages);
