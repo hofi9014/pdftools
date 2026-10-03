@@ -4088,6 +4088,13 @@ export interface RenderSpreadsheetOpts {
  * repeat nothing rather than the wrong row. Header-like = at least 2 non-empty cells covering at
  * least half of the columns, none of them numeric.
  */
+// A frozen block (header rows or header columns) is repeated on every page. That only makes
+// sense while it leaves the larger part of the page to the body.
+export const SPREADSHEET_MAX_FROZEN_SHARE = 0.5;
+export function spreadsheetFrozenBlockRepeatable(blockPt: number, availablePt: number): boolean {
+  return blockPt <= availablePt * SPREADSHEET_MAX_FROZEN_SHARE;
+}
+
 export function inferHeaderRowCount(sheet: IRSheet): number {
   const row = sheet.cells[0];
   const nCols = sheet.cells[0]?.length ?? 0;
@@ -4183,14 +4190,24 @@ export async function renderSpreadsheetIRToPdf(
     if (nRows === 0 || nCols === 0) continue;
 
     const colPt = spreadsheetColWidthsPt(sheet);
-    const H = sheet.frozenRows === undefined ? Math.min(inferHeaderRowCount(sheet), nRows) : Math.min(Math.max(sheet.frozenRows, 0), nRows);
-    const G = sheet.frozenCols === undefined ? 0 : Math.min(Math.max(sheet.frozenCols, 0), nCols);
+    let H = sheet.frozenRows === undefined ? Math.min(inferHeaderRowCount(sheet), nRows) : Math.min(Math.max(sheet.frozenRows, 0), nRows);
+    let G = sheet.frozenCols === undefined ? 0 : Math.min(Math.max(sheet.frozenCols, 0), nCols);
+    // Frozen columns are repeated on every column page; when they alone take most of the page
+    // width there is no room left for the body (it was drawn past the right edge and lost).
+    if (!spreadsheetFrozenBlockRepeatable(colPt.slice(0, G).reduce((a, b) => a + b, 0), availableW)) G = 0;
     const fragments = spreadsheetColFragments(sheet, colPt, availableW, G);
     let rowHt = spreadsheetRowHeightsPt(sheet, colPt, {
       fontSize: FONT_SIZE, lineH: LINE_H, pad: PAD, measure, fragments, frozenCols: G, fontSizeOf,
     });
     const headerW = colPt.slice(0, G).reduce((a, b) => a + b, 0);
-    const headerBlockPt = rowHt.slice(0, H).reduce((a, b) => a + b, 0);
+    let headerBlockPt = rowHt.slice(0, H).reduce((a, b) => a + b, 0);
+    // Same for frozen rows: a header taller than half a page left one body row per page — or
+    // none — and ran off the bottom itself. Such a header is laid out as ordinary rows instead
+    // (drawn once, split across pages like any tall row).
+    if (!spreadsheetFrozenBlockRepeatable(headerBlockPt, PAGE_H - MARGIN * 2 - TITLE_PT)) {
+      H = 0;
+      headerBlockPt = 0;
+    }
     const bodyBudget = PAGE_H - MARGIN * 2 - TITLE_PT - headerBlockPt;
     ({ sheet, rowHt } = spreadsheetSplitTallRows(sheet, rowHt, bodyBudget, H, (c) => LINE_H * fontSizeOf(c) / FONT_SIZE, PAD));
 

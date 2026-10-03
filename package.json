@@ -158,6 +158,7 @@
     "test:pdf-encrypt-library-literal-strings": "npx --yes tsx tests/pdf-encrypt-library-literal-strings.mts",
     "test:pdfjs-worker-version-match": "npx --yes tsx tests/pdfjs-worker-version-match.mts",
     "test:api-error-codes": "npx --yes tsx tests/api-error-codes.mts",
+    "test:excel-to-pdf-frozen-oversize": "npx --yes tsx tests/excel-to-pdf-frozen-oversize.mts",
     "test:dependency-advisories": "npx --yes tsx tests/dependency-advisories.mts",
     "test:ocr-engine-options": "npx --yes tsx tests/ocr-engine-options.mts",
     "test:e2e-ocr-real-scan": "npx --yes tsx e2e/ocr-real-scan.mts",
