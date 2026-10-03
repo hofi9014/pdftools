@@ -68,7 +68,9 @@ async function run() {
   }
 
   console.log('\n1. Mobile menu hamburger visible...');
-  await page.goto(`${BASE_URL}/`, { waitUntil: 'load', timeout: 15000 }).catch(() => {});
+  // /pl explicitly: the menu takes its language from the URL (since the header locale fix), and
+  // a bare "/" redirects a headless browser to /en, where the Polish labels below never appear.
+  await page.goto(`${BASE_URL}/pl`, { waitUntil: 'load', timeout: 15000 }).catch(() => {});
 
   const hamburger = page.locator('header button[class*="md:hidden"]').first();
   await hamburger.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
