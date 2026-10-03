@@ -166,8 +166,15 @@ export const config = {
   // redirects is extension-less, while public/ holds hundreds of static files (pdf.js CMaps and
   // fonts, the OCR WASM and language data, the service worker, the OAuth helper pages) that
   // would otherwise each invoke the proxy for nothing.
+  //
+  // It also skips every path that already starts with a locale ("/pl", "/pl/merge"): proxy()
+  // does nothing for those, but matching them put a function invocation in front of every
+  // canonical page and every <Link> prefetch — measured on production, ~100 ms server wait
+  // instead of ~50 ms straight from the CDN. The matcher must be a literal (it is analysed at
+  // build time), so the locale list is repeated here; tests/vercelignore-keeps-app-files.mts
+  // fails if it drifts from LOCALES.
   matcher: [
     '/api/:path*',
-    '/((?!api|_next/static|_next/image|_next/data|favicon\\.ico|sitemap\\.xml|robots\\.txt|icon|guides|.*\\.[a-zA-Z0-9]+$).*)',
+    '/((?!api|_next/static|_next/image|_next/data|favicon\\.ico|sitemap\\.xml|robots\\.txt|icon|guides|(?:ar|de|en|es|fa|fr|hi|is|it|ja|no|pl|pt|sv|tr|zh)(?:/|$)|.*\\.[a-zA-Z0-9]+$).*)',
   ],
 };
