@@ -175,7 +175,10 @@ async function run() {
   } catch { check('Offline page exists', false, 'fetch failed'); }
 
   // ── 11. HTTPS check (exempt localhost) ──
-  check('Page served over HTTPS (local exempt)', page.url().startsWith('http://localhost'), 'URL: ' + page.url());
+  // Was `startsWith('http://localhost')` alone, so the one real HTTPS origin (production) FAILED
+  // this check while plain-http localhost passed it.
+  check('Page served over HTTPS (local exempt)',
+    page.url().startsWith('https://') || page.url().startsWith('http://localhost'), 'URL: ' + page.url());
 
   // ── Print report ──
   console.log('\n========================================');
@@ -198,6 +201,9 @@ async function run() {
   console.log(allPassed ? '\n  ✓ ALL CHECKS PASSED' : '\n  ✗ SOME CHECKS FAILED');
 
   await browser.close();
+  // A failed check used to leave the exit code at 0, so `npm run test:e2e-pwa-audit` reported
+  // success no matter what the report said.
+  if (!allPassed) process.exit(1);
 }
 
 run().catch(err => {
