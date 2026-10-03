@@ -50,7 +50,9 @@ console.log('=== the core guarantee: no app/*/page.tsx silently gains a network 
   // the 3 AI tool pages, must reach the network only through a shared lib function (client-ai.ts
   // for AI), never directly from the page component — that's what this test enforces.
   const ALLOWED = new Set(['url-to-pdf']);
-  const NETWORK_PATTERN = /\bfetch\s*\(|XMLHttpRequest|\baxios\b/;
+  // apiFetch() (lib/api-error.ts) is fetch() with a localized "no connection" error — a page
+  // calling it makes a network call just the same, so it counts here exactly like fetch().
+  const NETWORK_PATTERN = /\bfetch\s*\(|\bapiFetch\s*\(|XMLHttpRequest|\baxios\b/;
   const appDir = join(repoRoot, 'app');
   const toolDirs = readdirSync(appDir, { withFileTypes: true }).filter(d => d.isDirectory() && d.name !== 'api' && d.name !== '[locale]');
   check(toolDirs.length >= 45, `sanity: found a substantial number of app/* page directories (got ${toolDirs.length})`);
