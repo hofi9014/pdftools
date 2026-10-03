@@ -100,7 +100,7 @@ try {
     openRouterCalls = 0;
     lastRequestedIp = freshIp('translate-long');
     const longText = 'z'.repeat(130000);
-    const result = await translateText(longText, 'English');
+    const result = await translateText(longText, 'angielski');
     check(result === 'ok', `translateText with 130000-char text (needs truncation) succeeds, not a 400 (got: ${result})`);
     check(openRouterCalls === 1, 'OpenRouter was actually reached for the truncated translate request');
   }
