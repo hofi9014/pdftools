@@ -91,4 +91,14 @@ export function toolPath(key: string, locale?: string): string {
   return locale ? `/${locale}/${slug}` : `/${slug}`;
 }
 
+/**
+ * The home page in the given language. Internal links must point here, not at "/": "/" has no
+ * page of its own — the proxy answers it with a redirect chosen from the visitor's browser
+ * language, so a link to it costs a proxy run on every prefetch and can switch the language the
+ * visitor is reading in.
+ */
+export function homePath(locale?: string): string {
+  return locale ? `/${locale}` : '/';
+}
+
 export default tools;
