@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t, locales, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug, localeFromSegment } from '@/lib/guides-slugs';
-import { keyBySlug } from '@/lib/tools';
+import { keyBySlug, homePath } from '@/lib/tools';
 
 const guidesLocaleSegments = new Set(Object.values(localeGuidesSlug));
 
@@ -46,7 +46,7 @@ export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale 
     <nav aria-label="Breadcrumb" className="max-w-7xl mx-auto px-4 pt-4 text-sm" style={{ color: 'var(--coffee-text-tertiary)' }}>
       <ol className="flex items-center flex-wrap gap-x-1.5 gap-y-1 text-xs sm:text-sm">
         <li>
-          <Link href="/" className="hover:text-[var(--coffee-accent)] transition">{homeLabel}</Link>
+          <Link href={homePath(locale)} className="hover:text-[var(--coffee-accent)] transition">{homeLabel}</Link>
         </li>
         {segments.map((seg, i) => {
           // skip locale segments (e.g. /pl/merge → skip "pl")

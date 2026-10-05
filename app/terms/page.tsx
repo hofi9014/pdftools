@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
+import { homePath } from '@/lib/tools';
 
 const content = {
   pl: {
@@ -225,7 +226,7 @@ export default function TermsPage({ locale: forcedLocale }: { locale?: Locale } 
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
-      <Link href="/" className="text-sm text-[var(--coffee-accent)] hover:underline mb-4 inline-block">&larr; {t('back.to_home', locale)}</Link>
+      <Link href={homePath(locale)} className="text-sm text-[var(--coffee-accent)] hover:underline mb-4 inline-block">&larr; {t('back.to_home', locale)}</Link>
       <h1 className="text-3xl font-bold mb-2">{data.title}</h1>
       <p className="text-sm text-gray-500 mb-8">{data.updated}</p>
       {data.sections.map((s, i) => (

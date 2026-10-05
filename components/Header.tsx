@@ -4,7 +4,7 @@ import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import { getCategoryIcon } from '@/lib/icons';
-import { toolsByCategory, toolPath } from '@/lib/tools';
+import { toolsByCategory, toolPath, homePath } from '@/lib/tools';
 import ThemeToggle from './ThemeToggle';
 import LanguageSelector from './LanguageSelector';
 import MobileMenu from './MobileMenu';
@@ -54,14 +54,14 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
   return (
     <header className="border-b border-[var(--coffee-border)] bg-[var(--coffee-surface)] backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 shrink-0">
+        <Link href={homePath(locale)} className="flex items-center gap-2 shrink-0">
           <img src="/logo.png?v=3" alt="OptimaPDF" className="h-11 w-auto" />
           <span className="hidden xs:inline text-xl font-bold" style={{ color: 'var(--coffee-text)' }}>OptimaPDF</span>
           <span className="xs:hidden text-xl font-bold" style={{ color: 'var(--coffee-text)' }}>OP</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1 text-sm font-medium" style={{ color: 'var(--coffee-text-secondary)' }}>
-          <Link href="/" className="px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition" style={{ color: 'var(--coffee-text-secondary)' }}>{t('nav.home', locale)}</Link>
+          <Link href={homePath(locale)} className="px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition" style={{ color: 'var(--coffee-text-secondary)' }}>{t('nav.home', locale)}</Link>
           {categories.map(cat => (
             <div key={cat.key} className="relative group">
               <button className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition cursor-pointer whitespace-nowrap" style={{ color: 'var(--coffee-text-secondary)' }}>
