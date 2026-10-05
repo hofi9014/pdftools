@@ -241,7 +241,12 @@ console.log('\n=== a second language really recognises (German data, German text
 
 console.log('\n=== a language whose data is missing is reported, not an endless spinner ===');
 {
-  const page = await browser.newPage();
+  // Service workers are blocked for this case only: on a production build public/sw.js answers
+  // /tesseract/lang-data/* itself, and Playwright's page.route() does not see requests a service
+  // worker makes — the "missing" file would be fetched from the real server and OCR would simply
+  // succeed. (The dev server registers no worker, which is why this only showed on `next start`.)
+  const context = await browser.newContext({ serviceWorkers: 'block' });
+  const page = await context.newPage();
   await page.route('**/tesseract/lang-data/fra.traineddata.gz', (r) => r.fulfill({ status: 404, contentType: 'text/html', body: '<html>not found</html>' }));
   await page.goto(`${BASE_URL}/pl/ocr-pdf`, { waitUntil: 'load' });
   await page.setInputFiles('#fileInput', { name: 'scan.pdf', mimeType: 'application/pdf', buffer: readFileSync(join(outDir, 'chrome-article-scan.pdf')) });
@@ -253,7 +258,7 @@ console.log('\n=== a language whose data is missing is reported, not an endless 
   check(shown, 'an error appears within 30 s');
   check(/niedostępne/.test(message) && !/Network error|traineddata/.test(message), `the message is the localized one (${message.slice(0, 90)})`);
   check(await page.locator('button', { hasText: 'Uruchom OCR' }).isEnabled(), 'the tool is usable again (button back, no spinner)');
-  await page.close();
+  await context.close();
 }
 
 await browser.close();
