@@ -113,7 +113,8 @@ console.log('\n=== PDF → Word ===');
   const xml = await zip.file('word/document.xml')?.async('string');
   check(!!xml, `a valid .docx (${r.name})`);
   // runs inside one paragraph are glued (a colour change mid-word must not split it); paragraphs get a space
-  const text = (xml ?? '').replace(/<\/w:p>/g, ' ').replace(/<[^>]+>/g, '');
+  // Tabs and line breaks inside a paragraph are white space too (the faithful layout uses both).
+  const text = (xml ?? '').replace(/<\/w:p>|<w:(tab|br)[^>]*\/>/g, ' ').replace(/<[^>]+>/g, '');
   const src = (await pageTexts(new Uint8Array(allegro))).join(' ');
   const words = (t: string) => t.toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) ?? [];
   const have = new Set(words(text));

@@ -5,6 +5,7 @@ import { PDFDocument, PDFName, rgb, type PDFFont, type PDFPage, type PDFImage } 
 import type JSZip from 'jszip';
 import { applyConditionalFormatting } from './xlsx-conditional-formatting';
 import { splitAtBlankLines, findBox, splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, columnLayoutFrame, findBackgroundFill, separateLines, blocksInReadingOrder, type PageMargins } from './pdf/docxLayout';
+import { protectSingleCharRuns } from './pdf/docxRunSafety';
 
 // ============================================================
 // IR TYPES (Phase 1a — without TableBlock)
@@ -1058,7 +1059,8 @@ export function docxFontFamily(raw: string): string | undefined {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function irRunsToTextRuns(TRC: any, runs: IRTextRun[], ExtLink?: any): any[] {
-  return separateLines(runs).map(run => {
+  // protectSingleCharRuns: OpenOffice drops a run that is a lone "ć"/"č" (see docxRunSafety.ts).
+  return protectSingleCharRuns(separateLines(runs)).map(run => {
     // A run tagged with .link (from a PDF /Annots Link matched onto it — see
     // applyLinkAnnotations in client-pdf.ts) becomes a real, clickable ExternalHyperlink
     // instead of plain text, styled the conventional Word hyperlink blue+underline so it's

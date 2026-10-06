@@ -33,7 +33,7 @@ console.log('\n=== batch tool pages ===');
 // succeeded, and list the failures with BatchFailures. The old single try/catch loop is gone.
 const PAGES: [string, RegExp][] = [
   ['pdf-to-excel', /await pdfToIRSpreadsheet/],
-  ['pdf-to-word', /await pdfToWordIR/],
+  ['pdf-to-word', /await pdfToDocxDocument/],
   ['pdf-to-powerpoint', /await pdfToIRDeck/],
   ['pdf-to-images', /extractImagesFromPdf\(file/],
   ['compress', /await compressPDFClient/],

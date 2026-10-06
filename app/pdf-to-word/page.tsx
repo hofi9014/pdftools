@@ -1,7 +1,9 @@
 'use client';
 import { useState, useRef } from 'react';
 import JSZip from 'jszip';
-import { pdfToWord, pdfToWordIR } from '@/lib/client-pdf';
+import { pdfToWord } from '@/lib/client-pdf';
+import { pdfToDocxDocument, type PdfLayoutMode, type ResolvedPdfLayout } from '@/lib/pdf/pdfDocumentExport';
+import LayoutModeSelect from '@/components/LayoutModeSelect';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -19,6 +21,9 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
   const [failed, setFailed] = useState<BatchFailure[]>([]);
   const [success, setSuccess] = useState(false);
   const [fallbackUsed, setFallbackUsed] = useState(false);
+  const [layoutMode, setLayoutMode] = useState<PdfLayoutMode>('auto');
+  // Which engine produced the downloaded documents (null: nothing converted yet, or a mix).
+  const [usedLayout, setUsedLayout] = useState<ResolvedPdfLayout | null>(null);
   const [zipped, setZipped] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
@@ -47,6 +52,7 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
     setError('');
     setSuccess(false);
     setFallbackUsed(false);
+    setUsedLayout(null);
     setProgress(0);
     setFailed([]);
 
@@ -55,14 +61,17 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
       // and the failures are listed with their reason.
       const batch = await runBatch(files, async (file) => {
         let blob: Blob;
+        let layout: ResolvedPdfLayout | null = null;
         try {
-          blob = await pdfToWordIR(file);
+          const res = await pdfToDocxDocument(file, layoutMode);
+          blob = res.blob;
+          layout = res.layout;
         } catch (irErr) {
-          console.error('pdfToWordIR failed, falling back to plain text:', irErr);
+          console.error('pdfToDocxDocument failed, falling back to plain text:', irErr);
           blob = await pdfToWord(file);
           setFallbackUsed(true);
         }
-        return { name: file.name.replace('.pdf', '.docx'), data: blob };
+        return { name: file.name.replace('.pdf', '.docx'), data: blob, layout };
       }, setProgress);
       setFailed(batchFailures(batch));
       const batchResults = batch.ok.map((r) => r.result);
@@ -71,6 +80,8 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
         return;
       }
       setZipped(batchResults.length > 1);
+      const layouts = new Set(batchResults.map((r) => r.layout));
+      setUsedLayout(layouts.size === 1 ? batchResults[0]!.layout : null);
 
       if (batchResults.length === 1) {
         const r = batchResults[0]!;
@@ -165,6 +176,8 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
         </div>
       )}
 
+      <LayoutModeSelect value={layoutMode} onChange={setLayoutMode} locale={locale} disabled={loading} />
+
       <div className="tool-info-box rounded-2xl p-5 mb-6">
         <h3 className="font-bold tool-heading mb-2">{t('section.conversion_info', locale)}</h3>
         <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
@@ -183,6 +196,7 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
           ✅ {zipped ? t('result.zip', locale) : t('result.success', locale)}
+          {usedLayout && !fallbackUsed && <p id="layout-used" data-layout={usedLayout} className="text-sm mt-1">{t(`layout.used_${usedLayout}`, locale)}</p>}
         </div>
       )}
       {!loading && <BatchFailures failed={failed} total={files.length} locale={locale} />}

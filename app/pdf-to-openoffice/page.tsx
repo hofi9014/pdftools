@@ -2,9 +2,9 @@
 import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
-import { pdfToOdt, extractFormattedTextFromPDF } from '@/lib/client-pdf';
-import { renderIRToOdt, writerImageToDocxImage, type DocxImage } from '@/lib/client-pdf-docx';
-import { buildPdfImageMap } from '@/lib/pdf/extractPdfImages';
+import { pdfToOdt } from '@/lib/client-pdf';
+import { pdfToOdtDocument, type PdfLayoutMode, type ResolvedPdfLayout } from '@/lib/pdf/pdfDocumentExport';
+import LayoutModeSelect from '@/components/LayoutModeSelect';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -17,6 +17,8 @@ export default function PDFToOpenOffice({ locale: forcedLocale }: { locale?: Loc
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [fallbackUsed, setFallbackUsed] = useState(false);
+  const [layoutMode, setLayoutMode] = useState<PdfLayoutMode>('auto');
+  const [usedLayout, setUsedLayout] = useState<ResolvedPdfLayout | null>(null);
   const processedBlobRef = useRef<Blob | null>(null);
 
   const handleFile = (f: File | null) => {
@@ -34,18 +36,18 @@ export default function PDFToOpenOffice({ locale: forcedLocale }: { locale?: Loc
     setError('');
     setSuccess(false);
     setFallbackUsed(false);
+    setUsedLayout(null);
 
     try {
       let blob: Blob;
       let fallbackUsed = false;
+      let layout: ResolvedPdfLayout | null = null;
       try {
-        const pages = await extractFormattedTextFromPDF(file);
-        const imageMap = await buildPdfImageMap(file, []);
-        const odtImages = new Map<string, DocxImage>();
-        for (const [id, img] of imageMap.images) odtImages.set(id, writerImageToDocxImage(img));
-        blob = await renderIRToOdt(pages, odtImages);
+        const res = await pdfToOdtDocument(file, layoutMode);
+        blob = res.blob;
+        layout = res.layout;
       } catch (irErr) {
-        console.error('extractFormattedTextFromPDF/renderIRToOdt failed, falling back to pdfToOdt:', irErr);
+        console.error('pdfToOdtDocument failed, falling back to pdfToOdt:', irErr);
         blob = await pdfToOdt(file);
         fallbackUsed = true;
       }
@@ -57,6 +59,7 @@ export default function PDFToOpenOffice({ locale: forcedLocale }: { locale?: Loc
       a.click();
       URL.revokeObjectURL(url);
       setFallbackUsed(fallbackUsed);
+      setUsedLayout(layout);
       setSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('error.generic', locale));
@@ -107,6 +110,8 @@ export default function PDFToOpenOffice({ locale: forcedLocale }: { locale?: Loc
         <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
       </div>
 
+      <LayoutModeSelect value={layoutMode} onChange={setLayoutMode} locale={locale} disabled={loading} />
+
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 mb-6">
         <h3 className="font-bold tool-heading mb-2">{t('section.info', locale)}</h3>
         <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
@@ -125,6 +130,7 @@ export default function PDFToOpenOffice({ locale: forcedLocale }: { locale?: Loc
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
           {t('page.pdf2openoffice.success', locale)}
+          {usedLayout && !fallbackUsed && <p id="layout-used" data-layout={usedLayout} className="text-sm mt-1">{t(`layout.used_${usedLayout}`, locale)}</p>}
         </div>
       )}
       {success && file && processedBlobRef.current && (
