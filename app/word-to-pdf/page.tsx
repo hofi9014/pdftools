@@ -4,6 +4,7 @@ import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { officeToPdf } from '@/lib/client-pdf';
 import { docxToIR, renderIRToPdf, hasUnsupportedScriptInPages } from '@/lib/client-pdf-docx';
+import { positionedDocxToPdf, positionedOdtToPdf } from '@/lib/pdf/fixedLayoutToPdf';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -75,19 +76,30 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
       let fallbackUsed = false;
       if (ext === 'docx') {
         try {
-          const { pages, images } = await docxToIR(file);
-          if (hasUnsupportedScriptInPages(pages)) {
-            console.warn('Unsupported script detected, falling back to legacy officeToPdf');
-            blob = await officeToPdf(file);
-            fallbackUsed = true;
+          // A document laid out by position (what PDF -> Word writes in its faithful layout) is
+          // drawn where it says; every other document (null) is converted the ordinary way.
+          const positioned = await positionedDocxToPdf(file);
+          if (positioned) {
+            blob = positioned;
           } else {
-            blob = await renderIRToPdf(pages, images);
+            const { pages, images } = await docxToIR(file);
+            if (hasUnsupportedScriptInPages(pages)) {
+              console.warn('Unsupported script detected, falling back to legacy officeToPdf');
+              blob = await officeToPdf(file);
+              fallbackUsed = true;
+            } else {
+              blob = await renderIRToPdf(pages, images);
+            }
           }
         } catch (irErr) {
           console.error('docxToIR/renderIRToPdf failed, falling back:', irErr);
           blob = await officeToPdf(file);
           fallbackUsed = true;
         }
+      } else if (ext === 'odt') {
+        // The same for OpenDocument text; failing that, this tab's plain conversion as before.
+        const positioned = await positionedOdtToPdf(file).catch(() => null);
+        blob = positioned ?? await officeToPdf(file);
       } else {
         blob = await officeToPdf(file);
       }

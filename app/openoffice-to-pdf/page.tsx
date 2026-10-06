@@ -4,6 +4,7 @@ import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { officeToPdf } from '@/lib/client-pdf';
 import { odtToIR, renderIRToPdf, hasUnsupportedScriptInPages } from '@/lib/client-pdf-docx';
+import { positionedOdtToPdf } from '@/lib/pdf/fixedLayoutToPdf';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -39,13 +40,20 @@ export default function OpenOfficeToPDF({ locale: forcedLocale }: { locale?: Loc
       let blob: Blob;
       let fallbackUsed = false;
       try {
-        const { pages, images } = await odtToIR(file);
-        if (hasUnsupportedScriptInPages(pages)) {
-          console.warn('Unsupported script detected, falling back to legacy officeToPdf');
-          blob = await officeToPdf(file);
-          fallbackUsed = true;
+        // A document laid out by position (what PDF -> OpenDocument writes in its faithful
+        // layout) is drawn where it says; every other document (null) goes the ordinary way.
+        const positioned = await positionedOdtToPdf(file);
+        if (positioned) {
+          blob = positioned;
         } else {
-          blob = await renderIRToPdf(pages, images);
+          const { pages, images } = await odtToIR(file);
+          if (hasUnsupportedScriptInPages(pages)) {
+            console.warn('Unsupported script detected, falling back to legacy officeToPdf');
+            blob = await officeToPdf(file);
+            fallbackUsed = true;
+          } else {
+            blob = await renderIRToPdf(pages, images);
+          }
         }
       } catch (irErr) {
         console.error('odtToIR/renderIRToPdf failed, falling back:', irErr);

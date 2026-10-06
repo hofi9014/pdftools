@@ -169,7 +169,8 @@
     "test:e2e-ocr-real-scan": "npx --yes tsx e2e/ocr-real-scan.mts",
     "test:test-helpers-tracked": "npx --yes tsx tests/test-helpers-tracked.mts",
     "test:two-column-reading-order": "npx --yes tsx tests/two-column-reading-order.mts",
-    "test:vercelignore-keeps-app-files": "npx --yes tsx tests/vercelignore-keeps-app-files.mts"
+    "test:vercelignore-keeps-app-files": "npx --yes tsx tests/vercelignore-keeps-app-files.mts",
+    "test:fixed-layout-roundtrip": "npx --yes tsx tests/fixed-layout-roundtrip.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
