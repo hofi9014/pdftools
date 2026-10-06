@@ -1101,7 +1101,7 @@ export async function extractTextFromPDF(file: File): Promise<string> {
 
 // pdfjs-dist operator list arg shapes (internal, untyped)
 interface PDFTmObj { [key: string]: number; }
-interface PDFGlyph { unicode?: string; fontChar?: string; width?: number; }
+interface PDFGlyph { unicode?: string; fontChar?: string; width?: number; isSpace?: boolean; }
 interface OpEntry { op: string; args: unknown; }
 
 // ============================================================
@@ -1956,9 +1956,20 @@ export interface PdfPageScaffold {
   ops: OpEntry[];
   textRuns: IRTextRun[];
   images: PdfPageScaffoldImage[];
+  /** Index (in `ops`) of every showText operator that produced a run — including runs dropped as overprint duplicates. */
+  textOps: number[];
 }
 
-interface PdfjsFontCommonObjs {
+// Which showText operator a run came from. Kept beside the runs rather than on them: the run
+// objects are serialised (and hashed) by consumers that must not see a new field.
+const textRunOps = new WeakMap<IRTextRun, number>();
+
+/** Index of the showText operator that drew this run in its page's operator list, if known. */
+export function textRunOpIndex(run: IRTextRun): number | undefined {
+  return textRunOps.get(run);
+}
+
+export interface PdfjsFontCommonObjs {
   get(id: string): { name?: string } | undefined;
 }
 
@@ -1966,7 +1977,7 @@ interface PdfjsFontCommonObjs {
  *  PDF's real /BaseFont name (e.g. "Helvetica-Bold") via page.commonObjs — see the FINDING
  *  comment in buildPageScaffold for why this matters (bold/italic detection). Every font
  *  referenced in an already-resolved operator list is guaranteed present in commonObjs. */
-function buildFontNameMap(
+export function buildFontNameMap(
   commonObjs: PdfjsFontCommonObjs,
   opList: { fnArray: number[]; argsArray: unknown[] },
   OPS: Record<string, number>,
@@ -1986,10 +1997,59 @@ function buildFontNameMap(
   return map;
 }
 
+/** One stretch of a showText operator's glyphs, in text-space units (glyph width × Tf / 1000). */
+interface ShownPiece { text: string; start: number; width: number }
+
+/**
+ * A showText operator as the pieces of text it really draws. Its array mixes glyphs with numbers
+ * (TJ adjustments, thousandths of the font size, positive = move LEFT): small ones are kerning,
+ * large ones are how many producers set a gap — LibreOffice justifies with them, a table of
+ * contents jumps from the title to the page number with one of 13 em. A gap wider than 0.3 em
+ * (or a jump back) ends a piece. Character spacing (Tc), word spacing (Tw) and horizontal
+ * scaling (Tz) count towards widths and positions.
+ */
+export function splitShownText(glyphs: Array<PDFGlyph | number>, tf: number, tc: number, tw: number, th: number): { pieces: ShownPiece[]; advance: number } {
+  const pieces: ShownPiece[] = [];
+  let x = 0;
+  let cur: { chars: string[]; start: number; end: number } | null = null;
+  const close = (): void => {
+    if (!cur) return;
+    const text = normalizeLigatures(cur.chars.join(''));
+    if (text) pieces.push({ text, start: cur.start, width: Math.max(0, cur.end - cur.start) });
+    cur = null;
+  };
+  for (const g of glyphs) {
+    if (typeof g === 'number') {
+      const shift = -g / 1000 * tf * th;
+      if (Math.abs(shift) > 0.3 * tf) close();
+      x += shift;
+      continue;
+    }
+    const ch = g.unicode || g.fontChar || '';
+    const width = ((g.width || 0) * tf / 1000 + tc + (g.isSpace ? tw : 0)) * th;
+    if (!cur) cur = { chars: [], start: x, end: x };
+    cur.chars.push(ch);
+    x += width;
+    cur.end = x;
+  }
+  close();
+  return { pieces, advance: x };
+}
+
+export interface PageScaffoldOptions {
+  /**
+   * Exact text geometry (see splitShownText): TJ adjustments, Tc, Tw and Tz are applied and a
+   * showText operator is split into one run per stretch of text. Off by default: the flow engine
+   * was tuned on the simpler runs (one per operator, glyph widths only).
+   */
+  preciseText?: boolean;
+}
+
 export function buildPageScaffold(
   opList: { fnArray: number[]; argsArray: unknown[] },
   OPS: Record<string, number>,
   fontNameMap?: Map<string, string>,
+  options: PageScaffoldOptions = {},
 ): PdfPageScaffold {
   // --- Build operator name map ---
   const OPS_MAP: Record<number, string> = {};
@@ -2112,6 +2172,41 @@ export function buildPageScaffold(
   // patterns.  LibreOffice exports use moveText for continuation lines within a
   // paragraph, so setTextMatrix alone misses most body text.
   const textRuns: IRTextRun[] = [];
+  const textOps: number[] = [];
+
+  // Text state for the precise mode: character spacing, word spacing and horizontal scaling in
+  // effect at every operator (part of the graphics state: saved and restored by q/Q).
+  const precise = options.preciseText === true;
+  const textStateAtOp: Array<[number, number, number, number]> = [];
+  if (precise) {
+    // [Tc, Tw, Tz/100, TL]
+    let state: [number, number, number, number] = [0, 0, 1, 0];
+    const stateStack: Array<[number, number, number, number]> = [];
+    const firstArg = (a: unknown): number => Number(Array.isArray(a) ? a[0] : a) || 0;
+    for (const [opIdx, { op, args }] of ops.entries()) {
+      if (op === 'save') stateStack.push(state);
+      else if (op === 'restore') state = stateStack.pop() ?? state;
+      else if (op === 'setCharSpacing') state = [firstArg(args), state[1], state[2], state[3]];
+      else if (op === 'setWordSpacing') state = [state[0], firstArg(args), state[2], state[3]];
+      else if (op === 'setHScale') state = [state[0], state[1], (firstArg(args) || 100) / 100, state[3]];
+      else if (op === 'setLeading') state = [state[0], state[1], state[2], firstArg(args)];
+      // TD sets the leading to -ty and then moves like Td.
+      else if (op === 'setLeadingMoveText' && Array.isArray(args)) state = [state[0], state[1], state[2], -(Number(args[1]) || 0)];
+      textStateAtOp[opIdx] = state;
+    }
+  }
+  /**
+   * Precise mode only: T* (next line by the leading) and TD (move and set the leading) as the
+   * moveText they stand for; null for every other operator. pdf-lib writes wrapped text with T*,
+   * so without this every further line of a paragraph sat on the first line's baseline.
+   */
+  const lineMove = (index: number): [number, number] | null => {
+    if (!precise) return null;
+    const { op, args } = ops[index]!;
+    if (op === 'nextLine') return [0, -(textStateAtOp[index]?.[3] ?? 0)];
+    if (op === 'setLeadingMoveText' && Array.isArray(args)) return [Number(args[0]) || 0, Number(args[1]) || 0];
+    return null;
+  };
 
   for (let i = 0; i < ops.length; i++) {
     // Safe: i is always in [0, ops.length-1] by the loop bound.
@@ -2154,6 +2249,13 @@ export function buildPageScaffold(
         adv = 0;
         continue;
       }
+      const lineDelta = lineMove(j);
+      if (lineDelta) {
+        accDx += lineDelta[0];
+        accDy += lineDelta[1];
+        adv = 0;
+        continue;
+      }
 
       if (op === 'showText') {
         const rawSt = ops[j]!.args;
@@ -2168,6 +2270,31 @@ export function buildPageScaffold(
         const fontInfo = textOpFonts.get(j) || { name: '', size: 12 };
         const color = textOpColors.get(j) || '#000000';
         const effectiveFontSize = fontInfo.size * (tmScale || 1);
+
+        if (precise) {
+          const [tc, tw, th] = textStateAtOp[j] ?? [0, 0, 1, 0];
+          const shown = splitShownText(glyphArr as Array<PDFGlyph | number>, fontInfo.size, tc, tw, th);
+          for (const piece of shown.pieces) {
+            const lx = tmX + (accDx + adv + piece.start) * tmA + accDy * tmC;
+            const ly = tmY + (accDx + adv + piece.start) * tmB + accDy * tmD;
+            textRuns.push({
+              text: piece.text,
+              fontName: fontInfo.name,
+              fontSize: effectiveFontSize,
+              width: piece.width * (tmScale || 1),
+              height: effectiveFontSize,
+              position: { x: ctm[0] * lx + ctm[2] * ly + ctm[4], y: ctm[1] * lx + ctm[3] * ly + ctm[5] },
+              color,
+              bold: parseFontStyle(fontInfo.name).bold,
+              italic: parseFontStyle(fontInfo.name).italic,
+              rotation: getRotation([comb[0], comb[1], 0, 0, 0, 0]),
+            });
+            textRunOps.set(textRuns[textRuns.length - 1]!, j);
+          }
+          textOps.push(j);
+          adv += shown.advance;
+          continue;
+        }
 
         let width = 0;
         for (const g of glyphArr) {
@@ -2197,6 +2324,8 @@ export function buildPageScaffold(
           italic: parseFontStyle(fontInfo.name).italic,
           rotation,
         });
+        textRunOps.set(textRuns[textRuns.length - 1]!, j);
+        textOps.push(j);
 
         // After showText the text cursor advances by the glyph widths (text space); a moveText resets
         // it (it is relative to the line start), a following showText continues from here.
@@ -2257,6 +2386,13 @@ export function buildPageScaffold(
         adv = 0;
         continue;
       }
+      const lineDelta = lineMove(j);
+      if (lineDelta) {
+        accDx += lineDelta[0];
+        accDy += lineDelta[1];
+        adv = 0;
+        continue;
+      }
       if (op !== 'showText') continue;
 
       const rawSt = args;
@@ -2271,6 +2407,30 @@ export function buildPageScaffold(
       const fontInfo = textOpFonts.get(j) || { name: '', size: 12 };
       const color = textOpColors.get(j) || '#000000';
       const fontSize = fontInfo.size * fScale;
+
+      if (precise) {
+        const [tc, tw, th] = textStateAtOp[j] ?? [0, 0, 1, 0];
+        const shown = splitShownText(glyphArr as Array<PDFGlyph | number>, fontInfo.size, tc, tw, th);
+        for (const piece of shown.pieces) {
+          const lx = accDx + adv + piece.start;
+          textRuns.push({
+            text: piece.text,
+            fontName: fontInfo.name,
+            fontSize,
+            width: piece.width * fScale,
+            height: fontSize,
+            position: { x: fctm[0] * lx + fctm[2] * accDy + fctm[4], y: fctm[1] * lx + fctm[3] * accDy + fctm[5] },
+            color,
+            bold: parseFontStyle(fontInfo.name).bold,
+            italic: parseFontStyle(fontInfo.name).italic,
+            rotation: fRotation,
+          });
+          textRunOps.set(textRuns[textRuns.length - 1]!, j);
+        }
+        textOps.push(j);
+        adv += shown.advance;
+        continue;
+      }
 
       let width = 0;
       for (const g of glyphArr) {
@@ -2292,13 +2452,15 @@ export function buildPageScaffold(
         italic: parseFontStyle(fontInfo.name).italic,
         rotation: fRotation,
       });
+      textRunOps.set(textRuns[textRuns.length - 1]!, j);
+      textOps.push(j);
       let advance = 0;
       for (const g of glyphArr) advance += (g.width || 0) * fontInfo.size / 1000;
       adv += advance > 0 ? advance : text.length * fontInfo.size * 0.5;
     }
   }
 
-  return { ops, textRuns: dedupeOverprintedRuns(textRuns), images };
+  return { ops, textRuns: dedupeOverprintedRuns(textRuns), images, textOps };
 }
 
 // ============================================================
@@ -2686,7 +2848,7 @@ export async function segmentSlideElements(
 // their many independent callers.
 // ============================================================
 
-interface PageTableScaffold {
+export interface PageTableScaffold {
   page: number;
   pageWidth: number;
   pageHeight: number;
@@ -2755,7 +2917,7 @@ function applyShapeBullets(blocks: IRBlock[], dots: Array<{ x: number; y: number
   }
 }
 
-interface PdfjsLinkAnnotation {
+export interface PdfjsLinkAnnotation {
   subtype: string;
   url?: string;
   unsafeUrl?: string;
@@ -2772,7 +2934,7 @@ interface PdfjsLinkAnnotation {
  *  Word/ODT hyperlink run and are silently skipped, matching this function's "never guess
  *  wrong" convention elsewhere.
  */
-function applyLinkAnnotations(textRuns: IRTextRun[], annotations: PdfjsLinkAnnotation[]): void {
+export function applyLinkAnnotations(textRuns: IRTextRun[], annotations: PdfjsLinkAnnotation[]): void {
   const links = annotations
     .filter((a): a is PdfjsLinkAnnotation & { rect: [number, number, number, number] } =>
       a.subtype === 'Link' && !!a.rect && /^https?:\/\//i.test(a.url || a.unsafeUrl || ''))
@@ -2813,7 +2975,7 @@ function applyLinkAnnotations(textRuns: IRTextRun[], annotations: PdfjsLinkAnnot
 // sitting below it) but found zero clean matches on any real fixture under this discriminator
 // — not implemented, since there's no positive evidence to validate it against, only a single
 // ambiguous visual candidate that could equally be an unrelated overlapping table border.
-function applyUnderlineFromRects(textRuns: IRTextRun[], rects: RawRect[], pageHeight: number): void {
+export function applyUnderlineFromRects(textRuns: IRTextRun[], rects: RawRect[], pageHeight: number): void {
   const thin = rects.filter((r) => r.height <= 2 && r.width >= 3 && (r.fill || r.stroke));
   if (thin.length === 0) return;
 
@@ -2849,7 +3011,7 @@ function collectFillRects(rects: RawRect[], pageHeight: number): IRFillRect[] {
   return out;
 }
 
-async function parsePagesForTableExtraction(file: File): Promise<PageTableScaffold[]> {
+export async function parsePagesForTableExtraction(file: File): Promise<PageTableScaffold[]> {
   const buf = await file.arrayBuffer();
   const pdfjsLib = await import('pdfjs-dist');
   await initPdfjs();

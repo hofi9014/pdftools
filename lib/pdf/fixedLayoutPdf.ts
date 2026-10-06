@@ -1,0 +1,480 @@
+// PDF side of the fixed page layout (see fixedLayout.ts): reads the text runs of every page,
+// lays them out, and renders the page WITHOUT the text that was placed — that picture goes
+// behind the editable text. Text that could not be placed (rotated, hopelessly overlapping) is
+// left in the picture, so nothing visible is ever lost; it is just not editable.
+
+import type { IRTextRun } from '../client-pdf-docx';
+import {
+  initPdfjs, pdfjsDocOptions, buildFontNameMap, buildPageScaffold, applyLinkAnnotations,
+  extractRectsFromOps, buildTableClusters, textRunOpIndex,
+  type PdfjsFontCommonObjs, type PdfjsLinkAnnotation,
+} from '../client-pdf';
+import { buildFixedPageLayout, fixedFontFamily, type FixedBlock, type FixedPageLayout, type FontClass, type MeasureText } from './fixedLayout';
+import type { FixedPage } from './fixedLayoutDocx';
+import { getFontBytes } from './fonts';
+
+/** Resolution of the page picture: 2.2 px per point (158 dpi) unless the page is huge. */
+export const FIXED_BACKGROUND_SCALE = 2.2;
+export const FIXED_BACKGROUND_MAX_PIXELS = 6_000_000;
+
+export function fixedBackgroundScale(widthPt: number, heightPt: number): number {
+  const fit = Math.sqrt(FIXED_BACKGROUND_MAX_PIXELS / Math.max(1, widthPt * heightPt));
+  return Math.max(0.5, Math.min(FIXED_BACKGROUND_SCALE, fit));
+}
+
+// ---------------------------------------------------------------- font metrics
+
+// The files behind each family the layout writes: the metric-compatible open fonts this site
+// already ships (Liberation Sans = Arial, Tinos = Times New Roman, Cousine = Courier New).
+//
+// Arial is measured with the full Liberation Sans files that ship for pdf.js (Latin Extended,
+// Cyrillic, Greek, all four styles). The other families only exist here as the editor's web
+// fonts, which are Latin-1 subsets: no "ą ć ę ł ń ś ź ż". Measured first with a guessed width
+// for those letters, every Polish line came out about 2 % narrow (a full-width line ended 17 pt
+// early) — so a letter the file lacks is measured as its base letter (advanceOf below).
+const METRIC_SOURCE: Record<string, string> = {
+  'Arial': 'liberation', 'Times New Roman': 'Times New Roman', 'Courier New': 'Cousine', 'Verdana': 'Verdana', 'Georgia': 'Georgia',
+};
+const LIBERATION_SANS = '/pdfjs-dist/standard_fonts/LiberationSans-';
+
+export interface LoadedFont {
+  unitsPerEm: number;
+  glyphForCodePoint(cp: number): { advanceWidth: number; id: number };
+}
+
+const metricCache = new Map<string, Promise<LoadedFont | null>>();
+const advanceCache = new Map<string, Map<number, number>>();
+
+async function loadMetricFont(family: string, bold: boolean, italic: boolean): Promise<LoadedFont | null> {
+  const source = METRIC_SOURCE[family];
+  if (!source) return null;
+  // The web-font sets have regular, bold and italic; bold italic is measured as bold.
+  const key = `${source}|${bold ? 'b' : italic ? 'i' : 'r'}${source === 'liberation' && bold && italic ? 'i' : ''}`;
+  let p = metricCache.get(key);
+  if (!p) {
+    p = (async () => {
+      try {
+        let bytes: ArrayBuffer;
+        if (source === 'liberation') {
+          const res = await fetch(`${LIBERATION_SANS}${bold ? (italic ? 'BoldItalic' : 'Bold') : italic ? 'Italic' : 'Regular'}.ttf`);
+          if (!res.ok) return null;
+          bytes = await res.arrayBuffer();
+        } else {
+          bytes = await getFontBytes(source, bold ? 700 : 400, !bold && italic);
+        }
+        const fontkitMod = await import('@pdf-lib/fontkit');
+        const fontkit = (fontkitMod as unknown as { default?: { create(b: Uint8Array): LoadedFont }; create?(b: Uint8Array): LoadedFont });
+        const create = fontkit.default?.create ?? fontkit.create;
+        return create ? create.call(fontkit.default ?? fontkit, new Uint8Array(bytes)) : null;
+      } catch {
+        return null;
+      }
+    })();
+    metricCache.set(key, p);
+  }
+  return p;
+}
+
+const variantKey = (family: string, bold: boolean, italic: boolean): string => `${family}|${bold ? 'b' : ''}${italic ? 'i' : ''}`;
+
+// Letters with a stroke have no Unicode decomposition; their advance is their base letter's.
+const STROKE_BASE: Record<string, string> = { 'ł': 'l', 'Ł': 'L', 'đ': 'd', 'Đ': 'D', 'ø': 'o', 'Ø': 'O', 'ħ': 'h', 'Ħ': 'H', 'ı': 'i', 'ŧ': 't', 'Ŧ': 'T' };
+
+/**
+ * Advance of a character in font units, or -1 when the font has neither the character nor its
+ * base letter. An accented letter is as wide as the letter under the accent in practically every
+ * text face ("ą" = "a", "ć" = "c", "ł" = "l"), which is what makes a Latin-1 subset usable for
+ * Polish, Czech or Turkish text.
+ */
+export function advanceOf(font: LoadedFont, ch: string): number {
+  const direct = font.glyphForCodePoint(ch.codePointAt(0)!);
+  if (direct && direct.id !== 0) return direct.advanceWidth;
+  const base = STROKE_BASE[ch] ?? ch.normalize('NFD')[0];
+  if (base && base !== ch) {
+    const g = font.glyphForCodePoint(base.codePointAt(0)!);
+    if (g && g.id !== 0) return g.advanceWidth;
+  }
+  return -1;
+}
+
+export interface FixedLayoutMetrics {
+  /** Loads the metric fonts for these family/weight/style combinations (once each). */
+  ensure(variants: Iterable<{ family: string; bold: boolean; italic: boolean }>): Promise<void>;
+  /** Measures with what has been loaded; null for a variant that is not (or could not be) loaded. */
+  measure: MeasureText;
+}
+
+/**
+ * Text measurement for the families the layout writes. Font files are fetched on demand — a
+ * document set in one sans family needs two or three of the fifteen files. A file that cannot be
+ * loaded (offline) leaves its text unfitted.
+ */
+export function createFixedLayoutMetrics(): FixedLayoutMetrics {
+  const fonts = new Map<string, LoadedFont | null>();
+  return {
+    async ensure(variants) {
+      for (const v of variants) {
+        const key = variantKey(v.family, v.bold, v.italic);
+        if (!fonts.has(key)) fonts.set(key, await loadMetricFont(v.family, v.bold, v.italic));
+      }
+    },
+    measure(text, family, bold, italic, fontSize) {
+      const key = variantKey(family, bold, italic);
+      const font = fonts.get(key);
+      if (!font) return null;
+      let cache = advanceCache.get(key);
+      if (!cache) { cache = new Map(); advanceCache.set(key, cache); }
+      let units = 0;
+      let count = 0;
+      let missing = 0;
+      for (const ch of text) {
+        const cp = ch.codePointAt(0)!;
+        let adv = cache.get(cp);
+        if (adv === undefined) {
+          // -1: unknown to this font; the word processor will draw it from another one.
+          adv = advanceOf(font, ch);
+          cache.set(cp, adv);
+        }
+        count++;
+        if (adv < 0) { missing++; units += font.unitsPerEm * 0.6; } else units += adv;
+      }
+      // Mostly foreign to this font (CJK, Cyrillic in a Latin-only file…): its width here says
+      // nothing about the width it will have, so the text is not fitted at all.
+      if (missing > 0 && missing > count * 0.2) return null;
+      return units / font.unitsPerEm * fontSize;
+    },
+  };
+}
+
+// ---------------------------------------------------------------- canvas
+
+interface AnyCanvas {
+  width: number;
+  height: number;
+  getContext(kind: '2d'): unknown;
+  toBlob?: (cb: (b: Blob | null) => void, type?: string, quality?: number) => void;
+  toBuffer?: (type: string, quality?: number) => Uint8Array;
+}
+
+function createCanvas(width: number, height: number): AnyCanvas {
+  const canvas = document.createElement('canvas') as unknown as AnyCanvas;
+  canvas.width = width;
+  canvas.height = height;
+  return canvas;
+}
+
+async function canvasToJpeg(canvas: AnyCanvas, quality: number): Promise<Uint8Array> {
+  if (typeof canvas.toBlob === 'function') {
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob!(resolve, 'image/jpeg', quality));
+    if (!blob) throw new Error('Nie udało się zapisać obrazu strony.');
+    return new Uint8Array(await blob.arrayBuffer());
+  }
+  // Node canvas used by the test scripts.
+  return new Uint8Array(canvas.toBuffer!('image/jpeg', Math.round(quality * 100)));
+}
+
+/** Share of pixels that are not (near) white, 0…1. Zero = a page with nothing but its text. */
+function inkCoverage(ctx: { getImageData(x: number, y: number, w: number, h: number): { data: Uint8ClampedArray } }, width: number, height: number): number {
+  const { data } = ctx.getImageData(0, 0, width, height);
+  let ink = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i]! < 250 || data[i + 1]! < 250 || data[i + 2]! < 250) ink++;
+  }
+  return ink / Math.max(1, data.length / 4);
+}
+
+// ---------------------------------------------------------------- pages
+
+/** showText operators drawn while the text rendering mode makes text invisible (3) or clip-only (7). */
+function invisibleTextOps(fnArray: number[], argsArray: unknown[], OPS: Record<string, number>): Set<number> {
+  const out = new Set<number>();
+  const stack: number[] = [];
+  let mode = 0;
+  for (let i = 0; i < fnArray.length; i++) {
+    const fn = fnArray[i];
+    if (fn === OPS['save']) stack.push(mode);
+    else if (fn === OPS['restore']) mode = stack.pop() ?? mode;
+    else if (fn === OPS['setTextRenderingMode']) mode = Number((argsArray[i] as unknown[])?.[0]) || 0;
+    else if (fn === OPS['showText'] && (mode === 3 || mode === 7)) out.add(i);
+  }
+  return out;
+}
+
+/** Serif / monospace as the PDF's own font descriptors declare it, by real font name. */
+function fontClassHints(commonObjs: PdfjsFontCommonObjs, fnArray: number[], argsArray: unknown[], OPS: Record<string, number>): Map<string, FontClass> {
+  const map = new Map<string, FontClass>();
+  for (let i = 0; i < fnArray.length; i++) {
+    if (fnArray[i] !== OPS['setFont']) continue;
+    const alias = (argsArray[i] as unknown[])[0] as string;
+    try {
+      const font = commonObjs.get(alias) as { name?: string; isSerifFont?: boolean; isMonospace?: boolean } | undefined;
+      if (!font?.name || map.has(font.name)) continue;
+      map.set(font.name, font.isMonospace ? 'mono' : font.isSerifFont ? 'serif' : 'sans');
+    } catch { /* not resolvable: the name decides */ }
+  }
+  return map;
+}
+
+// ---------------------------------------------------------------- one page
+
+type PdfjsDoc = Awaited<ReturnType<typeof import('pdfjs-dist')['getDocument']>['promise']>;
+type PdfjsPage = Awaited<ReturnType<PdfjsDoc['getPage']>>;
+
+interface PreparedPage {
+  width: number;
+  height: number;
+  layout: FixedPageLayout;
+  /** Text operators to leave out of the page picture. */
+  hide: Set<number>;
+  /** Characters of visible text / of invisible text (an OCR layer under a scan). */
+  visibleChars: number;
+  invisibleChars: number;
+  /** Characters of visible text set in a light colour (they need the page's own background). */
+  lightChars: number;
+  /** Characters of visible text that sit in the cells of a real (well-filled) ruled table. */
+  tableChars: number;
+  unplacedChars: number;
+}
+
+const charCount = (runs: IRTextRun[]): number => runs.reduce((n, r) => n + r.text.trim().length, 0);
+
+function isLight(color: string): boolean {
+  const m = /^#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/.exec(color ?? '');
+  if (!m) return false;
+  return 0.299 * parseInt(m[1]!, 16) + 0.587 * parseInt(m[2]!, 16) + 0.114 * parseInt(m[3]!, 16) > 200;
+}
+
+/**
+ * Characters inside ruled grids that really are tables: at least 2x2, text in a good share of
+ * the cells, and cells that hold a table's worth of text — a few words, not paragraphs. The grid
+ * detector also fires on decoration: dashed rules and dotted separators line up into a huge,
+ * almost empty "grid" (91x36 cells, 1 % filled, on the reported page), and a page of cards and
+ * bands forms a coarse one whose "cells" each hold a whole block of text (2x4 cells, 160
+ * characters each). Neither is counted.
+ */
+function realTableChars(runs: IRTextRun[], rects: ReturnType<typeof extractRectsFromOps>, pageHeight: number): number {
+  const counted = new Set<IRTextRun>();
+  for (const cluster of buildTableClusters(rects)) {
+    const { xEdges, yEdges, cols, rows } = cluster;
+    if (cols < 2 || rows < 2) continue;
+    const x0 = xEdges[0]!, x1 = xEdges[xEdges.length - 1]!, y0 = yEdges[0]!, y1 = yEdges[yEdges.length - 1]!;
+    const filled = new Set<number>();
+    const inside: IRTextRun[] = [];
+    for (const r of runs) {
+      if (!r.text.trim()) continue;
+      const x = r.position.x + Math.min(r.width, r.fontSize) / 2;
+      const y = pageHeight - r.position.y - r.fontSize * 0.3;
+      if (x < x0 || x > x1 || y < y0 || y > y1) continue;
+      let ci = 0;
+      while (ci < cols - 1 && x > xEdges[ci + 1]!) ci++;
+      let ri = 0;
+      while (ri < rows - 1 && y > yEdges[ri + 1]!) ri++;
+      filled.add(ri * cols + ci);
+      inside.push(r);
+    }
+    if (filled.size === 0) continue;
+    const perCell = charCount(inside) / filled.size;
+    if (filled.size / (cols * rows) >= TABLE_FILL && perCell <= TABLE_CELL_CHARS) for (const r of inside) counted.add(r);
+  }
+  return charCount([...counted]);
+}
+
+/** Share of a grid's cells that must hold text for the grid to count as a table. */
+const TABLE_FILL = 0.25;
+/** Most text a cell of a real table holds on average (characters). */
+const TABLE_CELL_CHARS = 60;
+
+async function preparePage(page: PdfjsPage, OPS: Record<string, number>, metrics: FixedLayoutMetrics | undefined): Promise<PreparedPage> {
+  const base = page.getViewport({ scale: 1 });
+  const opList = await page.getOperatorList();
+  const commonObjs = page.commonObjs as unknown as PdfjsFontCommonObjs;
+  const fontNames = buildFontNameMap(commonObjs, opList, OPS);
+  const hints = fontClassHints(commonObjs, opList.fnArray, opList.argsArray, OPS);
+  const scaffold = buildPageScaffold(opList, OPS, fontNames, { preciseText: true });
+  const invisible = invisibleTextOps(opList.fnArray, opList.argsArray, OPS);
+  const isInvisible = (r: IRTextRun): boolean => {
+    const op = textRunOpIndex(r);
+    return op !== undefined && invisible.has(op);
+  };
+  const runs = scaffold.textRuns.filter((r) => !isInvisible(r));
+  applyLinkAnnotations(runs, await page.getAnnotations() as PdfjsLinkAnnotation[]);
+  // Underlines are NOT turned into underlined text here: in a PDF an underline is a drawn line,
+  // and it stays in the page picture — underlining the text as well would show it twice.
+  const rects = extractRectsFromOps(scaffold.ops, base.height);
+
+  if (metrics) {
+    await metrics.ensure(runs.filter((r) => r.text.trim()).map((r) => ({ family: fixedFontFamily(r.fontName, hints.get(r.fontName)), bold: r.bold, italic: r.italic })));
+  }
+  const layout = buildFixedPageLayout(runs, base.width, base.height, { ...(metrics ? { measure: metrics.measure } : {}), fontHint: (name) => hints.get(name) });
+  const keep = new Set<number>();
+  for (const r of layout.unplaced) {
+    const op = textRunOpIndex(r);
+    if (op !== undefined) keep.add(op);
+  }
+  // Hidden in the picture: every text operator that produced a run (also the overprint twins
+  // that were dropped), except invisible text (never painted anyway) and unplaced runs.
+  const hide = new Set<number>(scaffold.textOps.filter((op) => !keep.has(op) && !invisible.has(op)));
+  return {
+    width: base.width,
+    height: base.height,
+    layout,
+    hide,
+    visibleChars: charCount(runs),
+    invisibleChars: charCount(scaffold.textRuns.filter(isInvisible)),
+    lightChars: charCount(runs.filter((r) => isLight(r.color))),
+    tableChars: realTableChars(runs, rects, base.height),
+    unplacedChars: charCount(layout.unplaced),
+  };
+}
+
+/** The page drawn without the hidden text operators. The caller frees the canvas. */
+async function renderTextFree(page: PdfjsPage, hide: Set<number>, scale: number): Promise<{ canvas: AnyCanvas; ctx: CanvasRenderingContext2D }> {
+  const viewport = page.getViewport({ scale });
+  const canvas = createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height));
+  const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  await page.render({
+    canvasContext: ctx,
+    canvas: canvas as unknown as HTMLCanvasElement,
+    viewport,
+    operationsFilter: (index: number) => !hide.has(index),
+  } as Parameters<typeof page.render>[0]).promise;
+  return { canvas, ctx };
+}
+
+async function openPdf(file: File): Promise<{ doc: PdfjsDoc; OPS: Record<string, number> }> {
+  const buf = await file.arrayBuffer();
+  const pdfjsLib = await import('pdfjs-dist');
+  await initPdfjs();
+  const doc = await pdfjsLib.getDocument(pdfjsDocOptions(new Uint8Array(buf))).promise;
+  return { doc, OPS: pdfjsLib.OPS as unknown as Record<string, number> };
+}
+
+// ---------------------------------------------------------------- whole document
+
+export interface FixedPagesResult {
+  pages: FixedPage[];
+  /** Characters placed as editable text / left in the page picture, over the whole document. */
+  placedChars: number;
+  unplacedChars: number;
+}
+
+/** Every page of a PDF as a fixed layout plus its text-free picture. */
+export async function pdfToFixedPages(file: File, onProgress?: (page: number, total: number) => void): Promise<FixedPagesResult> {
+  const { doc, OPS } = await openPdf(file);
+  const metrics = createFixedLayoutMetrics();
+  const pages: FixedPage[] = [];
+  let placedChars = 0;
+  let unplacedChars = 0;
+  try {
+    for (let p = 1; p <= doc.numPages; p++) {
+      onProgress?.(p, doc.numPages);
+      const page = await doc.getPage(p);
+      const prep = await preparePage(page, OPS, metrics);
+      placedChars += prep.visibleChars - prep.unplacedChars;
+      unplacedChars += prep.unplacedChars;
+      const { canvas, ctx } = await renderTextFree(page, prep.hide, fixedBackgroundScale(prep.width, prep.height));
+      const background = inkCoverage(ctx, canvas.width, canvas.height) === 0
+        ? undefined
+        : { data: await canvasToJpeg(canvas, 0.9), mime: 'image/jpeg' as const };
+      canvas.width = 0;
+      canvas.height = 0;
+      pages.push({ layout: prep.layout, ...(background ? { background } : {}) });
+      page.cleanup();
+    }
+  } finally {
+    await doc.cleanup();
+  }
+  return { pages, placedChars, unplacedChars };
+}
+
+// ---------------------------------------------------------------- which engine?
+
+/** What one page looks like, for choosing between the fixed layout and the flow engine. */
+export interface PageLayoutSignal {
+  /** Share of the page (0…1) covered by anything but text. */
+  coverage: number;
+  /** Side-by-side text blocks whose baselines do not line up. */
+  columnBlocks: number;
+  visibleChars: number;
+  invisibleChars: number;
+  lightChars: number;
+  /** Characters of visible text inside real ruled tables. */
+  tableChars: number;
+}
+
+export type ResolvedLayoutMode = 'fixed' | 'flow';
+
+function countColumnBlocks(blocks: FixedBlock[]): number {
+  let n = 0;
+  for (const b of blocks) {
+    if (b.kind !== 'columns') continue;
+    n += 1;
+    for (const c of b.columns) n += countColumnBlocks(c.blocks);
+  }
+  return n;
+}
+
+/** A scan: a picture of a page, with at most an invisible OCR layer. */
+export function isScannedPage(s: PageLayoutSignal): boolean {
+  return s.visibleChars < 20 && (s.invisibleChars > 50 || s.coverage > 0.5);
+}
+
+/** A page that is mostly one real table: the flow engine turns it into a real Word table. */
+export function isTablePage(s: PageLayoutSignal): boolean {
+  return s.visibleChars > 0 && s.tableChars >= 0.6 * s.visibleChars;
+}
+
+/** A designed page: graphics, colour, or text arranged in ways a flow of paragraphs cannot follow. */
+export function isDesignedPage(s: PageLayoutSignal): boolean {
+  if (isScannedPage(s) || isTablePage(s)) return false;
+  return s.coverage >= 0.04 || s.columnBlocks >= 2 || s.lightChars >= 10;
+}
+
+/**
+ * Fixed layout or flow? The flow engine (paragraphs, lists, real tables) suits plain text
+ * documents; on a designed page it produces nonsense, so the choice leans to the fixed layout:
+ * it is taken as soon as a quarter of the document's pages are designed. Scans go to the flow
+ * engine, which keeps their OCR text as text.
+ */
+export function chooseLayoutMode(signals: PageLayoutSignal[]): ResolvedLayoutMode {
+  const real = signals.filter((s) => !isScannedPage(s));
+  if (real.length === 0 || real.length * 2 < signals.length) return 'flow';
+  const designed = real.filter(isDesignedPage).length;
+  return designed / real.length >= 0.25 ? 'fixed' : 'flow';
+}
+
+/** Pages looked at when classifying a long document (evenly spread). */
+export const LAYOUT_SAMPLE_PAGES = 24;
+
+/** Looks at (a sample of) the pages at low resolution and picks the engine. */
+export async function detectPdfLayoutMode(file: File): Promise<{ mode: ResolvedLayoutMode; signals: PageLayoutSignal[] }> {
+  const { doc, OPS } = await openPdf(file);
+  const signals: PageLayoutSignal[] = [];
+  try {
+    const total = doc.numPages;
+    const step = Math.max(1, total / LAYOUT_SAMPLE_PAGES);
+    const picked = new Set<number>();
+    for (let i = 0; i < total && picked.size < LAYOUT_SAMPLE_PAGES; i += step) picked.add(Math.min(total, Math.floor(i) + 1));
+    for (const p of picked) {
+      const page = await doc.getPage(p);
+      const prep = await preparePage(page, OPS, undefined);
+      const { canvas, ctx } = await renderTextFree(page, prep.hide, 0.5);
+      signals.push({
+        coverage: inkCoverage(ctx, canvas.width, canvas.height),
+        columnBlocks: countColumnBlocks(prep.layout.blocks),
+        visibleChars: prep.visibleChars,
+        invisibleChars: prep.invisibleChars,
+        lightChars: prep.lightChars,
+        tableChars: prep.tableChars,
+      });
+      canvas.width = 0;
+      canvas.height = 0;
+      page.cleanup();
+    }
+  } finally {
+    await doc.cleanup();
+  }
+  return { mode: chooseLayoutMode(signals), signals };
+}
