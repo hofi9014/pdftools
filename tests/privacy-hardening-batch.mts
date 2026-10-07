@@ -80,27 +80,19 @@ console.log('\n=== edit-pdf fonts are self-hosted, not fetched from Google at ru
 
   check(typeof getFontFamily === 'function', 'sanity: lib/pdf/fonts.ts still exports getFontFamily');
 
-  const expectedFiles = [
-    'arimo-regular', 'cousine-regular', 'cousine-bold', 'cousine-italic',
-    'georgia-regular', 'georgia-bold', 'georgia-italic',
-    'lato-regular', 'lato-bold', 'lato-italic',
-    'notosans-regular', 'notosans-bold', 'notosans-italic',
-    'opensans-regular', 'opensans-bold', 'opensans-italic',
-    'ptsans-regular', 'ptsans-bold', 'ptsans-italic',
-    'roboto-regular', 'roboto-bold', 'roboto-italic',
-    'tinos-regular', 'tinos-bold', 'tinos-italic',
-    'verdana-regular', 'verdana-bold', 'verdana-italic',
-  ];
-  const missing = expectedFiles.filter(f => !existsSync(join(repoRoot, 'public', 'fonts', `${f}.woff2`)));
+  // Ten families in four styles (see lib/pdf/fonts.ts and scripts/build-editor-fonts.py).
+  const expectedFiles = ['arimo', 'cousine', 'dejavusans', 'gelasio', 'lato', 'notosans', 'opensans', 'ptsans', 'roboto', 'tinos']
+    .flatMap(f => ['regular', 'bold', 'italic', 'bolditalic'].map(s => `${f}-${s}`));
+  const missing = expectedFiles.filter(f => !existsSync(join(repoRoot, 'public', 'fonts', `${f}.ttf`)));
   check(missing.length === 0, `all ${expectedFiles.length} self-hosted font files exist in public/fonts/ — missing: ${missing.join(', ') || 'none'}`);
 
-  // Every downloaded file must be a genuine WOFF2 (magic bytes 'wOF2'), not an HTML error page —
-  // this is exactly the class of bug this migration could have silently introduced.
+  // Every file must be a genuine TrueType font (00 01 00 00), not an HTML error page — and not
+  // WOFF2 either: pdf-lib embeds the bytes as they are, and a PDF reader cannot use WOFF2.
   const badMagic = expectedFiles.filter(f => {
-    const buf = readFileSync(join(repoRoot, 'public', 'fonts', `${f}.woff2`));
-    return buf.subarray(0, 4).toString('latin1') !== 'wOF2';
+    const buf = readFileSync(join(repoRoot, 'public', 'fonts', `${f}.ttf`));
+    return buf.subarray(0, 4).toString('hex') !== '00010000';
   });
-  check(badMagic.length === 0, `every self-hosted font file has a genuine WOFF2 signature — bad: ${badMagic.join(', ') || 'none'}`);
+  check(badMagic.length === 0, `every self-hosted font file has a genuine TrueType signature — bad: ${badMagic.join(', ') || 'none'}`);
 }
 
 console.log('\n=== Google Analytics is not loaded before consent ===');

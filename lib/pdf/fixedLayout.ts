@@ -151,6 +151,8 @@ export type FontClass = 'sans' | 'serif' | 'mono';
 const SYSTEM_FAMILIES: Record<string, string> = {
   'arial': 'Arial', 'times new roman': 'Times New Roman', 'courier new': 'Courier New',
   'verdana': 'Verdana', 'georgia': 'Georgia', 'tahoma': 'Tahoma', 'trebuchet ms': 'Trebuchet MS',
+  // (Verdana, Tahoma, Trebuchet, Calibri and Cambria have no metric twin among this site's
+  // fonts, so their text is written in its own family at its natural width — see METRIC_SOURCE.)
   'calibri': 'Calibri', 'cambria': 'Cambria', 'symbol': 'Symbol', 'wingdings': 'Wingdings',
 };
 

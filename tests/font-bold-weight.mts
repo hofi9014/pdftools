@@ -58,7 +58,7 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 function readFontFile(family: string, weight: 400 | 700): Buffer {
   const key = getFontFamily(family);
   const variant = weight === 700 ? 'bold' : 'regular';
-  return readFileSync(join(repoRoot, 'public', 'fonts', `${key}-${variant}.woff2`));
+  return readFileSync(join(repoRoot, 'public', 'fonts', `${key}-${variant}.ttf`));
 }
 
 function checkFamily(family: string): void {
