@@ -208,6 +208,14 @@ const flow = await convert('pdf-to-word', 'chrome-brochure.pdf', 'flow');
 check(flow.used === 'flow', `choosing "flowing text" uses the flow engine (${flow.used})`);
 writeFileSync(join(outDir, 'brochure-flow.docx'), flow.bytes);
 await flow.page.close();
+// A report set in a family no computer has installed (Gotham), through the flow engine: which
+// fonts a word processor ends up using is checked below.
+for (const [tool, name] of [['pdf-to-word', 'allegro-flow.docx'], ['pdf-to-openoffice', 'allegro-flow.odt']] as const) {
+  const res = await convert(tool, 'allegro-raport.pdf', 'flow');
+  check(res.used === 'flow', `${name}: converted by the flow engine (${res.used})`);
+  writeFileSync(join(outDir, name), res.bytes);
+  await res.page.close();
+}
 const plain = await convert('pdf-to-word', 'Plik_D.pdf', null);
 check(plain.used === 'flow', `a plain text PDF goes through the flow engine automatically (${plain.used})`);
 await plain.page.close();
@@ -364,6 +372,24 @@ if (!office) {
     console.log(`  brochure-flow.docx: ${report(c)}`);
     check(c.offBy5 > c.lines * 0.25 || !c.pagesEqual, `the flow engine cannot hold this page: ${c.offBy5} of ${c.lines} lines are misplaced or missing${c.pagesEqual ? '' : ', and the page count differs'}`);
     check(c.pixelDiff > 0.08, `and it does not look like the PDF (${(c.pixelDiff * 100).toFixed(1)}% grey difference)`);
+  }
+
+  // The flow engine wrote the PDF's own family name ("Gotham"); OpenOffice has no such font and
+  // sets every unknown family of a .docx in Times New Roman, so sans-serif reports came out in a
+  // serif face. Read from the fonts of the PDF the office exports.
+  console.log(`\n=== fonts ${office.name} uses for a flow document set in a family nobody has ===`);
+  {
+    const { PDFDocument, PDFDict, PDFName } = await import('pdf-lib');
+    await convertToPdf(office, ['allegro-flow.docx', 'allegro-flow.odt'].map((n) => [join(outDir, n), pdfOf(n)] as [string, string]));
+    for (const name of ['allegro-flow.docx', 'allegro-flow.odt']) {
+      const pdf = await PDFDocument.load(readFileSync(pdfOf(name)));
+      const fonts = new Set<string>();
+      for (const [, obj] of pdf.context.enumerateIndirectObjects()) {
+        if (obj instanceof PDFDict && obj.get(PDFName.of('Type')) === PDFName.of('Font')) fonts.add(String(obj.get(PDFName.of('BaseFont'))).replace(/^\/(?:[A-Z]{6}\+)?/, ''));
+      }
+      const list = [...fonts].sort();
+      check(list.length > 0 && list.every((f) => /^Arial/.test(f)), `${name}: sans-serif text is set in a sans-serif face throughout (${list.join(', ')}; Times New Roman before)`);
+    }
   }
 
   console.log('\n=== a lone "ć" run survives the word processor ===');

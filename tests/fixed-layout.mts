@@ -316,7 +316,9 @@ console.log('\n=== T* (next line): wrapped text is on its own lines ===');
   const names = buildFontNameMap(pg.commonObjs as never, opList, pdfjsLib.OPS as never);
   const ys = (precise: boolean): number[] => buildPageScaffold(opList, pdfjsLib.OPS as never, names, { preciseText: precise }).textRuns.map((r) => Math.round(r.position.y));
   check(JSON.stringify(ys(true)) === '[250,230,210]', `precise mode puts the three lines 20 pt apart (${ys(true).join(',')})`);
-  check(new Set(ys(false)).size === 1, 'the plain mode (flow engine) is unchanged: all on one baseline');
+  // The plain mode (flow engine) ignored T* until 2026-10-07 and put all three lines on one
+  // baseline; it reads the operator too now — see tests/text-next-line-operators.mts.
+  check(JSON.stringify(ys(false)) === '[250,230,210]', `the plain mode (flow engine) puts them on the same three baselines (${ys(false).join(',')})`);
 }
 
 // ============================================================ 3. the pipeline on a designed PDF

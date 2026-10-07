@@ -31,7 +31,7 @@
 // fixedLayoutPdf.ts, the writers in fixedLayoutDocx.ts / fixedLayoutOdt.ts.
 
 import type { IRTextRun } from '../client-pdf-docx';
-import { docxFontFamily } from '../client-pdf-docx';
+import { fixedFontFamily, type FontClass } from './fontFamilies';
 
 // ---------------------------------------------------------------- model
 
@@ -145,38 +145,8 @@ const MAX_DEPTH = 4;
 
 // ---------------------------------------------------------------- fonts
 
-export type FontClass = 'sans' | 'serif' | 'mono';
-
-/** Families that are safe to name in a document: present on Windows, macOS and (as twins) Linux. */
-const SYSTEM_FAMILIES: Record<string, string> = {
-  'arial': 'Arial', 'times new roman': 'Times New Roman', 'courier new': 'Courier New',
-  'verdana': 'Verdana', 'georgia': 'Georgia', 'tahoma': 'Tahoma', 'trebuchet ms': 'Trebuchet MS',
-  // (Verdana, Tahoma, Trebuchet, Calibri and Cambria have no metric twin among this site's
-  // fonts, so their text is written in its own family at its natural width — see METRIC_SOURCE.)
-  'calibri': 'Calibri', 'cambria': 'Cambria', 'symbol': 'Symbol', 'wingdings': 'Wingdings',
-};
-
-const MONO_NAMES = /mono|courier|consol|menlo|typewriter|inconsolata|\bcode\b/i;
-const SERIF_NAMES = /times|georgia|garamond|minion|palatino|bookman|cambria|merriweather|playfair|baskerville|caslon|didot|bodoni|century|charter|tinos|antiqua|roman|lora|crimson|cormorant|spectral|slab|\bserif\b|serif$/i;
-const SANS_NAMES = /sans|grotesk|grotesque|gothic|helvet|arial|arimo|roboto|lato|inter\b|montserrat|poppins|nunito|ubuntu|gotham|futura|avenir|\bdin\b|frutiger|univers|myriad|verdana|tahoma|calibri|carlito|segoe|raleway|oswald|barlow|rubik|manrope|quicksand|proxima/i;
-
-/** Sans, serif or monospace — from the font's name, else from the PDF's own descriptor flags. */
-export function classifyFont(rawName: string, hint?: FontClass): FontClass {
-  const name = rawName.replace(/^[A-Z]{6}\+/, '');
-  if (MONO_NAMES.test(name)) return 'mono';
-  if (SANS_NAMES.test(name)) return 'sans';
-  if (SERIF_NAMES.test(name)) return 'serif';
-  return hint ?? 'sans';
-}
-
-/** The family a run is written in: the PDF's own when every system has it, else its class's standard. */
-export function fixedFontFamily(rawName: string, hint?: FontClass): string {
-  const cleaned = (docxFontFamily(rawName) ?? '').toLowerCase();
-  const system = SYSTEM_FAMILIES[cleaned];
-  if (system) return system;
-  const cls = classifyFont(rawName, hint);
-  return cls === 'mono' ? 'Courier New' : cls === 'serif' ? 'Times New Roman' : 'Arial';
-}
+// Which family a run is written in: see fontFamilies.ts.
+export { classifyFont, fixedFontFamily, type FontClass } from './fontFamilies';
 
 /** Width in points of `text` set in `family` at `fontSize`, or null when the metrics are unknown. */
 export type MeasureText = (text: string, family: string, bold: boolean, italic: boolean, fontSize: number) => number | null;

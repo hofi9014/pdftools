@@ -65,7 +65,9 @@ console.log('\n=== real pipeline: allegro-raport.pdf → docx ===');
   check(/<w:ind [^>]*w:left="\d+"/.test(xml), 'indented paragraphs carry w:ind');
   check(/<w:spacing [^>]*w:before="\d+"/.test(xml), 'vertical gaps are written as w:spacing before');
   check(!/w:ascii="[A-Z]{6}\+/.test(xml), 'no subset-tagged font names remain');
-  check(/w:ascii="Gotham"/.test(xml), 'font family is the clean name "Gotham"');
+  // "Gotham" itself was written until 2026-10-07; no computer has it, and OpenOffice sets an
+  // unknown family of a .docx in Times New Roman — see tests/flow-font-families.mts.
+  check(/w:ascii="Arial"/.test(xml) && !/w:ascii="Gotham"/.test(xml), 'Gotham (installed nowhere) is written as the sans-serif every system has');
   const bullets = (xml.match(/<w:numPr>/g) ?? []).length;
   check(bullets >= 14, `the real bullet lists on pages 26-27 (round dots drawn as shapes) are Word bullets (got ${bullets})`);
   const anchors = xml.match(/<wp:anchor[^>]*>[\s\S]*?<\/wp:anchor>/g) ?? [];

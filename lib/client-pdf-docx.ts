@@ -6,6 +6,9 @@ import type JSZip from 'jszip';
 import { applyConditionalFormatting } from './xlsx-conditional-formatting';
 import { splitAtBlankLines, findBox, splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, columnLayoutFrame, findBackgroundFill, separateLines, blocksInReadingOrder, type PageMargins } from './pdf/docxLayout';
 import { protectSingleCharRuns } from './pdf/docxRunSafety';
+import { classifyFont, docxFontFamily, fixedFontFamily, odfFontFace, type FontClass } from './pdf/fontFamilies';
+
+export { docxFontFamily };
 
 // ============================================================
 // IR TYPES (Phase 1a — without TableBlock)
@@ -131,6 +134,12 @@ export interface IRPageIR {
   boxes?: IRBoxRect[];
   /** The two text columns of a two-column page (left, right), in points; blocks carry `flow`. */
   columns?: [{ x: number; width: number }, { x: number; width: number }];
+  /**
+   * Serif / monospace / sans as the PDF's own font descriptors declare it, by font name — for
+   * names that say nothing themselves. Page metadata like `fills`: writers use it to choose a
+   * family the reader has.
+   */
+  fontClasses?: Record<string, FontClass>;
 }
 
 // ============================================================
@@ -1028,37 +1037,44 @@ const IR_HEADING_MAP: Record<number, string> = {
   4: 'Heading4', 5: 'Heading5', 6: 'Heading6',
 };
 
-/**
- * Turns a PDF font resource name into a family name Word can resolve. PDFs carry subset tags
- * ("PSWIZS+Gotham-Book"), style/weight suffixes ("-Bold", "-Black"), PostScript suffixes
- * ("ArialMT", "TimesNewRomanPSMT") and generator-added numeric suffixes ("LiberationSans-2867"):
- * none of those are installed font names, so Word substituted a default face for every run.
- * Bold/italic are carried by their own run flags, so the style words are dropped here.
- */
-const FONT_FAMILY_MAP: Record<string, string> = {
-  arial: 'Arial', arialmt: 'Arial', helvetica: 'Arial', liberationsans: 'Arial', arimo: 'Arial',
-  timesnewroman: 'Times New Roman', timesnewromanps: 'Times New Roman', timesnewromanpsmt: 'Times New Roman',
-  times: 'Times New Roman', timesroman: 'Times New Roman', liberationserif: 'Times New Roman', tinos: 'Times New Roman',
-  couriernew: 'Courier New', couriernewps: 'Courier New', courier: 'Courier New', liberationmono: 'Courier New', cousine: 'Courier New',
-  carlito: 'Calibri', calibri: 'Calibri', caladea: 'Cambria', cambria: 'Cambria',
-  symbol: 'Symbol', zapfdingbats: 'Wingdings',
-};
+/** How a run's PDF font name becomes the family written into a .docx (see pdf/fontFamilies.ts). */
+type FontOf = (rawFontName: string) => string | undefined;
 
-export function docxFontFamily(raw: string): string | undefined {
-  if (!raw) return undefined;
-  let n = raw.replace(/^[A-Z]{6}\+/, '');
-  n = n.replace(/[-_ ]?\d{2,}$/, '');
-  const styleWords = /(?:[-,_ ]|(?<=[a-z]))(?:BoldItalic|BoldOblique|Bold|Italic|Oblique|Regular|Book|Medium|Light|Black|Heavy|Semibold|DemiBold|Demi|Thin|Ultra|ExtraBold|MT|PSMT|PS)+$/;
-  for (let i = 0; i < 3; i++) { const m = n.replace(styleWords, ''); if (m === n || !m) break; n = m; }
-  const key = n.toLowerCase().replace(/[^a-z]/g, '');
-  const mapped = FONT_FAMILY_MAP[key];
-  if (mapped) return mapped;
-  const spaced = n.replace(/[-_]/g, ' ').replace(/(?<=[a-z])(?=[A-Z])/g, ' ').trim();
-  return spaced || undefined;
+/**
+ * The PDF font most of the document's text is set in (by characters); '' for a document without
+ * text. It becomes the document's default font: list markers, placeholders and empty paragraphs
+ * have no font of their own and would otherwise fall back to the word processor's default (Times
+ * New Roman in OpenOffice), a serif among sans-serif text.
+ */
+function dominantFontName(pages: IRPageIR[]): string {
+  const weight = new Map<string, number>();
+  const add = (runs: IRTextRun[] | undefined): void => {
+    for (const r of runs ?? []) {
+      const n = r.text.trim().length;
+      if (r.fontName && n > 0) weight.set(r.fontName, (weight.get(r.fontName) ?? 0) + n);
+    }
+  };
+  for (const page of pages) {
+    for (const b of page.blocks) {
+      if (b.kind === 'table') { for (const row of b.cells) for (const cell of row) add(cell?.runs); }
+      else if (b.kind === 'paragraph' || b.kind === 'heading' || b.kind === 'list-item') add(b.runs);
+    }
+  }
+  let best = '';
+  let most = 0;
+  for (const [name, n] of weight) if (n > most) { best = name; most = n; }
+  return best;
+}
+
+/** The font classes the PDF's own descriptors declare, over all pages (page metadata). */
+function pageFontClasses(pages: IRPageIR[]): Map<string, FontClass> {
+  const map = new Map<string, FontClass>();
+  for (const page of pages) for (const [name, cls] of Object.entries(page.fontClasses ?? {})) if (!map.has(name)) map.set(name, cls);
+  return map;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function irRunsToTextRuns(TRC: any, runs: IRTextRun[], ExtLink?: any): any[] {
+function irRunsToTextRuns(TRC: any, runs: IRTextRun[], ExtLink: any, fontOf: FontOf): any[] {
   // protectSingleCharRuns: OpenOffice drops a run that is a lone "ć"/"č" (see docxRunSafety.ts).
   return protectSingleCharRuns(separateLines(runs)).map(run => {
     // A run tagged with .link (from a PDF /Annots Link matched onto it — see
@@ -1075,7 +1091,7 @@ function irRunsToTextRuns(TRC: any, runs: IRTextRun[], ExtLink?: any): any[] {
           color: '0563C1',
           underline: {},
           size: Math.round(run.fontSize * 2),
-          font: docxFontFamily(run.fontName),
+          font: fontOf(run.fontName),
         })],
       });
     }
@@ -1086,12 +1102,17 @@ function irRunsToTextRuns(TRC: any, runs: IRTextRun[], ExtLink?: any): any[] {
       underline: run.underline ? {} : undefined,
       color: run.color.replace('#', ''),
       size: Math.round(run.fontSize * 2),
-      font: docxFontFamily(run.fontName),
+      font: fontOf(run.fontName),
     });
   });
 }
 
 export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, WriterImage>): Promise<Blob> {
+  // A family the reader does not have comes out as Times New Roman in OpenOffice whatever the
+  // font table says, so the .docx names one every system has (see pdf/fontFamilies.ts).
+  const fontClasses = pageFontClasses(pages);
+  const fontOf: FontOf = (raw) => (raw ? fixedFontFamily(raw, fontClasses.get(raw)) : undefined);
+  const defaultFont = fontOf(dominantFontName(pages)) ?? 'Arial';
   const {
     Document, Packer, Paragraph, HeadingLevel, TextRun, ImageRun,
     Table, TableRow, TableCell, WidthType, BorderStyle, ExternalHyperlink, AlignmentType, ShadingType, Tab, TabStopType, LeaderType,
@@ -1165,7 +1186,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
             children: row.map(cell => {
               if (!cell) return new TableCell({ children: [new Paragraph('')] });
               const paragraphs = cell.runs.length > 0
-                ? [new Paragraph({ children: irRunsToTextRuns(TextRun, cell.runs, ExternalHyperlink) })]
+                ? [new Paragraph({ children: irRunsToTextRuns(TextRun, cell.runs, ExternalHyperlink, fontOf) })]
                 : [new Paragraph('')];
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const opts: any = { children: paragraphs };
@@ -1245,7 +1266,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
         push(new Paragraph({
           ...layoutOpts(),
           heading: HeadingLevel[headingKey],
-          children: irRunsToTextRuns(TextRun, h.runs, ExternalHyperlink),
+          children: irRunsToTextRuns(TextRun, h.runs, ExternalHyperlink, fontOf),
         }));
       } else if (block.kind === 'list-item') {
         const li = block as IRListItemBlock;
@@ -1259,8 +1280,8 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
             ? { indent: { left: twips(18 * (level + 1) + 18), hanging: twips(18) } }
             : { bullet: { level } }),
           children: numbered
-            ? [new TextRun({ children: [li.marker, new Tab()] }), ...irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink)]
-            : irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink),
+            ? [new TextRun({ children: [li.marker, new Tab()] }), ...irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink, fontOf)]
+            : irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink, fontOf),
         }));
       } else {
         const p = block as IRParagraphBlock;
@@ -1274,9 +1295,9 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
             ...layoutOpts(),
             tabStops: [{ type: TabStopType.RIGHT, position: twips(Math.max(right, 0)), leader: LeaderType.DOT }],
             children: [
-              ...irRunsToTextRuns(TextRun, leader.before, ExternalHyperlink),
+              ...irRunsToTextRuns(TextRun, leader.before, ExternalHyperlink, fontOf),
               new TextRun({ children: [new Tab()] }),
-              ...irRunsToTextRuns(TextRun, leader.after, ExternalHyperlink),
+              ...irRunsToTextRuns(TextRun, leader.after, ExternalHyperlink, fontOf),
             ],
           }));
         } else {
@@ -1291,7 +1312,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
               const extra = prevRun.position.y - g[0]!.position.y - prevRun.fontSize * 1.2;
               own = { ...opts, pageBreakBefore: undefined, spacing: extra > 0 ? { before: twips(Math.min(extra, 72)) } : undefined };
             }
-            push(new Paragraph({ ...own, children: irRunsToTextRuns(TextRun, g, ExternalHyperlink) }));
+            push(new Paragraph({ ...own, children: irRunsToTextRuns(TextRun, g, ExternalHyperlink, fontOf) }));
           });
         }
       }
@@ -1300,6 +1321,7 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
 
   const firstPage = pages[0];
   const doc = new Document({
+    styles: { default: { document: { run: { font: defaultFont } } } },
     sections: [{
       properties: firstPage ? {
         page: {
@@ -4429,11 +4451,14 @@ function odtRenderStyleKey(s: OdtRunStyle): string {
   return `${s.font}|${s.size}|${s.bold ? 'b' : ''}|${s.italic ? 'i' : ''}|${s.color}|${s.underline ? 'u' : ''}`;
 }
 
-function odtRenderScanStyles(): {
+function odtRenderScanStyles(fontClasses: Map<string, FontClass>): {
   styles: { name: string; props: OdtRunStyle }[];
   nameFor: (r: IRTextRun) => string;
+  /** Class of every family written, for its font-face declaration. */
+  families: Map<string, FontClass>;
 } {
   const map = new Map<string, string>();
+  const families = new Map<string, FontClass>();
   const styles: { name: string; props: OdtRunStyle }[] = [];
   let n = 0;
   const nameFor = (r: IRTextRun): string => {
@@ -4442,7 +4467,8 @@ function odtRenderScanStyles(): {
     // recognizable as a link and not just functionally clickable.
     const props: OdtRunStyle = {
       // A PDF font resource name ("PSWIZS+Gotham-Black") is not an installed family: cleaned the
-      // same way as for Word, and declared in office:font-face-decls (see odtRenderContentXml).
+      // same way as for Word, and declared in office:font-face-decls with the family to use
+      // when the reader does not have it (see odtRenderContentXml, pdf/fontFamilies.ts).
       font: docxFontFamily(r.fontName || '') ?? '',
       size: r.fontSize,
       bold: !!r.bold,
@@ -4450,6 +4476,7 @@ function odtRenderScanStyles(): {
       color: r.link ? '#0563C1' : odtRenderColorHex(r.color),
       underline: !!r.link || !!r.underline,
     };
+    if (props.font && !families.has(props.font)) families.set(props.font, classifyFont(r.fontName || '', fontClasses.get(r.fontName || '')));
     const key = odtRenderStyleKey(props);
     let name = map.get(key);
     if (!name) {
@@ -4460,7 +4487,7 @@ function odtRenderScanStyles(): {
     }
     return name;
   };
-  return { styles, nameFor };
+  return { styles, nameFor, families };
 }
 
 function odtRenderAutoStylesXml(styles: { name: string; props: OdtRunStyle }[]): string {
@@ -4768,9 +4795,9 @@ const ODT_GRAPHIC_STYLES_XML = `
   <style:style style:name="frIn" style:family="graphic"><style:graphic-properties style:vertical-pos="top" style:vertical-rel="baseline" fo:border="none"/></style:style>
   <style:style style:name="frBg" style:family="graphic"><style:graphic-properties style:wrap="run-through" style:run-through="background" style:horizontal-pos="from-left" style:horizontal-rel="page" style:vertical-pos="from-top" style:vertical-rel="page" fo:border="none"/></style:style>`;
 
-function odtRenderContentXml(body: string, styles: { name: string; props: OdtRunStyle }[], paragraphStylesXml: string): string {
+function odtRenderContentXml(body: string, styles: { name: string; props: OdtRunStyle }[], paragraphStylesXml: string, families: Map<string, FontClass>): string {
   const fonts = [...new Set(styles.map((s) => s.props.font).filter(Boolean))];
-  const fontDecls = fonts.map((f) => `    <style:font-face style:name="${odtXmlEsc(f)}" svg:font-family="${odtXmlEsc(/\s/.test(f) ? `'${f}'` : f)}"/>`).join('\n');
+  const fontDecls = fonts.map((f) => `    ${odfFontFace(f, families.get(f) ?? 'sans')}`).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>
 <office:document-content
   xmlns:office="${ODF_OFFICE}"
@@ -4814,7 +4841,7 @@ const odtBgMasterName = (hex: string): string => `Bg_${hex.replace('#', '').toUp
  * Page size and margins of the source (first page), so text wraps where it wrapped in the PDF,
  * plus one master page per full-page background colour (same geometry, coloured page).
  */
-function odtRenderStylesXml(page: IRPageIR | undefined, margins: PageMargins, pageBackgrounds: Set<string>): string {
+function odtRenderStylesXml(page: IRPageIR | undefined, margins: PageMargins, pageBackgrounds: Set<string>, defaultFont: { family: string; cls: FontClass }): string {
   const geometry = page
     ? `fo:page-width="${odtPt(page.width)}" fo:page-height="${odtPt(page.height)}" ` +
       `style:print-orientation="${page.width > page.height ? 'landscape' : 'portrait'}" ` +
@@ -4829,8 +4856,13 @@ function odtRenderStylesXml(page: IRPageIR | undefined, margins: PageMargins, pa
   const masters = [`    <style:master-page style:name="Standard" style:page-layout-name="pm1"/>`,
     ...bgs.map((c, i) => `    <style:master-page style:name="${odtBgMasterName(c)}" style:page-layout-name="pmBg${i + 1}"/>`)];
   return `<?xml version="1.0" encoding="UTF-8"?>
-<office:document-styles xmlns:office="${ODF_OFFICE}" xmlns:style="${ODF_STYLE}" xmlns:text="${ODF_TEXT}" xmlns:fo="${ODF_FO}" xmlns:draw="${ODF_DRAW}" office:version="1.2">
-  <office:styles/>
+<office:document-styles xmlns:office="${ODF_OFFICE}" xmlns:style="${ODF_STYLE}" xmlns:text="${ODF_TEXT}" xmlns:fo="${ODF_FO}" xmlns:draw="${ODF_DRAW}" xmlns:svg="${ODF_SVG}" office:version="1.2">
+  <office:font-face-decls>
+    ${odfFontFace(defaultFont.family, defaultFont.cls)}
+  </office:font-face-decls>
+  <office:styles>
+    <style:default-style style:family="paragraph"><style:text-properties style:font-name="${odtXmlEsc(defaultFont.family)}"/></style:default-style>
+  </office:styles>
   <office:automatic-styles>
 ${layouts.join('\n')}
   </office:automatic-styles>
@@ -4855,7 +4887,12 @@ export async function renderIRToOdt(
   //    Identical (font,size,bold,italic,color) runs share one generated T{n}
   //    style. `styles` is serialized into content.xml AFTER body rendering, so
   //    the list is fully populated by the time it is used.
-  const { styles, nameFor } = odtRenderScanStyles();
+  const fontClasses = pageFontClasses(pages);
+  const { styles, nameFor, families } = odtRenderScanStyles(fontClasses);
+  // Text without a style of its own (list markers, placeholders) takes the document's default
+  // font: the family most of the text is set in, not the word processor's serif default.
+  const dominant = dominantFontName(pages);
+  const defaultFont = { family: docxFontFamily(dominant) ?? 'Arial', cls: classifyFont(dominant, fontClasses.get(dominant)) };
 
   // 2. Render body; collect picture bytes for Pictures/ + manifest.
   const pictures: OdtPicture[] = [];
@@ -4868,8 +4905,8 @@ export async function renderIRToOdt(
   const JSZip = (await import('jszip')).default;
   const zip = new JSZip();
   zip.file('mimetype', ODT_MIME, { compression: 'STORE' });
-  zip.file('content.xml', odtRenderContentXml(body, styles, paraStyles.xml()));
-  zip.file('styles.xml', odtRenderStylesXml(pages[0], margins, pageBackgrounds));
+  zip.file('content.xml', odtRenderContentXml(body, styles, paraStyles.xml(), families));
+  zip.file('styles.xml', odtRenderStylesXml(pages[0], margins, pageBackgrounds, defaultFont));
   zip.file('meta.xml', ODT_META_XML);
   zip.file('META-INF/manifest.xml', odtRenderManifestXml(pictures));
   for (const pic of pictures) zip.file(pic.path, pic.data);
