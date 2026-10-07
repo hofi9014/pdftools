@@ -47,7 +47,34 @@ function check(cond: boolean, msg: string): void {
 const outDir = join(ROOT, 'test-output', 'pdf-to-word-fixed-layout');
 mkdirSync(outDir, { recursive: true });
 const EXTRA = process.env.E2E_EXTRA_PDF;
-const fixture = (name: string): Buffer => readFileSync(name === 'extra.pdf' && EXTRA ? EXTRA : join(ROOT, 'test-real-pdfs', name));
+const fixture = (name: string): Buffer => readFileSync(name === 'extra.pdf' && EXTRA ? EXTRA : name === 'photos.pdf' ? join(outDir, name) : join(ROOT, 'test-real-pdfs', name));
+
+// A page with two raster photos (the brochure's "photos" are vector drawings): each photo must
+// come out as a picture of its own, above the page picture, and still be where the PDF has it
+// when a word processor draws the document.
+const PHOTO_PAGE = { width: 400, height: 500 };
+const PHOTOS = [{ x: 40, y: 80, w: 150, h: 100, hue: 200 }, { x: 210, y: 80, w: 150, h: 100, hue: 20 }];
+{
+  const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib');
+  const canvasMod = await import('@napi-rs/canvas');
+  const doc = await PDFDocument.create();
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  const page = doc.addPage([PHOTO_PAGE.width, PHOTO_PAGE.height]);
+  page.drawRectangle({ x: 20, y: PHOTO_PAGE.height - 200, width: 360, height: 140, color: rgb(0.93, 0.96, 0.97) });
+  for (const ph of PHOTOS) {
+    const c = canvasMod.createCanvas(300, 200);
+    const g = c.getContext('2d');
+    const grad = g.createLinearGradient(0, 0, 300, 200);
+    grad.addColorStop(0, `hsl(${ph.hue}, 70%, 30%)`);
+    grad.addColorStop(1, `hsl(${ph.hue + 40}, 70%, 55%)`);
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 300, 200);
+    page.drawImage(await doc.embedJpg(new Uint8Array(c.toBuffer('image/jpeg', 92))), { x: ph.x, y: PHOTO_PAGE.height - ph.y - ph.h, width: ph.w, height: ph.h });
+  }
+  page.drawText('FOTO1 Tytul strony ze zdjeciami', { x: 40, y: PHOTO_PAGE.height - 50, size: 16, font });
+  page.drawText('FOTO2 Opis pod zdjeciami, zwykly tekst.', { x: 40, y: PHOTO_PAGE.height - 230, size: 11, font });
+  writeFileSync(join(outDir, 'photos.pdf'), await doc.save());
+}
 
 const openPdf = (bytes: Uint8Array) => pdfjsLib.getDocument({
   data: new Uint8Array(bytes),
@@ -198,6 +225,20 @@ const odt = await convert('pdf-to-openoffice', 'chrome-brochure.pdf', null);
   writeFileSync(join(outDir, 'brochure-fixed.odt'), odt.bytes);
   await odt.page.close();
 }
+console.log('=== photos become pictures of their own ===');
+{
+  const docx = await convert('pdf-to-word', 'photos.pdf', 'fixed');
+  const dz = await JSZip.loadAsync(docx.bytes);
+  const anchors = ((await dz.file('word/document.xml')!.async('string')).match(/<wp:anchor /g) ?? []).length;
+  check(anchors === 3, `the .docx anchors the page picture and both photos separately (${anchors} pictures)`);
+  writeFileSync(join(outDir, 'photos.docx'), docx.bytes);
+  await docx.page.close();
+  const odt = await convert('pdf-to-openoffice', 'photos.pdf', 'fixed');
+  const frames = ((await (await JSZip.loadAsync(odt.bytes)).file('content.xml')!.async('string')).match(/<draw:frame /g) ?? []).length;
+  check(frames === 3, `the .odt has three picture frames (${frames})`);
+  writeFileSync(join(outDir, 'photos.odt'), odt.bytes);
+  await odt.page.close();
+}
 if (EXTRA) {
   for (const tool of ['pdf-to-word', 'pdf-to-openoffice'] as const) {
     const res = await convert(tool, 'extra.pdf', null);
@@ -255,6 +296,43 @@ if (!office) {
       check(c.found === c.lines && c.worstY <= 1.5 && c.worstX <= 1, `${to}: every line where the source has it (baseline ${c.worstY.toFixed(2)} pt, left ${c.worstX.toFixed(2)} pt)`);
     }
     await b2.close();
+  }
+
+  // Photos as separate pictures: a word processor must draw them ABOVE the page picture (which
+  // no longer contains them) and at their place. Measured inside each photo's box.
+  console.log(`\n=== photos, opened in ${office.name} ===`);
+  {
+    const photoSource = (await readPdf(fixture('photos.pdf')))[0]!;
+    const inBox = (a: PageRead, b: PageRead, box: { x: number; y: number; w: number; h: number }): number => {
+      if (a.width !== b.width || a.height !== b.height) return 1;
+      const k = a.width / PHOTO_PAGE.width;
+      let sum = 0;
+      let n = 0;
+      for (let y = Math.ceil(box.y * k); y < Math.floor((box.y + box.h) * k); y++) {
+        for (let x = Math.ceil(box.x * k); x < Math.floor((box.x + box.w) * k); x++) { sum += Math.abs(a.gray[y * a.width + x]! - b.gray[y * a.width + x]!); n++; }
+      }
+      return sum / Math.max(1, n) / 255;
+    };
+    await saveAsOdt(office, [[join(outDir, 'photos.docx'), join(outDir, 'photos-resaved.odt')]]);
+    await convertToPdf(office, ['photos.docx', 'photos.odt'].map((n) => [join(outDir, n), pdfOf(n)] as [string, string]));
+    const results: Array<[string, PageRead[]]> = [];
+    for (const name of ['photos.docx', 'photos.odt']) results.push([name, await readPdf(readFileSync(pdfOf(name)))]);
+    // ...and the document saved again by the office, back to PDF through this site.
+    const b3 = await chromium.launch({ headless: true });
+    const page = await b3.newPage();
+    await page.goto(`${BASE_URL}/pl/openoffice-to-pdf`, { waitUntil: 'load' });
+    await page.setInputFiles('#fileInput', { name: 'photos-resaved.odt', mimeType: 'application/vnd.oasis.opendocument.text', buffer: readFileSync(join(outDir, 'photos-resaved.odt')) });
+    const [download] = await Promise.all([page.waitForEvent('download', { timeout: 120000 }), page.locator('button', { hasText: /Konwertuj do PDF/ }).last().click()]);
+    results.push(['photos.docx saved again as .odt, back to PDF here', await readPdf(readFileSync((await download.path())!))]);
+    await b3.close();
+    for (const [name, pages] of results) {
+      const got = pages[0];
+      const c = compare([photoSource], pages);
+      const worst = got ? Math.max(...PHOTOS.map((ph) => inBox(photoSource, got, ph))) : 1;
+      check(c.pagesEqual && c.wordsEqual && c.found === c.lines, `${name}: one page, the same words, every line found`);
+      // A photo hidden under the page picture, or moved, would differ by 20 % and more here.
+      check(worst < 0.04, `${name}: both photos are where the PDF has them (${(worst * 100).toFixed(1)} % grey difference inside their boxes)`);
+    }
   }
 
   console.log('\n=== the same PDF through the flow engine (the reported behaviour) ===');
