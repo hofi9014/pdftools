@@ -91,6 +91,15 @@ export async function convertToPdf(office: Office, pairs: Array<[string, string]
   for (const [, out] of pairs) if (!existsSync(out)) throw new Error(`${office.name} did not write ${out}`);
 }
 
+/**
+ * Opens each input in the office and saves it again as OpenDocument text — what a user does who
+ * edits a converted file and saves it. (Apache OpenOffice cannot save .docx at all.)
+ */
+export async function saveAsOdt(office: Office, pairs: Array<[string, string]>): Promise<void> {
+  for (const [, out] of pairs) if (!out.toLowerCase().endsWith('.odt')) throw new Error(`not an .odt path: ${out}`);
+  await convertToPdf(office, pairs);
+}
+
 /** Asks the office started by ensureRunning() to quit. An office that was already running is left alone. */
 export async function stopOffice(office: Office): Promise<void> {
   if (!startedHere) return;
