@@ -1,190 +1,145 @@
-export interface FontFamilyOption {
-  label: string
-  family: string
-  weights: { weight: number; italic: boolean; url: string }[]
-}
+// The fonts of the PDF editor: what the text-edit popup offers, what the live preview shows and
+// what the export embeds — always the same file for all three.
+//
+// Self-hosted under public/fonts/ (nothing is fetched from Google at run time). The files are
+// complete static TrueType fonts cut down to Latin with all its extensions, Greek, Cyrillic,
+// punctuation and symbols by scripts/build-editor-fonts.py, which also names the sources.
+//
+// FINDING (2026-10-06) — until then these were the "latin" WOFF2 subsets Google Fonts' CSS
+// endpoint serves first, and that was wrong three ways:
+//   1. No Latin Extended at all: not one of the thirty files had "ą ć ę ł ń ś ź ż" (only "ó").
+//      A Polish edit was exported with those letters replaced by the font's missing-glyph box.
+//   2. pdf-lib embeds the bytes it is given, so the exported PDF carried a WOFF2 file where a
+//      TrueType font program belongs. No PDF reader can use that ("Required loca table is not
+//      found"); the edited text was shown in whatever substitute the reader picked.
+//   3. Four "italic" files (Cousine, Georgia, Tinos, Verdana) were 8-glyph stubs, bold italic
+//      did not exist, and the Georgia and Verdana files were Microsoft's own fonts, whose
+//      licence text forbids redistribution. "Georgia" is now Gelasio (metric-compatible with
+//      it, as Arimo is with Arial and Tinos with Times New Roman) and "Verdana" is DejaVu Sans
+//      (the closest open design; about 1 % narrower, not metric-compatible).
+// tests/editor-fonts.mts checks every file: Polish letters, real TrueType, distinct styles.
 
-// Self-hosted under public/fonts/ — downloaded once from Google Fonts and served from our own
-// domain from then on. Previously these were fetched live from fonts.gstatic.com on every
-// edit-pdf session (and fonts.googleapis.com for the live preview, see loadGoogleFontsCSS
-// below), which silently sent the visitor's IP to Google before they ever clicked anything.
-// Self-hosting also fixes a real, separate bug this uncovered: two of the old hardcoded
-// fonts.gstatic.com hashes (PT Sans regular/italic) had already rotted and returned 404 —
-// exporting an edit-pdf document with that font would have thrown "Font fetch failed". A
-// self-hosted copy can't rot from under us the way a hash-versioned CDN URL can.
+export type FontStyleKey = 'regular' | 'bold' | 'italic' | 'bolditalic';
+
 const FONTS_BASE = '/fonts';
 
-const FONT_VERSIONS: Record<string, { family: string; url: (w: number, i: boolean) => string }> = {
-  // FINDING (2026-09-21) — url() ignored both its (weight, italic) arguments and always
-  // returned arimo-regular.woff2, because that was the only Arimo file that existed on disk;
-  // every other family here already had real per-weight/style files. Ticking Bold or Italic
-  // on Arial/Arimo (Arial is edit-pdf's default font) silently produced plain regular weight.
-  // arimo-bold.woff2/arimo-italic.woff2 fetched in isolation from Google Fonts' css2 endpoint
-  // (combined weight+style queries return a shared variable-font blob that renders identically
-  // regardless of the requested weight — the same issue already documented for Noto Sans/Open
-  // Sans above) and verified with fontkit: distinct advance widths (regular/bold "AVWMil" 7129
-  // vs 7470 units) and distinct italic angle (regular/italic 0° vs -12°), not duplicate files.
-  'Arial': {
-    family: 'arimo',
-    url: (w, i) => i
-      ? `${FONTS_BASE}/arimo-italic.woff2`
-      : w === 700
-        ? `${FONTS_BASE}/arimo-bold.woff2`
-        : `${FONTS_BASE}/arimo-regular.woff2`,
-  },
-  'Arimo': {
-    family: 'arimo',
-    url: (w, i) => i
-      ? `${FONTS_BASE}/arimo-italic.woff2`
-      : w === 700
-        ? `${FONTS_BASE}/arimo-bold.woff2`
-        : `${FONTS_BASE}/arimo-regular.woff2`,
-  },
-  'Cousine': {
-    family: 'cousine',
-    url: (w, i) => i
-      ? `${FONTS_BASE}/cousine-italic.woff2`
-      : w === 700
-        ? `${FONTS_BASE}/cousine-bold.woff2`
-        : `${FONTS_BASE}/cousine-regular.woff2`,
-  },
-  'Georgia': {
-    family: 'georgia',
-    url: (w, i) => i
-      ? `${FONTS_BASE}/georgia-italic.woff2`
-      : w === 700
-        ? `${FONTS_BASE}/georgia-bold.woff2`
-        : `${FONTS_BASE}/georgia-regular.woff2`,
-  },
-  'Lato': {
-    family: 'lato',
-    url: (w, i) => i
-      ? `${FONTS_BASE}/lato-italic.woff2`
-      : w === 700
-        ? `${FONTS_BASE}/lato-bold.woff2`
-        : `${FONTS_BASE}/lato-regular.woff2`,
-  },
-  'Noto Sans': {
-    family: 'notosans',
-    // Regular and bold used to point at the SAME v42 file. Google's css2 endpoint returns a
-    // single shared variable-font blob when 400+700 are requested together (its un-instanced
-    // default renders as regular for both) — the genuinely distinct per-weight static
-    // instances only come back when each weight is queried in isolation. Verified with
-    // fontkit: NotoSans-Regular vs NotoSans-Bold, "AVWMil" advance width 3552 vs 3809 units.
-    url: (w, i) => i
-      ? `${FONTS_BASE}/notosans-italic.woff2`
-      : w === 700
-        ? `${FONTS_BASE}/notosans-bold.woff2`
-        : `${FONTS_BASE}/notosans-regular.woff2`,
-  },
-  'Open Sans': {
-    family: 'opensans',
-    // Same shared-variable-blob issue as Noto Sans (regular and bold were identical), plus
-    // the old v40 URLs had aged out entirely (all three returned 404 — Google is now on v44).
-    // Refetched all three isolated by weight/style. Verified with fontkit: OpenSans-Regular vs
-    // OpenSans-Bold, "AVWMil" advance width 7283 vs 7905 units.
-    url: (w, i) => i
-      ? `${FONTS_BASE}/opensans-italic.woff2`
-      : w === 700
-        ? `${FONTS_BASE}/opensans-bold.woff2`
-        : `${FONTS_BASE}/opensans-regular.woff2`,
-  },
-  'PT Sans': {
-    family: 'ptsans',
-    url: (w, i) => i
-      ? `${FONTS_BASE}/ptsans-italic.woff2`
-      : w === 700
-        ? `${FONTS_BASE}/ptsans-bold.woff2`
-        : `${FONTS_BASE}/ptsans-regular.woff2`,
-  },
-  'Roboto': {
-    family: 'roboto',
-    url: (w, i) => i
-      ? `${FONTS_BASE}/roboto-italic.woff2`
-      : w === 700
-        ? `${FONTS_BASE}/roboto-bold.woff2`
-        : `${FONTS_BASE}/roboto-regular.woff2`,
-  },
-  'Times New Roman': {
-    family: 'tinos',
-    url: (w, i) => i
-      ? `${FONTS_BASE}/tinos-italic.woff2`
-      : w === 700
-        ? `${FONTS_BASE}/tinos-bold.woff2`
-        : `${FONTS_BASE}/tinos-regular.woff2`,
-  },
-  'Tinos': {
-    family: 'tinos',
-    url: (w, i) => i
-      ? `${FONTS_BASE}/tinos-italic.woff2`
-      : w === 700
-        ? `${FONTS_BASE}/tinos-bold.woff2`
-        : `${FONTS_BASE}/tinos-regular.woff2`,
-  },
-  'Verdana': {
-    family: 'verdana',
-    url: (w, i) => i
-      ? `${FONTS_BASE}/verdana-italic.woff2`
-      : w === 700
-        ? `${FONTS_BASE}/verdana-bold.woff2`
-        : `${FONTS_BASE}/verdana-regular.woff2`,
-  },
+/** Display name -> CSS family used for the preview, and the file name stem in public/fonts/. */
+const FONT_FILES: Record<string, { family: string; file: string }> = {
+  'Arial': { family: 'arimo', file: 'arimo' },
+  'Arimo': { family: 'arimo', file: 'arimo' },
+  'Cousine': { family: 'cousine', file: 'cousine' },
+  'Georgia': { family: 'gelasio', file: 'gelasio' },
+  'Lato': { family: 'lato', file: 'lato' },
+  'Noto Sans': { family: 'notosans', file: 'notosans' },
+  'Open Sans': { family: 'opensans', file: 'opensans' },
+  'PT Sans': { family: 'ptsans', file: 'ptsans' },
+  'Roboto': { family: 'roboto', file: 'roboto' },
+  'Times New Roman': { family: 'tinos', file: 'tinos' },
+  'Tinos': { family: 'tinos', file: 'tinos' },
+  'Verdana': { family: 'dejavusans', file: 'dejavusans' },
 };
 
-export const FONT_OPTIONS = Object.keys(FONT_VERSIONS).map(family => ({
+export const FONT_OPTIONS = Object.keys(FONT_FILES).map(family => ({
   label: family,
   family,
 }));
 
 export function getFontFamily(displayName: string): string {
-  return FONT_VERSIONS[displayName]?.family || displayName;
+  return FONT_FILES[displayName]?.family || displayName;
+}
+
+export function fontStyleKey(weight: number = 400, italic: boolean = false): FontStyleKey {
+  return weight >= 600 ? (italic ? 'bolditalic' : 'bold') : italic ? 'italic' : 'regular';
+}
+
+/** The file of a family in one weight and style; null for a family the editor does not have. */
+export function fontUrl(family: string, weight: number = 400, italic: boolean = false): string | null {
+  const cfg = FONT_FILES[family];
+  return cfg ? `${FONTS_BASE}/${cfg.file}-${fontStyleKey(weight, italic)}.ttf` : null;
 }
 
 const fontCache = new Map<string, ArrayBuffer>();
 
-async function fetchWoff2(url: string): Promise<ArrayBuffer> {
+export async function getFontBytes(family: string, weight: number = 400, italic: boolean = false): Promise<ArrayBuffer> {
+  const url = fontUrl(family, weight, italic);
+  if (!url) throw new Error(`Font ${family} not found`);
+  const cached = fontCache.get(url);
+  if (cached) return cached.slice(0);
+
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Font fetch failed: ${res.status} for ${url}`);
-  return res.arrayBuffer();
-}
-
-export async function getFontBytes(family: string, weight: number = 400, italic: boolean = false): Promise<ArrayBuffer> {
-  const cfg = FONT_VERSIONS[family];
-  if (!cfg) throw new Error(`Font ${family} not found`);
-
-  const key = `${family}-${weight}-${italic}`;
-  if (fontCache.has(key)) return fontCache.get(key)!.slice(0);
-
-  const url = cfg.url(weight, italic);
-  const bytes = await fetchWoff2(url);
-  fontCache.set(key, bytes.slice(0));
+  const bytes = await res.arrayBuffer();
+  fontCache.set(url, bytes.slice(0));
   return bytes;
 }
 
+interface GlyphLookup { hasGlyphForCodePoint(codePoint: number): boolean }
+const parsedFonts = new Map<string, Promise<GlyphLookup>>();
+
+/**
+ * Whether the file of this family and style has a glyph for every character of the text (line
+ * breaks and tabs aside). Rejects, like getFontBytes, when the file cannot be loaded.
+ */
+export async function fontHasText(family: string, weight: number, italic: boolean, text: string): Promise<boolean> {
+  const url = fontUrl(family, weight, italic);
+  if (!url) throw new Error(`Font ${family} not found`);
+  let parsed = parsedFonts.get(url);
+  if (!parsed) {
+    parsed = (async () => {
+      const mod = await import('@pdf-lib/fontkit');
+      const kit = (mod.default || mod) as unknown as { create(bytes: Uint8Array): GlyphLookup };
+      return kit.create(new Uint8Array(await getFontBytes(family, weight, italic)));
+    })();
+    parsedFonts.set(url, parsed);
+    parsed.catch(() => parsedFonts.delete(url));
+  }
+  const font = await parsed;
+  for (const ch of text) {
+    const cp = ch.codePointAt(0)!;
+    if (cp === 10 || cp === 13 || cp === 9) continue;
+    if (!font.hasGlyphForCodePoint(cp)) return false;
+  }
+  return true;
+}
+
+// One embedded copy per document and file: ten edits in Arial used to embed the font ten times.
+const embedded = new WeakMap<object, Map<string, Promise<unknown>>>();
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function embedFont(pdfDoc: any, family: string, weight: number = 400, italic: boolean = false): Promise<any> {
-  const fontkit = await import('@pdf-lib/fontkit');
-  pdfDoc.registerFontkit(fontkit.default || fontkit);
-  const bytes = await getFontBytes(family, weight, italic);
-  return pdfDoc.embedFont(bytes);
+  const url = fontUrl(family, weight, italic);
+  if (!url) throw new Error(`Font ${family} not found`);
+  let perDoc = embedded.get(pdfDoc);
+  if (!perDoc) { perDoc = new Map(); embedded.set(pdfDoc, perDoc); }
+  let font = perDoc.get(url);
+  if (!font) {
+    font = (async () => {
+      const fontkit = await import('@pdf-lib/fontkit');
+      pdfDoc.registerFontkit(fontkit.default || fontkit);
+      return pdfDoc.embedFont(await getFontBytes(family, weight, italic));
+    })();
+    perDoc.set(url, font);
+    // A failed load must not be remembered: the next edit may succeed (or take the fallback).
+    font.catch(() => perDoc!.delete(url));
+  }
+  return font;
 }
 
 const FONTS_STYLE_ID = 'optimapdf-local-fonts';
 
-// Previously fetched a CSS file from fonts.googleapis.com (which itself points at
-// fonts.gstatic.com) — that meant every edit-pdf session contacted Google before the user did
-// anything at all, just to render the live text-editing preview. This builds the equivalent
-// @font-face rules locally from the same self-hosted files getFontBytes()/embedFont() use for
-// the actual PDF export, so preview and export always agree and nothing leaves the browser.
+// The @font-face rules of the live preview, built from the same self-hosted files the export
+// embeds, so preview and export always agree and nothing leaves the browser. (The name is
+// historical: this once fetched a stylesheet from fonts.googleapis.com.)
 export function loadGoogleFontsCSS(): void {
   if (document.getElementById(FONTS_STYLE_ID)) return;
   const seen = new Set<string>();
   const rules: string[] = [];
-  for (const cfg of Object.values(FONT_VERSIONS)) {
+  for (const cfg of Object.values(FONT_FILES)) {
     if (seen.has(cfg.family)) continue;
     seen.add(cfg.family);
-    rules.push(`@font-face { font-family: '${cfg.family}'; font-weight: 400; font-style: normal; font-display: swap; src: url('${cfg.url(400, false)}') format('woff2'); }`);
-    rules.push(`@font-face { font-family: '${cfg.family}'; font-weight: 700; font-style: normal; font-display: swap; src: url('${cfg.url(700, false)}') format('woff2'); }`);
-    rules.push(`@font-face { font-family: '${cfg.family}'; font-weight: 400; font-style: italic; font-display: swap; src: url('${cfg.url(400, true)}') format('woff2'); }`);
+    for (const [weight, italic] of [[400, false], [700, false], [400, true], [700, true]] as const) {
+      rules.push(`@font-face { font-family: '${cfg.family}'; font-weight: ${weight}; font-style: ${italic ? 'italic' : 'normal'}; font-display: swap; src: url('${FONTS_BASE}/${cfg.file}-${fontStyleKey(weight, italic)}.ttf') format('truetype'); }`);
+    }
   }
   const style = document.createElement('style');
   style.id = FONTS_STYLE_ID;

@@ -1,5 +1,5 @@
 import { PDFDocument, rgb, StandardFonts, type PDFFont } from 'pdf-lib';
-import { embedFont } from './fonts';
+import { embedFont, fontHasText } from './fonts';
 import { embedLiberationSans } from '../client-pdf';
 
 export interface TextEdit {
@@ -90,9 +90,18 @@ export async function applyTextEdits(pdfDoc: PDFDocument, textEdits: TextEdit[],
 
     if (!edit.newText || edit.newText.trim().length === 0) continue;
 
+    // A font that lacks a letter of the text draws its missing-glyph box there (Lato has no
+    // "č", Gelasio no Cyrillic). Liberation Sans covers Latin, Greek and Cyrillic, so text the
+    // chosen font cannot write in full is written with it instead — the right letters in a
+    // plainer face rather than the chosen face with holes. Asked BEFORE embedding: a font that
+    // is embedded and then not used would still be saved into the file.
+    const family = edit.fontFamily || 'Noto Sans';
+    const weight = edit.bold ? 700 : 400;
     let font: PDFFont;
     try {
-      font = await embedFont(pdfDoc, edit.fontFamily || 'Noto Sans', edit.bold ? 700 : 400, edit.italic);
+      font = (await fontHasText(family, weight, edit.italic, edit.newText))
+        ? await embedFont(pdfDoc, family, weight, edit.italic)
+        : await fallbackFont(pdfDoc);
     } catch {
       font = await fallbackFont(pdfDoc);
     }
@@ -122,12 +131,14 @@ export async function applyTextEdits(pdfDoc: PDFDocument, textEdits: TextEdit[],
 // edit then failed the whole export. The fallback is now LiberationSans, served from this site
 // (the same file embedLiberationSans uses); Helvetica stays only as the last resort if even that
 // request fails, with drawableText() replacing the characters it cannot encode.
-async function fallbackFont(pdfDoc: PDFDocument): Promise<PDFFont> {
-  try {
-    return await embedLiberationSans(pdfDoc);
-  } catch {
-    return pdfDoc.embedFont(StandardFonts.Helvetica);
+const fallbacks = new WeakMap<PDFDocument, Promise<PDFFont>>();
+function fallbackFont(pdfDoc: PDFDocument): Promise<PDFFont> {
+  let font = fallbacks.get(pdfDoc);
+  if (!font) {
+    font = embedLiberationSans(pdfDoc).catch(() => pdfDoc.embedFont(StandardFonts.Helvetica));
+    fallbacks.set(pdfDoc, font);
   }
+  return font;
 }
 
 /** The text with every character the font cannot encode replaced by "?" (only standard fonts

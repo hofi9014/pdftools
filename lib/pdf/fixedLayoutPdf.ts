@@ -25,15 +25,17 @@ export function fixedBackgroundScale(widthPt: number, heightPt: number): number 
 // ---------------------------------------------------------------- font metrics
 
 // The files behind each family the layout writes: the metric-compatible open fonts this site
-// already ships (Liberation Sans = Arial, Tinos = Times New Roman, Cousine = Courier New).
+// ships (Liberation Sans = Arial, Tinos = Times New Roman, Cousine = Courier New, Gelasio =
+// Georgia). Families without a metric twin here (Verdana, Tahoma, Calibri…) are not listed:
+// their text is written in its own family at its natural width.
 //
-// Arial is measured with the full Liberation Sans files that ship for pdf.js (Latin Extended,
-// Cyrillic, Greek, all four styles). The other families only exist here as the editor's web
-// fonts, which are Latin-1 subsets: no "ą ć ę ł ń ś ź ż". Measured first with a guessed width
-// for those letters, every Polish line came out about 2 % narrow (a full-width line ended 17 pt
-// early) — so a letter the file lacks is measured as its base letter (advanceOf below).
+// Arial is measured with the Liberation Sans files that ship for pdf.js, the others with the
+// editor's fonts (lib/pdf/fonts.ts). Those were once Latin-1 subsets without "ą ć ę ł ń ś ź ż":
+// measured with a guessed width for such letters, every Polish line came out about 2 % narrow
+// (a full-width line ended 17 pt early). The files are complete now; a letter a font still
+// lacks (Lato has no "č") is measured as its base letter (advanceOf below).
 const METRIC_SOURCE: Record<string, string> = {
-  'Arial': 'liberation', 'Times New Roman': 'Times New Roman', 'Courier New': 'Cousine', 'Verdana': 'Verdana', 'Georgia': 'Georgia',
+  'Arial': 'liberation', 'Times New Roman': 'Times New Roman', 'Courier New': 'Cousine', 'Georgia': 'Georgia',
 };
 const LIBERATION_SANS = '/pdfjs-dist/standard_fonts/LiberationSans-';
 
@@ -48,8 +50,7 @@ const advanceCache = new Map<string, Map<number, number>>();
 async function loadMetricFont(family: string, bold: boolean, italic: boolean): Promise<LoadedFont | null> {
   const source = METRIC_SOURCE[family];
   if (!source) return null;
-  // The web-font sets have regular, bold and italic; bold italic is measured as bold.
-  const key = `${source}|${bold ? 'b' : italic ? 'i' : 'r'}${source === 'liberation' && bold && italic ? 'i' : ''}`;
+  const key = `${source}|${bold ? 'b' : ''}${italic ? 'i' : ''}`;
   let p = metricCache.get(key);
   if (!p) {
     p = (async () => {
@@ -60,7 +61,7 @@ async function loadMetricFont(family: string, bold: boolean, italic: boolean): P
           if (!res.ok) return null;
           bytes = await res.arrayBuffer();
         } else {
-          bytes = await getFontBytes(source, bold ? 700 : 400, !bold && italic);
+          bytes = await getFontBytes(source, bold ? 700 : 400, italic);
         }
         const fontkitMod = await import('@pdf-lib/fontkit');
         const fontkit = (fontkitMod as unknown as { default?: { create(b: Uint8Array): LoadedFont }; create?(b: Uint8Array): LoadedFont });
