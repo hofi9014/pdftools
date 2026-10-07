@@ -17,8 +17,9 @@
 // adding its space before and its lines; a line's baseline sits FIXED_DESCENT of the font size
 // above the bottom of its line box (the model the writers were calibrated with in OpenOffice).
 
-import type { FixedBlock, FixedPageLayout, FixedRun } from './fixedLayout';
+import type { FixedBlock, FixedPageLayout, FixedRun, MeasureText } from './fixedLayout';
 import { FIXED_DESCENT } from './fixedLayout';
+import { frameAscent, wrapRuns } from './fixedFrames';
 
 export interface PlacedSegment {
   /** Left edge, points from the left edge of the page. */
@@ -50,6 +51,46 @@ export interface PlacedPage {
   /** The page's photos, bottom to top: above the background, behind the text. */
   pictures?: PlacedPicture[];
   lines: PlacedLine[];
+  /** Text frames whose lines are not laid out yet (see layoutPlacedBoxes). */
+  boxes?: PlacedBox[];
+}
+
+/** A text frame as the document has it: where it is, and its paragraphs. */
+export interface PlacedBox {
+  x: number;
+  y: number;
+  width: number;
+  paragraphs: Array<{
+    /** Exact height of every line of the paragraph, points. */
+    lineHeight: number;
+    /** The paragraph's text; more than one entry where it has line breaks of its own. */
+    lines: FixedRun[][];
+  }>;
+}
+
+/**
+ * Turns the text frames of the pages into placed lines, the way a word processor does: each
+ * paragraph is wrapped into its frame's width with the metrics of the written font, every line is
+ * as high as its paragraph says and has its baseline four fifths of that below its top (measured,
+ * see fixedFrames.ts). Without metrics nothing is wrapped (every paragraph line is one line).
+ */
+export function layoutPlacedBoxes(pages: PlacedPage[], measure?: MeasureText): void {
+  for (const page of pages) {
+    for (const box of page.boxes ?? []) {
+      let top = box.y;
+      for (const para of box.paragraphs) {
+        for (const hard of para.lines) {
+          // An empty line (an empty paragraph, two line breaks in a row) still takes its height.
+          const wrapped = (measure ? wrapRuns(hard, box.width, measure) : null) ?? [hard];
+          for (const runs of wrapped.length > 0 ? wrapped : [[]]) {
+            if (runs.some((r) => r.text.trim())) page.lines.push({ baseline: top + frameAscent(para.lineHeight), segments: [{ x: box.x, runs }] });
+            top += para.lineHeight;
+          }
+        }
+      }
+    }
+    delete page.boxes;
+  }
 }
 
 /** A picture as the document refers to it, before its bytes are loaded. */
@@ -524,13 +565,13 @@ function readOdfStyles(root: Element): OdfStyles {
   return styles;
 }
 
-interface OdfParagraph extends Flow { pictures: PictureRef[]; style: OdfParagraphStyle }
+interface OdfParagraph extends Flow { pictures: PictureRef[]; boxes: PlacedBox[]; style: OdfParagraphStyle }
 
-function readOdfParagraph(p: Element, originX: number, top: number, styles: OdfStyles): OdfParagraph {
+/**
+ * The text of one paragraph into `builder`; frames it anchors are handed to `onFrame`.
+ */
+function walkOdfParagraph(p: Element, styles: OdfStyles, builder: LineBuilder, onFrame: (frame: Element) => void): void {
   const styleName = attrNs(p, ODF.text, 'style-name') ?? '';
-  const style = styles.paragraph.get(styleName);
-  if (!style || style.line === null || !(style.line > 0)) return no('a paragraph without a fixed line height');
-  const builder = new LineBuilder(originX, style.indent, style.tabs);
   // Text written directly in the paragraph takes the paragraph style's own text properties.
   // This site's writer puts every run in a span, but OpenOffice, saving the same document
   // again, moves a paragraph's single format up to the paragraph — read with a default size,
@@ -539,7 +580,6 @@ function readOdfParagraph(p: Element, originX: number, top: number, styles: OdfS
     font: 'Arial', fontSize: 10, bold: false, italic: false, color: '000000', scale: 100, spacingTw: 0, raisePercent: 0,
     ...styles.paragraphText.get(styleName),
   };
-  const pictures: PictureRef[] = [];
   const emit = (format: OdfFormat, text: string): void => {
     const { raisePercent, ...rest } = format;
     if (!rest.underline) delete rest.underline;
@@ -560,24 +600,55 @@ function readOdfParagraph(p: Element, originX: number, top: number, styles: OdfS
         emit(format, ' '.repeat(Number(attrNs(c, ODF.text, 'c')) || 1));
       } else if (c.localName === 'tab') builder.tab();
       else if (c.localName === 'line-break') builder.lineBreak();
-      else if (c.localName === 'frame') {
-        const href = attrNs(childEl(c, 'image'), ODF.xlink, 'href');
-        if (!href) return no('a frame that is not a picture');
-        const len = (name: string): number => odfLength(attrNs(c, ODF.svg, name)) ?? 0;
-        pictures.push({ source: href, x: len('x'), y: len('y'), width: len('width'), height: len('height'), z: Number(attrNs(c, ODF.draw, 'z-index')) || 0 });
-      } else if (c.localName === 'soft-page-break' || c.localName === 'bookmark' || c.localName === 'bookmark-start' || c.localName === 'bookmark-end') {
+      else if (c.localName === 'frame') onFrame(c);
+      else if (c.localName === 'soft-page-break' || c.localName === 'bookmark' || c.localName === 'bookmark-start' || c.localName === 'bookmark-end') {
         // carry no text
       } else return no(`<text:${c.localName}>`);
     }
   };
   walk(p, base);
-  const out: OdfParagraph = {
+}
+
+/** A text frame: its place and the paragraphs in it. */
+function readOdfBox(frame: Element, box: Element, styles: OdfStyles): PlacedBox {
+  const len = (name: string): number => odfLength(attrNs(frame, ODF.svg, name)) ?? 0;
+  const paragraphs: PlacedBox['paragraphs'] = [];
+  for (const p of childEls(box)) {
+    if (p.localName !== 'p' && p.localName !== 'h') return no('a frame with something other than paragraphs');
+    const style = styles.paragraph.get(attrNs(p, ODF.text, 'style-name') ?? '');
+    // As in the body: only a line of fixed height has a baseline this reader can name.
+    if (!style || style.line === null || !(style.line > 0)) return no('a paragraph in a frame without a fixed line height');
+    if (style.before > 0.05 || style.after > 0.05 || Math.abs(style.indent) > 0.05) return no('a paragraph in a frame with margins');
+    const builder = new LineBuilder(0, 0, []);
+    walkOdfParagraph(p, styles, builder, () => no('a frame inside a frame'));
+    paragraphs.push({ lineHeight: style.line, lines: builder.lines.length > 0 ? builder.lines.map((segs) => segs.flatMap((s) => s.runs)) : [[]] });
+  }
+  const width = len('width');
+  if (!(width > 0)) return no('a frame without a width');
+  return { x: len('x'), y: len('y'), width, paragraphs };
+}
+
+function readOdfParagraph(p: Element, originX: number, top: number, styles: OdfStyles): OdfParagraph {
+  const style = styles.paragraph.get(attrNs(p, ODF.text, 'style-name') ?? '');
+  if (!style || style.line === null || !(style.line > 0)) return no('a paragraph without a fixed line height');
+  const builder = new LineBuilder(originX, style.indent, style.tabs);
+  const pictures: PictureRef[] = [];
+  const boxes: PlacedBox[] = [];
+  walkOdfParagraph(p, styles, builder, (frame) => {
+    const len = (name: string): number => odfLength(attrNs(frame, ODF.svg, name)) ?? 0;
+    const href = attrNs(childEl(frame, 'image'), ODF.xlink, 'href');
+    const box = childEl(frame, 'text-box');
+    if (href) pictures.push({ source: href, x: len('x'), y: len('y'), width: len('width'), height: len('height'), z: Number(attrNs(frame, ODF.draw, 'z-index')) || 0 });
+    else if (box) boxes.push(readOdfBox(frame, box, styles));
+    else no('a frame that is neither a picture nor a text box');
+  });
+  return {
     lines: builder.place(top + style.before, style.line),
     height: style.before + style.line * builder.lines.length + style.after,
     style,
     pictures,
+    boxes,
   };
-  return out;
 }
 
 function readOdfTable(table: Element, originX: number, top: number, styles: OdfStyles): Flow {
@@ -613,7 +684,7 @@ function readOdfBlocks(children: Element[], originX: number, top: number, styles
     let flow: Flow | null = null;
     if (el.localName === 'p' || el.localName === 'h') {
       const p = readOdfParagraph(el, originX, y, styles);
-      if (p.pictures.length > 0) return no('a picture inside a table');
+      if (p.pictures.length > 0 || p.boxes.length > 0) return no('a picture or a frame inside a table');
       flow = p;
     } else if (el.localName === 'table') flow = readOdfTable(el, originX, y, styles);
     if (!flow) continue;
@@ -691,6 +762,7 @@ export async function readFixedOdt(file: Blob): Promise<PlacedPage[] | null> {
       if (isParagraph) {
         const p = readOdfParagraph(el, 0, y, styles);
         refs.get(page)!.push(...p.pictures);
+        if (p.boxes.length > 0) (page.boxes ??= []).push(...p.boxes);
         page.lines.push(...p.lines);
         y += p.height;
       } else {

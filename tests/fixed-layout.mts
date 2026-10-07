@@ -480,7 +480,8 @@ console.log('\n=== .docx: the written numbers put the text where the PDF has it 
 // ---- the .odt
 console.log('\n=== .odt ===');
 {
-  const blob = await renderFixedPagesToOdt(result.pages);
+  // The body-paragraph variant; text boxes (the default) are tested in tests/fixed-frames.mts.
+  const blob = await renderFixedPagesToOdt(result.pages, { textBoxes: false });
   const bytes = new Uint8Array(await blob.arrayBuffer());
   const zip = await JSZip.loadAsync(bytes);
   check(new TextDecoder().decode(bytes.subarray(30, 38)) === 'mimetype' && bytes[8] === 0 && bytes[9] === 0, 'mimetype is the first entry, stored uncompressed');

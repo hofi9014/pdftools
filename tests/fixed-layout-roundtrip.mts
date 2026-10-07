@@ -93,7 +93,8 @@ const brochure = new Uint8Array(readFileSync(join(ROOT, 'test-real-pdfs', 'chrom
 const source = await pdfToFixedPages(new File([brochure], 'chrome-brochure.pdf'));
 const truth = await pdfLines(brochure);
 const docx = await renderFixedPagesToDocx(source.pages);
-const odt = await renderFixedPagesToOdt(source.pages);
+// The body-paragraph variant of the .odt (text boxes, the default, have their own test: tests/fixed-frames.mts).
+const odt = await renderFixedPagesToOdt(source.pages, { textBoxes: false });
 
 // ------------------------------------------------------------ 1. the readers
 for (const [name, read] of [['.docx', () => readFixedDocx(docx)], ['.odt', () => readFixedOdt(odt)]] as const) {
@@ -201,7 +202,7 @@ console.log('\n=== pages of different sizes ===');
   check(sectionEnds.length === 2 && sectionEnds.every((s) => /w:line="20" w:lineRule="exact"/.test(s)), `the paragraph that closes a section is 1 pt high (${sectionEnds.length} of them)`);
   check(/<w:pgSz w:w="16840" w:h="11900" w:orient="landscape"\/>/.test(xml), 'the landscape page is written as landscape, wide side as its width');
   check((xml.match(/w:lineRule="exact"/g) ?? []).length === (xml.match(/<w:p>/g) ?? []).length, 'every paragraph has an exact line height');
-  for (const [name, pages] of [['.docx', await readFixedDocx(mixedDocx)], ['.odt', await readFixedOdt(await renderFixedPagesToOdt(pagesIn))]] as const) {
+  for (const [name, pages] of [['.docx', await readFixedDocx(mixedDocx)], ['.odt', await readFixedOdt(await renderFixedPagesToOdt(pagesIn, { textBoxes: false }))]] as const) {
     const got = (pages ?? []).map((p: PlacedPage) => `${Math.round(p.width)}x${Math.round(p.height)}`).join(' ');
     check(got === sizes.map(([w, h]) => `${w}x${h}`).join(' '), `${name}: four pages with their own sizes (${got})`);
     const line = pages?.[2]?.lines[0];

@@ -14,7 +14,7 @@ import {
   type PDFFont, type PDFImage,
 } from 'pdf-lib';
 import type { MeasureText } from './fixedLayout';
-import { readFixedDocx, readFixedOdt, type PlacedPage } from './fixedLayoutRead';
+import { layoutPlacedBoxes, readFixedDocx, readFixedOdt, type PlacedPage } from './fixedLayoutRead';
 import { detectUnsupportedScript } from '../client-pdf-docx';
 
 export interface PlacedPdfOptions {
@@ -121,8 +121,13 @@ export async function renderPlacedPagesToPdf(pages: PlacedPage[], opts: PlacedPd
 /** Metrics for the families a document names besides Arial; undefined when none (or unavailable). */
 async function metricsFor(pages: PlacedPage[]): Promise<MeasureText | undefined> {
   const variants = new Map<string, { family: string; bold: boolean; italic: boolean }>();
-  for (const p of pages) for (const l of p.lines) for (const s of l.segments) for (const r of s.runs) {
-    if (!ARIAL_METRICS.test(r.font)) variants.set(`${r.font}|${r.bold}|${r.italic}`, { family: r.font, bold: r.bold, italic: r.italic });
+  const add = (r: { font: string; bold: boolean; italic: boolean }, always: boolean): void => {
+    if (always || !ARIAL_METRICS.test(r.font)) variants.set(`${r.font}|${r.bold}|${r.italic}`, { family: r.font, bold: r.bold, italic: r.italic });
+  };
+  for (const p of pages) {
+    for (const l of p.lines) for (const s of l.segments) for (const r of s.runs) add(r, false);
+    // Text in frames has to be wrapped first, and that needs every family's widths, Arial's too.
+    for (const b of p.boxes ?? []) for (const para of b.paragraphs) for (const line of para.lines) for (const r of line) add(r, true);
   }
   if (variants.size === 0) return undefined;
   try {
@@ -137,7 +142,9 @@ async function metricsFor(pages: PlacedPage[]): Promise<MeasureText | undefined>
 
 async function positionedToPdf(pages: PlacedPage[] | null, opts: PlacedPdfOptions): Promise<Blob | null> {
   if (!pages) return null;
-  return renderPlacedPagesToPdf(pages, { ...opts, measure: opts.measure ?? await metricsFor(pages) });
+  const measure = opts.measure ?? await metricsFor(pages);
+  layoutPlacedBoxes(pages, measure);
+  return renderPlacedPagesToPdf(pages, { ...opts, ...(measure ? { measure } : {}) });
 }
 
 /**
