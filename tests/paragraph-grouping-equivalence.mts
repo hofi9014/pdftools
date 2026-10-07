@@ -119,7 +119,7 @@ for (const [fname, [expectedHash, expectedPages]] of Object.entries(EXPECTED)) {
   const pages = await extractFormattedTextFromPDF(file);
   check(pages.length === expectedPages, `[${fname}] page count unchanged (expected ${expectedPages}, got ${pages.length})`);
   // `fills` (painted background rectangles, used only by the Word writer to shade paragraphs) is additive presentation metadata covered by tests/docx-layout.mts; it is excluded so this test keeps proving the text/structure output is unchanged.
-  const hash = createHash('sha256').update(JSON.stringify(pages.map(({ fills: _fills, boxes: _boxes, ...rest }) => rest))).digest('hex');
+  const hash = createHash('sha256').update(JSON.stringify(pages.map(({ fills: _fills, boxes: _boxes, fontClasses: _fontClasses, ...rest }) => rest))).digest('hex');
   check(hash === expectedHash, `[${fname}] full output byte-for-byte identical to pre-optimization code (hash ${hash.slice(0, 12)}...)`);
 }
 

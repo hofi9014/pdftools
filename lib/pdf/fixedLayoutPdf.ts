@@ -5,11 +5,11 @@
 
 import type { IRTextRun } from '../client-pdf-docx';
 import {
-  initPdfjs, pdfjsDocOptions, buildFontNameMap, buildPageScaffold, applyLinkAnnotations,
+  initPdfjs, pdfjsDocOptions, buildFontNameMap, buildFontClassMap, buildPageScaffold, applyLinkAnnotations,
   extractRectsFromOps, buildTableClusters, textRunOpIndex,
   type PdfjsFontCommonObjs, type PdfjsLinkAnnotation,
 } from '../client-pdf';
-import { buildFixedPageLayout, fixedFontFamily, type FixedBlock, type FixedPageLayout, type FontClass, type MeasureText } from './fixedLayout';
+import { buildFixedPageLayout, fixedFontFamily, type FixedBlock, type FixedPageLayout, type MeasureText } from './fixedLayout';
 import type { FixedPage, FixedPicture } from './fixedLayoutDocx';
 import { getFontBytes } from './fonts';
 
@@ -201,21 +201,6 @@ function invisibleTextOps(fnArray: number[], argsArray: unknown[], OPS: Record<s
   return out;
 }
 
-/** Serif / monospace as the PDF's own font descriptors declare it, by real font name. */
-function fontClassHints(commonObjs: PdfjsFontCommonObjs, fnArray: number[], argsArray: unknown[], OPS: Record<string, number>): Map<string, FontClass> {
-  const map = new Map<string, FontClass>();
-  for (let i = 0; i < fnArray.length; i++) {
-    if (fnArray[i] !== OPS['setFont']) continue;
-    const alias = (argsArray[i] as unknown[])[0] as string;
-    try {
-      const font = commonObjs.get(alias) as { name?: string; isSerifFont?: boolean; isMonospace?: boolean } | undefined;
-      if (!font?.name || map.has(font.name)) continue;
-      map.set(font.name, font.isMonospace ? 'mono' : font.isSerifFont ? 'serif' : 'sans');
-    } catch { /* not resolvable: the name decides */ }
-  }
-  return map;
-}
-
 // ---------------------------------------------------------------- one page
 
 type PdfjsDoc = Awaited<ReturnType<typeof import('pdfjs-dist')['getDocument']>['promise']>;
@@ -292,7 +277,7 @@ async function preparePage(page: PdfjsPage, OPS: Record<string, number>, metrics
   const opList = await page.getOperatorList();
   const commonObjs = page.commonObjs as unknown as PdfjsFontCommonObjs;
   const fontNames = buildFontNameMap(commonObjs, opList, OPS);
-  const hints = fontClassHints(commonObjs, opList.fnArray, opList.argsArray, OPS);
+  const hints = buildFontClassMap(commonObjs, opList, OPS);
   const scaffold = buildPageScaffold(opList, OPS, fontNames, { preciseText: true });
   const invisible = invisibleTextOps(opList.fnArray, opList.argsArray, OPS);
   const isInvisible = (r: IRTextRun): boolean => {

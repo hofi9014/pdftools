@@ -4,6 +4,7 @@ import { rasterizePages, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanv
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
 import { renderIRToDocx, type IRTextRun, type IRImageBlock, type IRTableCell, type IRBlock, type IRRect, type IRPageIR, type IRFillRect, type IRBoxRect, type IRSpreadsheetCell, type IRSheet, type IRSpreadsheet, type IRConditionalFormattingRule, ptToXlsxCharWidth } from './client-pdf-docx';
 import { detectTextColumns, mergeColumnLines } from './pdf/textColumns';
+import type { FontClass } from './pdf/fontFamilies';
 import type { IRSlide, IRSlideElement, IRDeck, IRPtRect, IRTextContent } from './client-pptx';
 import { getFontFamily } from './pdf/fonts';
 
@@ -1997,6 +1998,34 @@ export function buildFontNameMap(
   return map;
 }
 
+/**
+ * Serif / monospace / sans as the PDF's own font descriptors declare it, by real font name — for
+ * the fonts whose name says nothing (see classifyFont in pdf/fontFamilies.ts).
+ *
+ * Read from the font's `fallbackName` ("serif" / "monospace" / "sans-serif"), which pdf.js derives
+ * from the descriptor's flags and always hands to the page. Its `isSerifFont` / `isMonospace`
+ * are NOT there unless the document is opened with fontExtraProperties — reading those, as the
+ * faithful layout first did, made every font a sans-serif.
+ */
+export function buildFontClassMap(
+  commonObjs: PdfjsFontCommonObjs,
+  opList: { fnArray: number[]; argsArray: unknown[] },
+  OPS: Record<string, number>,
+): Map<string, FontClass> {
+  const map = new Map<string, FontClass>();
+  const setFontOp = OPS['setFont'];
+  for (let i = 0; i < opList.fnArray.length; i++) {
+    if (opList.fnArray[i] !== setFontOp) continue;
+    const alias = (opList.argsArray[i] as unknown[])[0] as string;
+    try {
+      const font = commonObjs.get(alias) as { name?: string; fallbackName?: string } | undefined;
+      if (!font?.name || map.has(font.name)) continue;
+      map.set(font.name, font.fallbackName === 'monospace' ? 'mono' : font.fallbackName === 'serif' ? 'serif' : 'sans');
+    } catch { /* not resolvable: the name decides */ }
+  }
+  return map;
+}
+
 /** One stretch of a showText operator's glyphs, in text-space units (glyph width × Tf / 1000). */
 interface ShownPiece { text: string; start: number; width: number }
 
@@ -2174,11 +2203,12 @@ export function buildPageScaffold(
   const textRuns: IRTextRun[] = [];
   const textOps: number[] = [];
 
-  // Text state for the precise mode: character spacing, word spacing and horizontal scaling in
-  // effect at every operator (part of the graphics state: saved and restored by q/Q).
+  // Text state in effect at every operator (part of the graphics state: saved and restored by
+  // q/Q): character spacing, word spacing and horizontal scaling — used by the precise mode —
+  // and the leading, which every mode needs to know where T* puts the next line.
   const precise = options.preciseText === true;
   const textStateAtOp: Array<[number, number, number, number]> = [];
-  if (precise) {
+  {
     // [Tc, Tw, Tz/100, TL]
     let state: [number, number, number, number] = [0, 0, 1, 0];
     const stateStack: Array<[number, number, number, number]> = [];
@@ -2196,12 +2226,13 @@ export function buildPageScaffold(
     }
   }
   /**
-   * Precise mode only: T* (next line by the leading) and TD (move and set the leading) as the
-   * moveText they stand for; null for every other operator. pdf-lib writes wrapped text with T*,
-   * so without this every further line of a paragraph sat on the first line's baseline.
+   * T* (next line by the leading) and TD (move and set the leading) as the moveText they stand
+   * for; null for every other operator. (' and " arrive from pdf.js as a T* followed by a
+   * showText.) pdf-lib writes every drawText of more than one line with T*, ReportLab every line
+   * of a text object; while only the precise mode read them, the flow engine put all further
+   * lines of such a paragraph on the first line's baseline, one over another.
    */
   const lineMove = (index: number): [number, number] | null => {
-    if (!precise) return null;
     const { op, args } = ops[index]!;
     if (op === 'nextLine') return [0, -(textStateAtOp[index]?.[3] ?? 0)];
     if (op === 'setLeadingMoveText' && Array.isArray(args)) return [Number(args[0]) || 0, Number(args[1]) || 0];
@@ -2860,6 +2891,8 @@ export interface PageTableScaffold {
   /** Centres (bottom-origin) of small filled squares — bullets drawn as shapes, not glyphs. */
   bulletDots: Array<{ x: number; y: number; size: number }>;
   boxes: IRBoxRect[];
+  /** Font classes from the PDF's font descriptors, by font name (see buildFontClassMap). */
+  fontClasses: Record<string, FontClass>;
 }
 
 /**
@@ -3032,7 +3065,8 @@ export async function parsePagesForTableExtraction(file: File): Promise<PageTabl
     const tableRects = extractRectsFromOps(ops, pageHeight);
     applyUnderlineFromRects(textRuns, tableRects, pageHeight);
     const tableClusters = buildTableClusters(tableRects);
-    result.push({ page: p, pageWidth, pageHeight, ops, textRuns, images, tableClusters, fillRects: collectFillRects(tableRects, pageHeight), bulletDots: collectBulletDots(tableRects, pageHeight), boxes: collectBoxRects(tableRects, tableClusters, pageWidth, pageHeight) });
+    const fontClasses = Object.fromEntries(buildFontClassMap(page.commonObjs, opList, OPS));
+    result.push({ page: p, pageWidth, pageHeight, ops, textRuns, images, tableClusters, fillRects: collectFillRects(tableRects, pageHeight), bulletDots: collectBulletDots(tableRects, pageHeight), boxes: collectBoxRects(tableRects, tableClusters, pageWidth, pageHeight), fontClasses });
   }
 
   await doc.cleanup();
@@ -3395,7 +3429,7 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
   };
 
   for (const scaffold of scaffolds) {
-    const { pageWidth, pageHeight, textRuns, fillRects, boxes } = scaffold;
+    const { pageWidth, pageHeight, textRuns, fillRects, boxes, fontClasses } = scaffold;
     const bodyFontSize = pageBodyFontSize(textRuns);
     // Two columns of running text are read column by column. Not attempted on a page with a
     // detected table (its cells own their runs), and never applied unless detectTextColumns is
@@ -3433,6 +3467,7 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
       ...(fillRects.length > 0 ? { fills: fillRects } : {}),
       ...(boxes.length > 0 ? { boxes } : {}),
       ...(split ? { columns: split.columns } : {}),
+      ...(Object.keys(fontClasses).length > 0 ? { fontClasses } : {}),
     });
   }
 
