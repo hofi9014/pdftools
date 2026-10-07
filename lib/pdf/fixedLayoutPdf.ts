@@ -10,7 +10,7 @@ import {
   type PdfjsFontCommonObjs, type PdfjsLinkAnnotation,
 } from '../client-pdf';
 import { buildFixedPageLayout, fixedFontFamily, type FixedBlock, type FixedPageLayout, type FontClass, type MeasureText } from './fixedLayout';
-import type { FixedPage } from './fixedLayoutDocx';
+import type { FixedPage, FixedPicture } from './fixedLayoutDocx';
 import { getFontBytes } from './fonts';
 
 /** Resolution of the page picture: 2.2 px per point (158 dpi) unless the page is huge. */
@@ -235,6 +235,8 @@ interface PreparedPage {
   /** Characters of visible text that sit in the cells of a real (well-filled) ruled table. */
   tableChars: number;
   unplacedChars: number;
+  /** Images that may become pictures of their own. */
+  images: ImageCandidate[];
 }
 
 const charCount = (runs: IRTextRun[]): number => runs.reduce((n, r) => n + r.text.trim().length, 0);
@@ -325,6 +327,7 @@ async function preparePage(page: PdfjsPage, OPS: Record<string, number>, metrics
     lightChars: charCount(runs.filter((r) => isLight(r.color))),
     tableChars: realTableChars(runs, rects, base.height),
     unplacedChars: charCount(layout.unplaced),
+    images: imageCandidates(opList.fnArray, opList.argsArray, OPS, (x, y) => base.convertToViewportPoint(x, y), base.width, base.height),
   };
 }
 
@@ -342,6 +345,156 @@ async function renderTextFree(page: PdfjsPage, hide: Set<number>, scale: number)
     operationsFilter: (index: number) => !hide.has(index),
   } as Parameters<typeof page.render>[0]).promise;
   return { canvas, ctx };
+}
+
+// ---------------------------------------------------------------- photos as pictures of their own
+
+// A photo on the page used to be baked into the page picture: it could not be moved, replaced
+// or deleted without the whole background. Each image the PDF paints is now cut out as a
+// picture of its own, lying between the page picture and the text.
+//
+// How, without decoding a single image format: the page is drawn once more with every OTHER
+// candidate image and all placed text left out, and the rectangle the image covers is cropped
+// from that. So the picture is what the page shows there — clipped corners, masks and
+// rotation included, with whatever is painted over the image baked in — and putting it back at
+// the same place gives the same page by construction. Its corners outside a rounded clip carry
+// the page colour behind them (a JPEG has no transparency; a PNG of every photo would make the
+// document ten times the size).
+
+/** Smaller than this on either side is decoration (an icon, a bullet) and stays in the page picture. */
+const PICTURE_MIN_SIDE_PT = 24;
+/** A page with more images than this is a sliced or tiled picture, not a page of photos. */
+const PICTURE_MAX_PER_PAGE = 12;
+/** Resolution of a cut-out picture: the image's own, between the page picture's and about 300 dpi. */
+const PICTURE_MAX_SCALE = 4.2;
+const PICTURE_MAX_PIXELS = 4_000_000;
+/** Share of its rectangle an image must visibly change; less means it is clipped away or a faint overlay. */
+const PICTURE_MIN_CONTRIBUTION = 0.5;
+
+/** One picture to cut out: the operators that paint it (several when images lie on one another). */
+export interface ImageCandidate { ops: number[]; x: number; y: number; width: number; height: number; pxPerPt: number }
+
+type Mat = [number, number, number, number, number, number];
+const mul = (m: Mat, n: Mat): Mat => [
+  m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1],
+  m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3],
+  m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5],
+];
+
+/**
+ * Where the page's images are drawn, in page coordinates from the top-left. Images that lie on
+ * one another (a photo over its placeholder, a picture and its shadow) are one candidate, cut
+ * out together. Images that are too small or that come by the dozen are not candidates.
+ */
+export function imageCandidates(
+  fnArray: number[], argsArray: unknown[], OPS: Record<string, number>,
+  toViewport: (x: number, y: number) => number[], pageWidth: number, pageHeight: number,
+): ImageCandidate[] {
+  const found: ImageCandidate[] = [];
+  const stack: Mat[] = [];
+  let ctm: Mat = [1, 0, 0, 1, 0, 0];
+  for (let i = 0; i < fnArray.length; i++) {
+    const fn = fnArray[i];
+    const args = argsArray[i] as unknown[] | null;
+    if (fn === OPS['save']) stack.push(ctm);
+    else if (fn === OPS['restore']) ctm = stack.pop() ?? ctm;
+    else if (fn === OPS['transform'] && args?.length === 6) ctm = mul(ctm, args as unknown as Mat);
+    else if (fn === OPS['paintFormXObjectBegin']) {
+      // A form saves the graphics state and applies its own matrix.
+      stack.push(ctm);
+      const m = args?.[0];
+      if (Array.isArray(m) && m.length === 6) ctm = mul(ctm, m as unknown as Mat);
+    } else if (fn === OPS['paintFormXObjectEnd']) ctm = stack.pop() ?? ctm;
+    else if (fn === OPS['paintImageXObject']) {
+      // An image fills the unit square of the current coordinate system.
+      const m = ctm;
+      const corners = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([u, v]) => toViewport(m[0] * u! + m[2] * v! + m[4], m[1] * u! + m[3] * v! + m[5]));
+      const xs = corners.map((c) => c[0]!);
+      const ys = corners.map((c) => c[1]!);
+      const x0 = Math.max(0, Math.min(...xs)), x1 = Math.min(pageWidth, Math.max(...xs));
+      const y0 = Math.max(0, Math.min(...ys)), y1 = Math.min(pageHeight, Math.max(...ys));
+      const natural = Number(args?.[1]) || 0;
+      const fullWidth = Math.max(...xs) - Math.min(...xs);
+      if (x1 - x0 >= PICTURE_MIN_SIDE_PT && y1 - y0 >= PICTURE_MIN_SIDE_PT) {
+        found.push({ ops: [i], x: x0, y: y0, width: x1 - x0, height: y1 - y0, pxPerPt: fullWidth > 0 ? natural / fullWidth : 0 });
+      }
+    }
+  }
+  // Images that overlap are merged (transitively) into one candidate over their common box.
+  const touches = (a: ImageCandidate, b: ImageCandidate): boolean =>
+    a.x < b.x + b.width - 0.5 && b.x < a.x + a.width - 0.5 && a.y < b.y + b.height - 0.5 && b.y < a.y + a.height - 0.5;
+  const merged: ImageCandidate[] = [];
+  for (const c of found) {
+    let cur = c;
+    for (let k = merged.length - 1; k >= 0; k--) {
+      const m = merged[k]!;
+      if (!touches(m, cur)) continue;
+      const x = Math.min(m.x, cur.x), y = Math.min(m.y, cur.y);
+      cur = {
+        ops: [...m.ops, ...cur.ops].sort((p, q) => p - q), x, y,
+        width: Math.max(m.x + m.width, cur.x + cur.width) - x, height: Math.max(m.y + m.height, cur.y + cur.height) - y,
+        pxPerPt: Math.max(m.pxPerPt, cur.pxPerPt),
+      };
+      merged.splice(k, 1);
+      k = merged.length; // the grown box may now touch boxes it did not touch before
+    }
+    merged.push(cur);
+  }
+  merged.sort((a, b) => a.ops[0]! - b.ops[0]!);
+  return merged.length > PICTURE_MAX_PER_PAGE ? [] : merged;
+}
+
+/** One rectangle of the page, drawn without the hidden operators. */
+async function renderRegion(page: PdfjsPage, hide: Set<number>, scale: number, x: number, y: number, width: number, height: number): Promise<{ canvas: AnyCanvas; ctx: CanvasRenderingContext2D }> {
+  const viewport = page.getViewport({ scale, offsetX: -x * scale, offsetY: -y * scale });
+  const canvas = createCanvas(Math.max(1, Math.round(width * scale)), Math.max(1, Math.round(height * scale)));
+  const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  await page.render({
+    canvasContext: ctx,
+    canvas: canvas as unknown as HTMLCanvasElement,
+    viewport,
+    operationsFilter: (index: number) => !hide.has(index),
+  } as Parameters<typeof page.render>[0]).promise;
+  return { canvas, ctx };
+}
+
+const release = (canvas: AnyCanvas): void => { canvas.width = 0; canvas.height = 0; };
+
+/**
+ * The images of a page as pictures of their own, in painting order, and the operators that
+ * drew them (to be left out of the page picture).
+ */
+async function cutOutPictures(page: PdfjsPage, candidates: ImageCandidate[], textHide: Set<number>, backgroundScale: number): Promise<{ pictures: FixedPicture[]; ops: number[] }> {
+  const pictures: FixedPicture[] = [];
+  const ops: number[] = [];
+  const allOps = candidates.flatMap((c) => c.ops);
+  for (const c of candidates) {
+    const without = new Set([...textHide, ...allOps]);
+    const withIt = new Set([...textHide, ...allOps.filter((op) => !c.ops.includes(op))]);
+    // Does the image show at all? Compared at 1 px/pt: the page with it and without it.
+    const a = await renderRegion(page, withIt, 1, c.x, c.y, c.width, c.height);
+    const b = await renderRegion(page, without, 1, c.x, c.y, c.width, c.height);
+    const pa = a.ctx.getImageData(0, 0, a.canvas.width, a.canvas.height).data;
+    const pb = b.ctx.getImageData(0, 0, b.canvas.width, b.canvas.height).data;
+    let changed = 0;
+    for (let i = 0; i < pa.length; i += 4) {
+      if (Math.abs(pa[i]! - pb[i]!) > 8 || Math.abs(pa[i + 1]! - pb[i + 1]!) > 8 || Math.abs(pa[i + 2]! - pb[i + 2]!) > 8) changed++;
+    }
+    const share = changed / Math.max(1, pa.length / 4);
+    release(a.canvas);
+    release(b.canvas);
+    if (share < PICTURE_MIN_CONTRIBUTION) continue;
+
+    const wanted = Math.min(PICTURE_MAX_SCALE, Math.max(backgroundScale, c.pxPerPt));
+    const scale = Math.min(wanted, Math.sqrt(PICTURE_MAX_PIXELS / Math.max(1, c.width * c.height)));
+    const cut = await renderRegion(page, withIt, scale, c.x, c.y, c.width, c.height);
+    pictures.push({ x: c.x, y: c.y, width: c.width, height: c.height, data: await canvasToJpeg(cut.canvas, 0.9), mime: 'image/jpeg' });
+    release(cut.canvas);
+    ops.push(...c.ops);
+  }
+  return { pictures, ops };
 }
 
 async function openPdf(file: File): Promise<{ doc: PdfjsDoc; OPS: Record<string, number> }> {
@@ -375,13 +528,15 @@ export async function pdfToFixedPages(file: File, onProgress?: (page: number, to
       const prep = await preparePage(page, OPS, metrics);
       placedChars += prep.visibleChars - prep.unplacedChars;
       unplacedChars += prep.unplacedChars;
-      const { canvas, ctx } = await renderTextFree(page, prep.hide, fixedBackgroundScale(prep.width, prep.height));
+      const scale = fixedBackgroundScale(prep.width, prep.height);
+      const cut = await cutOutPictures(page, prep.images, prep.hide, scale);
+      const { canvas, ctx } = await renderTextFree(page, new Set([...prep.hide, ...cut.ops]), scale);
       const background = inkCoverage(ctx, canvas.width, canvas.height) === 0
         ? undefined
         : { data: await canvasToJpeg(canvas, 0.9), mime: 'image/jpeg' as const };
       canvas.width = 0;
       canvas.height = 0;
-      pages.push({ layout: prep.layout, ...(background ? { background } : {}) });
+      pages.push({ layout: prep.layout, ...(background ? { background } : {}), ...(cut.pictures.length > 0 ? { pictures: cut.pictures } : {}) });
       page.cleanup();
     }
   } finally {

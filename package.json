@@ -172,7 +172,8 @@
     "test:vercelignore-keeps-app-files": "npx --yes tsx tests/vercelignore-keeps-app-files.mts",
     "test:fixed-layout-roundtrip": "npx --yes tsx tests/fixed-layout-roundtrip.mts",
     "test:editor-fonts": "npx --yes tsx tests/editor-fonts.mts",
-    "test:e2e-edit-pdf-polish-fonts": "npx --yes tsx e2e/edit-pdf-polish-fonts.mts"
+    "test:e2e-edit-pdf-polish-fonts": "npx --yes tsx e2e/edit-pdf-polish-fonts.mts",
+    "test:fixed-layout-pictures": "npx --yes tsx tests/fixed-layout-pictures.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

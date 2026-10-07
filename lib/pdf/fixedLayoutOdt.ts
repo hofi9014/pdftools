@@ -194,6 +194,17 @@ export async function renderFixedPagesToOdt(pages: FixedPage[]): Promise<Blob> {
       }
       frame = `<draw:frame draw:style-name="FxBg" draw:name="Page${++frameCount}" text:anchor-type="paragraph" svg:x="0pt" svg:y="0pt" svg:width="${pt(layout.width)}" svg:height="${pt(layout.height)}" draw:z-index="0"><draw:image xlink:href="${pic.path}" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/></draw:frame>`;
     }
+    // The page's photos: pictures of their own above the page picture, still behind the text.
+    (page.pictures ?? []).forEach((photo, i) => {
+      const key = fnv(photo.data);
+      let pic = pictures.get(key);
+      if (!pic) {
+        const ext = photo.mime === 'image/png' ? 'png' : 'jpg';
+        pic = { path: `Pictures/photo${pictures.size + 1}.${ext}`, media: photo.mime, data: photo.data };
+        pictures.set(key, pic);
+      }
+      frame += `<draw:frame draw:style-name="FxBg" draw:name="Photo${++frameCount}" text:anchor-type="paragraph" svg:x="${pt(photo.x)}" svg:y="${pt(photo.y)}" svg:width="${pt(photo.width)}" svg:height="${pt(photo.height)}" draw:z-index="${i + 1}"><draw:image xlink:href="${pic.path}" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/></draw:frame>`;
+    });
     body.push(`<text:p text:style-name="${head}">${frame}</text:p>`);
     body.push(...emitBlocks(layout.blocks, 0, FIXED_PAGE_HEAD_PT));
   });

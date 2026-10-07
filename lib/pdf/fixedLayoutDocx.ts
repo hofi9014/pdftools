@@ -14,10 +14,23 @@ import type { FixedBlock, FixedColumnsBlock, FixedLine, FixedPageLayout, FixedRu
 import { FIXED_AFTER_TABLE_PT, FIXED_PAGE_HEAD_PT, FIXED_PAGE_TAIL_PT } from './fixedLayout';
 import { protectSingleCharRuns } from './docxRunSafety';
 
+/** A photo of the page as a picture of its own (see cutOutPictures in fixedLayoutPdf.ts). */
+export interface FixedPicture {
+  /** Top-left corner and size on the page, points from the page's top-left corner. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  data: Uint8Array;
+  mime: 'image/jpeg' | 'image/png';
+}
+
 export interface FixedPage {
   layout: FixedPageLayout;
-  /** The page without its (placed) text, as a picture; absent = plain white page. */
+  /** The page without its (placed) text and without `pictures`, as a picture; absent = plain white page. */
   background?: { data: Uint8Array; mime: 'image/jpeg' | 'image/png' };
+  /** The page's photos, in painting order: above the background, behind the text. */
+  pictures?: FixedPicture[];
 }
 
 const tw = (pt: number): number => Math.round(pt * 20);
@@ -184,22 +197,27 @@ export async function renderFixedPagesToDocx(pages: FixedPage[]): Promise<Blob> 
     };
     // A new section already starts on a new page.
     if (pageIdx > 0 && !newSection) head.pageBreakBefore = true;
-    if (page.background) {
-      head.children.push(new ImageRun({
-        type: page.background.mime === 'image/png' ? 'png' : 'jpg',
-        data: page.background.data,
-        // The docx library takes pixels at 96 dpi (1 pt = 4/3 px).
-        transformation: { width: layout.width * 4 / 3, height: layout.height * 4 / 3 },
-        floating: {
-          horizontalPosition: { relative: HorizontalPositionRelativeFrom.PAGE, offset: 0 },
-          verticalPosition: { relative: VerticalPositionRelativeFrom.PAGE, offset: 0 },
-          behindDocument: true,
-          allowOverlap: true,
-          lockAnchor: true,
-          wrap: { type: TextWrappingType.NONE },
-        },
-      }));
-    }
+    // Anchored to the page, behind the text: the page picture first, then each photo above it.
+    // zIndex is the stacking order among the pictures behind the text; it starts at 1 because
+    // the library takes 0 for "not set" and writes a huge default — the page picture would then
+    // lie ABOVE the photos in Word.
+    const anchored = (pic: { data: Uint8Array; mime: string }, x: number, y: number, width: number, height: number, zIndex: number): unknown => new ImageRun({
+      type: pic.mime === 'image/png' ? 'png' : 'jpg',
+      data: pic.data,
+      // The docx library takes pixels at 96 dpi (1 pt = 4/3 px) and offsets in EMU (1 pt = 12700).
+      transformation: { width: width * 4 / 3, height: height * 4 / 3 },
+      floating: {
+        horizontalPosition: { relative: HorizontalPositionRelativeFrom.PAGE, offset: Math.round(x * 12700) },
+        verticalPosition: { relative: VerticalPositionRelativeFrom.PAGE, offset: Math.round(y * 12700) },
+        behindDocument: true,
+        allowOverlap: true,
+        lockAnchor: true,
+        zIndex,
+        wrap: { type: TextWrappingType.NONE },
+      },
+    });
+    if (page.background) head.children.push(anchored(page.background, 0, 0, layout.width, layout.height, 1));
+    (page.pictures ?? []).forEach((pic, i) => head.children.push(anchored(pic, pic.x, pic.y, pic.width, pic.height, i + 2)));
     children.push(new Paragraph(head));
     children.push(...emitBlocks(layout.blocks, 0, FIXED_PAGE_HEAD_PT));
   });

@@ -69,14 +69,17 @@ export async function renderPlacedPagesToPdf(pages: PlacedPage[], opts: PlacedPd
 
   for (const src of pages) {
     const page = pdf.addPage([src.width, src.height]);
-    if (src.background) {
-      let image = pictures.get(src.background.data);
+    const draw = async (pic: { data: Uint8Array; mime: string }, x: number, top: number, width: number, height: number): Promise<void> => {
+      let image = pictures.get(pic.data);
       if (!image) {
-        image = src.background.mime === 'image/png' ? await pdf.embedPng(src.background.data) : await pdf.embedJpg(src.background.data);
-        pictures.set(src.background.data, image);
+        image = pic.mime === 'image/png' ? await pdf.embedPng(pic.data) : await pdf.embedJpg(pic.data);
+        pictures.set(pic.data, image);
       }
-      page.drawImage(image, { x: 0, y: 0, width: src.width, height: src.height });
-    }
+      page.drawImage(image, { x, y: src.height - top - height, width, height });
+    };
+    if (src.background) await draw(src.background, 0, 0, src.width, src.height);
+    // The page's photos, bottom to top, above the page picture and under the text.
+    for (const pic of src.pictures ?? []) await draw(pic, pic.x, pic.y, pic.width, pic.height);
     for (const line of src.lines) {
       for (const seg of line.segments) {
         let x = seg.x;

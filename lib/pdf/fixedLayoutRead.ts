@@ -32,12 +32,43 @@ export interface PlacedLine {
   segments: PlacedSegment[];
 }
 
+export interface PlacedPicture {
+  /** Top-left corner and size, points from the page's top-left corner. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  data: Uint8Array;
+  mime: 'image/jpeg' | 'image/png';
+}
+
 export interface PlacedPage {
   width: number;
   height: number;
-  /** The page picture that lies behind the text. */
+  /** The page picture that lies behind everything. */
   background?: { data: Uint8Array; mime: 'image/jpeg' | 'image/png' };
+  /** The page's photos, bottom to top: above the background, behind the text. */
+  pictures?: PlacedPicture[];
   lines: PlacedLine[];
+}
+
+/** A picture as the document refers to it, before its bytes are loaded. */
+interface PictureRef { source: string; x: number; y: number; width: number; height: number; z: number }
+
+/**
+ * Loads the pictures a page refers to. The one that covers the whole page is its background;
+ * the others keep their stacking order.
+ */
+async function attachPictures(page: PlacedPage, refs: PictureRef[], load: (source: string) => Promise<{ data: Uint8Array; mime: 'image/jpeg' | 'image/png' } | null>): Promise<boolean> {
+  const ordered = [...refs].sort((a, b) => a.z - b.z);
+  for (const ref of ordered) {
+    const loaded = await load(ref.source);
+    if (!loaded) return false;
+    const wholePage = ref.x < 1 && ref.y < 1 && ref.width > page.width - 1 && ref.height > page.height - 1;
+    if (wholePage && !page.background && !page.pictures) page.background = loaded;
+    else (page.pictures ??= []).push({ x: ref.x, y: ref.y, width: ref.width, height: ref.height, ...loaded });
+  }
+  return true;
 }
 
 /** The same view of a layout that has not been written yet (what the writers are given). */
@@ -142,6 +173,8 @@ class LineBuilder {
 // ---------------------------------------------------------------------------------------- Word
 
 const W_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+/** DrawingML measures in English Metric Units. */
+const EMU_PER_PT = 12700;
 const R_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
 
 const wAttr = (el: Element | null, name: string): string | null => attrNs(el, W_NS, name);
@@ -185,7 +218,7 @@ interface DocxContext {
   rels: Map<string, string>;
 }
 
-interface DocxParagraph extends Flow { pictureRel?: string }
+interface DocxParagraph extends Flow { pictures: PictureRef[] }
 
 function readDocxParagraph(p: Element, originX: number, top: number, ctx: DocxContext): DocxParagraph {
   const pPr = childEl(p, 'pPr');
@@ -203,7 +236,7 @@ function readDocxParagraph(p: Element, originX: number, top: number, ctx: DocxCo
     .sort((a, b) => a - b);
 
   const builder = new LineBuilder(originX, indent, tabs);
-  let pictureRel: string | undefined;
+  const pictures: PictureRef[] = [];
   const visitRun = (r: Element, link?: string): void => {
     const format = docxRunFormat(childEl(r, 'rPr'), link);
     for (const c of childEls(r)) {
@@ -215,13 +248,23 @@ function readDocxParagraph(p: Element, originX: number, top: number, ctx: DocxCo
         builder.lineBreak();
       } else if (c.localName === 't') builder.text({ ...format, text: c.textContent ?? '' });
       else if (c.localName === 'drawing') {
-        // Only the page picture: anchored, behind the text. An inline picture takes part in the
-        // flow, which this reader does not model.
+        // Only pictures anchored to the page, behind the text (the page picture and the photos
+        // above it). An inline picture takes part in the flow, which this reader does not model.
         const anchor = childEl(c, 'anchor');
         const blip = anchor ? descendant(anchor, 'blip') : null;
         const rel = attrNs(blip, R_NS, 'embed');
-        if (!anchor || anchor.getAttribute('behindDoc') !== '1' || !rel) return no('a picture that is not a page background');
-        pictureRel = rel;
+        if (!anchor || anchor.getAttribute('behindDoc') !== '1' || !rel) return no('a picture that is not anchored behind the text');
+        const offset = (axis: string): number => {
+          const pos = childEl(anchor, axis);
+          if (pos?.getAttribute('relativeFrom') !== 'page') return no('a picture not positioned from the page');
+          return (Number(childEl(pos, 'posOffset')?.textContent) || 0) / EMU_PER_PT;
+        };
+        const extent = childEl(anchor, 'extent');
+        pictures.push({
+          source: rel, x: offset('positionH'), y: offset('positionV'),
+          width: (Number(extent?.getAttribute('cx')) || 0) / EMU_PER_PT, height: (Number(extent?.getAttribute('cy')) || 0) / EMU_PER_PT,
+          z: Number(anchor.getAttribute('relativeHeight')) || 0,
+        });
       } else if (c.localName === 'pict' || c.localName === 'object') return no('embedded object');
     }
   };
@@ -234,9 +277,7 @@ function readDocxParagraph(p: Element, originX: number, top: number, ctx: DocxCo
     }
   }
   const lines = builder.place(top + before, lineHeight);
-  const out: DocxParagraph = { lines, height: before + lineHeight * builder.lines.length + after };
-  if (pictureRel) out.pictureRel = pictureRel;
-  return out;
+  return { lines, height: before + lineHeight * builder.lines.length + after, pictures };
 }
 
 function readDocxTable(tbl: Element, originX: number, top: number, ctx: DocxContext): Flow {
@@ -268,7 +309,7 @@ function readDocxBlocks(children: Element[], originX: number, top: number, ctx: 
     let flow: Flow | null = null;
     if (el.localName === 'p') {
       const p = readDocxParagraph(el, originX, y, ctx);
-      if (p.pictureRel) return no('a picture inside a table');
+      if (p.pictures.length > 0) return no('a picture inside a table');
       flow = p;
     } else if (el.localName === 'tbl') flow = readDocxTable(el, originX, y, ctx);
     if (!flow) continue;
@@ -317,7 +358,8 @@ export async function readFixedDocx(file: Blob): Promise<PlacedPage[] | null> {
     }
     if (sections.length === 0 || open.length > 0) return null;
 
-    const pages: Array<PlacedPage & { pictureRel?: string }> = [];
+    const pages: PlacedPage[] = [];
+    const refs = new Map<PlacedPage, PictureRef[]>();
     for (const section of sections) {
       const size = childEl(section.sectPr, 'pgSz');
       const margin = childEl(section.sectPr, 'pgMar');
@@ -326,11 +368,12 @@ export async function readFixedDocx(file: Blob): Promise<PlacedPage[] | null> {
       if (!(width > 0 && height > 0)) return null;
       if (!margin || ['top', 'bottom', 'left', 'right'].some((side) => twips(wAttr(margin, side)) !== 0)) return null;
 
-      let page: (PlacedPage & { pictureRel?: string }) | null = null;
+      let page: PlacedPage | null = null;
       let y = 0;
-      const startPage = (): PlacedPage & { pictureRel?: string } => {
-        const fresh = { width, height, lines: [] as PlacedLine[] };
+      const startPage = (): PlacedPage => {
+        const fresh: PlacedPage = { width, height, lines: [] };
         pages.push(fresh);
+        refs.set(fresh, []);
         y = 0;
         return fresh;
       };
@@ -339,7 +382,7 @@ export async function readFixedDocx(file: Blob): Promise<PlacedPage[] | null> {
         if (!page || (el.localName === 'p' && wOn(childEl(el, 'pPr'), 'pageBreakBefore'))) page = startPage();
         if (el.localName === 'p') {
           const p = readDocxParagraph(el, 0, y, ctx);
-          if (p.pictureRel) page.pictureRel = p.pictureRel;
+          refs.get(page)!.push(...p.pictures);
           page.lines.push(...p.lines);
           y += p.height;
         } else {
@@ -352,22 +395,22 @@ export async function readFixedDocx(file: Blob): Promise<PlacedPage[] | null> {
     }
     if (pages.length === 0) return null;
 
-    const pictures = new Map<string, Uint8Array>();
+    const loaded = new Map<string, Uint8Array>();
     for (const page of pages) {
-      const rel = page.pictureRel;
-      delete page.pictureRel;
-      if (!rel) continue;
-      const target = ctx.rels.get(rel);
-      if (!target) return null;
-      const path = target.startsWith('/') ? target.slice(1) : `word/${target}`;
-      let data = pictures.get(path);
-      if (!data) {
-        const entry = zip.file(path);
-        if (!entry) return null;
-        data = await entry.async('uint8array');
-        pictures.set(path, data);
-      }
-      page.background = { data, mime: imageMime(path) };
+      const ok = await attachPictures(page, refs.get(page) ?? [], async (rel) => {
+        const target = ctx.rels.get(rel);
+        if (!target) return null;
+        const path = target.startsWith('/') ? target.slice(1) : `word/${target}`;
+        let data = loaded.get(path);
+        if (!data) {
+          const entry = zip.file(path);
+          if (!entry) return null;
+          data = await entry.async('uint8array');
+          loaded.set(path, data);
+        }
+        return { data, mime: imageMime(path) };
+      });
+      if (!ok) return null;
     }
     return pages;
   } catch (err) {
@@ -383,6 +426,7 @@ const ODF = {
   style: 'urn:oasis:names:tc:opendocument:xmlns:style:1.0',
   text: 'urn:oasis:names:tc:opendocument:xmlns:text:1.0',
   draw: 'urn:oasis:names:tc:opendocument:xmlns:drawing:1.0',
+  svg: 'urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0',
   table: 'urn:oasis:names:tc:opendocument:xmlns:table:1.0',
   fo: 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',
   xlink: 'http://www.w3.org/1999/xlink',
@@ -480,7 +524,7 @@ function readOdfStyles(root: Element): OdfStyles {
   return styles;
 }
 
-interface OdfParagraph extends Flow { picture?: string; style: OdfParagraphStyle }
+interface OdfParagraph extends Flow { pictures: PictureRef[]; style: OdfParagraphStyle }
 
 function readOdfParagraph(p: Element, originX: number, top: number, styles: OdfStyles): OdfParagraph {
   const styleName = attrNs(p, ODF.text, 'style-name') ?? '';
@@ -495,7 +539,7 @@ function readOdfParagraph(p: Element, originX: number, top: number, styles: OdfS
     font: 'Arial', fontSize: 10, bold: false, italic: false, color: '000000', scale: 100, spacingTw: 0, raisePercent: 0,
     ...styles.paragraphText.get(styleName),
   };
-  let picture: string | undefined;
+  const pictures: PictureRef[] = [];
   const emit = (format: OdfFormat, text: string): void => {
     const { raisePercent, ...rest } = format;
     if (!rest.underline) delete rest.underline;
@@ -518,8 +562,9 @@ function readOdfParagraph(p: Element, originX: number, top: number, styles: OdfS
       else if (c.localName === 'line-break') builder.lineBreak();
       else if (c.localName === 'frame') {
         const href = attrNs(childEl(c, 'image'), ODF.xlink, 'href');
-        if (!href) return no('a frame that is not a page picture');
-        picture = href;
+        if (!href) return no('a frame that is not a picture');
+        const len = (name: string): number => odfLength(attrNs(c, ODF.svg, name)) ?? 0;
+        pictures.push({ source: href, x: len('x'), y: len('y'), width: len('width'), height: len('height'), z: Number(attrNs(c, ODF.draw, 'z-index')) || 0 });
       } else if (c.localName === 'soft-page-break' || c.localName === 'bookmark' || c.localName === 'bookmark-start' || c.localName === 'bookmark-end') {
         // carry no text
       } else return no(`<text:${c.localName}>`);
@@ -530,8 +575,8 @@ function readOdfParagraph(p: Element, originX: number, top: number, styles: OdfS
     lines: builder.place(top + style.before, style.line),
     height: style.before + style.line * builder.lines.length + style.after,
     style,
+    pictures,
   };
-  if (picture) out.picture = picture;
   return out;
 }
 
@@ -568,7 +613,7 @@ function readOdfBlocks(children: Element[], originX: number, top: number, styles
     let flow: Flow | null = null;
     if (el.localName === 'p' || el.localName === 'h') {
       const p = readOdfParagraph(el, originX, y, styles);
-      if (p.picture) return no('a picture inside a table');
+      if (p.pictures.length > 0) return no('a picture inside a table');
       flow = p;
     } else if (el.localName === 'table') flow = readOdfTable(el, originX, y, styles);
     if (!flow) continue;
@@ -617,9 +662,10 @@ export async function readFixedOdt(file: Blob): Promise<PlacedPage[] | null> {
     const text = childEl(childEl(content, 'body'), 'text');
     if (!text) return null;
 
-    const pages: Array<PlacedPage & { picture?: string }> = [];
+    const pages: PlacedPage[] = [];
+    const refs = new Map<PlacedPage, PictureRef[]>();
     let size = masters.get('Standard') ?? null;
-    let page: (PlacedPage & { picture?: string }) | null = null;
+    let page: PlacedPage | null = null;
     let y = 0;
     for (const el of childEls(text)) {
       const isParagraph = el.localName === 'p' || el.localName === 'h';
@@ -638,12 +684,13 @@ export async function readFixedOdt(file: Blob): Promise<PlacedPage[] | null> {
         if (!size) return null;
         page = { width: size.width, height: size.height, lines: [] };
         pages.push(page);
+        refs.set(page, []);
         y = 0;
       }
       if (!page) return null;
       if (isParagraph) {
         const p = readOdfParagraph(el, 0, y, styles);
-        if (p.picture) page.picture = p.picture;
+        refs.get(page)!.push(...p.pictures);
         page.lines.push(...p.lines);
         y += p.height;
       } else {
@@ -655,19 +702,20 @@ export async function readFixedOdt(file: Blob): Promise<PlacedPage[] | null> {
     }
     if (pages.length === 0) return null;
 
-    const pictures = new Map<string, Uint8Array>();
+    const loaded = new Map<string, Uint8Array>();
     for (const p of pages) {
-      const path = p.picture;
-      delete p.picture;
-      if (!path) continue;
-      let data = pictures.get(path);
-      if (!data) {
-        const entry = zip.file(path.replace(/^\.\//, ''));
-        if (!entry) return null;
-        data = await entry.async('uint8array');
-        pictures.set(path, data);
-      }
-      p.background = { data, mime: imageMime(path) };
+      const ok = await attachPictures(p, refs.get(p) ?? [], async (href) => {
+        const path = href.startsWith('./') ? href.slice(2) : href;
+        let data = loaded.get(path);
+        if (!data) {
+          const entry = zip.file(path);
+          if (!entry) return null;
+          data = await entry.async('uint8array');
+          loaded.set(path, data);
+        }
+        return { data, mime: imageMime(path) };
+      });
+      if (!ok) return null;
     }
     return pages;
   } catch (err) {
