@@ -1,12 +1,31 @@
-// OpenDocument (.odt) writer for the fixed page layout — the same construction as the Word
-// writer (fixedLayoutDocx.ts), in ODF terms: a 1 pt paragraph that starts each page and anchors
-// the page picture behind the text, paragraphs with a fixed line height and top margin, tab stops
-// (never combined with an indent, so it does not matter whether a reader counts tab positions
-// from the indent or from the margin), and borderless tables for side-by-side columns.
+// OpenDocument (.odt) writer for the fixed page layout. A 1 pt paragraph starts each page and
+// anchors the page picture and the photos behind the text. The text itself is written in one of
+// two ways:
+//   - as text frames (the default): every block of text is a Writer frame of its own, anchored
+//     at its place — it can be moved or deleted on its own and its text wraps inside it. Which
+//     XML makes a real, see-through frame that survives OpenOffice's own "Save" was measured;
+//     see fixedFrames.ts and the three styles it needs here ("Frame", "Standard",
+//     "Frame contents" in styles.xml);
+//   - as body paragraphs (textBoxes: false), the same construction as the Word writer
+//     (fixedLayoutDocx.ts) in ODF terms: paragraphs with a fixed line height and top margin, tab
+//     stops (never combined with an indent, so it does not matter whether a reader counts tab
+//     positions from the indent or from the margin), and borderless tables for side-by-side
+//     columns.
 
-import type { FixedBlock, FixedColumnsBlock, FixedLine, FixedRun, FixedTextBlock } from './fixedLayout';
+import type { FixedBlock, FixedColumnsBlock, FixedLine, FixedRun, FixedTextBlock, MeasureText } from './fixedLayout';
 import { FIXED_AFTER_TABLE_PT, FIXED_PAGE_HEAD_PT } from './fixedLayout';
 import type { FixedPage } from './fixedLayoutDocx';
+import { buildPageFrames, softParagraphRuns, type FixedFrame } from './fixedFrames';
+
+export interface FixedOdtOptions {
+  /**
+   * Text as frames anchored at their place (the default) instead of body paragraphs positioned
+   * by spacing — see fixedFrames.ts for why, and for what was measured in OpenOffice.
+   */
+  textBoxes?: boolean;
+  /** Text metrics of the written fonts; with them running text becomes real, wrapping paragraphs. */
+  measure?: MeasureText;
+}
 
 const NS = {
   office: 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
@@ -53,7 +72,8 @@ function fnv(bytes: Uint8Array): string {
   return `${bytes.length}-${(h >>> 0).toString(16)}`;
 }
 
-export async function renderFixedPagesToOdt(pages: FixedPage[]): Promise<Blob> {
+export async function renderFixedPagesToOdt(pages: FixedPage[], options: FixedOdtOptions = {}): Promise<Blob> {
+  const textBoxes = options.textBoxes !== false;
   const paraStyles = new StyleBook('FP');
   const textStyles = new StyleBook('FT');
   const tableStyles: string[] = [];
@@ -113,6 +133,22 @@ export async function renderFixedPagesToOdt(pages: FixedPage[]): Promise<Blob> {
   };
 
   const tiny = (): string => `<text:p text:style-name="${paraStyle({ before: 0, line: FIXED_AFTER_TABLE_PT })}"/>`;
+
+  // Paragraphs inside frames: an exact line height (its baseline lies four fifths of it below
+  // the line's top — see fixedFrames.ts), no margins. Their parent is "Frame contents", a style
+  // that has to exist in styles.xml: without the common paragraph styles OpenOffice drops the
+  // whole paragraph format of every frame when it saves the document again (measured: the
+  // paragraphs came back as bare <text:p>, without line height, font or size).
+  const frameParaStyles = new StyleBook('FB');
+  const frameParaStyle = (frame: FixedFrame): string =>
+    frameParaStyles.name(`${frame.lineHeight.toFixed(2)}|${frame.align}`, (name) =>
+      `    <style:style style:name="${name}" style:family="paragraph" style:parent-style-name="Frame_20_contents"><style:paragraph-properties fo:margin-top="0pt" fo:margin-bottom="0pt" fo:margin-left="0pt" fo:margin-right="0pt" fo:text-indent="0pt" fo:line-height="${pt(frame.lineHeight)}" fo:text-align="${frame.align}" fo:orphans="0" fo:widows="0"/><style:text-properties fo:font-size="1pt" style:font-name="Arial"/></style:style>`);
+  const frameXml = (frame: FixedFrame, z: number): string => {
+    const text = frame.wrap === 'soft'
+      ? softParagraphRuns(frame.lines).map(runXml).join('')
+      : frame.lines.map((runs) => runs.map(runXml).join('')).join('<text:line-break/>');
+    return `<draw:frame draw:style-name="FxTx" draw:name="Text${++frameCount}" text:anchor-type="paragraph" svg:x="${pt(frame.x)}" svg:y="${pt(frame.y)}" svg:width="${pt(frame.width)}" draw:z-index="${z}"><draw:text-box fo:min-height="1pt"><text:p text:style-name="${frameParaStyle(frame)}">${text}</text:p></draw:text-box></draw:frame>`;
+  };
 
   const emitBlocks = (blocks: FixedBlock[], originX: number, startY: number): string[] => {
     const out: string[] = [];
@@ -205,8 +241,16 @@ export async function renderFixedPagesToOdt(pages: FixedPage[]): Promise<Blob> {
       }
       frame += `<draw:frame draw:style-name="FxBg" draw:name="Photo${++frameCount}" text:anchor-type="paragraph" svg:x="${pt(photo.x)}" svg:y="${pt(photo.y)}" svg:width="${pt(photo.width)}" svg:height="${pt(photo.height)}" draw:z-index="${i + 1}"><draw:image xlink:href="${pic.path}" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/></draw:frame>`;
     });
-    body.push(`<text:p text:style-name="${head}">${frame}</text:p>`);
-    body.push(...emitBlocks(layout.blocks, 0, FIXED_PAGE_HEAD_PT));
+    if (textBoxes) {
+      // Every block of text is a frame of its own, above the pictures; the body holds nothing
+      // but the 1 pt paragraph that starts the page and anchors them all.
+      const first = (page.pictures?.length ?? 0) + 1;
+      frame += buildPageFrames(layout, options.measure).map((f, i) => frameXml(f, first + i)).join('');
+      body.push(`<text:p text:style-name="${head}">${frame}</text:p>`);
+    } else {
+      body.push(`<text:p text:style-name="${head}">${frame}</text:p>`);
+      body.push(...emitBlocks(layout.blocks, 0, FIXED_PAGE_HEAD_PT));
+    }
   });
 
   const fontDecls = [...fonts].map((f) => `    <style:font-face style:name="${esc(f)}" svg:font-family="${esc(/\s/.test(f) ? `'${f}'` : f)}"/>`).join('\n');
@@ -218,7 +262,9 @@ ${fontDecls}
   <office:automatic-styles>
 ${textStyles.toXml()}
 ${paraStyles.toXml()}
+${frameParaStyles.toXml()}
 ${tableStyles.join('\n')}
+    <style:style style:name="FxTx" style:family="graphic" style:parent-style-name="Frame"><style:graphic-properties fo:padding="0pt" fo:border="none" fo:margin="0pt" style:wrap="run-through" style:run-through="foreground" style:horizontal-pos="from-left" style:horizontal-rel="page" style:vertical-pos="from-top" style:vertical-rel="page" fo:background-color="#ffffff" style:background-transparency="100%"/></style:style>
     <style:style style:name="FxCell" style:family="table-cell"><style:table-cell-properties fo:padding="0pt" fo:border="none"/></style:style>
     <style:style style:name="FxBg" style:family="graphic"><style:graphic-properties style:wrap="run-through" style:run-through="background" style:horizontal-pos="from-left" style:horizontal-rel="page" style:vertical-pos="from-top" style:vertical-rel="page" fo:border="none" fo:padding="0pt" fo:margin="0pt"/></style:style>
   </office:automatic-styles>
@@ -238,6 +284,9 @@ ${fontDecls}
   </office:font-face-decls>
   <office:styles>
     <style:default-style style:family="paragraph"><style:paragraph-properties fo:margin-top="0pt" fo:margin-bottom="0pt"/><style:text-properties style:font-name="Arial" fo:font-size="10pt"/></style:default-style>
+    <style:style style:name="Standard" style:family="paragraph" style:class="text"/>
+    <style:style style:name="Frame_20_contents" style:display-name="Frame contents" style:family="paragraph" style:parent-style-name="Standard" style:class="extra"/>
+    <style:style style:name="Frame" style:family="graphic"><style:graphic-properties text:anchor-type="paragraph" svg:x="0pt" svg:y="0pt" style:wrap="run-through" style:vertical-pos="from-top" style:vertical-rel="page" style:horizontal-pos="from-left" style:horizontal-rel="page" fo:padding="0pt" fo:border="none"/></style:style>
   </office:styles>
   <office:automatic-styles>
 ${masterList.map((m) => `    <style:page-layout style:name="pm${m.name}"><style:page-layout-properties fo:page-width="${pt(m.width)}" fo:page-height="${pt(m.height)}" style:print-orientation="${m.width > m.height ? 'landscape' : 'portrait'}" fo:margin-top="0pt" fo:margin-bottom="0pt" fo:margin-left="0pt" fo:margin-right="0pt"/></style:page-layout>`).join('\n')}

@@ -55,10 +55,10 @@ async function convert(file: File, mode: PdfLayoutMode, format: 'docx' | 'odt'):
   if (layout === 'fixed') {
     try {
       const { pdfToFixedPages } = await import('./fixedLayoutPdf');
-      const { pages } = await pdfToFixedPages(file);
+      const { pages, measure } = await pdfToFixedPages(file);
       const blob = format === 'docx'
         ? await (await import('./fixedLayoutDocx')).renderFixedPagesToDocx(pages)
-        : await (await import('./fixedLayoutOdt')).renderFixedPagesToOdt(pages);
+        : await (await import('./fixedLayoutOdt')).renderFixedPagesToOdt(pages, { measure });
       return { blob, layout: 'fixed' };
     } catch (err) {
       // An explicit request for the fixed layout must not silently turn into something else.

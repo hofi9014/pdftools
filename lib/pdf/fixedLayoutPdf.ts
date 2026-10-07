@@ -512,6 +512,8 @@ export interface FixedPagesResult {
   /** Characters placed as editable text / left in the page picture, over the whole document. */
   placedChars: number;
   unplacedChars: number;
+  /** Text metrics of the fonts the layout was fitted with (what the writers may wrap text with). */
+  measure: MeasureText;
 }
 
 /** Every page of a PDF as a fixed layout plus its text-free picture. */
@@ -542,7 +544,7 @@ export async function pdfToFixedPages(file: File, onProgress?: (page: number, to
   } finally {
     await doc.cleanup();
   }
-  return { pages, placedChars, unplacedChars };
+  return { pages, placedChars, unplacedChars, measure: metrics.measure };
 }
 
 // ---------------------------------------------------------------- which engine?

@@ -235,7 +235,7 @@ console.log('\n=== a page tiled with images is left alone ===');
 
 console.log('\n=== the documents ===');
 const docx = await renderFixedPagesToDocx(result.pages);
-const odt = await renderFixedPagesToOdt(result.pages);
+const odt = await renderFixedPagesToOdt(result.pages, { textBoxes: false });
 {
   const zip = await JSZip.loadAsync(await docx.arrayBuffer());
   const xml = await zip.file('word/document.xml')!.async('string');

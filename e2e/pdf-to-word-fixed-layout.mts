@@ -221,7 +221,9 @@ const odt = await convert('pdf-to-openoffice', 'chrome-brochure.pdf', null);
   check(odt.used === 'fixed', `a designed PDF is converted with the fixed layout automatically (${odt.used})`);
   const zip = await JSZip.loadAsync(odt.bytes);
   const content = await zip.file('content.xml')!.async('string');
-  check((content.match(/<draw:frame /g) ?? []).length === 2 && content.replace(/<[^>]+>/g, '').includes('CARD2 Długość'), 'the .odt has the page pictures and the text');
+  check((content.match(/<draw:image /g) ?? []).length === 2 && content.replace(/<[^>]+>/g, '').includes('CARD2 Długość'), 'the .odt has the page pictures and the text');
+  const boxes = (content.match(/<draw:text-box/g) ?? []).length;
+  check(boxes >= 40 && !content.includes('<table:table'), `the text of the .odt is in text boxes of its own, not in layout tables (${boxes} boxes)`);
   writeFileSync(join(outDir, 'brochure-fixed.odt'), odt.bytes);
   await odt.page.close();
 }
@@ -234,7 +236,7 @@ console.log('=== photos become pictures of their own ===');
   writeFileSync(join(outDir, 'photos.docx'), docx.bytes);
   await docx.page.close();
   const odt = await convert('pdf-to-openoffice', 'photos.pdf', 'fixed');
-  const frames = ((await (await JSZip.loadAsync(odt.bytes)).file('content.xml')!.async('string')).match(/<draw:frame /g) ?? []).length;
+  const frames = ((await (await JSZip.loadAsync(odt.bytes)).file('content.xml')!.async('string')).match(/<draw:image /g) ?? []).length;
   check(frames === 3, `the .odt has three picture frames (${frames})`);
   writeFileSync(join(outDir, 'photos.odt'), odt.bytes);
   await odt.page.close();
@@ -260,8 +262,26 @@ if (!office) {
   const source = await readPdf(fixture('chrome-brochure.pdf'));
   const report = (c: Comparison): string => `${c.found}/${c.lines} lines found, worst baseline ${c.worstY.toFixed(1)} pt, worst left edge ${c.worstX.toFixed(1)} pt, ${c.offBy5} off by more than 5 pt, pixel difference ${(c.pixelDiff * 100).toFixed(1)}%`;
 
+  // Text on a coloured ground (white on the price badge, white on the footer band): whatever
+  // carries the text must be see-through. Text frames of the .odt were not at first — a frame
+  // with "no fill" painted the page's white over the picture under it, and a frame imported as
+  // a drawing shape had a light-blue fill — while every line was exactly in place. Measured
+  // inside the two areas of page 1 (points from the page's top-left corner).
+  const GROUNDS = [{ name: 'price badge', x: 425, y: 192, w: 165, h: 78 }, { name: 'footer band', x: 0, y: 796, w: 595, h: 44 }];
+  const groundDiff = (a: PageRead, b: PageRead, box: { x: number; y: number; w: number; h: number }): number => {
+    if (a.width !== b.width || a.height !== b.height) return 1;
+    const k = a.width / 595.28;
+    let sum = 0;
+    let n = 0;
+    for (let y = Math.ceil(box.y * k); y < Math.min(a.height, Math.floor((box.y + box.h) * k)); y++) {
+      for (let x = Math.ceil(box.x * k); x < Math.min(a.width, Math.floor((box.x + box.w) * k)); x++) { sum += Math.abs(a.gray[y * a.width + x]! - b.gray[y * a.width + x]!); n++; }
+    }
+    return sum / Math.max(1, n) / 255;
+  };
+
   for (const name of ['brochure-fixed.docx', 'brochure-fixed.odt']) {
-    const c = compare(source, await readPdf(readFileSync(pdfOf(name))));
+    const opened = await readPdf(readFileSync(pdfOf(name)));
+    const c = compare(source, opened);
     console.log(`  ${name}: ${report(c)}`);
     check(c.pagesEqual, `${name}: the same number of pages as the PDF`);
     check(c.wordsEqual, `${name}: the same words on every page`);
@@ -269,6 +289,9 @@ if (!office) {
     check(c.worstY <= 2.5 && c.worstX <= 2.5, `${name}: in fact within 2.5 pt (baseline ${c.worstY.toFixed(2)}, left ${c.worstX.toFixed(2)})`);
     check(c.worstRight <= 4, `${name}: lines end where they ended (${c.worstRight.toFixed(2)} pt) — the text is fitted to its width in a different font`);
     check(c.pixelDiff < 0.05, `${name}: the page looks like the PDF (${(c.pixelDiff * 100).toFixed(2)}% grey difference at 50 dpi; the flow engine: about 15%)`);
+    const grounds = GROUNDS.map((g) => ({ name: g.name, diff: opened[0] ? groundDiff(source[0]!, opened[0], g) : 1 }));
+    // A white or light-blue box over the text there differs by 20 % and more.
+    check(grounds.every((g) => g.diff < 0.08), `${name}: text on a coloured ground is not boxed in (${grounds.map((g) => `${g.name} ${(g.diff * 100).toFixed(1)} %`).join(', ')})`);
   }
 
   // What happens to the file once it has been through the word processor's own "Save": the

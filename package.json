@@ -173,7 +173,8 @@
     "test:fixed-layout-roundtrip": "npx --yes tsx tests/fixed-layout-roundtrip.mts",
     "test:editor-fonts": "npx --yes tsx tests/editor-fonts.mts",
     "test:e2e-edit-pdf-polish-fonts": "npx --yes tsx e2e/edit-pdf-polish-fonts.mts",
-    "test:fixed-layout-pictures": "npx --yes tsx tests/fixed-layout-pictures.mts"
+    "test:fixed-layout-pictures": "npx --yes tsx tests/fixed-layout-pictures.mts",
+    "test:fixed-frames": "npx --yes tsx tests/fixed-frames.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
