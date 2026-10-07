@@ -210,6 +210,41 @@ console.log('\n=== pages of different sizes ===');
   }
 }
 
+// ------------------------------------------------------------ 4b. the file after a word processor saved it
+// OpenOffice, saving a positioned document again, rewrites every style: lengths in centimetres,
+// its own style names with a parent, a paragraph's single format moved from the span up to the
+// paragraph (text then sits directly in <text:p>), and spans that set only what differs. Hand-made
+// here in exactly that shape (e2e/pdf-to-word-fixed-layout.mts does it with the real office).
+console.log('\n=== an .odt in the shape OpenOffice saves it ===');
+{
+  const ns = 'xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"';
+  const content = `<?xml version="1.0" encoding="UTF-8"?><office:document-content ${ns}><office:automatic-styles>
+<style:style style:name="P1" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm" fo:line-height="0.035cm"/></style:style>
+<style:style style:name="P29" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:margin-left="2cm" fo:margin-right="0cm" fo:margin-top="0.827cm" fo:margin-bottom="0cm" fo:line-height="1.439cm" fo:text-indent="0cm"/><style:text-properties fo:color="#259ea6" style:font-name="Arial" fo:font-size="34pt" style:text-scale="91%"/></style:style>
+<style:style style:name="T1" style:family="text"><style:text-properties fo:font-weight="bold"/></style:style>
+</office:automatic-styles><office:body><office:text>
+<text:p text:style-name="P1"/>
+<text:p text:style-name="P29">INFORMACJE <text:span text:style-name="T1">O</text:span></text:p>
+</office:text></office:body></office:document-content>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8"?><office:document-styles ${ns}><office:automatic-styles>
+<style:page-layout style:name="pm1"><style:page-layout-properties fo:page-width="21.001cm" fo:page-height="29.7cm" fo:margin-top="0cm" fo:margin-bottom="0cm" fo:margin-left="0cm" fo:margin-right="0cm"/></style:page-layout>
+</office:automatic-styles><office:master-styles><style:master-page style:name="Standard" style:page-layout-name="pm1"/></office:master-styles></office:document-styles>`;
+  const zip = new JSZip();
+  zip.file('content.xml', content);
+  zip.file('styles.xml', styles);
+  const pages = await readFixedOdt(await zip.generateAsync({ type: 'blob' }));
+  const cm = 72 / 2.54;
+  const line = pages?.[0]?.lines[0];
+  const runs = line?.segments[0]?.runs ?? [];
+  check(!!pages && pages.length === 1 && Math.abs(pages[0]!.width - 21.001 * cm) < 0.01, 'read as a positioned document; lengths in centimetres');
+  check(runs.length === 2 && runs[0]!.text === 'INFORMACJE ' && runs[0]!.fontSize === 34 && runs[0]!.color === '259ea6' && runs[0]!.scale === 91 && !runs[0]!.bold,
+    `text directly in the paragraph has the paragraph style's format (${runs[0]?.fontSize} pt #${runs[0]?.color}, ${runs[0]?.scale}%)`);
+  check(runs[1]?.text === 'O' && runs[1]!.bold && runs[1]!.fontSize === 34 && runs[1]!.color === '259ea6', 'a span that only says "bold" inherits the rest');
+  const want = (0.035 + 0.827 + 1.439) * cm - FIXED_DESCENT * 34;
+  // With the paragraph's format ignored (10 pt assumed) this baseline was 5.28 pt lower.
+  check(!!line && Math.abs(line.baseline - want) < 0.01 && Math.abs(line.segments[0]!.x - 2 * cm) < 0.01, `the 34 pt line's baseline is ${line?.baseline.toFixed(2)} pt (expected ${want.toFixed(2)})`);
+}
+
 // ------------------------------------------------------------ 5. links and other families
 console.log('\n=== a link stays a link; text in another family keeps its width ===');
 {

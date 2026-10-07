@@ -3,6 +3,7 @@
 # LibreOffice) - see e2e/helpers/openoffice.mts, which starts the office and calls this.
 #
 #   python openoffice_convert.py <port> <in1> <out1.pdf> [<in2> <out2.pdf> ...]
+#   (an output ending in .odt is saved as OpenDocument text instead: the office's own "Save as")
 #   python openoffice_convert.py <port> --terminate
 import sys
 import time
@@ -48,7 +49,8 @@ def main():
         if doc is None:
             sys.stderr.write('could not open %s\n' % src)
             sys.exit(3)
-        doc.storeToURL(uno.systemPathToFileUrl(dst), (prop('FilterName', 'writer_pdf_Export'),))
+        flt = 'writer8' if dst.lower().endswith('.odt') else 'writer_pdf_Export'
+        doc.storeToURL(uno.systemPathToFileUrl(dst), (prop('FilterName', flt),))
         doc.close(True)
         sys.stdout.write('converted %s\n' % dst)
 

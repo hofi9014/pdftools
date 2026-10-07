@@ -27,7 +27,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import JSZip from 'jszip';
-import { findOffice, convertToPdf, stopOffice } from './helpers/openoffice.mts';
+import { findOffice, convertToPdf, saveAsOdt, stopOffice } from './helpers/openoffice.mts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, '..');
@@ -228,6 +228,33 @@ if (!office) {
     check(c.worstY <= 2.5 && c.worstX <= 2.5, `${name}: in fact within 2.5 pt (baseline ${c.worstY.toFixed(2)}, left ${c.worstX.toFixed(2)})`);
     check(c.worstRight <= 4, `${name}: lines end where they ended (${c.worstRight.toFixed(2)} pt) — the text is fitted to its width in a different font`);
     check(c.pixelDiff < 0.05, `${name}: the page looks like the PDF (${(c.pixelDiff * 100).toFixed(2)}% grey difference at 50 dpi; the flow engine: about 15%)`);
+  }
+
+  // What happens to the file once it has been through the word processor's own "Save": the
+  // office rewrites every style (centimetres, its own names, a paragraph's single format moved
+  // from the span up to the paragraph). The result must still be read as a positioned document
+  // by /openoffice-to-pdf — a 34 pt title came back 5 pt low before the reader inherited a
+  // paragraph's own text format.
+  console.log(`\n=== saved again by ${office.name} as .odt, then back to PDF on this site ===`);
+  {
+    const resaved: Array<[string, string]> = [['brochure-fixed.docx', 'brochure-docx-resaved.odt'], ['brochure-fixed.odt', 'brochure-odt-resaved.odt']];
+    await saveAsOdt(office, resaved.map(([from, to]) => [join(outDir, from), join(outDir, to)] as [string, string]));
+    const b2 = await chromium.launch({ headless: true });
+    for (const [from, to] of resaved) {
+      const page = await b2.newPage();
+      await page.goto(`${BASE_URL}/pl/openoffice-to-pdf`, { waitUntil: 'load' });
+      await page.setInputFiles('#fileInput', { name: to, mimeType: 'application/vnd.oasis.opendocument.text', buffer: readFileSync(join(outDir, to)) });
+      const [download] = await Promise.all([
+        page.waitForEvent('download', { timeout: 120000 }),
+        page.locator('button', { hasText: /Konwertuj do PDF/ }).last().click(),
+      ]);
+      const c = compare(source, await readPdf(readFileSync((await download.path())!)));
+      await page.close();
+      console.log(`  ${from} -> ${to} -> PDF: ${report(c)}`);
+      check(c.pagesEqual && c.wordsEqual, `${to}: the same pages and words as the source PDF`);
+      check(c.found === c.lines && c.worstY <= 1.5 && c.worstX <= 1, `${to}: every line where the source has it (baseline ${c.worstY.toFixed(2)} pt, left ${c.worstX.toFixed(2)} pt)`);
+    }
+    await b2.close();
   }
 
   console.log('\n=== the same PDF through the flow engine (the reported behaviour) ===');

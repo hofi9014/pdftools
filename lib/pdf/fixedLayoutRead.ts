@@ -402,16 +402,47 @@ const odfPercent = (v: string | null): number | null => {
 };
 
 interface OdfParagraphStyle { before: number; after: number; line: number | null; indent: number; tabs: number[]; master?: string; breakBefore: boolean }
+/** A run's format while it is being inherited: the raise stays a share of the (final) font size. */
+type OdfFormat = Omit<FixedRun, 'text' | 'raise'> & { raisePercent: number };
+
 interface OdfStyles {
   paragraph: Map<string, OdfParagraphStyle>;
-  text: Map<string, Omit<FixedRun, 'text'>>;
+  /** Text properties a style SETS; what it leaves out is inherited (paragraph -> span -> span). */
+  text: Map<string, Partial<OdfFormat>>;
+  /** The same for paragraph styles: the format of text written directly in the paragraph. */
+  paragraphText: Map<string, Partial<OdfFormat>>;
   tableLeft: Map<string, number>;
   columnWidth: Map<string, number>;
   rowHeight: Map<string, number>;
 }
 
+function odfTextProperties(tp: Element | null): Partial<OdfFormat> {
+  const set: Partial<OdfFormat> = {};
+  if (!tp) return set;
+  const font = attrNs(tp, ODF.style, 'font-name');
+  const size = odfLength(attrNs(tp, ODF.fo, 'font-size'));
+  const weight = attrNs(tp, ODF.fo, 'font-weight');
+  const slant = attrNs(tp, ODF.fo, 'font-style');
+  const color = attrNs(tp, ODF.fo, 'color');
+  const underline = attrNs(tp, ODF.style, 'text-underline-style');
+  const scale = odfPercent(attrNs(tp, ODF.style, 'text-scale'));
+  const spacing = odfLength(attrNs(tp, ODF.fo, 'letter-spacing'));
+  // "12% 100%": raised by 12 % of the font size
+  const position = odfPercent(attrNs(tp, ODF.style, 'text-position'));
+  if (font) set.font = font;
+  if (size !== null) set.fontSize = size;
+  if (weight) set.bold = weight === 'bold' || Number(weight) >= 600;
+  if (slant) set.italic = slant === 'italic' || slant === 'oblique';
+  if (color && /^#[0-9a-f]{6}$/i.test(color)) set.color = color.slice(1);
+  if (underline) set.underline = underline !== 'none';
+  if (scale !== null) set.scale = scale;
+  if (spacing !== null) set.spacingTw = Math.round(spacing * 20);
+  if (position !== null) set.raisePercent = position;
+  return set;
+}
+
 function readOdfStyles(root: Element): OdfStyles {
-  const styles: OdfStyles = { paragraph: new Map(), text: new Map(), tableLeft: new Map(), columnWidth: new Map(), rowHeight: new Map() };
+  const styles: OdfStyles = { paragraph: new Map(), text: new Map(), paragraphText: new Map(), tableLeft: new Map(), columnWidth: new Map(), rowHeight: new Map() };
   for (const s of childEls(childEl(root, 'automatic-styles'), 'style')) {
     const name = attrNs(s, ODF.style, 'name');
     const family = attrNs(s, ODF.style, 'family');
@@ -433,24 +464,9 @@ function readOdfStyles(root: Element): OdfStyles {
       const master = attrNs(s, ODF.style, 'master-page-name');
       if (master) style.master = master;
       styles.paragraph.set(name, style);
+      styles.paragraphText.set(name, odfTextProperties(childEl(s, 'text-properties')));
     } else if (family === 'text') {
-      const tp = childEl(s, 'text-properties');
-      const size = odfLength(attrNs(tp, ODF.fo, 'font-size')) ?? 10;
-      const color = attrNs(tp, ODF.fo, 'color');
-      const underline = attrNs(tp, ODF.style, 'text-underline-style');
-      const format: Omit<FixedRun, 'text'> = {
-        font: attrNs(tp, ODF.style, 'font-name') ?? 'Arial',
-        fontSize: size,
-        bold: attrNs(tp, ODF.fo, 'font-weight') === 'bold',
-        italic: attrNs(tp, ODF.fo, 'font-style') === 'italic',
-        color: color && /^#[0-9a-f]{6}$/i.test(color) ? color.slice(1) : '000000',
-        scale: odfPercent(attrNs(tp, ODF.style, 'text-scale')) ?? 100,
-        spacingTw: Math.round((odfLength(attrNs(tp, ODF.fo, 'letter-spacing')) ?? 0) * 20),
-        // "12% 100%": raised by 12 % of the font size
-        raise: (odfPercent(attrNs(tp, ODF.style, 'text-position')) ?? 0) / 100 * size,
-      };
-      if (underline && underline !== 'none') format.underline = true;
-      styles.text.set(name, format);
+      styles.text.set(name, odfTextProperties(childEl(s, 'text-properties')));
     } else if (family === 'table') {
       styles.tableLeft.set(name, odfLength(attrNs(childEl(s, 'table-properties'), ODF.fo, 'margin-left')) ?? 0);
     } else if (family === 'table-column') {
@@ -467,25 +483,37 @@ function readOdfStyles(root: Element): OdfStyles {
 interface OdfParagraph extends Flow { picture?: string; style: OdfParagraphStyle }
 
 function readOdfParagraph(p: Element, originX: number, top: number, styles: OdfStyles): OdfParagraph {
-  const style = styles.paragraph.get(attrNs(p, ODF.text, 'style-name') ?? '');
+  const styleName = attrNs(p, ODF.text, 'style-name') ?? '';
+  const style = styles.paragraph.get(styleName);
   if (!style || style.line === null || !(style.line > 0)) return no('a paragraph without a fixed line height');
   const builder = new LineBuilder(originX, style.indent, style.tabs);
-  const plain: Omit<FixedRun, 'text'> = { font: 'Arial', fontSize: 10, bold: false, italic: false, color: '000000', scale: 100, spacingTw: 0, raise: 0 };
+  // Text written directly in the paragraph takes the paragraph style's own text properties.
+  // This site's writer puts every run in a span, but OpenOffice, saving the same document
+  // again, moves a paragraph's single format up to the paragraph — read with a default size,
+  // a 34 pt title came back 5 pt too low (its baseline hangs on its font size).
+  const base: OdfFormat = {
+    font: 'Arial', fontSize: 10, bold: false, italic: false, color: '000000', scale: 100, spacingTw: 0, raisePercent: 0,
+    ...styles.paragraphText.get(styleName),
+  };
   let picture: string | undefined;
+  const emit = (format: OdfFormat, text: string): void => {
+    const { raisePercent, ...rest } = format;
+    if (!rest.underline) delete rest.underline;
+    builder.text({ ...rest, raise: raisePercent / 100 * rest.fontSize, text });
+  };
 
-  const walk = (el: Element, format: Omit<FixedRun, 'text'>): void => {
+  const walk = (el: Element, format: OdfFormat): void => {
     for (let n = el.firstChild; n; n = n.nextSibling) {
-      if (n.nodeType === 3) { builder.text({ ...format, text: n.nodeValue ?? '' }); continue; }
+      if (n.nodeType === 3) { emit(format, n.nodeValue ?? ''); continue; }
       if (n.nodeType !== 1) continue;
       const c = n as Element;
       if (c.localName === 'span') {
-        const own = styles.text.get(attrNs(c, ODF.text, 'style-name') ?? '');
-        walk(c, own ? { ...own, ...(format.link ? { link: format.link } : {}) } : format);
+        walk(c, { ...format, ...styles.text.get(attrNs(c, ODF.text, 'style-name') ?? '') });
       } else if (c.localName === 'a') {
         const href = attrNs(c, ODF.xlink, 'href');
         walk(c, href ? { ...format, link: href } : format);
       } else if (c.localName === 's') {
-        builder.text({ ...format, text: ' '.repeat(Number(attrNs(c, ODF.text, 'c')) || 1) });
+        emit(format, ' '.repeat(Number(attrNs(c, ODF.text, 'c')) || 1));
       } else if (c.localName === 'tab') builder.tab();
       else if (c.localName === 'line-break') builder.lineBreak();
       else if (c.localName === 'frame') {
@@ -497,7 +525,7 @@ function readOdfParagraph(p: Element, originX: number, top: number, styles: OdfS
       } else return no(`<text:${c.localName}>`);
     }
   };
-  walk(p, plain);
+  walk(p, base);
   const out: OdfParagraph = {
     lines: builder.place(top + style.before, style.line),
     height: style.before + style.line * builder.lines.length + style.after,
