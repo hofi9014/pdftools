@@ -175,7 +175,7 @@ async function main(): Promise<number> {
   const { spreadsheet: rt, warnings } = await pdfToIRSpreadsheet(new File([pdfBytes], 'r.pdf', { type: 'application/pdf' }));
   check('3 sheets recovered', rt.sheets.length === 3, `got ${rt.sheets.length}`);
   const expected = [
-    { name: 'Arkusz1', rowspan3plus: 94, exactMatch: 93 },
+    { name: 'Arkusz1', rowspan3plus: 94, exactMatch: 94 }, // 93 until the page grid was declared (tests/xlsx-pdf-xlsx-exact.mts)
     { name: 'Arkusz2', rowspan3plus: 94, exactMatch: 94 },
     { name: 'Arkusz3', rowspan3plus: 94, exactMatch: 94 },
   ];
@@ -221,8 +221,20 @@ async function main(): Promise<number> {
   check('with the marker the split merge is glued back to its full 70 rows', tallMerge(rtTall.sheets[0])?.rowspan === 70 && rtTall.sheets[0]?.cells.length === N,
     `rowspan ${tallMerge(rtTall.sheets[0])?.rowspan}, rows ${rtTall.sheets[0]?.cells.length}`);
   check('with the marker: no ambiguous warning', !wTall.some((w) => w.kind === 'merge-continuation-ambiguous'));
+  // A PDF this app printed in the days between the continuation list and the page description
+  // (it has the first, not the second) must read as it did then.
+  const olderDoc = await PDFDocument.load(tallBytes);
+  for (const page of olderDoc.getPages()) page.node.delete(PDFName.of('OptimaSheetPage'));
+  const { spreadsheet: rtOlder, warnings: wOlder } = await pdfToIRSpreadsheet(new File([await olderDoc.save()], 'o.pdf', { type: 'application/pdf' }));
+  check('with only the continuation list (no page description) the merge is still glued to 70 rows', tallMerge(rtOlder.sheets[0])?.rowspan === 70 && rtOlder.sheets[0]?.cells.length === N && !wOlder.some((w) => w.kind === 'merge-continuation-ambiguous'),
+    `rowspan ${tallMerge(rtOlder.sheets[0])?.rowspan}, rows ${rtOlder.sheets[0]?.cells.length}`);
   const strippedDoc = await PDFDocument.load(tallBytes);
-  for (const page of strippedDoc.getPages()) page.node.delete(PDFName.of('OptimaRowspanContinues'));
+  // Both declarations: the continuation list and the page description that now carries the
+  // merges (and their "continues" flags) too.
+  for (const page of strippedDoc.getPages()) {
+    page.node.delete(PDFName.of('OptimaRowspanContinues'));
+    page.node.delete(PDFName.of('OptimaSheetPage'));
+  }
   const { spreadsheet: rtStripped, warnings: wStripped } = await pdfToIRSpreadsheet(new File([await strippedDoc.save()], 'x.pdf', { type: 'application/pdf' }));
   check('without the marker the split merge is NOT glued (two separate pieces)', (tallMerge(rtStripped.sheets[0])?.rowspan ?? 0) < 70,
     `rowspan ${tallMerge(rtStripped.sheets[0])?.rowspan}`);

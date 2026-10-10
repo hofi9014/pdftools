@@ -3,7 +3,8 @@
 # LibreOffice) - see e2e/helpers/openoffice.mts, which starts the office and calls this.
 #
 #   python openoffice_convert.py <port> <in1> <out1.pdf> [<in2> <out2.pdf> ...]
-#   (an output ending in .odt is saved as OpenDocument text instead: the office's own "Save as")
+#   (an output ending in .odt is saved as OpenDocument text instead: the office's own "Save as";
+#    one ending in .csv is the first sheet of a workbook as the office reads it)
 #   python openoffice_convert.py <port> --terminate
 import sys
 import time
@@ -49,8 +50,18 @@ def main():
         if doc is None:
             sys.stderr.write('could not open %s\n' % src)
             sys.exit(3)
-        flt = 'writer8' if dst.lower().endswith('.odt') else 'writer_pdf_Export'
-        doc.storeToURL(uno.systemPathToFileUrl(dst), (prop('FilterName', flt),))
+        sheet = doc.supportsService('com.sun.star.sheet.SpreadsheetDocument')
+        low = dst.lower()
+        options = ()
+        if low.endswith('.odt'):
+            flt = 'writer8'
+        elif low.endswith('.csv'):
+            # the first sheet as the office shows it: ";" between cells, text in quotes, UTF-8
+            flt = 'Text - txt - csv (StarCalc)'
+            options = (prop('FilterOptions', '59,34,76,1'),)
+        else:
+            flt = 'calc_pdf_Export' if sheet else 'writer_pdf_Export'
+        doc.storeToURL(uno.systemPathToFileUrl(dst), (prop('FilterName', flt),) + options)
         doc.close(True)
         sys.stdout.write('converted %s\n' % dst)
 

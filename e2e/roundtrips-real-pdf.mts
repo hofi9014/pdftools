@@ -196,6 +196,35 @@ console.log('\n=== PDF → Excel → PDF (schedule) ===');
   check(rc > 0.95, `${(rc * 100).toFixed(1)}% of the distinct source words survive Excel and back`);
 }
 
+// The other way round: a workbook printed to PDF by this app and read back by it. Every word the
+// PDF cut at the end of a line used to come back in two pieces, and the last column of the first
+// sheet (alone on its column pages) was dropped.
+console.log('\n=== Excel → PDF → Excel (a real workbook, 3 sheets) ===');
+{
+  const JSZip = (await import('jszip')).default;
+  const workbook = readFileSync(join(ROOT, 'test-fixtures', 'EPZ_SIERPIEN_2026.xlsx'));
+  const xlsxMime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  const p1 = await fresh('excel-to-pdf', [{ name: 'e.xlsx', mimeType: xlsxMime, buffer: workbook }]);
+  const pdf = await download(p1, () => p1.locator('button', { hasText: /Konwertuj do formatu PDF/ }).last().click());
+  await p1.close();
+  const p2 = await fresh('pdf-to-excel', [{ name: 'e.pdf', mimeType: 'application/pdf', buffer: pdf.bytes }]);
+  const back = await download(p2, () => p2.locator('button', { hasText: /Konwertuj do formatu Excel/ }).last().click());
+  await p2.close();
+  const strings = async (bytes: Uint8Array | Buffer): Promise<string[]> => {
+    const zip = await JSZip.loadAsync(bytes);
+    const xml = (await zip.file('xl/sharedStrings.xml')?.async('string')) ?? '';
+    return (xml.match(/<si>[\s\S]*?<\/si>/g) ?? []).map((si) => si.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()).filter((t) => t !== '');
+  };
+  const sheetCount = Object.keys((await JSZip.loadAsync(back.bytes)).files).filter((n) => /^xl\/worksheets\/sheet\d+\.xml$/.test(n)).length;
+  const want = new Set(await strings(workbook)), got = new Set(await strings(back.bytes));
+  // dates and times are numbers in the source and text in the result: compare the texts
+  const texts = [...want].filter((t) => /\p{L}{3}/u.test(t));
+  const missing = texts.filter((t) => !got.has(t));
+  check(sheetCount === 3, `three sheets come back (${sheetCount})`);
+  check(missing.length === 0, `every text cell of the workbook comes back exactly as it was (${texts.length - missing.length} of ${texts.length} distinct texts; missing e.g. ${JSON.stringify(missing.slice(0, 2))})`);
+  check(got.has('Godzina rozpoczęcia pracy') && ![...got].some((t) => /rozpoczę ?ci ?a pracy/.test(t) && t !== 'Godzina rozpoczęcia pracy'), 'a word cut at a line end is whole again');
+}
+
 console.log('\n=== PDF → images ===');
 {
   const page = await fresh('pdf-to-images', [{ name: 'a.pdf', mimeType: 'application/pdf', buffer: allegro }]);

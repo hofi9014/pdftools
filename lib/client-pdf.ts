@@ -4,6 +4,7 @@ import { rasterizePages, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanv
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
 import { renderIRToDocx, type IRTextRun, type IRImageBlock, type IRTableCell, type IRBlock, type IRRect, type IRPageIR, type IRFillRect, type IRBoxRect, type IRSpreadsheetCell, type IRSheet, type IRSpreadsheet, type IRConditionalFormattingRule, ptToXlsxCharWidth } from './client-pdf-docx';
 import { detectTextColumns, mergeColumnLines } from './pdf/textColumns';
+import { pagesToSheet } from './pdf/pdfToSheet';
 import type { FontClass } from './pdf/fontFamilies';
 import type { IRSlide, IRSlideElement, IRDeck, IRPtRect, IRTextContent } from './client-pptx';
 import { getFontFamily } from './pdf/fonts';
@@ -1301,7 +1302,29 @@ export function buildTableClusters(allRects: RawRect[]): TableCluster[] {
   // Bullet dots and list markers are tiny squares/circles (both sides < 4 pt); a border or divider
   // is long in one direction. Dots line up on shared edges with boxes and list items and formed
   // phantom "tables" (a dot touching a bordered box passed the coverage rule via the box's area).
-  const rects = allRects.filter((r) => r.width >= 4 || r.height >= 4);
+  //
+  // A path that is neither filled nor stroked is not on the page: it is a clipping path
+  // (`re W n`). A clip around ONE cell is a fair hint of a grid where no border is drawn, and is
+  // kept. A clip around drawn content is a container, not a cell: Chrome clips every page to its
+  // content area, and that invisible rectangle — wider and much taller than the table it shares
+  // an edge with — gave the invoice's table two 6 pt outer columns and a "row" reaching the bottom
+  // of the page that swallowed the totals and the notes printed under the table.
+  const painted = allRects.filter((r) => r.fill || r.stroke);
+  const isContainer = (c: RawRect): boolean => {
+    const area = c.width * c.height;
+    let inside = 0;
+    for (const r of painted) {
+      if (r.x < c.x - EDGE_TOLERANCE || r.y < c.y - EDGE_TOLERANCE
+        || r.x + r.width > c.x + c.width + EDGE_TOLERANCE || r.y + r.height > c.y + c.height + EDGE_TOLERANCE) continue;
+      if (r.width * r.height >= 0.5 * area) continue; // the cell's own background
+      // a border drawn along the clip's own edge
+      if (r.height < 2 && (edgesClose(r.y, c.y) || edgesClose(r.y + r.height, c.y + c.height))) continue;
+      if (r.width < 2 && (edgesClose(r.x, c.x) || edgesClose(r.x + r.width, c.x + c.width))) continue;
+      if (++inside >= 2) return true;
+    }
+    return false;
+  };
+  const rects = allRects.filter((r) => (r.width >= 4 || r.height >= 4) && (r.fill || r.stroke || !isContainer(r)));
   if (rects.length < 3) return [];
 
   // Step 1: Union-Find — group rects sharing any edge (within tolerance)
@@ -1508,6 +1531,23 @@ export function buildTableClusters(allRects: RawRect[]): TableCluster[] {
           clusters.push(...valid);
           continue;
         }
+        // The group stays one table. A lone rule (one or two rects: the line over a totals block,
+        // an underline) that merely shares an edge coordinate with the table and lies wholly
+        // outside it is not part of its grid: left in, it added a row between the table and the
+        // rule and split a column at the rule's end.
+        const main = valid.reduce<TableCluster | null>((m, c) => (m === null || bboxArea(c.rects) > bboxArea(m.rects) ? c : m), null);
+        if (main) {
+          const mx0 = main.xEdges[0]!, mx1 = main.xEdges[main.xEdges.length - 1]!;
+          const my0 = main.yEdges[0]!, my1 = main.yEdges[main.yEdges.length - 1]!;
+          const outside = (r: RawRect): boolean =>
+            r.x >= mx1 - EDGE_TOLERANCE || r.x + r.width <= mx0 + EDGE_TOLERANCE
+            || r.y >= my1 - EDGE_TOLERANCE || r.y + r.height <= my0 + EDGE_TOLERANCE;
+          const kept = [...comps.values()].filter((c) => !(c.length < 3 && c.every(outside))).flat();
+          if (kept.length < groupRects.length) {
+            const trimmed = validateGroup(kept);
+            if (trimmed) { clusters.push(trimmed); continue; }
+          }
+        }
       }
     }
     const whole = validateGroup(groupRects);
@@ -1527,6 +1567,12 @@ export interface GridCell {
   rowspan: number;
   colspan: number;
   rect: RawRect; // the rect that owns this cell
+  /**
+   * Only on a sheet page whose merges this app's renderer declared: the cell is the rest of one
+   * that started on the page before (rows above) / on the column page before (columns to the left).
+   */
+  continuesAbove?: boolean;
+  continuesLeft?: boolean;
 }
 
 export interface CellTextAssignment {
@@ -3172,13 +3218,23 @@ function extractFormattedTextFromScaffolds(scaffolds: PageTableScaffold[]): IRPa
 
         for (const gc of gridCells) {
           const target = irCells[gc.row]?.[gc.col];
-          const hex = gc.rect.fill && gc.rect.fillColor ? /^#([0-9a-fA-F]{6})$/.exec(gc.rect.fillColor)?.[1] : undefined;
-          // Chrome/Skia paint cell borders as thin filled rects: only a rect that covers (most of) the
-          // cell is a background.
-          const cw = cluster.xEdges[Math.min(gc.col + gc.colspan, cluster.xEdges.length - 1)]! - cluster.xEdges[gc.col]!;
-          const ch = cluster.yEdges[Math.min(gc.row + gc.rowspan, cluster.yEdges.length - 1)]! - cluster.yEdges[gc.row]!;
-          const coversCell = gc.rect.width >= 0.8 * cw && gc.rect.height >= 0.8 * ch;
-          if (target && hex && coversCell && hex.toLowerCase() !== 'ffffff') target.fill = hex.toUpperCase();
+          if (!target) continue;
+          // The cell's background is the filled rect that lies OVER most of the cell — the last one
+          // painted, as on the page. Chrome/Skia paint cell borders as thin filled rects, and a
+          // header's background overlaps the row under it by a fraction of a point: judging a rect
+          // by its SIZE alone (as tall and wide as the cell) shaded the first data row of a table
+          // with the header's colour.
+          const cx0 = cluster.xEdges[gc.col]!, cx1 = cluster.xEdges[Math.min(gc.col + gc.colspan, cluster.xEdges.length - 1)]!;
+          const cy0 = cluster.yEdges[gc.row]!, cy1 = cluster.yEdges[Math.min(gc.row + gc.rowspan, cluster.yEdges.length - 1)]!;
+          let hex: string | undefined;
+          for (const r of cluster.rects) {
+            if (!r.fill || !r.fillColor) continue;
+            const ow = Math.min(cx1, r.x + r.width) - Math.max(cx0, r.x);
+            const oh = Math.min(cy1, r.y + r.height) - Math.max(cy0, r.y);
+            if (ow < 0.8 * (cx1 - cx0) || oh < 0.8 * (cy1 - cy0)) continue;
+            hex = /^#([0-9a-fA-F]{6})$/.exec(r.fillColor)?.[1] ?? hex;
+          }
+          if (hex && hex.toLowerCase() !== 'ffffff') target.fill = hex.toUpperCase();
         }
 
         // Word/ODT rows list only the cells that START in that row: a position covered by another
@@ -3490,6 +3546,14 @@ export interface PdfTableClusterResult {
   textRuns: IRTextRun[];
   rows: number;
   cols: number;
+  /** The grid and the merges are the ones the renderer declared for the page, not detected ones. */
+  declaredGrid?: boolean;
+  /**
+   * The page was printed by this app's renderer at a version whose lines end with white space
+   * exactly where a word ends (see SHEET_PAGE_KEY in client-pdf-docx.ts): the lines of a cell are
+   * then joined as they are, so a word cut at a line end comes back whole.
+   */
+  exactLineEnds?: boolean;
 }
 
 export interface PdfTablesToCellsPage {
@@ -3536,10 +3600,37 @@ function assignLeftoverRunsToTextAnchors(
   assignments.sort((p, q) => p.runIndex - q.runIndex);
 }
 
-function pdfTablesToCellsFromScaffolds(scaffolds: PageTableScaffold[]): PdfTablesToCellsPage[] {
+function pdfTablesToCellsFromScaffolds(scaffolds: PageTableScaffold[], sheetPages: ReadonlyMap<number, SheetPageInfo> = new Map()): PdfTablesToCellsPage[] {
   const result: PdfTablesToCellsPage[] = [];
 
-  for (const { page, pageWidth, pageHeight, textRuns, tableClusters } of scaffolds) {
+  for (const { page, pageWidth, pageHeight, textRuns, tableClusters: found } of scaffolds) {
+    // A page whose grid this app's renderer declared is read on THAT grid, with the merges it
+    // declared, not on what can be detected from the lines: a row boundary that no line marks is
+    // not detectable (every cell of the page merged across it — the rows below then shift up by
+    // one), a grid of ONE column is no table to the detector at all (the last column of a sheet,
+    // alone on its pages, was dropped whole), and an area with no lines at all (empty cells
+    // without borders) reads as one big merged cell.
+    const info = sheetPages.get(page);
+    if (info?.x && info.y && info.merges && info.x.length >= 2 && info.y.length >= 2 && info.merges.length % 5 === 0) {
+      const xEdges = info.x, yEdges = info.y.map((v) => pageHeight - v);
+      const cols = xEdges.length - 1, rows = yEdges.length - 1;
+      const rect: RawRect = { x: 0, y: 0, width: 0, height: 0, fill: false, stroke: false };
+      const cells: GridCell[] = [];
+      const covered = new Set<number>();
+      for (let i = 0; i < info.merges.length; i += 5) {
+        const [r, c, rs, cs, flags] = info.merges.slice(i, i + 5) as [number, number, number, number, number];
+        if (r < 0 || c < 0 || rs < 1 || cs < 1 || r + rs > rows || c + cs > cols) continue;
+        cells.push({ row: r, col: c, rowspan: rs, colspan: cs, rect, continuesAbove: (flags & 1) !== 0, continuesLeft: (flags & 2) !== 0 });
+        for (let dr = 0; dr < rs; dr++) for (let dc = 0; dc < cs; dc++) covered.add((r + dr) * cols + c + dc);
+      }
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) if (!covered.has(r * cols + c)) cells.push({ row: r, col: c, rowspan: 1, colspan: 1, rect });
+      result.push({
+        page, pageWidth, pageHeight,
+        clusters: [{ xEdges, yEdges, cells, assignments: assignTextRunsToCells(textRuns, cells, xEdges, yEdges, pageHeight, true), textRuns, rows, cols, declaredGrid: true }],
+      });
+      continue;
+    }
+    const tableClusters = found;
     const clusters: PdfTableClusterResult[] = [];
     for (const cluster of tableClusters) {
       const cells = detectMergesByTopology(cluster);
@@ -3595,6 +3686,14 @@ function pdfTablesToCellsFromScaffolds(scaffolds: PageTableScaffold[]): PdfTable
 export interface MergeBandPage {
   page: number;
   pageHeight: number;
+  /**
+   * Rows at the top of this page that repeat the sheet's frozen header, as the renderer declared
+   * them (SHEET_PAGE_KEY). Absent on a PDF without the declaration: then guessed from row texts.
+   */
+  repeatedRows?: number;
+  /** Sheet column this page's own columns start at, and frozen columns repeated before them (declared likewise). */
+  firstColumn?: number;
+  repeatedCols?: number;
   /** Present only on the sheet's first page (mini sheet-title heading). */
   sheetTitle?: string;
   /** Plain text of the whole page (for 0-cluster pages). */
@@ -3624,13 +3723,21 @@ function commonPrefixLen(a: string[], b: string[]): number {
   return n;
 }
 
-function clusterCellText(cluster: PdfTableClusterResult, row: number, col: number): string {
+/** The lines of a cell as one text, before trimming (its end tells whether a word is left open). */
+function clusterCellRawText(cluster: PdfTableClusterResult, row: number, col: number): string {
   const parts: string[] = [];
   for (const { cell, runIndex } of cluster.assignments) {
     if (cell.row === row && cell.col === col) parts.push(cluster.textRuns[runIndex]?.text ?? '');
   }
+  // Each run is one drawn line. Where the renderer guarantees that a line ending a word ends with
+  // white space, the lines are joined as they are: a line without it was cut inside a word
+  // ("rozpoczęci" + "a pracy"). Otherwise a space is assumed at every line end.
+  return parts.join(cluster.exactLineEnds ? '' : ' ');
+}
+
+function clusterCellText(cluster: PdfTableClusterResult, row: number, col: number): string {
   // Runs often end with their own space, so joining with ' ' doubled it ("Godzina  rozpoczęcia").
-  return parts.join(' ').replace(/\s+/g, ' ').trim();
+  return clusterCellRawText(cluster, row, col).replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -3686,6 +3793,8 @@ interface FragmentGrid {
   text: string[][];
   /** present-cell merged ranges (row,col,rowspan,colspan). */
   merges: { row: number; col: number; rowspan: number; colspan: number }[];
+  /** Rows whose first own column continues a cell of the fragment to the left (declared pages only). */
+  continuesLeft?: number[];
 }
 
 /** Map a page column (by local x span) onto the canonical column index. */
@@ -3717,7 +3826,9 @@ function bottomRowspanCells(
 ): Map<number, { row: number; rowspan: number }> {
   const out = new Map<number, { row: number; rowspan: number }>();
   for (const cell of cl.cells) {
-    if (cell.rowspan <= 1) continue; // only vertical merges can cross a row break
+    // Only vertical merges can cross a row break — on a detected grid. On a declared one a piece
+    // one row high can be the top of a split merge as well (the next page says so).
+    if (cell.rowspan <= 1 && !cl.declaredGrid) continue;
     if (cell.row + cell.rowspan >= cl.rows) {
       out.set(clusterColIndex(xEdges, localXEdges, cell.col), { row: cell.row, rowspan: cell.rowspan });
     }
@@ -3785,6 +3896,14 @@ function buildFragmentGrid(pages: MergeBandPage[], continuationMarkers: Map<numb
   // shares NOTHING with the anchor's own first row, which used to be (wrongly) flagged as
   // 'header-mismatch' and the entire page's rows discarded — see the rowspan-continuation FINDING.
   let establishedHeaderRows: number | null = null;
+  // Absolute rows whose first own column holds the rest of a cell from the column page before.
+  const continuesLeft: number[] = [];
+  const firstOwnCol = pages[0]?.repeatedCols ?? 0;
+  // Marks a cell whose text, as read, stops inside a word (only known where exactLineEnds holds):
+  // the rest of the word is in a cell covered by the same merge, or on the next page.
+  const noteOpenWord = (cl: PdfTableClusterResult, r: number, c: number, cell: IRSpreadsheetCell | undefined): void => {
+    if (cell && cl.exactLineEnds && !/\s$/.test(clusterCellRawText(cl, r, c))) cell.openEnd = true;
+  };
 
   for (const page of pages) {
     if (page.clusters.length === 0) {
@@ -3811,6 +3930,7 @@ function buildFragmentGrid(pages: MergeBandPage[], continuationMarkers: Map<numb
             const txt = clusterCellText(cl, r, c);
             rowTextsArr[ci] = txt;
             rowCells[ci] = txt ? irCellFromText(txt, clusterCellFormats(cl, r, c)) : undefined;
+            noteOpenWord(cl, r, c, rowCells[ci]);
           }
         }
         cells.push(rowCells);
@@ -3819,8 +3939,9 @@ function buildFragmentGrid(pages: MergeBandPage[], continuationMarkers: Map<numb
       // Record merged ranges from the first page at their absolute row index
       // (rowBase === 0 here).
       for (const cell of cl.cells) {
+        const ci = clusterColIndex(xEdges, localX, cell.col);
+        if (cell.continuesLeft && ci === firstOwnCol) continuesLeft.push(rowBase + cell.row);
         if (cell.rowspan > 1 || cell.colspan > 1) {
-          const ci = clusterColIndex(xEdges, localX, cell.col);
           if (ci < cols) {
             merges.push({ row: rowBase + cell.row, col: ci, rowspan: cell.rowspan, colspan: cell.colspan });
           }
@@ -3833,9 +3954,11 @@ function buildFragmentGrid(pages: MergeBandPage[], continuationMarkers: Map<numb
       continue;
     }
 
-    // Continuation page: dedup the longest common text prefix vs the anchor.
-    const common = commonPrefixLen(anchorRowTexts, rowTexts);
-    if (common === 0 && establishedHeaderRows !== null) {
+    // Continuation page: drop the rows that repeat the header — as many as the renderer declared,
+    // else the longest common text prefix vs the anchor.
+    const declaredRepeat = page.repeatedRows;
+    const common = declaredRepeat !== undefined ? Math.min(declaredRepeat, cl.rows) : commonPrefixLen(anchorRowTexts, rowTexts);
+    if (declaredRepeat === undefined && common === 0 && establishedHeaderRows !== null) {
       // This fragment DOES repeat header rows on every other continuation page (established
       // below the first time common > 0 is observed) — a page sharing NOTHING with the anchor
       // is then a genuine R4 alarm: geometry agrees (same fragment) but the top row text
@@ -3861,23 +3984,36 @@ function buildFragmentGrid(pages: MergeBandPage[], continuationMarkers: Map<numb
     const gluedCols = new Set<number>();
     for (const cell of cl.cells) {
       if (cell.row !== common) continue;
-      if (cell.rowspan <= 1 && cell.colspan <= 1) continue;
+      if (cell.rowspan <= 1 && cell.colspan <= 1 && !cell.continuesAbove) continue;
       const ci = clusterColIndex(xEdges, localX, cell.col);
       const prevAnchorRow = prevBottom.get(ci);
       if (prevAnchorRow === undefined) continue;
       const declared = continuationMarkers.get(page.page);
-      const confirmed = declared?.has(ci) ?? false;
+      // The piece's own declaration (a declared grid) settles it; else the older per-page list.
+      const confirmed = cell.continuesAbove ?? declared?.has(ci) ?? false;
       if (!confirmed) {
         // A page carrying our renderer's marker lists EVERY continuation, so an unlisted merge is
         // a new cell (no warning); without the marker (any other PDF) it stays ambiguous.
-        if (!declared) warnings.push({ kind: 'merge-continuation-ambiguous', page: page.page, col: ci });
+        if (!declared && cell.continuesAbove === undefined) warnings.push({ kind: 'merge-continuation-ambiguous', page: page.page, col: ci });
         continue;
       }
-      const m = merges.find((mm) => mm.row === prevAnchorRow && mm.col === ci);
-      const anchorCell = cells[prevAnchorRow]?.[ci];
-      if (!m || !anchorCell) continue; // defensive: should always be found together
+      let m = merges.find((mm) => mm.row === prevAnchorRow && mm.col === ci);
+      let anchorCell = cells[prevAnchorRow]?.[ci];
+      if (!cl.declaredGrid && (!m || !anchorCell)) continue; // defensive: should always be found together
       const newRowspan = (rowBase + cell.rowspan) - prevAnchorRow;
+      // On a declared grid the earlier piece may be a single row (no merge yet) or have no text.
+      if (!m) { m = { row: prevAnchorRow, col: ci, rowspan: newRowspan, colspan: cell.colspan }; merges.push(m); }
       m.rowspan = newRowspan;
+      if (!anchorCell) {
+        const first = clusterCellText(cl, common, cell.col);
+        if (first) {
+          anchorCell = irCellFromText(first, clusterCellFormats(cl, common, cell.col));
+          noteOpenWord(cl, common, cell.col, anchorCell);
+          cells[prevAnchorRow]![ci] = anchorCell;
+        }
+        gluedCols.add(ci);
+        continue;
+      }
       anchorCell.rowspan = newRowspan;
       // Reconstruct the original wrapped text: the renderer draws this piece continuing from
       // wherever the earlier page's piece left off (never repeating its opening lines), so the two
@@ -3885,7 +4021,11 @@ function buildFragmentGrid(pages: MergeBandPage[], continuationMarkers: Map<numb
       // covered-cell text join, the same "join with a single space" convention).
       const extra = clusterCellText(cl, common, cell.col);
       if (extra) {
-        const joined = anchorCell.display ? `${anchorCell.display} ${extra}`.trim() : extra;
+        // A word cut by the page break itself is put back together too.
+        const sep = anchorCell.openEnd ? '' : ' ';
+        if (cl.exactLineEnds === true && !/\s$/.test(clusterCellRawText(cl, common, cell.col))) anchorCell.openEnd = true;
+        else delete anchorCell.openEnd;
+        const joined = anchorCell.display ? `${anchorCell.display}${sep}${extra}`.trim() : extra;
         anchorCell.display = joined;
         if (anchorCell.type === 'string') anchorCell.raw = joined;
       }
@@ -3896,8 +4036,9 @@ function buildFragmentGrid(pages: MergeBandPage[], continuationMarkers: Map<numb
     // carry rowspans/colspans, but they are not recoverable data on this page.
     for (const cell of cl.cells) {
       if (cell.row < common) continue;
+      const ci = clusterColIndex(xEdges, localX, cell.col);
+      if (cell.continuesLeft && ci === firstOwnCol && !(cell.row === common && gluedCols.has(ci))) continuesLeft.push(mergeRowBase + cell.row);
       if (cell.rowspan > 1 || cell.colspan > 1) {
-        const ci = clusterColIndex(xEdges, localX, cell.col);
         if (cell.row === common && gluedCols.has(ci)) continue; // extended the earlier anchor above
         if (ci < cols) {
           merges.push({ row: mergeRowBase + cell.row, col: ci, rowspan: cell.rowspan, colspan: cell.colspan });
@@ -3913,6 +4054,7 @@ function buildFragmentGrid(pages: MergeBandPage[], continuationMarkers: Map<numb
           const txt = clusterCellText(cl, r, c);
           rowTxt[ci] = txt;
           rowCells[ci] = txt ? irCellFromText(txt, clusterCellFormats(cl, r, c)) : undefined;
+          noteOpenWord(cl, r, c, rowCells[ci]);
         }
       }
       cells.push(rowCells);
@@ -3943,6 +4085,7 @@ function buildFragmentGrid(pages: MergeBandPage[], continuationMarkers: Map<numb
     cells,
     text,
     merges,
+    continuesLeft,
   };
   return { grid, warnings };
 }
@@ -3991,11 +4134,14 @@ export function assembleSheets(bands: MergeBandPage[], continuationMarkers: Map<
     // so we key on the left edge only (buildFragmentGrid collapses to the
     // widest column set).
     // Safe: titledPages is filtered to p.clusters.length > 0 (line above), so p.clusters[0] exists.
+    // Where the renderer declared the sheet column a page starts at, that IS the fragment (every
+    // column page starts at the left margin, so the left edge cannot tell them apart).
+    const declared = titledPages.every(p => p.firstColumn !== undefined);
     const fragKey = (cl: PdfTableClusterResult): string => cl.xEdges[0]!.toFixed(1);
     const fragMap = new Map<string, MergeBandPage[]>();
     const fragOrder: string[] = [];
     for (const p of titledPages) {
-      const key = fragKey(p.clusters[0]!);
+      const key = declared ? `col${p.firstColumn}` : fragKey(p.clusters[0]!);
       if (!fragMap.has(key)) { fragMap.set(key, []); fragOrder.push(key); }
       fragMap.get(key)!.push(p);
     }
@@ -4007,6 +4153,7 @@ export function assembleSheets(bands: MergeBandPage[], continuationMarkers: Map<
       sigBounds.set(key, { left: c.xEdges[0]!, right: c.xEdges[c.xEdges.length - 1]!, cols: c.cols });
     }
     fragOrder.sort((a, b) => {
+      if (declared) return fragMap.get(a)![0]!.firstColumn! - fragMap.get(b)![0]!.firstColumn!;
       const ba = sigBounds.get(a)!;
       const bb = sigBounds.get(b)!;
       if (ba.left !== bb.left) return ba.left - bb.left;
@@ -4014,10 +4161,12 @@ export function assembleSheets(bands: MergeBandPage[], continuationMarkers: Map<
     });
 
     // Build fragment grids (down-merging each fragment's chunk pages).
-    const fragmentGrids: FragmentGrid[] = fragOrder.map(sig => {
+    const fragmentGrids: FragmentGrid[] = fragOrder.map((sig, fi) => {
       const r = buildFragmentGrid(fragMap.get(sig)!, continuationMarkers);
       for (const w of r.warnings) warnings.push(w);
-      return r.grid;
+      // Frozen columns drawn again at the left of a later column page are not new columns.
+      const repeated = declared && fi > 0 ? Math.min(fragMap.get(sig)![0]!.repeatedCols ?? 0, r.grid.cols - 1) : 0;
+      return repeated > 0 ? dropLeadingColumns(r.grid, repeated) : r.grid;
     });
 
     // --- R2/R4: greedily partition fragments into sheets. ---
@@ -4034,7 +4183,7 @@ export function assembleSheets(bands: MergeBandPage[], continuationMarkers: Map<
     for (let i = 1; i < fragmentGrids.length; i++) {
       const fg = fragmentGrids[i]!;
       const anchor = current.fragments[0]!;
-      const abuts = Math.abs(fg.xEdges[0]! - anchor.xEdges[anchor.xEdges.length - 1]!) < EDGE_SIG_PRECISION;
+      const abuts = declared || Math.abs(fg.xEdges[0]! - anchor.xEdges[anchor.xEdges.length - 1]!) < EDGE_SIG_PRECISION;
 
       if (abuts) {
         // Clear right band of the same sheet (R1 already grouped them) → join.
@@ -4066,6 +4215,18 @@ export function assembleSheets(bands: MergeBandPage[], continuationMarkers: Map<
 
 function firstPageOfFragment(fg: FragmentGrid): number {
   return fg.firstPage;
+}
+
+/** A fragment without its first `n` columns (the frozen columns a later column page repeats). */
+function dropLeadingColumns(fg: FragmentGrid, n: number): FragmentGrid {
+  return {
+    ...fg,
+    xEdges: fg.xEdges.slice(n),
+    cols: fg.cols - n,
+    cells: fg.cells.map(r => r.slice(n)),
+    text: fg.text.map(r => r.slice(n)),
+    merges: fg.merges.filter(m => m.col >= n).map(m => ({ ...m, col: m.col - n })),
+  };
 }
 
 /** Horizontally concatenate an ordered list of fragment grids into one sheet. */
@@ -4103,7 +4264,25 @@ function foldFragmentsRight(frags: FragmentGrid[]): {
       merged.push(row);
     }
     const nextMerges: FragmentGrid['merges'] = [...outMerges];
-    for (const m of fg.merges) nextMerges.push({ ...m, col: m.col + nColsTotal });
+    // A cell merged across the column pages was drawn in two pieces: the piece opening this
+    // fragment (declared as continuing from the left) is put back onto the cell that ends the
+    // fragments so far, instead of standing as a cell of its own.
+    const rejoined = new Set<FragmentGrid['merges'][number]>();
+    for (const row of fg.continuesLeft ?? []) {
+      const piece = fg.merges.find((m) => m.row === row && m.col === 0);
+      const width = piece?.colspan ?? 1, height = piece?.rowspan ?? 1;
+      let left = nextMerges.find((m) => m.row === row && m.col + m.colspan === nColsTotal);
+      if (!left) {
+        left = { row, col: nColsTotal - 1, rowspan: height, colspan: 1 };
+        nextMerges.push(left);
+      }
+      if (left.rowspan !== height) continue; // not the same cell after all: leave both as they are
+      left.colspan += width;
+      const anchor = merged[left.row]?.[left.col];
+      if (anchor) anchor.colspan = left.colspan;
+      if (piece) rejoined.add(piece);
+    }
+    for (const m of fg.merges) if (!rejoined.has(m)) nextMerges.push({ ...m, col: m.col + nColsTotal });
     for (let ci = 0; ci < Math.max(0, fg.xEdges.length - 1); ci++) {
       columnWidths.push(fg.xEdges[ci + 1]! - fg.xEdges[ci]!);
     }
@@ -4129,13 +4308,45 @@ function foldFragmentsRight(frags: FragmentGrid[]): {
  * app never rendered — so buildFragmentGrid safely falls back to its old conservative
  * "warn, never glue" behaviour for every PDF lacking the marker, i.e. every third-party PDF.
  */
-async function readRowspanContinuationMarkers(file: File): Promise<Map<number, Set<number>>> {
+/** The continuation markers (see above), the sheet-page declarations and the document's Producer, in one pdf-lib load. */
+/** What this app's renderer declared about a sheet page (SHEET_PAGE_KEY in client-pdf-docx.ts). */
+interface SheetPageInfo {
+  version: number;
+  repeatedRows: number;
+  firstColumn?: number;
+  repeatedCols?: number;
+  /** Column edges left to right and row edges top to bottom, in page points (PDF y, bottom-origin). */
+  x?: number[];
+  y?: number[];
+  /** Merged cells drawn on the page: [row, col, rows, cols, flags] repeated, in the page's own grid. */
+  merges?: number[];
+}
+async function readSpreadsheetProvenance(file: File): Promise<{ markers: Map<number, Set<number>>; producer: string; sheetPages: Map<number, SheetPageInfo> }> {
   const markers = new Map<number, Set<number>>();
+  const sheetPages = new Map<number, SheetPageInfo>();
+  let producer = '';
   try {
     const buf = await file.arrayBuffer();
     const pdf = await PDFDocument.load(buf, { ignoreEncryption: true, updateMetadata: false });
+    producer = pdf.getProducer() ?? '';
     const pages = pdf.getPages();
     for (let i = 0; i < pages.length; i++) {
+      // SHEET_PAGE_KEY in client-pdf-docx.ts
+      const info = pages[i]!.node.lookup(PDFName.of('OptimaSheetPage'));
+      if (info instanceof PDFDict) {
+        const whole = (key: string): number | undefined => { const e = info.lookup(PDFName.of(key)); return e instanceof PDFNumber ? Math.max(0, Math.round(e.asNumber())) : undefined; };
+        const list = (key: string): number[] | undefined => {
+          const e = info.lookup(PDFName.of(key));
+          if (!(e instanceof PDFArray)) return undefined;
+          const out: number[] = [];
+          for (let j = 0; j < e.size(); j++) { const v = e.lookup(j); if (!(v instanceof PDFNumber)) return undefined; out.push(v.asNumber()); }
+          return out;
+        };
+        const version = whole('V');
+        if (version !== undefined) {
+          sheetPages.set(i + 1, { version, repeatedRows: whole('RepeatedRows') ?? 0, firstColumn: whole('FirstColumn'), repeatedCols: whole('RepeatedColumns'), x: list('X'), y: list('Y'), merges: list('Merges') });
+        }
+      }
       const entry = pages[i]!.node.get(PDFName.of('OptimaRowspanContinues'));
       if (!(entry instanceof PDFArray)) continue;
       const cols = new Set<number>();
@@ -4148,7 +4359,48 @@ async function readRowspanContinuationMarkers(file: File): Promise<Map<number, S
   } catch {
     // Fall through with whatever was collected (typically nothing) — see docblock.
   }
-  return markers;
+  return { markers, producer, sheetPages };
+}
+
+/**
+ * Is this PDF a sheet printed by this app's own Excel → PDF renderer (renderSpreadsheetIRToPdf)?
+ * Only then does the round-trip reader below apply: it reads border LINES only, takes one table
+ * per page and stitches pages by their left edge — right for that renderer's pagination, wrong
+ * for everything else (see lib/pdf/pdfToSheet.ts for what it did to other PDFs).
+ *   - Every page the renderer writes carries its continuation marker, so one marker settles it.
+ *   - A file rendered before the marker existed has none. It is recognised by what that renderer
+ *     draws: made with pdf-lib, one table on a page, every border a zero-thickness line (anything
+ *     else in the grid is a cell background), and no text outside the table except the sheet's
+ *     name above it.
+ */
+export function isOwnSpreadsheetPdf(scaffolds: PageTableScaffold[], markers: Map<number, Set<number>>, producer: string): boolean {
+  if (markers.size > 0) return true;
+  if (!/^pdf-lib\b/i.test(producer)) return false;
+  let tables = 0;
+  for (const sc of scaffolds) {
+    if (sc.tableClusters.length === 0) continue; // a single trailing column: no grid to judge
+    if (sc.tableClusters.length !== 1) return false;
+    const cl = sc.tableClusters[0]!;
+    let lines = 0;
+    for (const r of cl.rects) {
+      if (r.width < 0.5 || r.height < 0.5) lines++;
+      else if (r.stroke || !r.fill) return false;
+    }
+    if (lines < 4) return false;
+    const left = cl.xEdges[0]! - 3, right = cl.xEdges[cl.xEdges.length - 1]! + 3;
+    const top = cl.yEdges[0]! - 3, bottom = cl.yEdges[cl.yEdges.length - 1]! + 3;
+    const outside = new Set<number>();
+    for (const r of sc.textRuns) {
+      if (r.text.trim() === '') continue;
+      const y = sc.pageHeight - r.position.y - (r.height || 0) / 2; // top-origin, like the grid
+      if (r.position.x >= left && r.position.x <= right && y >= top && y <= bottom) continue;
+      if (y > top) return false; // text beside or below the table
+      outside.add(Math.round(y / 3));
+    }
+    if (outside.size > 1) return false;
+    tables++;
+  }
+  return tables > 0;
 }
 
 // ============================================================
@@ -4161,9 +4413,20 @@ export async function mergeBandsForRoundtrip(file: File): Promise<MergeResult> {
   // table-rect clustering) — shared here as one parse instead of pdfTablesToCells and
   // extractFormattedTextFromPDF each independently re-reading and re-parsing the file.
   const scaffolds = await parsePagesForTableExtraction(file);
-  const tables = pdfTablesToCellsFromScaffolds(scaffolds);
+  const { markers, sheetPages } = await readSpreadsheetProvenance(file);
+  return roundtripSheets(scaffolds, markers, sheetPages);
+}
+
+function roundtripSheets(
+  scaffolds: PageTableScaffold[],
+  continuationMarkers: Map<number, Set<number>>,
+  sheetPages: Map<number, SheetPageInfo> = new Map(),
+): MergeResult {
+  const tables = pdfTablesToCellsFromScaffolds(scaffolds, sheetPages);
+  for (const t of tables) {
+    if ((sheetPages.get(t.page)?.version ?? 0) >= 2) for (const cl of t.clusters) cl.exactLineEnds = true;
+  }
   const layout = extractFormattedTextFromScaffolds(scaffolds);
-  const continuationMarkers = await readRowspanContinuationMarkers(file);
 
   const layoutByPage = new Map<number, IRPageIR>();
   for (const [i, pg] of layout.entries()) layoutByPage.set(i + 1, pg);
@@ -4189,7 +4452,12 @@ export async function mergeBandsForRoundtrip(file: File): Promise<MergeResult> {
       }
     }
 
-    return { page: t.page, pageHeight: t.pageHeight, sheetTitle, pageText, clusters: t.clusters };
+    const info = sheetPages.get(t.page);
+    return {
+      page: t.page, pageHeight: t.pageHeight, sheetTitle, pageText, clusters: t.clusters,
+      ...(info ? { repeatedRows: info.repeatedRows } : {}),
+      ...(info?.firstColumn !== undefined ? { firstColumn: info.firstColumn, repeatedCols: info.repeatedCols ?? 0 } : {}),
+    };
   });
 
   return assembleSheets(bands, continuationMarkers);
@@ -4209,6 +4477,11 @@ export async function mergeBandsForRoundtrip(file: File): Promise<MergeResult> {
 export interface PdfToIRSpreadsheetResult {
   spreadsheet: IRSpreadsheet;
   warnings: MergeWarning[];
+  /**
+   * How the PDF was read: 'sheet' = a sheet printed by this app's Excel → PDF (reassembled into
+   * its sheets), 'document' = any other PDF (one sheet, the pages in reading order).
+   */
+  source: 'sheet' | 'document';
 }
 
 /**
@@ -4223,7 +4496,23 @@ export interface PdfToIRSpreadsheetResult {
  * - conditionalFormattingRules: PDF carries no CF, so it is an empty array.
  */
 export async function pdfToIRSpreadsheet(file: File): Promise<PdfToIRSpreadsheetResult> {
-  const { sheets, warnings } = await mergeBandsForRoundtrip(file);
+  const scaffolds = await parsePagesForTableExtraction(file);
+  const { markers, producer, sheetPages } = await readSpreadsheetProvenance(file);
+  if (!isOwnSpreadsheetPdf(scaffolds, markers, producer)) {
+    // Any other PDF: the whole document on one sheet (lib/pdf/pdfToSheet.ts). A document without
+    // a single table yields no sheet, which the writer reports as "no table found".
+    const doc = pagesToSheet(extractFormattedTextFromScaffolds(scaffolds), irCellFromText);
+    const sheets: IRSheet[] = doc.tables === 0 ? [] : [{
+      kind: 'sheet',
+      name: 'Arkusz1',
+      cells: doc.cells,
+      columnWidths: doc.columnWidthsPt.map((pt) => ptToXlsxCharWidth(pt)),
+      mergedRanges: doc.mergedRanges,
+      conditionalFormattingRules: [] as IRConditionalFormattingRule[],
+    }];
+    return { spreadsheet: { kind: 'spreadsheet', sheets }, warnings: [], source: 'document' };
+  }
+  const { sheets, warnings } = roundtripSheets(scaffolds, markers, sheetPages);
   const mapped: IRSheet[] = sheets.map((s) => ({
     kind: 'sheet',
     name: s.name,
@@ -4232,7 +4521,7 @@ export async function pdfToIRSpreadsheet(file: File): Promise<PdfToIRSpreadsheet
     mergedRanges: s.mergedRanges,
     conditionalFormattingRules: [] as IRConditionalFormattingRule[],
   }));
-  return { spreadsheet: { kind: 'spreadsheet', sheets: mapped }, warnings };
+  return { spreadsheet: { kind: 'spreadsheet', sheets: mapped }, warnings, source: 'sheet' };
 }
 
 function escapeHtml(s: string): string {
