@@ -170,13 +170,20 @@ export function findBackgroundFill(block: TextBlock, fills: IRFillRect[] | undef
  * read "uzupełnianiekontroli" / "raportynadzór". Adds the missing space at each line change, but
  * not after a trailing hyphen (a hyphenated word wrap).
  */
-export function separateLines<T extends { text: string; fontSize: number; position: { y: number } }>(runs: T[]): T[] {
+export function separateLines<T extends { text: string; fontSize: number; position: { x?: number; y: number }; width?: number }>(runs: T[]): T[] {
   const out: T[] = [];
   for (let i = 0; i < runs.length; i++) {
     const r = runs[i]!;
     const prev = runs[i - 1];
     const newLine = prev !== undefined && Math.abs(prev.position.y - r.position.y) > 0.6 * Math.max(prev.fontSize, r.fontSize);
-    if (newLine && prev && r.text !== '' && !/\s$/.test(prev.text) && !/^\s/.test(r.text) && !/[-‐–]$/.test(prev.text)) {
+    // Two texts standing apart on ONE line (two address blocks side by side, a label and its
+    // amount at the right edge) have no space between them either — only distance: they were
+    // written as "SprzedawcaNabywca", "Razem netto:26 183,95 zł". A gap wider than the font size
+    // is such a distance (a word space is a quarter of it and is drawn as a character).
+    const apart = prev !== undefined && !newLine && prev.position.x !== undefined && r.position.x !== undefined && prev.width !== undefined
+      && r.position.x - (prev.position.x + prev.width) > SAME_LINE_GAP_EM * Math.max(prev.fontSize, r.fontSize);
+    const bare = prev !== undefined && r.text !== '' && prev.text !== '' && !/\s$/.test(prev.text) && !/^\s/.test(r.text);
+    if (bare && ((newLine && !/[-‐–]$/.test(prev.text)) || apart)) {
       out.push({ ...r, text: ' ' + r.text });
     } else {
       out.push(r);
@@ -184,6 +191,9 @@ export function separateLines<T extends { text: string; fontSize: number; positi
   }
   return out;
 }
+
+/** Runs of one line further apart than this many ems are separate texts (see separateLines). */
+export const SAME_LINE_GAP_EM = 1;
 
 /**
  * Blocks in top-to-bottom order. The IR lists tables before text (they are detected first) and

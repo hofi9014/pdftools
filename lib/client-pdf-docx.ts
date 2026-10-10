@@ -158,6 +158,8 @@ export interface IRSpreadsheetRunFormat {
   hAlign?: 'left' | 'center' | 'right';
   /** "Wrap text" is on (<alignment wrapText="1">). Text without it spills into empty cells. */
   wrap?: boolean;
+  /** Vertical alignment (written by PDF → Excel for table cells; absent = the application's default). */
+  vAlign?: 'top' | 'middle';
   /** Font size in pt from styles.xml, when it differs from the workbook's default font size. */
   fontSize?: number;
 }
@@ -173,6 +175,12 @@ export interface IRSpreadsheetCell {
   rowspan: number;
   /** True when `type` was inferred by heuristic from display text (e.g. PDF→Excel), not ground truth. */
   inferred?: boolean;
+  /**
+   * PDF → Excel only: the text read for this cell stops in the middle of a word — the rest of the
+   * word is in a cell covered by the same merge (a PDF splits the lines of a tall merged cell over
+   * the rows it spans). The writer then joins the two without a space.
+   */
+  openEnd?: boolean;
 }
 
 export interface IRSheetMergedRange {
@@ -3430,6 +3438,25 @@ export function xlsxWriteValue(cell: IRSpreadsheetCell):
  *     yield bold=false everywhere (see AGENTS FINDING) — kept for forward compat.
  *   - conditionalFormattingRules are NOT re-emitted (storage-only in IR).
  */
+/**
+ * A worksheet name Excel accepts, different from every name already used in the workbook.
+ * Excel allows at most 31 characters, none of * ? : \ / [ ], no apostrophe at either end, and no
+ * two sheets with the same name (compared without regard to case). A sheet named after a PDF's
+ * heading broke both rules: "Faktura VAT nr FV/2026/10/0173" made the writer throw, and two
+ * sheets both called "Arkusz" were written into ONE worksheet, the second over the first.
+ */
+export function xlsxSheetName(wanted: string, used: Set<string>): string {
+  const clean = wanted.replace(/[*?:\\/[\]]/g, ' ').replace(/\s+/g, ' ').trim().replace(/^'+|'+$/g, '').trim();
+  const base = (clean === '' ? 'Arkusz' : clean).slice(0, 31).trim();
+  let name = base;
+  for (let n = 2; used.has(name.toLowerCase()); n++) {
+    const suffix = ` (${n})`;
+    name = base.slice(0, 31 - suffix.length).trim() + suffix;
+  }
+  used.add(name.toLowerCase());
+  return name;
+}
+
 export async function renderIRSpreadsheetToXlsx(ir: IRSpreadsheet): Promise<Blob> {
   // A workbook with zero worksheets has no <sheets> element at all in xl/workbook.xml — it is not
   // a valid OOXML spreadsheet (the spec requires at least one sheet), and real Excel refuses to
@@ -3447,9 +3474,9 @@ export async function renderIRSpreadsheetToXlsx(ir: IRSpreadsheet): Promise<Blob
   wb.created = new Date();
   wb.modified = new Date();
 
+  const usedNames = new Set<string>();
   for (const sheet of ir.sheets) {
-    let ws = wb.getWorksheet(sheet.name);
-    if (!ws) ws = wb.addWorksheet(sheet.name);
+    const ws = wb.addWorksheet(xlsxSheetName(sheet.name, usedNames));
 
     const nCols = sheet.cells[0]?.length ?? 0;
     const rows = sheet.cells.length;
@@ -3470,15 +3497,19 @@ export async function renderIRSpreadsheetToXlsx(ir: IRSpreadsheet): Promise<Blob
     for (const rg of sheet.mergedRanges) {
       const anchor = sheet.cells[rg.row]?.[rg.col];
       if (!anchor || anchor.display === '') continue;
-      const parts: string[] = [];
+      let more = '';
+      let open = anchor.openEnd === true; // the text so far stops inside a word
       for (let dr = 0; dr < rg.rowspan; dr++) {
         for (let dc = 0; dc < rg.colspan; dc++) {
           if (dr === 0 && dc === 0) continue;
-          const text = (sheet.cells[rg.row + dr]?.[rg.col + dc]?.display ?? '').replace(/\s+/g, ' ').trim();
-          if (text !== '') parts.push(text);
+          const covered = sheet.cells[rg.row + dr]?.[rg.col + dc];
+          const text = (covered?.display ?? '').replace(/\s+/g, ' ').trim();
+          if (text === '') continue;
+          more += (open ? '' : ' ') + text;
+          open = covered?.openEnd === true;
         }
       }
-      if (parts.length > 0) continuation.set(rg.row + ':' + rg.col, parts.join(' '));
+      if (more !== '') continuation.set(rg.row + ':' + rg.col, more);
     }
 
     for (let r = 0; r < rows; r++) {
@@ -3490,13 +3521,23 @@ export async function renderIRSpreadsheetToXlsx(ir: IRSpreadsheet): Promise<Blob
         const ex = ws.getCell(r + 1, c + 1);
         const { value } = xlsxWriteValue(cell);
         const more = continuation.get(r + ':' + c);
-        ex.value = more !== undefined ? (cell.display.replace(/\s+/g, ' ').trim() + ' ' + more) : value;
+        ex.value = more !== undefined ? (cell.display.replace(/\s+/g, ' ').trim() + more) : value;
         if (cell.fmt && (cell.fmt.bold !== undefined || cell.fmt.italic !== undefined
           || cell.fmt.colorHex || cell.fmt.fillHex)) {
           ex.font = {
             bold: cell.fmt.bold,
             italic: cell.fmt.italic,
             color: cell.fmt.colorHex ? { argb: 'FF' + cell.fmt.colorHex } : undefined,
+          };
+        }
+        if (cell.fmt?.fillHex && /^[0-9a-f]{6}$/i.test(cell.fmt.fillHex)) {
+          ex.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF' + cell.fmt.fillHex.toUpperCase() } };
+        }
+        if (cell.fmt?.wrap || cell.fmt?.hAlign || cell.fmt?.vAlign) {
+          ex.alignment = {
+            ...(cell.fmt.wrap ? { wrapText: true } : {}),
+            ...(cell.fmt.hAlign ? { horizontal: cell.fmt.hAlign } : {}),
+            ...(cell.fmt.vAlign ? { vertical: cell.fmt.vAlign } : {}),
           };
         }
       }
@@ -3947,7 +3988,9 @@ export function spreadsheetWrapText(
   if (text === '' || maxWidthPt <= 0) return [text || ''];
   const lines: string[] = [];
   const paras = text.replace(/\s+$/, '').split(/\r?\n/);
+  const paraEnds = new Set<number>(); // index of the last line of each typed paragraph
   for (const para of paras) {
+    if (lines.length > 0) paraEnds.add(lines.length - 1);
     let cur = '';
     let curW = 0;
     for (const word of para.split(/(?<=\s)/)) {
@@ -3961,6 +4004,14 @@ export function spreadsheetWrapText(
       }
     }
     lines.push(cur);
+  }
+  // A line that ends a word ends with white space (the word's own trailing space; here, the line
+  // before a typed line break); a line with none was cut INSIDE a word. PDF → Excel reads the
+  // lines of a cell back by this (SHEET_PAGE_KEY, version 2): "rozpoczęci" + "a pracy" is
+  // "rozpoczęcia pracy", not "rozpoczęci a pracy".
+  for (let i = 0; i < lines.length - 1; i++) if (!/\s$/.test(lines[i]!)) {
+    const cutInsideWord = paras.length === 1 || !paraEnds.has(i);
+    if (!cutInsideWord) lines[i] += ' ';
   }
   return lines.length > 0 ? lines : [''];
 }
@@ -4175,6 +4226,30 @@ function findCarryOverCells(sheet: IRSheet, chunkStart: number): Array<{ row: nu
  * every third-party PDF, and any page this renderer didn't itself split). A PDF viewer or any
  * other tool simply ignores an unrecognized page-dict entry. */
 const ROWSPAN_CONTINUES_KEY = 'OptimaRowspanContinues';
+/**
+ * Page-dict entry on every page of a rendered sheet: how the page maps onto the sheet. Structure
+ * only — never a cell's content — so editing or redacting the PDF cannot leave anything behind
+ * in it. PDF → Excel reads it instead of guessing from what the page looks like:
+ *   /V 2               the lines of a cell follow the white-space rule of spreadsheetWrapText, so
+ *                      a line cut inside a word can be told from one that ends a word;
+ *   /X [..] /Y [..]    the edges of the columns (left to right) and rows (top to bottom) drawn on
+ *                      the page, in page points. A row boundary that no line marks (every cell of
+ *                      the page merged across it) is not visible, and neither is a grid of one
+ *                      column: the last column of a sheet, alone on its pages, was dropped whole;
+ *   /RepeatedRows n    rows at the top of the page that repeat the frozen header (0 on the first
+ *                      row page). Guessed from equal row TEXTS before, which also drops real rows
+ *                      where a page starts with rows as empty as the header's;
+ *   /FirstColumn c, /RepeatedColumns g
+ *                      the sheet column the page's own columns start at, and how many frozen
+ *                      columns are drawn again before them. Every column page starts at the left
+ *                      margin, so geometry cannot tell the second column page of a wide sheet
+ *                      from more rows of the first: its columns were appended as rows UNDER it;
+ *   /Merges [r c rows cols flags ...]
+ *                      every merged cell (or piece of one) drawn on the page, by its place in the
+ *                      page's grid; flags: 1 = the piece continues a cell from the page before
+ *                      (rows above), 2 = from the column page before (columns to the left).
+ */
+const SHEET_PAGE_KEY = 'OptimaSheetPage';
 
 export async function renderSpreadsheetIRToPdf(
   spreadsheet: IRSpreadsheet,
@@ -4260,6 +4335,7 @@ export async function renderSpreadsheetIRToPdf(
     for (const e of headerColsX) headerXOf.set(e.c, MARGIN + e.x);
 
     let firstPageOfSheet = true;
+    const nRowsNow = (): number => sheet.cells.length; // after tall rows were split
 
     for (let fi = 0; fi < fragments.length; fi++) {
       // Safe: fi/ci are bound by fragments.length/chunks.length respectively.
@@ -4273,12 +4349,34 @@ export async function renderSpreadsheetIRToPdf(
       // genuinely different physical page showing a different horizontal slice, never a text
       // continuation), but must persist across this fragment's own chunk pages.
       const linesDrawn = new Map<string, number>();
+      // Cells that start on an earlier column page and reach into this one. The per-row loops
+      // below only look up cells that START in this fragment's columns, so the rest of such a
+      // merge was not drawn at all on the later column page: a hole in the grid. Its box is drawn
+      // here too (the text stays on the page holding its first column).
+      const leftCarry = new Map<number, Array<{ col: number; cell: IRSpreadsheetCell }>>();
+      for (let r = 0; r < nRowsNow(); r++) {
+        const row = sheet.cells[r];
+        if (!row) continue;
+        for (let c = G; c < Math.min(frag.start, row.length); c++) {
+          const cell = row[c];
+          if (cell && c + Math.max(cell.colspan || 1, 1) > frag.start) (leftCarry.get(r) ?? leftCarry.set(r, []).get(r)!).push({ col: c, cell });
+        }
+      }
 
       for (let ci = 0; ci < chunks.length; ci++) {
         const ch = chunks[ci]!;
         const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
         let y = PAGE_H - MARGIN;
         const confirmedCarryCols = new Set<number>();
+        // Merged cells drawn on this page, for SHEET_PAGE_KEY: [row, col, rows, cols, flags]*.
+        const pageMerges: number[] = [];
+        const noteMerge = (row: number, c: number, clip: ClippedCellSpan, headerRows: boolean): void => {
+          const pr = headerRows ? clip.rowStart : H + clip.rowStart - ch.start;
+          const pc = clip.colStart < G ? clip.colStart : G + clip.colStart - frag.start;
+          const rs = clip.rowEnd - clip.rowStart, cs = clip.colEnd - clip.colStart;
+          const flags = (clip.rowStart > row ? 1 : 0) | (clip.colStart > c ? 2 : 0);
+          if (rs > 1 || cs > 1 || flags !== 0) pageMerges.push(pr, pc, rs, cs, flags);
+        };
 
         if (firstPageOfSheet) {
           // Baseline a quarter of the title size above the table top, so descenders clear it.
@@ -4300,6 +4398,7 @@ export async function renderSpreadsheetIRToPdf(
           const rs = Math.max(cell.rowspan || 1, 1);
           const clip = clipCellToBand(row, c, cs, rs, colBandStart, colBandEnd, rowStart, rowEnd);
           if (!clip.visible) return;
+          noteMerge(row, c, clip, true);
           // A merge continuing from an earlier column page shows only its box here; its text is
           // on the page holding its first column (sized for that part, see spreadsheetRowHeightsPt).
           if (clip.colStart > c) cell = { ...cell, display: '' };
@@ -4325,6 +4424,7 @@ export async function renderSpreadsheetIRToPdf(
           const rs = Math.max(cell.rowspan || 1, 1);
           const clip = clipCellToBand(row, c, cs, rs, colBandStart, colBandEnd, rowStart, rowEnd);
           if (!clip.visible) return;
+          noteMerge(row, c, clip, false);
           // A merge continuing from an earlier column page shows only its box here; its text is
           // on the page holding its first column (sized for that part, see spreadsheetRowHeightsPt).
           if (clip.colStart > c) cell = { ...cell, display: '' };
@@ -4357,6 +4457,7 @@ export async function renderSpreadsheetIRToPdf(
         // Frozen header rows [0,H) — full fragment horizontal extent.
         for (let r = 0; r < H; r++) {
           for (const e of headerColsX) drawClipped(r, e.c, 0, G, 0, H);
+          for (const lc of leftCarry.get(r) ?? []) drawClipped(r, lc.col, frag.start, frag.end, 0, H);
           for (const e of bodyColsX) drawClipped(r, e.c, frag.start, frag.end, 0, H);
           y -= rowHt[r] ?? 0;
         }
@@ -4368,7 +4469,8 @@ export async function renderSpreadsheetIRToPdf(
         // coincidentally-adjacent cells.
         for (const co of carryPerChunk[ci]!) {
           const inHeaderCols = co.col < G;
-          const inBodyCols = co.col >= frag.start && co.col < frag.end;
+          // in this fragment's columns, or reaching into them from an earlier column page
+          const inBodyCols = co.col < frag.end && co.col + Math.max(co.cell.colspan || 1, 1) > frag.start && co.col >= G;
           if (!inHeaderCols && !inBodyCols) continue;
           const colBandStart = inHeaderCols ? 0 : frag.start;
           const colBandEnd = inHeaderCols ? G : frag.end;
@@ -4378,6 +4480,7 @@ export async function renderSpreadsheetIRToPdf(
         // Body rows [ch.start, ch.end) — full fragment horizontal extent.
         for (let r = ch.start; r < ch.end; r++) {
           for (const e of headerColsX) drawBodyClipped(r, e.c, 0, G, ch.start, ch.end);
+          for (const lc of leftCarry.get(r) ?? []) drawBodyCell(r, lc.col, lc.cell, frag.start, frag.end, ch.start, ch.end);
           for (const e of bodyColsX) drawBodyClipped(r, e.c, frag.start, frag.end, ch.start, ch.end);
           y -= rowHt[r] ?? 0;
         }
@@ -4385,6 +4488,16 @@ export async function renderSpreadsheetIRToPdf(
         // reader can also tell that a merge starting at the top of this page is NOT the rest of
         // the one ending the previous page (rows are kept together, so that is the common case).
         page.node.set(PDFName.of(ROWSPAN_CONTINUES_KEY), pdfDoc.context.obj([...confirmedCarryCols]));
+        const round2 = (v: number): number => Math.round(v * 100) / 100;
+        const gridX = [...headerColsX.map((e) => MARGIN + e.x), ...bodyColsX.map((e) => bodyLeft + e.x)];
+        gridX.push((gridX[gridX.length - 1] ?? MARGIN) + (colPt[bodyColsX.length > 0 ? bodyColsX[bodyColsX.length - 1]!.c : G - 1] ?? 0));
+        const gridY = [PAGE_H - MARGIN - TITLE_PT];
+        for (let r = 0; r < H; r++) gridY.push(gridY[gridY.length - 1]! - (rowHt[r] ?? 0));
+        for (let r = ch.start; r < ch.end; r++) gridY.push(gridY[gridY.length - 1]! - (rowHt[r] ?? 0));
+        page.node.set(PDFName.of(SHEET_PAGE_KEY), pdfDoc.context.obj({
+          V: 2, RepeatedRows: ci > 0 ? H : 0, FirstColumn: frag.start, RepeatedColumns: G,
+          X: gridX.map(round2), Y: gridY.map(round2), Merges: pageMerges,
+        }));
         firstPageOfSheet = false;
       }
     }

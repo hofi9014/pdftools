@@ -56,8 +56,22 @@ check(parseCallCount === 1, `mergeBandsForRoundtrip calls parsePagesForTableExtr
 check(!/\bpdfTablesToCells\(/.test(fnBody), 'mergeBandsForRoundtrip no longer calls the file-based pdfTablesToCells(file) — the old duplicate-parse pattern');
 check(!/\bextractFormattedTextFromPDF\(/.test(fnBody), 'mergeBandsForRoundtrip no longer calls the file-based extractFormattedTextFromPDF(file) — the old duplicate-parse pattern');
 
-check(fnBody.includes('pdfTablesToCellsFromScaffolds(scaffolds)'), 'mergeBandsForRoundtrip derives tables from the shared scaffolds, not a fresh parse');
-check(fnBody.includes('extractFormattedTextFromScaffolds(scaffolds)'), 'mergeBandsForRoundtrip derives layout from the shared scaffolds, not a fresh parse');
+// The assembly itself moved into roundtripSheets(scaffolds, …) when pdfToIRSpreadsheet started to
+// choose between this reader and the document reader: the scaffolds are parsed by the caller and
+// handed down, never parsed again.
+check(/roundtripSheets\(scaffolds,/.test(fnBody), 'mergeBandsForRoundtrip hands its scaffolds to roundtripSheets');
+const rtStart = src.indexOf('function roundtripSheets(');
+check(rtStart !== -1, 'sanity: found roundtripSheets');
+const rtBody = extractBalanced(src, src.indexOf(': MergeResult {', rtStart) + ': MergeResult '.length);
+check(rtBody.includes('pdfTablesToCellsFromScaffolds(scaffolds,'), 'roundtripSheets derives tables from the shared scaffolds, not a fresh parse');
+check(rtBody.includes('extractFormattedTextFromScaffolds(scaffolds)'), 'roundtripSheets derives layout from the shared scaffolds, not a fresh parse');
+check(!/parsePagesForTableExtraction\(/.test(rtBody), 'roundtripSheets does not parse the file itself');
+
+// The page's entry point: one parse, whichever reader it then uses.
+const entryStart = src.indexOf('export async function pdfToIRSpreadsheet');
+const entryBody = extractBalanced(src, src.indexOf('{', src.indexOf('Promise<PdfToIRSpreadsheetResult>', entryStart)));
+check((entryBody.match(/parsePagesForTableExtraction\(/g) || []).length === 1, 'pdfToIRSpreadsheet parses the file exactly once');
+check(!/mergeBandsForRoundtrip\(|extractFormattedTextFromPDF\(|pdfTablesToCells\(/.test(entryBody), 'and calls no file-based reader that would parse it again');
 
 // The two public, file-based entry points must still exist and still do their own full parse
 // (for their other several callers) — this refactor must not have removed them.
