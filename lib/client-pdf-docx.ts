@@ -160,6 +160,11 @@ export interface IRSpreadsheetRunFormat {
   wrap?: boolean;
   /** Vertical alignment (written by PDF → Excel for table cells; absent = the application's default). */
   vAlign?: 'top' | 'middle';
+  /**
+   * PDF → Excel only: the number format a cell read as a number is written with ("#,##0.00"), so
+   * that the spreadsheet shows it as the PDF did ("1 307,49") while it holds a real number.
+   */
+  numFmt?: string;
   /** Font size in pt from styles.xml, when it differs from the workbook's default font size. */
   fontSize?: number;
 }
@@ -3521,7 +3526,12 @@ export async function renderIRSpreadsheetToXlsx(ir: IRSpreadsheet): Promise<Blob
         const ex = ws.getCell(r + 1, c + 1);
         const { value } = xlsxWriteValue(cell);
         const more = continuation.get(r + ':' + c);
-        ex.value = more !== undefined ? (cell.display.replace(/\s+/g, ' ').trim() + more) : value;
+        // A number read from text like "1 307,49" is written as a number WITH its format: the
+        // display then comes from the format, so the "same text" rule of xlsxWriteValue is met
+        // by construction.
+        const formatted = more === undefined && cell.type === 'number' && typeof cell.raw === 'number' && isFinite(cell.raw) && !!cell.fmt?.numFmt;
+        ex.value = more !== undefined ? (cell.display.replace(/\s+/g, ' ').trim() + more) : formatted ? (cell.raw as number) : value;
+        if (formatted) ex.numFmt = cell.fmt!.numFmt!;
         if (cell.fmt && (cell.fmt.bold !== undefined || cell.fmt.italic !== undefined
           || cell.fmt.colorHex || cell.fmt.fillHex)) {
           ex.font = {

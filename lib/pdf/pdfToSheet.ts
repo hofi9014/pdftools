@@ -20,7 +20,8 @@
 //     so a totals block under a table lines up with the table's columns;
 //   - pages follow each other without a gap, so a table that runs over several pages stays one
 //     block of rows (a header the source repeats on every page is repeated here too — nothing is
-//     guessed away).
+//     guessed away);
+//   - an amount written like "1 307,49" is a number with a number format (parseAmount).
 // Pure: no PDF, no DOM — testable on hand-built blocks.
 import type {
   IRBlock, IRPageIR, IRSheetMergedRange, IRSpreadsheetCell, IRSpreadsheetRunFormat, IRTableBlock, IRTextRun,
@@ -50,6 +51,34 @@ const DEFAULT_COLUMN_PT = 48;
 const SHEET_FONT_PT = 11;
 
 export interface LineSegment { text: string; x0: number; x1: number; bold: boolean; italic: boolean }
+
+/**
+ * An amount written the way documents write it — "1 307,49", "10,75", "-150,00", "1.307,49",
+ * "1,307.49" — as the number it is, with the format that shows it the same way again. Left as
+ * text, a column of prices cannot be summed.
+ *
+ * Only spellings that can mean ONE number are read. "1,234" (1.234 or 1234?) and "1 234" (a
+ * number, or two) stay text, and so does anything with a unit or a sign other than a minus
+ * ("23%", "26 183,95 zł", "+5,00"): changing a value silently is worse than leaving it as text.
+ */
+export function parseAmount(text: string): { value: number; numFmt: string } | null {
+  const t = text.trim().replace(/\u2212/g, '-');
+  const make = (sign: string, whole: string, decimals: string, grouped: boolean): { value: number; numFmt: string } | null => {
+    if (whole.length + decimals.length > 15) return null; // beyond what a number holds exactly
+    const value = Number(`${sign}${whole}.${decimals}`);
+    return Number.isFinite(value) ? { value, numFmt: `${grouped ? '#,##0' : '0'}.${'0'.repeat(decimals.length)}` } : null;
+  };
+  let m: RegExpExecArray | null;
+  // 1 307,49 — thousands apart by a (no-break, narrow) space, decimal comma
+  if ((m = /^(-?)([1-9]\d{0,2}(?:[ \u00a0\u202f]\d{3})+),(\d+)$/.exec(t))) return make(m[1]!, m[2]!.replace(/[ \u00a0\u202f]/g, ''), m[3]!, true);
+  // 1.307,49 — thousands by a dot, decimal comma
+  if ((m = /^(-?)([1-9]\d{0,2}(?:\.\d{3})+),(\d+)$/.exec(t))) return make(m[1]!, m[2]!.replace(/\./g, ''), m[3]!, true);
+  // 1,307.49 — thousands by a comma, decimal point
+  if ((m = /^(-?)([1-9]\d{0,2}(?:,\d{3})+)\.(\d+)$/.exec(t))) return make(m[1]!, m[2]!.replace(/,/g, ''), m[3]!, true);
+  // 10,75 — a comma followed by anything but exactly three digits can only be a decimal comma
+  if ((m = /^(-?)(0|[1-9]\d*),(\d+)$/.exec(t)) && m[3]!.length !== 3) return make(m[1]!, m[2]!, m[3]!, false);
+  return null;
+}
 
 const blank = (t: string): boolean => t.trim() === '';
 const tidy = (t: string): string => t.replace(/\s+/g, ' ').trim();
@@ -166,6 +195,20 @@ export function pagesToSheet(pages: IRPageIR[], makeCell: MakeSheetCell): Docume
   const styled = (text: string, style: { bold: boolean; italic: boolean }, extra?: Partial<IRSpreadsheetRunFormat>): IRSpreadsheetCell => {
     const cell = makeCell(text, style);
     if (extra && Object.keys(extra).length > 0) cell.fmt = { ...(cell.fmt ?? {}), ...extra };
+    // "1.234" is 1.234 in one country and 1234 in the next: the general rule reads it as a
+    // decimal, which a document from the other country would silently get wrong. Left as text.
+    if (cell.type === 'number' && /^-?\d{1,3}\.\d{3}$/.test(text.trim())) {
+      cell.type = 'string';
+      cell.raw = cell.display;
+      delete cell.inferred;
+    }
+    const amount = cell.type === 'string' ? parseAmount(text) : null;
+    if (amount) {
+      cell.type = 'number';
+      cell.raw = amount.value;
+      cell.inferred = true;
+      cell.fmt = { ...(cell.fmt ?? {}), numFmt: amount.numFmt };
+    }
     return cell;
   };
 

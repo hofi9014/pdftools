@@ -166,6 +166,10 @@ console.log('\n=== PDF → Excel (an invoice printed from a browser) ===');
   const rc = recall(await sourceText(new Uint8Array(invoice)), values.join(' '));
   check(rc === 1, `${(rc * 100).toFixed(1)}% of the invoice's words are in the cells (title, both parties, 34 items, totals, note)`);
   check(sst.includes(`${invoiceItems[2]!.marker} ${invoiceItems[2]!.name}`), 'a product name wrapped over three lines is one cell');
+  // "10,75" and "1 307,49" are numbers a spreadsheet can add up, not text that looks like them.
+  const numeric = new Set(values.filter((v) => /^-?\d+(\.\d+)?$/.test(v)).map(Number));
+  const amounts = invoiceItems.flatMap((it) => [Number(it.price.toFixed(2)), Number(it.gross.toFixed(2))]);
+  check(amounts.every((a) => numeric.has(a)) && !sst.some((t) => /^\d[\d ]*,\d{2}$/.test(t)), `all ${amounts.length} prices and values of the items are stored as numbers`);
 
   const office = findOffice();
   if (!office) {
@@ -197,13 +201,23 @@ console.log('\n=== PDF → Excel (an invoice printed from a browser) ===');
     };
     const table = rows.map(fields);
     check(table.length === 48 && table.every((f) => f.length === 8), `${office.name} opens it as 48 rows of 8 columns (${table.length} rows)`);
+    // Amounts are numbers in the workbook; the application shows them in ITS settings ("1 307,49"
+    // with a no-break space, or "1,307.49"), so they are compared as numbers.
+    const amount = (t: string | undefined): number => {
+      const c = (t ?? '').replace(/[\s\u00a0\u202f]/g, '');
+      const dec = Math.max(c.lastIndexOf(','), c.lastIndexOf('.'));
+      return dec < 0 ? Number(c) : Number(c.slice(0, dec).replace(/[.,]/g, '') + '.' + c.slice(dec + 1));
+    };
     let wrong = 0;
     for (const it of invoiceItems) {
       const row = table.find((f) => f[1]?.startsWith(it.marker + ' '));
-      const want = [String(it.lp), `${it.marker} ${it.name}`, String(it.qty), 'szt.', fmtMoney(it.price), '23%', fmtMoney(it.gross)];
-      if (!row || [0, 1, 3, 4, 5, 6, 7].map((i) => row[i]).join('|') !== want.join('|')) wrong++;
+      const want = [String(it.lp), `${it.marker} ${it.name}`, String(it.qty), 'szt.', '23%'];
+      if (!row || [0, 1, 3, 4, 6].map((i) => row[i]).join('|') !== want.join('|')
+        || amount(row[5]) !== Number(it.price.toFixed(2)) || amount(row[7]) !== Number(it.gross.toFixed(2))) wrong++;
     }
     check(wrong === 0, `and reads all 34 items with every value in its column (${wrong} wrong)`);
+    const first = table.find((f) => f[1]?.startsWith(invoiceItems[0]!.marker + ' '));
+    check(/^\d+[.,]\d{2}$/.test(first?.[5] ?? ''), `amounts keep their two decimals on screen (${first?.[5]})`);
     const net = table.find((f) => f.includes('Razem netto:'));
     check(net?.[7] === `${fmtMoney(invoiceTotals.net)} zł`, `the total stands under the value column (${net?.join('|')})`);
     check(table.some((f) => f[0] === 'Sprzedawca' && f.includes('Nabywca')), 'seller and buyer are two cells of one row');

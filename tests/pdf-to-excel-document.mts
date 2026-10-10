@@ -25,7 +25,7 @@ import { DOMParser } from '@xmldom/xmldom';
 (globalThis as Record<string, unknown>).DOMParser = DOMParser;
 import { pdfToIRSpreadsheet, pdfjsDocOptions, buildTableClusters, extractFormattedTextFromPDF, irCellFromText, type RawRect } from '../lib/client-pdf.ts';
 import { renderIRSpreadsheetToXlsx, xlsxSheetName, type IRPageIR, type IRSheet, type IRSpreadsheet, type IRTextRun, type IRTableBlock } from '../lib/client-pdf-docx.ts';
-import { pagesToSheet, lineSegments, runsToLines, columnAt } from '../lib/pdf/pdfToSheet.ts';
+import { pagesToSheet, lineSegments, runsToLines, columnAt, parseAmount } from '../lib/pdf/pdfToSheet.ts';
 import { invoiceItems, invoiceTotals, fmtMoney } from '../e2e/fixtures/make-invoice-pdf.mts';
 
 let fails = 0;
@@ -36,10 +36,24 @@ function check(cond: boolean, msg: string): void {
 const pdfFile = (rel: string): File => Object.assign(new Blob([new Uint8Array(readFileSync(join(ROOT, rel)))]), { name: 'x.pdf' }) as unknown as File;
 const unesc = (s: string) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
 
-interface ReadSheet { name: string; cells: Map<string, string>; merges: string[]; rows: number; dimension: string }
-/** The workbook as its XML says, without the library that wrote it. */
+interface ReadSheet { name: string; cells: Map<string, string>; numbers: Map<string, number>; merges: string[]; rows: number; dimension: string }
+/** A number as a spreadsheet shows it under a format like "0.00" or "#,##0.00" (Polish settings). */
+function shown(value: number, format: string | undefined): string {
+  const m = /^(#,##0|0)\.(0+)$/.exec(format ?? '');
+  if (!m) return String(value);
+  const [whole, decimals] = Math.abs(value).toFixed(m[2]!.length).split('.') as [string, string];
+  return `${value < 0 ? '-' : ''}${m[1] === '0' ? whole : whole.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')},${decimals}`;
+}
+/**
+ * The workbook as its XML says, without the library that wrote it. `cells` holds what a user
+ * sees in each cell (a number under its format), `numbers` the cells that hold a real number.
+ */
 async function readWorkbook(blob: Blob): Promise<ReadSheet[]> {
   const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+  const stylesXml = (await zip.file('xl/styles.xml')?.async('string')) ?? '';
+  const formatCode = new Map<number, string>([[1, '0'], [2, '0.00'], [3, '#,##0'], [4, '#,##0.00']]);
+  for (const m of stylesXml.matchAll(/<numFmt numFmtId="(\d+)" formatCode="([^"]*)"/g)) formatCode.set(Number(m[1]), unesc(m[2]!));
+  const xfFormat = [...(/<cellXfs[^>]*>([\s\S]*?)<\/cellXfs>/.exec(stylesXml)?.[1] ?? '').matchAll(/<xf [^>]*?numFmtId="(\d+)"/g)].map((m) => formatCode.get(Number(m[1])));
   const ss = ((await zip.file('xl/sharedStrings.xml')?.async('string')) ?? '').match(/<si>[\s\S]*?<\/si>/g) ?? [];
   const strings = ss.map((si) => unesc(si.replace(/<[^>]+>/g, '')));
   const names = [...((await zip.file('xl/workbook.xml')!.async('string')).matchAll(/<sheet [^>]*name="([^"]*)"/g))].map((m) => unesc(m[1]!));
@@ -48,12 +62,16 @@ async function readWorkbook(blob: Blob): Promise<ReadSheet[]> {
   for (const [i, f] of files.entries()) {
     const xml = await zip.file(f)!.async('string');
     const cells = new Map<string, string>();
+    const numbers = new Map<string, number>();
     for (const m of xml.matchAll(/<c r="([A-Z]+\d+)"([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
       const v = /<v>([\s\S]*?)<\/v>/.exec(m[3] ?? '')?.[1];
-      if (v !== undefined) cells.set(m[1]!, /t="s"/.test(m[2] ?? '') ? strings[Number(v)] ?? '' : unesc(v));
+      if (v === undefined) continue;
+      if (/t="s"/.test(m[2] ?? '')) { cells.set(m[1]!, strings[Number(v)] ?? ''); continue; }
+      numbers.set(m[1]!, Number(v));
+      cells.set(m[1]!, shown(Number(v), xfFormat[Number(/ s="(\d+)"/.exec(m[2] ?? '')?.[1] ?? -1)]));
     }
     out.push({
-      name: names[i] ?? '', cells,
+      name: names[i] ?? '', cells, numbers,
       merges: [...xml.matchAll(/<mergeCell ref="([^"]+)"/g)].map((m) => m[1]!),
       rows: (xml.match(/<row /g) ?? []).length,
       dimension: /<dimension ref="([^"]+)"/.exec(xml)?.[1] ?? '',
@@ -152,6 +170,25 @@ console.log('\n=== lines, parts and columns (hand-built) ===');
   check(sheet.cells[1]![0]!.fmt?.fillHex === 'DDE3EA' && sheet.cells[2]![2]!.fmt?.hAlign === 'right' && sheet.cells[2]![1]!.fmt?.vAlign === 'middle', 'background, right-aligned amounts and the middle of a merged cell are kept');
   check(at(4, 1) === 'Razem:' && at(4, 2) === '50,90', 'a totals line under the table lands in the table\'s columns');
   check(at(5, 0) === '• uwaga', 'a list item keeps its marker');
+  const amountsPage = { width: 400, height: 842, blocks: [table, { kind: 'paragraph', bounds: { x: 50, y: 600, width: 300, height: 10 }, runs: [run('1.234', 50, 600, 25), run('12.5', 152, 600, 20), run('7', 252, 600, 6)] }] } as unknown as IRPageIR;
+  const amountsRow = pagesToSheet([amountsPage], irCellFromText).cells[3]!;
+  check(amountsRow[0]?.type === 'string' && amountsRow[1]?.type === 'number' && amountsRow[2]?.type === 'number' && sheet.cells[2]![2]!.raw === 10.75 && sheet.cells[2]![2]!.fmt?.numFmt === '0.00',
+    `"1.234" (1.234 or 1234?) stays text, "12.5" and "7" are numbers, "10,75" is 10.75 with the format 0.00 (${amountsRow.map((c) => c?.type).join(', ')}; ${sheet.cells[2]![2]!.raw})`);
+}
+
+console.log('\n=== amounts: only spellings that can mean one number ===');
+{
+  const read = (t: string): string => { const a = parseAmount(t); return a ? `${a.value} ${a.numFmt}` : 'text'; };
+  const cases: Array<[string, string]> = [
+    ['10,75', '10.75 0.00'], ['0,5', '0.5 0.0'], ['-150,00', '-150 0.00'], ['\u2212150,00', '-150 0.00'],
+    ['1 307,49', '1307.49 #,##0.00'], ['26\u00a0183,95', '26183.95 #,##0.00'], ['1 234 567,8', '1234567.8 #,##0.0'],
+    ['1.307,49', '1307.49 #,##0.00'], ['1,307.49', '1307.49 #,##0.00'], ['12,3456', '12.3456 0.0000'],
+  ];
+  const wrong = cases.filter(([t, want]) => read(t) !== want).map(([t]) => `${t} → ${read(t)}`);
+  check(wrong.length === 0, `"10,75", "1 307,49", "1.307,49", "1,307.49", "−150,00"… are read as numbers with a matching format (${wrong.join('; ') || 'all ' + cases.length})`);
+  const mustStayText = ['1,234', '12,345', '1 234', '80 831', '26 183,95 zł', '23%', '+5,00', '07,50', '1,2,3', '583-000-11-22', '12.03.2026', '8:30', '1 23,45', '1234 567,89', '12345678901234,56', 'ok. 10,5', ''];
+  const taken = mustStayText.filter((t) => parseAmount(t) !== null);
+  check(taken.length === 0, `"1,234" (1.234 or 1234?), "1 234", a postal code, an amount with a unit, a percentage, a date… stay text (${taken.join('; ') || 'all ' + mustStayText.length})`);
 }
 
 console.log('\n=== an invoice printed from a browser (chrome-invoice.pdf) ===');
@@ -172,16 +209,24 @@ console.log('\n=== an invoice printed from a browser (chrome-invoice.pdf) ===');
     const want = [String(it.lp), `${it.marker} ${it.name}`, String(it.qty), 'szt.', fmtMoney(it.price), '23%', fmtMoney(it.gross)].join('|');
     if (got !== want) { wrong++; if (bad.length < 2) bad.push(`${got} ≠ ${want}`); }
   }
-  check(wrong === 0, `all 34 items: number, the whole wrapped name in one cell, quantity, unit, price, VAT, value — each in its column (${wrong} wrong ${bad.join(' ; ')})`);
+  check(wrong === 0, `all 34 items: number, the whole wrapped name in one cell, quantity, unit, price, VAT, value — each in its column, shown as in the PDF (${wrong} wrong ${bad.join(' ; ')})`);
+  // Amounts are numbers, not text that looks like one: a column of them can be summed.
+  const itemRows = invoiceItems.map((it) => ({ it, r: rowOf((ref, v) => ref.startsWith('B') && v.startsWith(it.marker + ' ')) }));
+  const asNumbers = itemRows.filter(({ it, r }) => s.numbers.get(`F${r}`) === Number(it.price.toFixed(2)) && s.numbers.get(`H${r}`) === Number(it.gross.toFixed(2))).length;
+  check(asNumbers === 34, `the price and the value of all 34 items are numbers ("10,75" → 10.75, "1 307,49" → 1307.49): ${asNumbers} of 34 (text before: 0)`);
+  const sumH = itemRows.reduce((sum, { r }) => sum + (s.numbers.get(`H${r}`) ?? NaN), 0);
+  check(Math.abs(sumH - invoiceItems.reduce((sum, it) => sum + Number(it.gross.toFixed(2)), 0)) < 1e-6, `the value column adds up (${sumH.toFixed(2)})`);
   const catRows = invoiceItems.filter((it) => it.category).map((it) => ({ it, r: rowOf((ref, v) => ref.startsWith('B') && v.startsWith(it.marker + ' ')) }));
   check(catRows.length === 4 && catRows.every(({ it, r }) => cell('C', r) === it.category && s.merges.includes(`C${r}:C${r + 2}`)), `a category merged over three rows, its text centred between them, is one merged cell with its text (${catRows.map(({ r }) => `C${r}:C${r + 2}`).join(' ')})`);
   const rabat = rowOf((_, v) => v.startsWith('RABAT'));
   check(s.merges.includes(`B${rabat}:F${rabat}`) && cell('H', rabat) === '-150,00' && cell('G', rabat) === '23%', 'the row merged across five columns keeps its merge and its amount');
+  check(s.numbers.get(`H${rabat}`) === -150 && !s.numbers.has(`G${rabat}`), 'a negative amount is a negative number; "23%" stays text');
   check(s.merges.length === 5, `no merges besides those five (${s.merges.join(' ')})`);
   const headers = [...s.cells].filter(([ref, v]) => ref.startsWith('A') && v === 'Lp.').length;
   check(headers === 2, `the header the browser repeats on page 2 is there twice, nothing else is (${headers})`);
   const net = rowOf((_, v) => v === 'Razem netto:');
   check(net > 0 && cell('H', net) === `${fmtMoney(invoiceTotals.net)} zł`, `the totals under the table: label and amount in one row, the amount under "Wartość brutto" (${cell('C', net)} | ${cell('H', net)})`);
+  check(!s.numbers.has(`H${net}`), 'an amount with its currency ("26 183,95 zł") stays text');
   const seller = rowOf((_, v) => v === 'Sprzedawca');
   check(cell('A', seller) === 'Sprzedawca' && cell('C', seller) === 'Nabywca' && cell('A', seller + 1) === 'Hurtownia Biurowa Żółw sp. z o.o.' && cell('C', seller + 1) === 'Pracownia Projektowa Źródło', 'two address blocks side by side are two cells per line ("SprzedawcaNabywca" joined otherwise)');
   const pay = rowOf((_, v) => v.startsWith('Termin płatności'));
