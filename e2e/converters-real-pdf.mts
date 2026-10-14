@@ -12,7 +12,7 @@ import { dirname, join } from 'node:path';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import JSZip from 'jszip';
 import { findOffice, convertToPdf, stopOffice } from './helpers/openoffice.mts';
-import { invoiceItems, invoiceTotals, fmtMoney } from './fixtures/make-invoice-pdf.mts';
+import { invoiceItems, invoiceTotals } from './fixtures/make-invoice-pdf.mts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, '..');
@@ -219,7 +219,8 @@ console.log('\n=== PDF → Excel (an invoice printed from a browser) ===');
     const first = table.find((f) => f[1]?.startsWith(invoiceItems[0]!.marker + ' '));
     check(/^\d+[.,]\d{2}$/.test(first?.[5] ?? ''), `amounts keep their two decimals on screen (${first?.[5]})`);
     const net = table.find((f) => f.includes('Razem netto:'));
-    check(net?.[7] === `${fmtMoney(invoiceTotals.net)} zł`, `the total stands under the value column (${net?.join('|')})`);
+    // The total is a number with "zł" in its format; Calc shows it with its own thousands space.
+    check(/zł$/.test(net?.[7] ?? '') && amount(net?.[7]?.replace(/zł$/, '')) === Number(invoiceTotals.net.toFixed(2)), `the total stands under the value column, as a number shown with "zł" (${net?.join('|')})`);
     check(table.some((f) => f[0] === 'Sprzedawca' && f.includes('Nabywca')), 'seller and buyer are two cells of one row');
   }
 }

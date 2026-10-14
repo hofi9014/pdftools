@@ -1534,7 +1534,10 @@ export function buildTableClusters(allRects: RawRect[]): TableCluster[] {
         // The group stays one table. A lone rule (one or two rects: the line over a totals block,
         // an underline) that merely shares an edge coordinate with the table and lies wholly
         // outside it is not part of its grid: left in, it added a row between the table and the
-        // rule and split a column at the rule's end.
+        // rule and split a column at the rule's end. The same holds for ONE straight line drawn in
+        // pieces, however many: a spreadsheet prints a signature line over several cells as one
+        // segment per column ("Imię i nazwisko pracownika" above a schedule), and kept, it gave the
+        // table a first "row" up to the line that took in the title and the introduction.
         const main = valid.reduce<TableCluster | null>((m, c) => (m === null || bboxArea(c.rects) > bboxArea(m.rects) ? c : m), null);
         if (main) {
           const mx0 = main.xEdges[0]!, mx1 = main.xEdges[main.xEdges.length - 1]!;
@@ -1542,7 +1545,10 @@ export function buildTableClusters(allRects: RawRect[]): TableCluster[] {
           const outside = (r: RawRect): boolean =>
             r.x >= mx1 - EDGE_TOLERANCE || r.x + r.width <= mx0 + EDGE_TOLERANCE
             || r.y >= my1 - EDGE_TOLERANCE || r.y + r.height <= my0 + EDGE_TOLERANCE;
-          const kept = [...comps.values()].filter((c) => !(c.length < 3 && c.every(outside))).flat();
+          const oneLine = (c: RawRect[]): boolean =>
+            (c.every((r) => r.height < 2) && c.every((r) => edgesClose(r.y, c[0]!.y)))
+            || (c.every((r) => r.width < 2) && c.every((r) => edgesClose(r.x, c[0]!.x)));
+          const kept = [...comps.values()].filter((c) => !((c.length < 3 || oneLine(c)) && c.every(outside))).flat();
           if (kept.length < groupRects.length) {
             const trimmed = validateGroup(kept);
             if (trimmed) { clusters.push(trimmed); continue; }
@@ -1582,6 +1588,8 @@ export interface CellTextAssignment {
 
 const CELL_TOLERANCE_X = 3; // pt — horizontal tolerance for text-in-cell matching
 const CELL_TOLERANCE_Y = 5; // pt — vertical tolerance for text-in-cell matching
+/** How far (pt) the middle of a line may lie outside the table's top or bottom border and still belong to it. */
+const TABLE_EDGE_SLACK = 0.5;
 
 // FINDING (table merge false-positive, superseding the "most specific owner" heuristic below
 // that used to implement this function) — that heuristic ranked candidate rects per cell by
@@ -1737,6 +1745,12 @@ export function assignTextRunsToCells(
     // Convert from PDF bottom-left Y to top-left Y (matching rect coordinates)
     const runY = pageHeight - runPDFY - (run.height || 0);
     const runCenterY = runY + (run.height || 0) / 2;
+    // The tolerance below lets a line sit a little off the middle of its cell — but not across the
+    // OUTER edge of the table: text whose middle lies above the top border or below the bottom one
+    // stands outside the table, however close. 5 pt is more than the whole height of small print,
+    // so the last word of an introduction set in 4.5 pt just above a schedule (only its
+    // descenders reach below the border) landed in the header cell "Data czynności".
+    if (runCenterY < ySorted[0]! - TABLE_EDGE_SLACK || runCenterY > ySorted[ySorted.length - 1]! + TABLE_EDGE_SLACK) continue;
 
     // Find candidate column: binary search on xEdges
     const colIdx = binarySearchClosest(xSorted, runX + CELL_TOLERANCE_X);

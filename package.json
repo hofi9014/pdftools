@@ -137,6 +137,7 @@
     "test:xlsx-empty-sheets-guard": "npx --yes tsx tests/xlsx-empty-sheets-guard.mts",
     "test:pdf-to-excel-document": "npx --yes tsx tests/pdf-to-excel-document.mts",
     "test:flow-text-apart": "npx --yes tsx tests/flow-text-apart.mts",
+    "test:table-top-boundary": "npx --yes tsx tests/table-top-boundary.mts",
     "test:xlsx-pdf-xlsx-exact": "npx --yes tsx tests/xlsx-pdf-xlsx-exact.mts",
     "test:unlock-password-label-accuracy": "npx --yes tsx tests/unlock-password-label-accuracy.mts",
     "test:flatten-pdf-noop-notice": "npx --yes tsx tests/flatten-pdf-noop-notice.mts",
