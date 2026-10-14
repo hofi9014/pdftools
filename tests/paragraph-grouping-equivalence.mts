@@ -115,12 +115,21 @@ console.log('=== extractFormattedTextFromPDF: O(n^2) grouping optimization chang
 // clipping path, not a cell: epz-report-variant2 (text clipped to its cells by such paths) lost
 // its three phantom rows and a table 1656 pt tall on an 842 pt page (113/111/111 rows -> 110 on
 // every page); the non-whitespace characters of the output are the same multiset (23287).)
+// (2026-10-14, text above a table: (1) one straight line drawn in pieces (a signature line printed
+// as one segment per spreadsheet column) lying wholly outside a table is not part of its grid —
+// epz_pptx_table_fixture's table no longer has a first "row" up to that line holding the name line,
+// the title and the introduction; (2) a run whose middle lies outside the table's top or bottom
+// border is not assigned to a cell — the last word of that introduction (baseline 0.5-1.3 pt below
+// the border) left the header cell, and in epz-report-variant2 the heading "Zalacznik nr 3 do
+// Regulaminu pracy zdalnej" left row 0 and clipped text below the table its last cell. The
+// non-whitespace characters are the same multiset in both files (9612 and 23287); see
+// tests/table-top-boundary.mts.)
 const EXPECTED: Record<string, [string, number]> = {
   'allegro-raport.pdf': ['b052ed7d14c4052160b2049b259ee334efe3f18b7e519c475a12112b2f91d2d8', 27],
-  'epz_pptx_table_fixture.pdf': ['a0978f5d352596bc850a0f0c76da3d98b126d04b55a52c20ff7bd174a46ad180', 3],
+  'epz_pptx_table_fixture.pdf': ['d357663edae8bff9cca2d4e91fdbbdc03c8d36060a387ba605a70c7ec311974b', 3],
   'gpw-ebook.pdf': ['bcb90f3d74140eaf5b4a5a59b51324f1ad8c9b43618e9a01065cd16aecd7b133', 12],
   'Raport - 12 rzeczy, które robią skuteczni handlarze w Internecie_na Allegro.pdf': ['d9a4b486cd76135ccb45dc62707d6adcca069e2a1691d2e2b7d44253f34faa71', 27],
-  'epz-report-variant2.pdf': ['fa156dba785d75e29a5d57efacecc0c0fb227e7ab4832d72521b9818812e052d', 3],
+  'epz-report-variant2.pdf': ['1e66834219162e4abb1991922401038fef1f36adbdbe07f222894a647c144fc4', 3],
 };
 
 for (const [fname, [expectedHash, expectedPages]] of Object.entries(EXPECTED)) {

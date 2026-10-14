@@ -37,12 +37,16 @@ const pdfFile = (rel: string): File => Object.assign(new Blob([new Uint8Array(re
 const unesc = (s: string) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
 
 interface ReadSheet { name: string; cells: Map<string, string>; numbers: Map<string, number>; merges: string[]; rows: number; dimension: string }
-/** A number as a spreadsheet shows it under a format like "0.00" or "#,##0.00" (Polish settings). */
+/**
+ * A number as a spreadsheet shows it under a format like "0.00", "#,##0.00" or one carrying a
+ * currency, '#,##0.00" zł"' / '"€ "#,##0.00' (Polish settings).
+ */
 function shown(value: number, format: string | undefined): string {
-  const m = /^(#,##0|0)\.(0+)$/.exec(format ?? '');
+  const m = /^(?:"([^"]*)")?(#,##0|0)(?:\.(0+))?(?:"([^"]*)")?$/.exec(format ?? '');
   if (!m) return String(value);
-  const [whole, decimals] = Math.abs(value).toFixed(m[2]!.length).split('.') as [string, string];
-  return `${value < 0 ? '-' : ''}${m[1] === '0' ? whole : whole.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')},${decimals}`;
+  const [whole, decimals] = Math.abs(value).toFixed(m[3]?.length ?? 0).split('.') as [string, string | undefined];
+  const digits = m[2] === '0' ? whole : whole.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return `${value < 0 ? '-' : ''}${m[1] ?? ''}${digits}${decimals ? ',' + decimals : ''}${m[4] ?? ''}`;
 }
 /**
  * The workbook as its XML says, without the library that wrote it. `cells` holds what a user
@@ -183,12 +187,16 @@ console.log('\n=== amounts: only spellings that can mean one number ===');
     ['10,75', '10.75 0.00'], ['0,5', '0.5 0.0'], ['-150,00', '-150 0.00'], ['\u2212150,00', '-150 0.00'],
     ['1 307,49', '1307.49 #,##0.00'], ['26\u00a0183,95', '26183.95 #,##0.00'], ['1 234 567,8', '1234567.8 #,##0.0'],
     ['1.307,49', '1307.49 #,##0.00'], ['1,307.49', '1307.49 #,##0.00'], ['12,3456', '12.3456 0.0000'],
+    ['26 183,95 zł', '26183.95 #,##0.00" zł"'], ['26\u00a0183,95\u00a0zł', '26183.95 #,##0.00" zł"'], ['-150,00 zł', '-150 0.00" zł"'],
+    ['10,75zł', '10.75 0.00"zł"'], ['€ 12,50', '12.5 "€ "0.00'], ['$1,307.49', '1307.49 "$"#,##0.00'], ['-€ 10,50', '-10.5 "€ "0.00'],
+    ['1 307,49 PLN', '1307.49 #,##0.00" PLN"'], ['1 234 zł', '1234 #,##0" zł"'], ['100 €', '100 0" €"'], ['12 500 Kč', '12500 #,##0" Kč"'],
   ];
   const wrong = cases.filter(([t, want]) => read(t) !== want).map(([t]) => `${t} → ${read(t)}`);
   check(wrong.length === 0, `"10,75", "1 307,49", "1.307,49", "1,307.49", "−150,00"… are read as numbers with a matching format (${wrong.join('; ') || 'all ' + cases.length})`);
-  const mustStayText = ['1,234', '12,345', '1 234', '80 831', '26 183,95 zł', '23%', '+5,00', '07,50', '1,2,3', '583-000-11-22', '12.03.2026', '8:30', '1 23,45', '1234 567,89', '12345678901234,56', 'ok. 10,5', ''];
+  const mustStayText = ['1,234', '12,345', '1 234', '80 831', '23%', '+5,00', '07,50', '1,2,3', '583-000-11-22', '12.03.2026', '8:30', '1 23,45', '1234 567,89', '12345678901234,56', 'ok. 10,5', '',
+    '1,234 zł', '1.234 €', '5 kg', '10 zł/m²', '10,50 zł brutto', 'zł', 'zł 10,50 zł', '€ -10,50', '+5,00 zł', '07,50 zł', '10  zł', 'Razem: 26 183,95 zł', '12 m', '10,5 zl.', '--5,00 zł'];
   const taken = mustStayText.filter((t) => parseAmount(t) !== null);
-  check(taken.length === 0, `"1,234" (1.234 or 1234?), "1 234", a postal code, an amount with a unit, a percentage, a date… stay text (${taken.join('; ') || 'all ' + mustStayText.length})`);
+  check(taken.length === 0, `"1,234" (1.234 or 1234?), "1 234", "1,234 zł", a postal code, an amount with another unit, a percentage, a date… stay text (${taken.join('; ') || 'all ' + mustStayText.length})`);
 }
 
 console.log('\n=== an invoice printed from a browser (chrome-invoice.pdf) ===');
@@ -226,7 +234,11 @@ console.log('\n=== an invoice printed from a browser (chrome-invoice.pdf) ===');
   check(headers === 2, `the header the browser repeats on page 2 is there twice, nothing else is (${headers})`);
   const net = rowOf((_, v) => v === 'Razem netto:');
   check(net > 0 && cell('H', net) === `${fmtMoney(invoiceTotals.net)} zł`, `the totals under the table: label and amount in one row, the amount under "Wartość brutto" (${cell('C', net)} | ${cell('H', net)})`);
-  check(!s.numbers.has(`H${net}`), 'an amount with its currency ("26 183,95 zł") stays text');
+  check(s.numbers.get(`H${net}`) === Number(invoiceTotals.net.toFixed(2)), `an amount with its currency ("26 183,95 zł") is a number that still shows "zł" (${s.numbers.get(`H${net}`)})`);
+  const due = rowOf((_, v) => v === 'Do zapłaty:');
+  const vat = rowOf((_, v) => v.startsWith('Podatek VAT'));
+  check(due > 0 && vat > 0 && Math.abs((s.numbers.get(`H${net}`) ?? 0) + (s.numbers.get(`H${vat}`) ?? 0) - 150 - (s.numbers.get(`H${due}`) ?? NaN)) < 1e-6,
+    `the three totals add up as numbers: net + VAT − discount = amount due (${cell('H', net)} + ${cell('H', vat)} − 150 = ${cell('H', due)})`);
   const seller = rowOf((_, v) => v === 'Sprzedawca');
   check(cell('A', seller) === 'Sprzedawca' && cell('C', seller) === 'Nabywca' && cell('A', seller + 1) === 'Hurtownia Biurowa Żółw sp. z o.o.' && cell('C', seller + 1) === 'Pracownia Projektowa Źródło', 'two address blocks side by side are two cells per line ("SprzedawcaNabywca" joined otherwise)');
   const pay = rowOf((_, v) => v.startsWith('Termin płatności'));

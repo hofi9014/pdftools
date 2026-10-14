@@ -53,16 +53,57 @@ const SHEET_FONT_PT = 11;
 export interface LineSegment { text: string; x0: number; x1: number; bold: boolean; italic: boolean }
 
 /**
+ * Currencies an amount may carry, written before or after it ("26 183,95 zł", "€ 12,50",
+ * "$1,307.49", "1 307,49 PLN"). Matched as the whole rest of the cell, so "zł/m²" or
+ * "zł brutto" stay text.
+ */
+const CURRENCIES = ['zł', 'PLN', '€', 'EUR', '$', 'USD', '£', 'GBP', 'CHF', 'CZK', 'Kč', 'HUF', 'Ft', 'SEK', 'NOK', 'DKK', 'kr', 'RON', 'lei', 'UAH', '₴', '¥', 'JPY'];
+const CURRENCY_RE = CURRENCIES.map((c) => c.replace(/[$]/g, '\\$')).join('|');
+const SPACES = /[ \u00a0\u202f]/g;
+
+/**
  * An amount written the way documents write it — "1 307,49", "10,75", "-150,00", "1.307,49",
- * "1,307.49" — as the number it is, with the format that shows it the same way again. Left as
- * text, a column of prices cannot be summed.
+ * "1,307.49", also with its currency: "26 183,95 zł", "€ 12,50" — as the number it is, with the
+ * format that shows it the same way again (the currency becomes part of the format, so the cell
+ * still reads "26 183,95 zł" and adds up). Left as text, a column of prices cannot be summed.
  *
  * Only spellings that can mean ONE number are read. "1,234" (1.234 or 1234?) and "1 234" (a
- * number, or two) stay text, and so does anything with a unit or a sign other than a minus
- * ("23%", "26 183,95 zł", "+5,00"): changing a value silently is worse than leaving it as text.
+ * number, or two) stay text, and so does anything with a unit or a sign other than a minus or a
+ * currency ("23%", "5 kg", "+5,00", "10 zł/m²"): changing a value silently is worse than leaving
+ * it as text. With a currency, a whole number is one amount too ("1 234 zł", "100 €") — but
+ * "1,234 zł" stays text.
  */
 export function parseAmount(text: string): { value: number; numFmt: string } | null {
   const t = text.trim().replace(/\u2212/g, '-');
+  // The currency is cut off first; its place and the space beside it become literal text of the
+  // format. A minus must stand first ("-150,00 zł", "-€ 10,50"), where the format puts it too.
+  const after = new RegExp(`^(-?)(.*?\\d)([ \\u00a0\\u202f]?)(${CURRENCY_RE})$`).exec(t);
+  const before = after ? null : new RegExp(`^(-?)(${CURRENCY_RE})([ \\u00a0\\u202f]?)(\\d.*)$`).exec(t);
+  if (after || before) {
+    const sign = (after ?? before)![1]!;
+    const num = after ? after[2]! : before![4]!;
+    const gap = (after ? after[3]! : before![3]!) ? ' ' : '';
+    const unit = after ? after[4]! : before![2]!;
+    // The number itself carries no sign and no second currency ("zł 10,50 zł", "--5 zł" stay text).
+    const core = /^\d/.test(num) ? plainAmount(num) ?? wholeAmount(num) : null;
+    if (!core) return null;
+    const lit = (s: string): string => `"${s}"`;
+    return {
+      value: sign === '-' ? -core.value : core.value,
+      numFmt: after ? `${core.numFmt}${lit(gap + unit)}` : `${lit(unit + gap)}${core.numFmt}`,
+    };
+  }
+  return plainAmount(t);
+}
+
+/** A whole number standing next to a currency: "100", "1 234" (never "1,234" or "1.234"). */
+function wholeAmount(t: string): { value: number; numFmt: string } | null {
+  if (/^(0|[1-9]\d{0,14})$/.test(t)) return { value: Number(t), numFmt: '0' };
+  if (/^[1-9]\d{0,2}(?:[ \u00a0\u202f]\d{3})+$/.test(t) && t.replace(SPACES, '').length <= 15) return { value: Number(t.replace(SPACES, '')), numFmt: '#,##0' };
+  return null;
+}
+
+function plainAmount(t: string): { value: number; numFmt: string } | null {
   const make = (sign: string, whole: string, decimals: string, grouped: boolean): { value: number; numFmt: string } | null => {
     if (whole.length + decimals.length > 15) return null; // beyond what a number holds exactly
     const value = Number(`${sign}${whole}.${decimals}`);

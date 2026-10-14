@@ -206,8 +206,27 @@ export function blocksInReadingOrder(blocks: IRBlock[], pageHeight: number): IRB
   // On a two-column page the reading band comes first (above, left column, right column,
   // below); within a band, and on every other page (no `flow`), top to bottom as before.
   const flow = (b: IRBlock): number => (b as { flow?: number }).flow ?? 0;
-  return blocks.map((b, i) => ({ b, i, t: top(b), f: flow(b) }))
-    .sort((p, q) => (p.f - q.f) || (p.t - q.t) || (p.i - q.i)).map((x) => x.b);
+  const sorted = blocks.map((b, i) => ({ b, i, t: top(b), f: flow(b) }))
+    .sort((p, q) => (p.f - q.f) || (p.t - q.t) || (p.i - q.i));
+  // A block of text is placed by its first line's baseline. A line whose baseline sits just below
+  // a table's top border while the middle of its letters is above it stands over the table (only
+  // the descenders reach below the border) and is read before it: placed by the baseline, the last
+  // word of an introduction set in 4.5 pt above a schedule came out after the whole table.
+  for (let k = 0; k < sorted.length; k++) {
+    const table = sorted[k]!;
+    if (table.b.kind !== 'table') continue;
+    let j = k + 1;
+    while (j < sorted.length) {
+      const next = sorted[j]!;
+      const size = 'runs' in next.b ? next.b.runs.find((r) => r.text.trim() !== '')?.fontSize : undefined;
+      if (next.f !== table.f || size === undefined || next.t - 0.35 * size >= table.t) break;
+      sorted.splice(j, 1);
+      sorted.splice(k, 0, next);
+      k++;
+      j++;
+    }
+  }
+  return sorted.map((x) => x.b);
 }
 
 /**
