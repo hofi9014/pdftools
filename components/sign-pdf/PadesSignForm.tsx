@@ -65,7 +65,7 @@ export default function PadesSignForm({ locale }: { locale: Locale }) {
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('pades-file-input')?.click(); } }}
         >
           <input id="pades-file-input" type="file" accept=".pdf" className="hidden" onChange={(e) => { setFile(e.target.files?.[0] || null); setError(''); setSuccess(false); }} />
-          {file ? <p className="!text-[var(--coffee-accent)] font-medium">{file.name}</p> : <p className="text-gray-400 dark:text-gray-500">{t('page.edit.click_select', locale)}</p>}
+          {file ? <p className="!text-[var(--coffee-accent-ink)] font-medium">{file.name}</p> : <p className="text-gray-400 dark:text-gray-500">{t('page.edit.click_select', locale)}</p>}
         </div>
 
         <div>
@@ -78,30 +78,30 @@ export default function PadesSignForm({ locale }: { locale: Locale }) {
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('pades-cert-input')?.click(); } }}
           >
             <input id="pades-cert-input" type="file" accept=".p12,.pfx" className="hidden" onChange={(e) => { setCertFile(e.target.files?.[0] || null); setError(''); }} />
-            {certFile ? <p className="!text-[var(--coffee-accent)] font-medium text-sm">{certFile.name}</p> : <p className="text-gray-400 dark:text-gray-500 text-sm">.p12 / .pfx</p>}
+            {certFile ? <p className="!text-[var(--coffee-accent-ink)] font-medium text-sm">{certFile.name}</p> : <p className="text-gray-400 dark:text-gray-500 text-sm">.p12 / .pfx</p>}
           </div>
         </div>
 
         <div>
-          <label className="text-xs font-semibold tool-heading block mb-2">{t('page.sign.pades_password_label', locale)}</label>
-          <input type="password" value={password} onChange={e => { setPassword(e.target.value); setError(''); }} autoComplete="off"
+          <label htmlFor="pades-password" className="text-xs font-semibold tool-heading block mb-2">{t('page.sign.pades_password_label', locale)}</label>
+          <input id="pades-password" type="password" value={password} onChange={e => { setPassword(e.target.value); setError(''); }} autoComplete="off"
             className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl text-sm" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">{t('page.sign.pades_reason_label', locale)}</label>
-            <input type="text" value={reason} onChange={e => setReason(e.target.value)}
+            <label htmlFor="pades-reason" className="text-xs text-gray-500 dark:text-gray-400 block mb-1">{t('page.sign.pades_reason_label', locale)}</label>
+            <input id="pades-reason" type="text" value={reason} onChange={e => setReason(e.target.value)}
               className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg text-sm" />
           </div>
           <div>
-            <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">{t('page.sign.pades_location_label', locale)}</label>
-            <input type="text" value={location} onChange={e => setLocation(e.target.value)}
+            <label htmlFor="pades-location" className="text-xs text-gray-500 dark:text-gray-400 block mb-1">{t('page.sign.pades_location_label', locale)}</label>
+            <input id="pades-location" type="text" value={location} onChange={e => setLocation(e.target.value)}
               className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg text-sm" />
           </div>
           <div>
-            <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">{t('page.sign.pades_contact_label', locale)}</label>
-            <input type="text" value={contactInfo} onChange={e => setContactInfo(e.target.value)}
+            <label htmlFor="pades-contact" className="text-xs text-gray-500 dark:text-gray-400 block mb-1">{t('page.sign.pades_contact_label', locale)}</label>
+            <input id="pades-contact" type="text" value={contactInfo} onChange={e => setContactInfo(e.target.value)}
               className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg text-sm" />
           </div>
         </div>

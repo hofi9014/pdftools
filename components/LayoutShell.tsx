@@ -3,6 +3,7 @@ import { usePathname } from 'next/navigation';
 import { type Locale, locales } from '@/lib/i18n';
 import { localeFromSegment } from '@/lib/guides-slugs';
 import Header from './Header';
+import SkipLink from './SkipLink';
 import Footer from './Footer';
 import Breadcrumbs from './Breadcrumbs';
 import HtmlLang from './HtmlLang';
@@ -40,6 +41,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
 
   return (
     <>
+      <SkipLink locale={locale} />
       <HtmlLang locale={locale} />
       <SchemaHowTo locale={locale} />
       <Header locale={locale} />

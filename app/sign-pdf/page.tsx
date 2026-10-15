@@ -151,7 +151,7 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('file-input')?.click(); } }}
         >
           <input id="file-input" type="file" accept=".pdf" className="hidden" onChange={(e) => { setFile(e.target.files?.[0] || null); setError(''); }} />
-          {file ? <p className="!text-[var(--coffee-accent)] font-medium">{file.name}</p> : <p className="text-gray-400 dark:text-gray-500">{t('page.edit.click_select', locale)}</p>}
+          {file ? <p className="!text-[var(--coffee-accent-ink)] font-medium">{file.name}</p> : <p className="text-gray-400 dark:text-gray-500">{t('page.edit.click_select', locale)}</p>}
         </div>
 
         <div className="flex justify-center gap-2 mb-6">
@@ -159,7 +159,7 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
         </div>
 
         <div>
-          <p className="font-semibold tool-heading text-sm mb-2">{t('page.sign.choose_pages', locale)}</p>
+          <p id="sign-pages-label" className="font-semibold tool-heading text-sm mb-2">{t('page.sign.choose_pages', locale)}</p>
           <div className="flex flex-wrap gap-2 mb-3">
             {pageModes.map(m => (
               <button key={m.id} type="button" onClick={() => setPageMode(m.id)}
@@ -169,10 +169,10 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
             ))}
           </div>
           {pageMode === 'single' && (
-            <input type="number" min={1} value={singlePage} onChange={e => setSinglePage(Number(e.target.value) || 1)} className="w-24 px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg text-sm" placeholder={t('page.sign.page_placeholder', locale)} />
+            <input type="number" min={1} aria-labelledby="sign-pages-label" value={singlePage} onChange={e => setSinglePage(Number(e.target.value) || 1)} className="w-24 px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg text-sm" placeholder={t('page.sign.page_placeholder', locale)} />
           )}
           {pageMode === 'custom' && (
-            <input type="text" value={customPages} onChange={e => setCustomPages(e.target.value)} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg text-sm" placeholder={t('page.sign.custom_placeholder', locale)} />
+            <input type="text" aria-labelledby="sign-pages-label" value={customPages} onChange={e => setCustomPages(e.target.value)} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg text-sm" placeholder={t('page.sign.custom_placeholder', locale)} />
           )}
         </div>
 
@@ -190,27 +190,27 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-gray-500 dark:text-gray-400">{t('page.sign.unit', locale)}</label>
-            <select value={unit} onChange={e => setUnit(e.target.value)} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg text-sm">
+            <label htmlFor="sign-unit" className="text-xs text-gray-500 dark:text-gray-400">{t('page.sign.unit', locale)}</label>
+            <select id="sign-unit" value={unit} onChange={e => setUnit(e.target.value)} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg text-sm">
               <option value="mm">{t('page.sign.unit_mm', locale)}</option>
               <option value="cm">{t('page.sign.unit_cm', locale)}</option>
               <option value="in">{t('page.sign.unit_in', locale)}</option>
             </select>
           </div>
           <div>
-            <label className="text-xs text-gray-500 dark:text-gray-400">X ({unit})</label>
-            <input type="number" value={signX} onChange={e => setSignX(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg text-sm" />
+            <label htmlFor="sign-x" className="text-xs text-gray-500 dark:text-gray-400">X ({unit})</label>
+            <input id="sign-x" type="number" value={signX} onChange={e => setSignX(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg text-sm" />
           </div>
           <div>
-            <label className="text-xs text-gray-500 dark:text-gray-400">Y ({unit})</label>
-            <input type="number" value={signY} onChange={e => setSignY(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg text-sm" />
+            <label htmlFor="sign-y" className="text-xs text-gray-500 dark:text-gray-400">Y ({unit})</label>
+            <input id="sign-y" type="number" value={signY} onChange={e => setSignY(Number(e.target.value))} className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg text-sm" />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="space-y-3">
-            <p className="font-semibold tool-heading text-sm">{t('page.sign.text_signature', locale)}</p>
-            <input type="text" value={signName} onChange={e => setSignName(e.target.value)} placeholder={t('page.sign.name_placeholder', locale)} className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl text-sm" />
+            <p id="sign-name-label" className="font-semibold tool-heading text-sm">{t('page.sign.text_signature', locale)}</p>
+            <input type="text" aria-labelledby="sign-name-label" value={signName} onChange={e => setSignName(e.target.value)} placeholder={t('page.sign.name_placeholder', locale)} className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl text-sm" />
           </div>
           <div className="space-y-3">
             <p className="font-semibold tool-heading text-sm">{t('page.sign.draw_signature', locale)}</p>

@@ -119,7 +119,7 @@ export default function OpenOfficeToPDF({ locale: forcedLocale }: { locale?: Loc
       </div>
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 mb-6">
-        <h3 className="font-bold tool-heading mb-2">{t('section.info', locale)}</h3>
+        <h2 className="font-bold tool-heading mb-2">{t('section.info', locale)}</h2>
         <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
           <li>{t('page.openoffice.info1', locale)}</li>
           <li>{t('page.openoffice.info2', locale)}</li>

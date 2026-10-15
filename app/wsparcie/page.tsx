@@ -810,7 +810,7 @@ export default function SupportPage({ locale: forcedLocale }: { locale?: Locale 
   const isRtl = locale === 'ar' || locale === 'fa';
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
       {isRtl && (
         <style>{`
           .wsparcie-rtl ul { padding-right: 1.25rem; padding-left: 0; }
@@ -834,11 +834,11 @@ export default function SupportPage({ locale: forcedLocale }: { locale?: Locale 
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block px-6 py-3 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90"
-            style={{ backgroundColor: 'var(--coffee-accent)', color: '#fff' }}
+            style={{ backgroundColor: 'var(--coffee-accent-ink)', color: 'var(--coffee-on-accent)' }}
           >
             {lang.donateSection.button}
           </a>
-          <p className="mt-2 text-xs opacity-60">{lang.donateSection.note}</p>
+          <p className="mt-2 text-xs" style={{ color: 'var(--coffee-text-tertiary)' }}>{lang.donateSection.note}</p>
           {IS_TEST_MODE && (
             <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide"
               style={{ backgroundColor: '#fef08a', color: '#854d0e', border: '1px solid #facc15' }}>
@@ -867,7 +867,7 @@ export default function SupportPage({ locale: forcedLocale }: { locale?: Locale 
             <p className="mb-2">{sec.p}</p>
             {sec.link && (
               <p>
-                <a href={sec.link.startsWith('mailto:') ? sec.link : `/${locale}${sec.link}`} className="!text-[var(--coffee-accent)] hover:underline font-medium">
+                <a href={sec.link.startsWith('mailto:') ? sec.link : `/${locale}${sec.link}`} className="!text-[var(--coffee-accent-ink)] hover:underline font-medium">
                   {sec.linkText}
                 </a>
               </p>
@@ -884,10 +884,10 @@ export default function SupportPage({ locale: forcedLocale }: { locale?: Locale 
       </div>
 
       <div className="text-center mt-8">
-        <Link href={`/${locale}`} className="!text-[var(--coffee-accent)] hover:underline text-sm">
+        <Link href={`/${locale}`} className="!text-[var(--coffee-accent-ink)] hover:underline text-sm">
           {t('back.to_home', locale)}
         </Link>
       </div>
-    </main>
+    </div>
   );
 }

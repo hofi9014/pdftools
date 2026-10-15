@@ -192,7 +192,7 @@ export default function HelpPage({ locale: forcedLocale }: { locale?: Locale } =
   };
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="text-center mb-12">
         <div className="text-5xl mb-4">🆘</div>
         <h1 className="text-3xl sm:text-4xl font-bold tool-heading mb-3">
@@ -252,7 +252,7 @@ export default function HelpPage({ locale: forcedLocale }: { locale?: Locale } =
                           <Link
                             href={item.href}
                             className="inline-flex items-center gap-1 text-sm font-medium transition hover:underline"
-                            style={{ color: 'var(--coffee-accent)' }}
+                            style={{ color: 'var(--coffee-accent-ink)' }}
                           >
                             {t('help.open_tool', locale)} →
                           </Link>
@@ -266,6 +266,6 @@ export default function HelpPage({ locale: forcedLocale }: { locale?: Locale } =
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

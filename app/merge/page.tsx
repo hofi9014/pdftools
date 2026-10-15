@@ -116,8 +116,8 @@ export default function MergePDF({ locale: forcedLocale }: { locale?: Locale } =
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {i > 0 && <button onClick={() => moveFile(i, i - 1)} className="text-gray-400 dark:text-gray-500 hover:!text-[var(--coffee-accent)] px-2 py-1 rounded">↑</button>}
-                  {i < files.length - 1 && <button onClick={() => moveFile(i, i + 1)} className="text-gray-400 dark:text-gray-500 hover:!text-[var(--coffee-accent)] px-2 py-1 rounded">↓</button>}
+                  {i > 0 && <button onClick={() => moveFile(i, i - 1)} className="text-gray-400 dark:text-gray-500 hover:!text-[var(--coffee-accent-ink)] px-2 py-1 rounded">↑</button>}
+                  {i < files.length - 1 && <button onClick={() => moveFile(i, i + 1)} className="text-gray-400 dark:text-gray-500 hover:!text-[var(--coffee-accent-ink)] px-2 py-1 rounded">↓</button>}
                   <button onClick={() => removeFile(i)} className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 px-2 py-1 rounded">✕</button>
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default function MergePDF({ locale: forcedLocale }: { locale?: Locale } =
         )}
 
         <div className="tool-info-box rounded-2xl p-5 mb-6">
-          <h3 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h3>
+          <h2 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h2>
           <p className="text-sm text-blue-700 dark:text-blue-300">{t('local.desc', locale)}</p>
         </div>
 

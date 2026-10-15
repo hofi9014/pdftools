@@ -51,7 +51,7 @@ export default function HtmlToPdf({ locale: forcedLocale }: { locale?: Locale } 
           <label className="font-medium text-gray-700 dark:text-gray-300">{t('page.html.paste_label', locale)}</label>
           <div className="flex gap-2">
             <button onClick={() => setHtml('<h1>Witaj świecie</h1>\n<p>To jest przykładowy dokument PDF wygenerowany z HTML.</p>')}
-              className="text-xs !text-[var(--coffee-accent)] hover:underline">{t('page.html.example_btn', locale)}</button>
+              className="text-xs !text-[var(--coffee-accent-ink)] hover:underline">{t('page.html.example_btn', locale)}</button>
             <button onClick={() => setHtml('')}
               className="text-xs text-gray-500 dark:text-gray-400 hover:underline">{t('btn.clear', locale)}</button>
           </div>
@@ -67,7 +67,7 @@ export default function HtmlToPdf({ locale: forcedLocale }: { locale?: Locale } 
 
       {html.trim() && (
         <div className="tool-card rounded-2xl border p-5 mb-6">
-          <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3">{t('page.html.preview', locale)}</h3>
+          <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-3">{t('page.html.preview', locale)}</h2>
           <div className="border border-gray-200 dark:border-gray-600 rounded-xl p-4 max-h-60 overflow-y-auto bg-white"
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html, { ALLOWED_TAGS: ['h1','h2','h3','h4','h5','h6','p','br','b','i','strong','em','a','ul','ol','li','pre','code','blockquote','table','thead','tbody','tr','th','td','img','div','span','hr','sub','sup','dl','dt','dd'] }) }} />
           <div className="mt-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 rounded-xl px-4 py-3 text-sm">

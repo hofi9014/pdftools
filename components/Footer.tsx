@@ -34,7 +34,7 @@ export default function Footer({ locale: forcedLocale }: { locale?: Locale }) {
   ];
 
   return (
-    <footer className="bg-[#3C2415] dark:bg-[#0A0807] text-gray-400 py-8 mt-12 border-t border-[rgba(255,255,255,0.06)]">
+    <footer className="bg-[#3C2415] dark:bg-[#0A0807] text-[rgba(245,237,228,0.65)] py-8 mt-12 border-t border-[rgba(255,255,255,0.06)]">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 text-start">
           <div>
@@ -79,7 +79,7 @@ export default function Footer({ locale: forcedLocale }: { locale?: Locale }) {
             </ul>
           </div>
         </div>
-        <div className="border-t border-[rgba(255,255,255,0.06)] pt-6 text-center text-xs text-[rgba(245,237,228,0.4)]">
+        <div className="border-t border-[rgba(255,255,255,0.06)] pt-6 text-center text-xs text-[rgba(245,237,228,0.6)]">
           <p>&copy; {new Date().getFullYear()} OptimaPDF. {t('footer.copyright', locale)}</p>
         </div>
       </div>

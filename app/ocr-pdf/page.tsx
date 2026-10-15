@@ -251,8 +251,8 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
       )}
 
       <div className="tool-card rounded-2xl border p-6 mb-6">
-        <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.ocr.language_label', locale)}</h3>
-        <select id="ocr-language" name="ocr-language" value={language} onChange={e => setLanguage(e.target.value)}
+        <h2 id="ocr-language-label" className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.ocr.language_label', locale)}</h2>
+        <select id="ocr-language" aria-labelledby="ocr-language-label" name="ocr-language" value={language} onChange={e => setLanguage(e.target.value)}
           className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 dark:border-blue-400 dark:focus:border-blue-400 bg-white dark:bg-gray-800 tool-heading">
           {LANGUAGES.map(lang => (
             <option key={lang.value} value={lang.value}>{t(lang.labelKey, locale)}</option>
@@ -261,8 +261,8 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
       </div>
 
       <div className="tool-success-box rounded-2xl p-5 mb-6">
-        <h3 className="font-bold text-green-800 dark:text-green-200 mb-2">{t('local.title', locale)}</h3>
-        <p className="text-sm text-green-700 dark:text-green-300">{t('page.ocr.local_desc', locale)}</p>
+        <h2 className="font-bold text-green-800 dark:text-green-200 mb-2">{t('local.title', locale)}</h2>
+        <p className="text-sm text-green-800 dark:text-green-300">{t('page.ocr.local_desc', locale)}</p>
       </div>
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
@@ -289,7 +289,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
 
       {ocrDone && recognizedText && (
         <div className="tool-card rounded-2xl border p-6 mb-6">
-          <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3">{t('page.ocr.preview_label', locale)}</h3>
+          <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-3">{t('page.ocr.preview_label', locale)}</h2>
           <textarea id="ocr-result" readOnly value={recognizedText}
             className="w-full h-64 border border-gray-200 dark:border-gray-600 rounded-xl p-4 text-sm font-mono bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 resize-y"
           />

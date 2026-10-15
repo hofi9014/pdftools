@@ -104,10 +104,12 @@ export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale
         {/* Podgląd znaku wodnego */}
         {text && (
           <div className="tool-card rounded-2xl border p-6 mb-6">
-            <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3">{t('page.watermark.preview', locale)}</h3>
+            <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-3">{t('page.watermark.preview', locale)}</h2>
             {/* Same colour, opacity and angle as the file gets (it used to show red and level text
                 while the PDF got grey text at 45°). The page stays white like a document page. */}
-            <div className="bg-white rounded-xl h-32 flex items-center justify-center relative overflow-hidden border border-gray-200 dark:border-gray-700">
+            {/* A picture of the result: its faintness is the point (WCAG 1.4.3 "incidental" text), and
+                the same words are in the text field above, so it is hidden from screen readers. */}
+            <div data-watermark-preview aria-hidden="true" className="bg-white rounded-xl h-32 flex items-center justify-center relative overflow-hidden border border-gray-200 dark:border-gray-700">
               <div className="absolute inset-0 flex items-center justify-center">
                 <span style={{
                   fontSize: `${Math.min(parseInt(fontSize) * 0.6, 36)}px`,
@@ -134,7 +136,7 @@ export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale
 
         {/* Ustawienia */}
         <div className="tool-card rounded-2xl border p-6 mb-6 space-y-5">
-          <h3 className="font-bold text-gray-700 dark:text-gray-300">{t('page.watermark.settings', locale)}</h3>
+          <h2 className="font-bold text-gray-700 dark:text-gray-300">{t('page.watermark.settings', locale)}</h2>
 
           {/* Tekst */}
           <div>
@@ -145,7 +147,7 @@ export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale
             <div className="flex gap-2 mt-2">
               {['POUFNE', 'KOPIA', 'DRAFT', 'PRÓBKA'].map(preset => (
                 <button key={preset} onClick={() => setText(preset)}
-                  className="text-xs bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:!text-[var(--coffee-accent)] px-3 py-1 rounded-full transition">
+                  className="text-xs bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:!text-[var(--coffee-accent-ink)] px-3 py-1 rounded-full transition">
                   {preset}
                 </button>
               ))}
@@ -154,10 +156,10 @@ export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale
 
           {/* Przezroczystość */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('page.watermark.opacity_label', locale)}: <span className="!text-[var(--coffee-accent)] font-bold">{opacity}%</span>
+            <label htmlFor="watermark-opacity" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('page.watermark.opacity_label', locale)}: <span className="!text-[var(--coffee-accent-ink)] font-bold">{opacity}%</span>
             </label>
-            <input type="range" min="10" max="100" step="10"
+            <input id="watermark-opacity" type="range" min="10" max="100" step="10"
               value={opacity} onChange={e => setOpacity(e.target.value)}
               className="w-full accent-blue-600 dark:accent-blue-400" />
             <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mt-1">
@@ -168,10 +170,10 @@ export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale
 
           {/* Rozmiar czcionki */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('page.watermark.font_size_label', locale)}: <span className="!text-[var(--coffee-accent)] font-bold">{fontSize}pt</span>
+            <label htmlFor="watermark-font-size" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('page.watermark.font_size_label', locale)}: <span className="!text-[var(--coffee-accent-ink)] font-bold">{fontSize}pt</span>
             </label>
-            <input type="range" min="20" max="80" step="10"
+            <input id="watermark-font-size" type="range" min="20" max="80" step="10"
               value={fontSize} onChange={e => setFontSize(e.target.value)}
               className="w-full accent-blue-600 dark:accent-blue-400" />
             <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mt-1">
@@ -214,7 +216,7 @@ export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale
         </div>
 
         <div className="tool-info-box rounded-2xl p-5 mb-6">
-          <h3 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h3>
+          <h2 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h2>
           <p className="text-sm text-blue-700 dark:text-blue-300">{t('local.desc', locale)}</p>
         </div>
 

@@ -9,7 +9,7 @@
 }
 
 :root {
-  --cat-edit: #C28F5B;
+  --cat-edit: #A3733F; /* category heading text: 4:1 on the page, #C28F5B was 2.75:1 */
   --cat-edit-bg: rgba(194,143,91,0.12);
   --cat-edit-border: #C28F5B;
   --cat-convert: #4A90A4;
@@ -30,9 +30,14 @@
   --coffee-border-strong: rgba(60,36,21,0.15);
   --coffee-text: #2C1810;
   --coffee-text-secondary: #6B4F3E;
-  --coffee-text-tertiary: #A69284;
+  --coffee-text-tertiary: #7B675B;
   --coffee-accent: #C28F5B;
   --coffee-accent-hover: #B07D4A;
+  /* Accent used for text and as the fill behind text: the gold --coffee-accent is too light
+     for either on a light page (2.8:1 against white); this keeps WCAG AA (4.5:1). */
+  --coffee-accent-ink: #835D3C;
+  --coffee-accent-ink-hover: #6D4C31;
+  --coffee-on-accent: #FFFFFF;
   --coffee-accent-subtle: rgba(194,143,91,0.1);
   --coffee-accent-soft: #F5EDE4;
   --coffee-accent-glow: rgba(194,143,91,0.2);
@@ -40,7 +45,7 @@
   --coffee-gold-glow: rgba(212,165,116,0.3);
   --coffee-card-bg: rgba(255,255,255,0.6);
   --coffee-badge-bg: #F5EDE4;
-  --coffee-badge-text: #8B6F4A;
+  --coffee-badge-text: #7D6241;
   --coffee-mesh-1: rgba(212,165,116,0.08);
   --coffee-mesh-2: rgba(194,143,91,0.05);
   --coffee-mesh-3: rgba(245,237,228,0.4);
@@ -68,9 +73,12 @@
   --coffee-border-strong: rgba(255,255,255,0.12);
   --coffee-text: #F5EDE4;
   --coffee-text-secondary: rgba(245,237,228,0.65);
-  --coffee-text-tertiary: rgba(245,237,228,0.4);
+  --coffee-text-tertiary: rgba(245,237,228,0.55);
   --coffee-accent: #D4A574;
   --coffee-accent-hover: #E0B888;
+  --coffee-accent-ink: #D4A574;
+  --coffee-accent-ink-hover: #E0B888;
+  --coffee-on-accent: #1A120C;
   --coffee-accent-subtle: rgba(212,165,116,0.08);
   --coffee-accent-soft: rgba(212,165,116,0.12);
   --coffee-accent-glow: rgba(212,165,116,0.15);
@@ -166,8 +174,8 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: var(--coffee-accent);
-  color: white;
+  background-color: var(--coffee-accent-ink);
+  color: var(--coffee-on-accent);
   border: none;
   padding: 12px 28px;
   border-radius: 9999px;
@@ -179,7 +187,7 @@ body {
 }
 
 .btn-accent:hover {
-  background-color: var(--coffee-accent-hover);
+  background-color: var(--coffee-accent-ink-hover);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px var(--coffee-accent-glow);
 }
@@ -215,12 +223,12 @@ body {
 
 /* Accent underline for links */
 .link-accent {
-  color: var(--coffee-accent);
+  color: var(--coffee-accent-ink);
   transition: color 0.2s;
 }
 
 .link-accent:hover {
-  color: var(--coffee-accent-hover);
+  color: var(--coffee-accent-ink-hover);
 }
 
 /* Scrollbar */
@@ -243,16 +251,20 @@ body {
 
 /* ===== Accent color overrides ===== */
 .bg-blue-600 {
-  background-color: var(--coffee-accent) !important;
+  background-color: var(--coffee-accent-ink) !important;
+}
+.bg-blue-600.text-white,
+:where(.dark, .dark *) .dark\:bg-blue-500.text-white {
+  color: var(--coffee-on-accent) !important;
 }
 .hover\:bg-blue-700:hover {
-  background-color: var(--coffee-accent-hover) !important;
+  background-color: var(--coffee-accent-ink-hover) !important;
 }
 :where(.dark, .dark *) .dark\:bg-blue-500 {
-  background-color: var(--coffee-accent) !important;
+  background-color: var(--coffee-accent-ink) !important;
 }
 :where(.dark, .dark *) .dark\:hover\:bg-blue-600:hover {
-  background-color: var(--coffee-accent-hover) !important;
+  background-color: var(--coffee-accent-ink-hover) !important;
 }
 :where(.dark, .dark *) .dark\:focus\:border-blue-400:focus {
   border-color: var(--coffee-accent) !important;
@@ -268,6 +280,19 @@ body {
 }
 :where(.dark, .dark *) .dark\:bg-blue-900\/20 {
   background-color: var(--coffee-accent-subtle) !important;
+}
+
+/* ===== Secondary grey text ===== */
+/* Tool pages use text-gray-400 (light) / dark:text-gray-500 (dark) for hints and secondary
+   text in 140+ places; both are below WCAG AA on this site's grounds (2.6:1 on white, 3.9:1
+   on #141110). Light mode uses one darker grey for both 400 and 500 (5.2:1 on white and on the
+   tinted panels, where gray-500 was 4.4:1); dark mode shows gray-500 as gray-400 (7.2:1). */
+:where(:root:not(.dark)) .text-gray-400,
+:where(:root:not(.dark)) .text-gray-500 {
+  color: #5F6775; /* 5.2:1 on white and on the light tinted panels (gray-500 was 4.4:1 on blue-50) */
+}
+:where(.dark, .dark *) .dark\:text-gray-500 {
+  color: var(--color-gray-400);
 }
 
 /* ===== Tool page overrides ===== */
@@ -348,4 +373,21 @@ body {
 .tool-dropzone-active {
   border-color: var(--coffee-accent);
   background-color: var(--coffee-accent-subtle);
+}
+
+/* Visitors who asked their system for less motion get no movement on hover, no smooth
+   scrolling and near-instant transitions/animations (WCAG 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .glass-card:hover, .coffee-card:hover, .btn-accent:hover {
+    transform: none;
+  }
 }

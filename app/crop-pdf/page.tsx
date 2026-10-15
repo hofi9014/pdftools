@@ -116,7 +116,7 @@ export default function CropPDF({ locale: forcedLocale }: { locale?: Locale } = 
       )}
 
       <div className="tool-card rounded-2xl border p-6 mb-6">
-        <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.crop.margins', locale)}</h3>
+        <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.crop.margins', locale)}</h2>
         <div className="flex gap-2 mb-4">
           {['pt', 'mm', 'in'].map(u => (
             <button key={u} onClick={() => setUnit(u)}
@@ -142,7 +142,7 @@ export default function CropPDF({ locale: forcedLocale }: { locale?: Locale } = 
       </div>
 
       <div className="tool-info-box rounded-2xl p-5 mb-6">
-        <h3 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h3>
+        <h2 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h2>
         <p className="text-sm text-blue-700 dark:text-blue-300">{t('local.desc', locale)}</p>
       </div>
 

@@ -119,11 +119,11 @@ export default function JPGToPDF({ locale: forcedLocale }: { locale?: Locale } =
                 <div className="flex items-center gap-2">
                   {i > 0 && (
                     <button onClick={() => moveFile(i, i - 1)}
-                      className="text-gray-400 dark:text-gray-500 hover:!text-[var(--coffee-accent)] px-2 py-1 rounded">↑</button>
+                      className="text-gray-400 dark:text-gray-500 hover:!text-[var(--coffee-accent-ink)] px-2 py-1 rounded">↑</button>
                   )}
                   {i < files.length - 1 && (
                     <button onClick={() => moveFile(i, i + 1)}
-                      className="text-gray-400 dark:text-gray-500 hover:!text-[var(--coffee-accent)] px-2 py-1 rounded">↓</button>
+                      className="text-gray-400 dark:text-gray-500 hover:!text-[var(--coffee-accent-ink)] px-2 py-1 rounded">↓</button>
                   )}
                   <button onClick={() => removeFile(i)}
                     className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 px-2 py-1 rounded">✕</button>
@@ -134,7 +134,7 @@ export default function JPGToPDF({ locale: forcedLocale }: { locale?: Locale } =
         )}
 
         <div className="tool-card rounded-2xl border p-6 mb-6">
-          <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3">{t('page.jpgTopdf.margin', locale)}</h3>
+          <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-3">{t('page.jpgTopdf.margin', locale)}</h2>
           <div className="grid grid-cols-3 gap-3">
             {[
               { value: '0', label: t('page.jpgTopdf.margin_none', locale) },

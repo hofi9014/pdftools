@@ -97,13 +97,13 @@ export default function AiTranslate({ locale: forcedLocale }: { locale?: Locale 
           </select>
         </div>
         <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-2xl p-6">
-          <h3 className="font-bold text-purple-800 dark:text-purple-200 mb-1">{t('page.translate.ai_title', locale)}</h3>
+          <h2 className="font-bold text-purple-800 dark:text-purple-200 mb-1">{t('page.translate.ai_title', locale)}</h2>
           <p className="text-sm text-purple-700 dark:text-purple-300">{t('page.translate.ai_desc', locale)}</p>
         </div>
       </div>
 
       <div className="tool-info-box rounded-2xl p-5 mb-6">
-        <h3 className="font-bold tool-heading mb-2">{t('section.how_it_works', locale)}</h3>
+        <h2 className="font-bold tool-heading mb-2">{t('section.how_it_works', locale)}</h2>
         <ol className="text-sm text-blue-700 dark:text-blue-300 list-decimal list-inside space-y-1">
           <li>{t('page.translate.howto_1', locale)}</li>
           <li>{t('page.translate.howto_2', locale)}</li>
@@ -125,7 +125,7 @@ export default function AiTranslate({ locale: forcedLocale }: { locale?: Locale 
 
       {result && (
         <div className="tool-card rounded-2xl border p-6">
-          <h3 className="font-bold tool-heading mb-4">{t('page.translate.result_heading', locale)}</h3>
+          <h2 className="font-bold tool-heading mb-4">{t('page.translate.result_heading', locale)}</h2>
           <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 max-h-96 overflow-y-auto whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{result.translated}</div>
           <button onClick={() => navigator.clipboard.writeText(result.translated)}
             className="mt-4 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl text-sm text-gray-700 dark:text-gray-300 transition">{t('page.translate.copy_btn', locale)}</button>

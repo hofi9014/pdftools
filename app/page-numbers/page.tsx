@@ -104,7 +104,7 @@ export default function PageNumbers({ locale: forcedLocale }: { locale?: Locale 
 
         {/* Ustawienia */}
         <div className="tool-card rounded-2xl border p-6 mb-6 space-y-5">
-          <h3 className="font-bold text-gray-700 dark:text-gray-300">{t('page.pagenumbers.settings', locale)}</h3>
+          <h2 className="font-bold text-gray-700 dark:text-gray-300">{t('page.pagenumbers.settings', locale)}</h2>
 
           {/* Pozycja */}
           <div>
@@ -135,7 +135,7 @@ export default function PageNumbers({ locale: forcedLocale }: { locale?: Locale 
           {/* Rozmiar czcionki */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('page.pagenumbers.font_size_label', locale)}: <span className="!text-[var(--coffee-accent)] font-bold">{fontSize}pt</span>
+              {t('page.pagenumbers.font_size_label', locale)}: <span className="!text-[var(--coffee-accent-ink)] font-bold">{fontSize}pt</span>
             </label>
             <input type="range" min="8" max="24" step="2"
               value={fontSize} onChange={e => setFontSize(e.target.value)}
@@ -148,7 +148,7 @@ export default function PageNumbers({ locale: forcedLocale }: { locale?: Locale 
         </div>
 
         <div className="tool-info-box rounded-2xl p-5 mb-6">
-          <h3 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h3>
+          <h2 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h2>
           <p className="text-sm text-blue-700 dark:text-blue-300">{t('local.desc', locale)}</p>
         </div>
 

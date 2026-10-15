@@ -97,14 +97,14 @@ export default function ToPdfA({ locale: forcedLocale }: { locale?: Locale } = {
       </button>
 
       <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-5 mb-6">
-        <h3 className="font-bold text-yellow-800 dark:text-yellow-200 mb-2">{t('section.warning', locale)}</h3>
+        <h2 className="font-bold text-yellow-800 dark:text-yellow-200 mb-2">{t('section.warning', locale)}</h2>
         <p className="text-sm text-yellow-700 dark:text-yellow-300">
           {t('page.pdfa.warning_info', locale)}
         </p>
       </div>
 
       <div className="tool-card rounded-2xl border p-6 mb-6">
-        <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('section.what_pdfa_does', locale)}</h3>
+        <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('section.what_pdfa_does', locale)}</h2>
         <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
           <li>{t('page.pdfa.action1', locale)}</li>
           <li>{t('page.pdfa.action2', locale)}</li>
