@@ -1,0 +1,68 @@
+# Checks every push to main and every pull request: type check, all Node test scripts, a
+# production build, and the browser tests that need nothing but the built site.
+# Vercel deploys main on its own; this workflow does not deploy anything.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # OCR language files (~63 MB) are downloaded by the postinstall script; a file already
+      # present is not downloaded again, so the cache only has to be in place before npm ci.
+      - name: Cache OCR language data
+        uses: actions/cache@v4
+        with:
+          path: public/tesseract/lang-data
+          key: ocr-lang-${{ hashFiles('lib/ocr-languages.json') }}
+
+      - run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Node tests
+        run: npm run test:all
+
+      - name: Build
+        run: npm run build
+
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser tests
+        env:
+          E2E_BASE_URL: http://localhost:3000
+        run: |
+          npx next start -p 3000 > next.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000/pl && break; sleep 2; done
+          status=0
+          for t in a11y-axe rtl-layout cookie-consent mobile-menu home-link-locale language-detection guides-404 tools-real-pdf; do
+            echo "::group::$t"
+            npm run -s test:e2e-$t || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+
+      - name: Server log
+        if: failure()
+        run: tail -n 200 next.log || true
