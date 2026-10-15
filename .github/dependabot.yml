@@ -1,0 +1,19 @@
+# Weekly pull requests for outdated dependencies. Each one runs the CI workflow before anything
+# can be merged; nothing is merged or deployed automatically.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # Minor and patch updates of everything in one PR instead of dozens.
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
