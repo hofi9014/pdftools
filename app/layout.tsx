@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: { url: "/icon?v=2", sizes: "32x32", type: "image/png" },
-    apple: { url: "/logo.png?v=3", sizes: "180x180" },
+    apple: { url: "/icons/apple-touch-icon-180.png", sizes: "180x180" },
   },
   manifest: "/manifest.json",
   other: {
@@ -71,7 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <MetaUpdater />
             <CookieConsent />
             <Magnifier />
-            <main className="flex-1">{children}</main>
+            <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">{children}</main>
           </LayoutShell>
         </LocaleProvider>
       </body>

@@ -9,6 +9,19 @@ import { keyBySlug, homePath } from '@/lib/tools';
 
 const guidesLocaleSegments = new Set(Object.values(localeGuidesSlug));
 
+// Info pages are not tools, so keyBySlug does not know them; without this their crumb was the raw
+// slug ("Privacy", "Nasze zasady", "Wsparcie") in every language.
+const infoPageLabel: Record<string, string> = {
+  privacy: 'breadcrumb.privacy',
+  rodo: 'rodo.link',
+  security: 'security.link',
+  terms: 'breadcrumb.terms',
+  faq: 'faq.link',
+  help: 'help.link',
+  'nasze-zasady': 'nav.rules',
+  wsparcie: 'nav.support',
+};
+
 export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale }) {
   const pathname = usePathname();
   const locale = forcedLocale ?? useHydrationSafeLocale();
@@ -46,7 +59,7 @@ export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale 
     <nav aria-label="Breadcrumb" className="max-w-7xl mx-auto px-4 pt-4 text-sm" style={{ color: 'var(--coffee-text-tertiary)' }}>
       <ol className="flex items-center flex-wrap gap-x-1.5 gap-y-1 text-xs sm:text-sm">
         <li>
-          <Link href={homePath(locale)} className="hover:text-[var(--coffee-accent)] transition">{homeLabel}</Link>
+          <Link href={homePath(locale)} className="hover:text-[var(--coffee-accent-ink)] transition">{homeLabel}</Link>
         </li>
         {segments.map((seg, i) => {
           // skip locale segments (e.g. /pl/merge → skip "pl")
@@ -68,6 +81,8 @@ export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale 
             label = t('nav.guide', locale);
           } else if (guidesLocaleSegments.has(seg)) {
             label = t('guides.breadcrumb', locale);
+          } else if (infoPageLabel[seg]) {
+            label = t(infoPageLabel[seg], locale);
           } else if (guideTitles[seg]) {
             label = guideTitles[seg];
           } else {
@@ -81,7 +96,7 @@ export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale 
               {isLast ? (
                 <span className="font-medium" style={{ color: 'var(--coffee-text)' }}>{label}</span>
               ) : (
-                <Link href={href} className="hover:text-[var(--coffee-accent)] transition" style={{ color: 'var(--coffee-text-tertiary)' }}>{label}</Link>
+                <Link href={href} className="hover:text-[var(--coffee-accent-ink)] transition" style={{ color: 'var(--coffee-text-tertiary)' }}>{label}</Link>
               )}
             </li>
           );

@@ -101,7 +101,7 @@ export default function UnlockPDF({ locale: forcedLocale }: { locale?: Locale } 
 
         {/* Hasło */}
         <div className="tool-card rounded-2xl border p-6 mb-6">
-          <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.unlock.password_label', locale)}</h3>
+          <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.unlock.password_label', locale)}</h2>
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
@@ -115,7 +115,7 @@ export default function UnlockPDF({ locale: forcedLocale }: { locale?: Locale } 
               onClick={() => setShowPassword(!showPassword)}
               aria-label={t(showPassword ? 'password.hide' : 'password.show', locale)}
               aria-pressed={showPassword}
-              className="absolute end-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 dark:text-gray-300">
+              className="absolute end-2 top-1/2 -translate-y-1/2 min-w-[32px] min-h-[32px] inline-flex items-center justify-center rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 dark:text-gray-300">
               {showPassword ? '🙈' : '👁️'}
             </button>
           </div>

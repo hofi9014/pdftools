@@ -90,7 +90,7 @@ export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale }
       </div>
 
         <div className="tool-info-box rounded-2xl p-5 mb-6">
-          <h3 className="font-bold tool-heading mb-2">{t('page.flatten.info_title', locale)}</h3>
+          <h2 className="font-bold tool-heading mb-2">{t('page.flatten.info_title', locale)}</h2>
           <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
             <li>{t('page.flatten.info_1', locale)}</li>
             <li>{t('page.flatten.info_2', locale)}</li>

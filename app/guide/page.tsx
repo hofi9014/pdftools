@@ -479,7 +479,7 @@ export default function GuidePage({ locale: forcedLocale }: { locale?: Locale } 
     .filter(cat => cat.tools.length > 0);
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-12">
+    <div className="max-w-5xl mx-auto px-4 py-12">
       <div className="text-center mb-12">
         <h1 className="text-3xl sm:text-4xl font-bold tool-heading mb-3">
           {t('page.guide.title', locale)}
@@ -682,7 +682,7 @@ export default function GuidePage({ locale: forcedLocale }: { locale?: Locale } 
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
 

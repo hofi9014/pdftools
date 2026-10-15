@@ -96,12 +96,12 @@ export default function RedactPdf({ locale: forcedLocale }: { locale?: Locale } 
       )}
 
       <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-5 mb-6">
-        <h3 className="font-bold text-yellow-800 dark:text-yellow-200 mb-2">{t('section.warning', locale)}</h3>
+        <h2 className="font-bold text-yellow-800 dark:text-yellow-200 mb-2">{t('section.warning', locale)}</h2>
         <p className="text-sm text-yellow-700 dark:text-yellow-300">{t('page.redact.warning_info', locale)}</p>
       </div>
 
       <div className="tool-info-box rounded-2xl p-5 mb-6">
-        <h3 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h3>
+        <h2 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h2>
         <p className="text-sm text-blue-700 dark:text-blue-300">{t('page.redact.local_desc', locale)}</p>
       </div>
 

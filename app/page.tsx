@@ -46,7 +46,7 @@ function ToolCard({ tool, locale }: { tool: ToolInfo; locale: Locale }) {
         <span className="inline-block mt-2 text-[10px] font-medium px-2 py-0.5 rounded-full"
           style={{
             backgroundColor: 'color-mix(in srgb, var(--coffee-accent) 12%, transparent)',
-            color: 'var(--coffee-accent)',
+            color: 'var(--coffee-accent-ink)',
             border: '1px solid color-mix(in srgb, var(--coffee-accent) 25%, transparent)',
             alignSelf: 'flex-start',
           }}>
@@ -62,11 +62,11 @@ function ToolCatalog({ groups, locale }: { groups: { cat: CategoryInfo; filtered
     <>
       {groups.map(({ cat, filtered }) => (
         <div key={cat.key} className="mb-12 last:mb-0">
-          <h4 className="text-xl font-bold mb-5 flex items-center gap-2"
+          <h3 className="text-xl font-bold mb-5 flex items-center gap-2"
             style={{ color: `var(--cat-${cat.key})` }}>
             <span>{cat.icon}</span>
             <span>{t(`nav.category.${cat.key === 'more' ? 'more' : cat.key}`, locale)}</span>
-          </h4>
+          </h3>
           <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
             {filtered.map((tool) => (
               <ToolCard key={tool.key} tool={tool} locale={locale} />
@@ -119,7 +119,7 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
   };
 
   return (
-    <main>
+    <div>
       {/* Hero */}
       <section className="relative overflow-hidden py-24 px-4 text-center">
         <div className="absolute inset-0 pointer-events-none" style={{
@@ -134,15 +134,15 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--coffee-accent)', boxShadow: '0 0 8px var(--coffee-accent)' }} />
             {t('hero.badge', locale)}
           </div>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-4 leading-tight" style={{ color: 'var(--coffee-text)' }}>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-4 leading-tight" style={{ color: 'var(--coffee-text)' }}>
             {t('home.title', locale)}
-          </h2>
+          </h1>
           <p className="text-lg sm:text-xl mb-10 max-w-xl mx-auto" style={{ color: 'var(--coffee-text-secondary)' }}>
             {t('home.subtitle', locale)}
           </p>
           <div className="flex items-center justify-center gap-4">
             <a href="#tools" className="btn-accent text-base">
-              {t('home.cta', locale)} →
+              {t('home.cta', locale)}
             </a>
             <a href={toolPath('privacy', locale)} className="btn-ghost text-base">
               {t('hero.privacy', locale)}
@@ -211,7 +211,7 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
 
       {/* Popular tools */}
       <section id="popular" className="max-w-7xl mx-auto px-4 py-8">
-        <h3 className="text-3xl font-bold text-center mb-3" style={{ color: 'var(--coffee-text)' }}>{t('home.popular_title', locale)}</h3>
+        <h2 className="text-3xl font-bold text-center mb-3" style={{ color: 'var(--coffee-text)' }}>{t('home.popular_title', locale)}</h2>
         <p className="text-center mb-10" style={{ color: 'var(--coffee-text-secondary)' }}>
           {t('home.popular_subtitle', locale)}
         </p>
@@ -224,7 +224,7 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
                 style={{ borderColor: 'var(--coffee-accent)', borderWidth: '1.5px' }}>
                 <div className="absolute top-0 left-0 w-full h-1" style={{ background: 'var(--coffee-accent)' }} />
                 <div className="text-3xl sm:text-4xl mb-3">{getToolIcon(tool.key)}</div>
-                <h4 className="font-bold mb-1 text-sm sm:text-base" style={{ color: 'var(--coffee-text)' }}>{t(`tool.${tool.key}`, locale)}</h4>
+                <h3 className="font-bold mb-1 text-sm sm:text-base" style={{ color: 'var(--coffee-text)' }}>{t(`tool.${tool.key}`, locale)}</h3>
                 <p className="text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--coffee-text-tertiary)' }}>{t(`desc.${tool.key}`, locale)}</p>
               </a>
             ) : null;
@@ -234,7 +234,7 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
 
       {/* How it works */}
       <section className="max-w-5xl mx-auto px-4 py-16">
-        <h3 className="text-3xl font-bold text-center mb-12" style={{ color: 'var(--coffee-text)' }}>{t('home.howto_title', locale)}</h3>
+        <h2 className="text-3xl font-bold text-center mb-12" style={{ color: 'var(--coffee-text)' }}>{t('home.howto_title', locale)}</h2>
         <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4">
           {/* Connecting line on desktop */}
           <div className="hidden md:block absolute top-12 left-[calc(16.67%+2rem)] right-[calc(16.67%+2rem)] h-px"
@@ -246,17 +246,17 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
           ].map((step, i) => (
             <div key={i} className="relative flex flex-col items-center text-center">
               <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold mb-4"
-                style={{ backgroundColor: 'var(--coffee-accent)', color: 'white' }}>
+                style={{ backgroundColor: 'var(--coffee-accent-ink)', color: 'var(--coffee-on-accent)' }}>
                 {step.num}
               </div>
-              <h4 className="font-bold text-lg mb-2" style={{ color: 'var(--coffee-text)' }}>{step.title}</h4>
+              <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--coffee-text)' }}>{step.title}</h3>
               <p className="text-sm leading-relaxed max-w-xs" style={{ color: 'var(--coffee-text-secondary)' }}>{step.desc}</p>
             </div>
           ))}
         </div>
         <div className="text-center mt-10">
           <a href={toolPath('guide', locale)} className="inline-flex items-center gap-1 font-medium text-sm transition-opacity hover:opacity-80"
-            style={{ color: 'var(--coffee-accent)' }}>
+            style={{ color: 'var(--coffee-accent-ink)' }}>
             {t('home.howto_guide', locale)}
           </a>
         </div>
@@ -288,7 +288,7 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
 
       {/* Scenarios */}
       <section className="max-w-5xl mx-auto px-4 py-8">
-        <h3 className="text-3xl font-bold text-center mb-10" style={{ color: 'var(--coffee-text)' }}>{t('home.scenarios_title', locale)}</h3>
+        <h2 className="text-3xl font-bold text-center mb-10" style={{ color: 'var(--coffee-text)' }}>{t('home.scenarios_title', locale)}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
             { key: 'compress', href: '/compress' },
@@ -326,7 +326,7 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
       {/* Guides */}
       <section className="max-w-5xl mx-auto px-4 py-4">
         <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--coffee-surface-solid)', border: '1px solid var(--coffee-border)' }}>
-          <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--coffee-text)' }}>📚 {t('nav.guides', locale)}</h3>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--coffee-text)' }}>📚 {t('nav.guides', locale)}</h2>
           <p className="text-sm mb-4" style={{ color: 'var(--coffee-text-secondary)' }}>
             {t('desc.guide', locale)}
           </p>
@@ -340,7 +340,7 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
                   style={{ backgroundColor: 'var(--coffee-surface)', border: '1px solid var(--coffee-border)' }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--coffee-accent)'; e.currentTarget.style.boxShadow = '0 4px 20px var(--coffee-accent-glow)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--coffee-border)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}>
-                  <h4 className="font-semibold text-sm mb-1" style={{ color: 'var(--coffee-text)' }}>{title}</h4>
+                  <h3 className="font-semibold text-sm mb-1" style={{ color: 'var(--coffee-text)' }}>{title}</h3>
                   <p className="text-xs leading-relaxed line-clamp-2" style={{ color: 'var(--coffee-text-secondary)' }}>{excerpt}</p>
                 </a>
               );
@@ -348,7 +348,7 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
           </div>
           <a href={`/guides/${localeGuidesSlug[locale]}`}
             className="inline-flex items-center gap-1 text-sm font-medium transition-opacity hover:opacity-80"
-            style={{ color: 'var(--coffee-accent)' }}>
+            style={{ color: 'var(--coffee-accent-ink)' }}>
             {t('guides.all_guides', locale)} →
           </a>
         </div>
@@ -358,7 +358,7 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
       <section id="tools" className="max-w-7xl mx-auto px-4 py-16">
         {!search && (
           <>
-            <h3 className="text-3xl font-bold text-center mb-3" style={{ color: 'var(--coffee-text)' }}>{t('home.pdfTools', locale)}</h3>
+            <h2 className="text-3xl font-bold text-center mb-3" style={{ color: 'var(--coffee-text)' }}>{t('home.pdfTools', locale)}</h2>
             <p className="text-center mb-12" style={{ color: 'var(--coffee-text-secondary)' }}>
               {t('home.subtitle2', locale)}
             </p>
@@ -369,6 +369,6 @@ export default function Home({ locale: forcedLocale }: { locale?: Locale } = {})
           </>
         )}
       </section>
-    </main>
+    </div>
   );
 }

@@ -67,7 +67,7 @@ export default function UrlToPdf({ locale: forcedLocale }: { locale?: Locale } =
             className="flex-1 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 tool-heading"
           />
           <button onClick={() => setUrl('https://example.com')}
-            className="text-xs !text-[var(--coffee-accent)] hover:underline whitespace-nowrap">{t('page.url.example_btn', locale)}</button>
+            className="text-xs !text-[var(--coffee-accent-ink)] hover:underline whitespace-nowrap">{t('page.url.example_btn', locale)}</button>
         </div>
       </div>
 

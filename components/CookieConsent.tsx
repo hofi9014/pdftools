@@ -82,7 +82,7 @@ export default function CookieConsent() {
               <Link
                 href={`/${locale}/privacy`}
                 className="underline hover:no-underline whitespace-nowrap"
-                style={{ color: "var(--coffee-accent)" }}
+                style={{ color: "var(--coffee-accent-ink)" }}
               >
                 {t('cookie.privacy_link', locale)}
               </Link>

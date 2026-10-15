@@ -102,7 +102,7 @@ export default function AddPage({ locale: forcedLocale }: { locale?: Locale } = 
       </div>
 
       <div className="tool-card rounded-2xl border p-6 mb-6">
-        <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.addpage.where', locale)}</h3>
+        <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.addpage.where', locale)}</h2>
         <div className="grid grid-cols-3 gap-3 mb-4">
           {[
             { value: 'start', label: t('page.addpage.start', locale) },
@@ -126,7 +126,7 @@ export default function AddPage({ locale: forcedLocale }: { locale?: Locale } = 
       </div>
 
       <div className="tool-info-box rounded-2xl p-5 mb-6">
-        <h3 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h3>
+        <h2 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h2>
         <p className="text-sm text-blue-700 dark:text-blue-300">{t('local.desc', locale)}</p>
       </div>
 

@@ -377,7 +377,7 @@ export default function FaqPage({ locale: forcedLocale }: { locale?: Locale } = 
   };
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />
 
       <div className="text-center mb-12">
@@ -438,7 +438,7 @@ export default function FaqPage({ locale: forcedLocale }: { locale?: Locale } = 
                         <Link
                           href={toolPath(item.href.replace(/^\//, ''), locale)}
                           className="inline-flex items-center gap-1 text-sm font-medium transition hover:underline"
-                          style={{ color: 'var(--coffee-accent)' }}
+                          style={{ color: 'var(--coffee-accent-ink)' }}
                         >
                           {t('help.open_tool', locale)} →
                         </Link>
@@ -451,6 +451,6 @@ export default function FaqPage({ locale: forcedLocale }: { locale?: Locale } = 
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

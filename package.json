@@ -185,7 +185,8 @@
     "test:cookie-consent-withdraw": "npx --yes tsx tests/cookie-consent-withdraw.mts",
     "test:proxy-log-privacy": "npx --yes tsx tests/proxy-log-privacy.mts",
     "test:legal-texts-accuracy": "npx --yes tsx tests/legal-texts-accuracy.mts",
-    "test:e2e-cookie-consent": "npx --yes tsx e2e/cookie-consent.mts"
+    "test:e2e-cookie-consent": "npx --yes tsx e2e/cookie-consent.mts",
+    "test:e2e-a11y-axe": "npx --yes tsx e2e/a11y-axe.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

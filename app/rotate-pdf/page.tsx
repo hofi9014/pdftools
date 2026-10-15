@@ -136,7 +136,7 @@ export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } 
         )}
 
         <div className="tool-card rounded-2xl border p-6 mb-6">
-          <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.rotate.angle_title', locale)}</h3>
+          <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.rotate.angle_title', locale)}</h2>
           <div className="grid grid-cols-3 gap-3">
             {[
               { value: '90', label: t('page.rotate.right', locale), icon: '↪️' },

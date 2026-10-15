@@ -50,7 +50,7 @@ export default function LegalDocument({ doc, icon, locale }: { doc: LegalDoc; ic
       </div>
 
       <div className="text-center mt-8">
-        <Link href={homePath(locale)} className="!text-[var(--coffee-accent)] hover:underline text-sm">
+        <Link href={homePath(locale)} className="!text-[var(--coffee-accent-ink)] hover:underline text-sm">
           {t('back.to_home', locale)}
         </Link>
       </div>

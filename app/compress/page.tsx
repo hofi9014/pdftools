@@ -206,7 +206,7 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
       {!loading && <BatchFailures failed={failed} total={files.length} locale={locale} />}
 
       <div className="tool-card rounded-2xl border p-6 mb-6">
-        <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.compress.level_title', locale)}</h3>
+        <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.compress.level_title', locale)}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { value: 'recommended', label: t('page.compress.level_recommended', locale), desc: t('page.compress.level_recommended_desc', locale), icon: '⭐' },
