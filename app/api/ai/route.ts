@@ -5,6 +5,13 @@ import { apiErrorBody } from '@/lib/api-error-codes';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const MODEL = 'openai/gpt-4o-mini';
 
+// The text of a user's document must not end up stored or trained on by the model's provider.
+// OpenRouter's default routing (`data_collection: "allow"`) admits providers that "store user
+// data non-transiently and may train on it"; "deny" restricts a request to providers that do not
+// collect user data. When no such provider serves the model, OpenRouter fails the request rather
+// than falling back — and so do we: there is deliberately no retry without this policy.
+export const PROVIDER_DATA_POLICY = { data_collection: 'deny' } as const;
+
 // The client (lib/client-ai.ts) already truncates text before sending — 12000 chars for
 // 'chat', 120000 for 'summary'/'translate' — but that only constrains requests made through
 // the app's own UI. A request sent directly to this endpoint bypasses the client entirely, so
@@ -134,6 +141,7 @@ export async function POST(request: NextRequest) {
         ],
         max_tokens: maxTokens,
         temperature,
+        provider: PROVIDER_DATA_POLICY,
       }),
     });
   } catch (e) {
@@ -152,7 +160,9 @@ export async function POST(request: NextRequest) {
     // (400/413/422/...) can be triggered by the content of the user's own request (e.g.
     // text exceeding the model's context window) — refunding those would let an attacker
     // retry forever for free, defeating the rate limit entirely.
-    if (res.status >= 500) {
+    // A 404 is OpenRouter finding no provider that meets PROVIDER_DATA_POLICY for the model:
+    // nothing the requester's text could cause, so it is refunded like an outage.
+    if (res.status >= 500 || res.status === 404) {
       await refundAiRateLimit(clientIp);
     }
     const errBody = await res.text();

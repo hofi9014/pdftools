@@ -136,7 +136,7 @@ export default function AiTranslate({ locale: forcedLocale }: { locale?: Locale 
         {[
           { icon: '🤖', text: t('page.translate.feature_1', locale) },
           { icon: '🌍', text: t('feature.eleven_langs', locale) },
-          { icon: '🔒', text: t('feature.no_upload_browser', locale) },
+          { icon: '🔒', text: t('feature.ai_file_local', locale) },
         ].map((item, i) => (
           <div key={i} className="tool-feature-card rounded-xl p-4 border">
             <div className="text-2xl mb-1">{item.icon}</div>

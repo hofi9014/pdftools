@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import { OPEN_COOKIE_SETTINGS_EVENT } from '@/lib/analytics-consent';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
@@ -69,6 +70,12 @@ export default function Footer({ locale: forcedLocale }: { locale?: Locale }) {
                 </li>
               ))}
               <li><Link href={`/guides/${localeGuidesSlug[locale]}`} className={linkStyle}>{t('nav.guides', locale)}</Link></li>
+              <li>
+                {/* Reopens the consent banner: withdrawing consent must be as easy as giving it. */}
+                <button type="button" onClick={() => window.dispatchEvent(new Event(OPEN_COOKIE_SETTINGS_EVENT))} className={`${linkStyle} text-start`}>
+                  {t('cookie.settings', locale)}
+                </button>
+              </li>
             </ul>
           </div>
         </div>
