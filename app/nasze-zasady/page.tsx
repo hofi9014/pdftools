@@ -35,11 +35,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. Bezpieczeństwo przede wszystkim',
-        p: 'Stosujemy szyfrowanie TLS/SSL, Content Security Policy (CSP), przetwarzanie plików wyłącznie w pamięci RAM oraz automatyczne usuwanie danych po zakończeniu operacji. Nie przechowujemy plików na dyskach serwera.',
+        p: 'Stosujemy szyfrowane połączenie HTTPS, Content Security Policy, ochronę API przed nadużyciami i limity zapytań. Najważniejsze: narzędzia do plików działają w Twojej przeglądarce, więc pliki w ogóle nie trafiają na nasz serwer.',
       },
       {
         h: '6. Reklamy i śledzenie — uczciwie i przejrzyście',
-        p: 'Obecnie strona nie wyświetla żadnych reklam. W przyszłości możemy wprowadzić dyskretne reklamy (np. Google AdSense), żeby pokryć koszty utrzymania i rozwoju — jeśli to nastąpi, zaktualizujemy tę informację. Niezależnie od tego, wszystkie narzędzia PDF pozostaną darmowe i bez limitu. Google Analytics używamy wyłącznie za Twoją zgodą, w formie zanonimizowanej. Nie stosujemy pikseli remarketingowych ani profilowania behawioralnego.',
+        p: 'Obecnie strona nie wyświetla żadnych reklam. W przyszłości możemy wprowadzić dyskretne reklamy (np. Google AdSense), żeby pokryć koszty utrzymania i rozwoju — jeśli to nastąpi, zaktualizujemy tę informację. Niezależnie od tego wszystkie narzędzia PDF pozostaną darmowe i bez limitu. Google Analytics używamy wyłącznie za Twoją zgodą, którą możesz wycofać w każdej chwili przyciskiem „Ustawienia cookies”. Nie stosujemy pikseli remarketingowych ani profilowania behawioralnego.',
       },
       {
         h: 'Dobrowolne wsparcie',
@@ -75,11 +75,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. Security first',
-        p: 'We use TLS/SSL encryption, Content Security Policy (CSP), RAM-only file processing, and automatic data deletion after each operation. We do not store files on server disks.',
+        p: 'We use an encrypted HTTPS connection, a Content Security Policy, API abuse protection and request limits. Most importantly, the file tools run in your browser, so your files never reach our server at all.',
       },
       {
         h: '6. Ads and tracking — fairly and transparently',
-        p: 'Currently the site does not display any ads. In the future, we may introduce discreet ads (e.g. Google AdSense) to cover maintenance and development costs — if that happens, we will update this notice. Regardless, all PDF tools will remain free and unlimited. Google Analytics is used only with your consent and in anonymized form. We do not use remarketing pixels or behavioral profiling.',
+        p: 'The site currently shows no ads. In the future we may introduce discreet ads (e.g. Google AdSense) to cover hosting and development costs — if that happens, we will update this information. Either way, all PDF tools will stay free and unlimited. We use Google Analytics only with your consent, which you can withdraw at any time with the "Cookie settings" button. We use no remarketing pixels or behavioural profiling.',
       },
       {
         h: 'Voluntary support',
@@ -115,11 +115,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. Sicherheit steht an erster Stelle',
-        p: 'Wir verwenden TLS/SSL-Verschlüsselung, Content Security Policy (CSP), RAM-only-Dateiverarbeitung und automatische Datenlöschung nach jedem Vorgang. Wir speichern keine Dateien auf Server-Festplatten.',
+        p: 'Wir verwenden eine verschlüsselte HTTPS-Verbindung, eine Content Security Policy, Missbrauchsschutz für die API und Anfragelimits. Vor allem aber laufen die Dateiwerkzeuge in Ihrem Browser, sodass Ihre Dateien unseren Server gar nicht erreichen.',
       },
       {
         h: '6. Werbung und Tracking — fair und transparent',
-        p: 'Die Website zeigt derzeit keine Werbung an. In Zukunft könnten wir diskrete Anzeigen (z. B. Google AdSense) einführen, um Wartungs- und Entwicklungskosten zu decken — falls dies geschieht, werden wir diesen Hinweis aktualisieren. Unabhängig davon bleiben alle PDF-Werkzeuge kostenlos und unbegrenzt. Google Analytics wird nur mit Ihrer Zustimmung und in anonymisierter Form verwendet. Wir verwenden keine Remarketing-Pixel oder Verhaltensprofilierung.',
+        p: 'Die Website zeigt derzeit keine Werbung. Künftig könnten wir dezente Werbung (z. B. Google AdSense) einführen, um Hosting- und Entwicklungskosten zu decken — falls das geschieht, aktualisieren wir diese Information. In jedem Fall bleiben alle PDF-Werkzeuge kostenlos und unbegrenzt. Google Analytics verwenden wir nur mit Ihrer Einwilligung, die Sie jederzeit über die Schaltfläche „Cookie-Einstellungen“ widerrufen können. Wir verwenden keine Remarketing-Pixel und keine verhaltensbasierte Profilbildung.',
       },
       {
         h: 'Freiwillige Unterstützung',
@@ -155,11 +155,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. La seguridad ante todo',
-        p: 'Utilizamos cifrado TLS/SSL, Política de Seguridad de Contenido (CSP), procesamiento de archivos solo en RAM y eliminación automática de datos después de cada operación. No almacenamos archivos en discos del servidor.',
+        p: 'Usamos una conexión HTTPS cifrada, una Content Security Policy, protección de la API contra abusos y límites de solicitudes. Lo más importante: las herramientas de archivos funcionan en tu navegador, así que tus archivos ni siquiera llegan a nuestro servidor.',
       },
       {
         h: '6. Anuncios y rastreo — justa y transparentemente',
-        p: 'Actualmente el sitio no muestra ningún anuncio. En el futuro, podríamos introducir anuncios discretos (p. ej., Google AdSense) para cubrir los costos de mantenimiento y desarrollo — si eso ocurre, actualizaremos este aviso. Independientemente de ello, todas las herramientas PDF seguirán siendo gratuitas e ilimitadas. Google Analytics se utiliza solo con su consentimiento y de forma anonimizada. No utilizamos píxeles de remarketing ni perfiles de comportamiento.',
+        p: 'Actualmente el sitio no muestra anuncios. En el futuro podríamos introducir anuncios discretos (p. ej., Google AdSense) para cubrir los costes de alojamiento y desarrollo; si ocurre, actualizaremos esta información. En cualquier caso, todas las herramientas PDF seguirán siendo gratuitas y sin límite. Usamos Google Analytics solo con tu consentimiento, que puedes retirar en cualquier momento con el botón «Configuración de cookies». No usamos píxeles de remarketing ni perfiles de comportamiento.',
       },
       {
         h: 'Apoyo voluntario',
@@ -195,11 +195,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. La sécurité avant tout',
-        p: 'Nous utilisons le chiffrement TLS/SSL, une politique de sécurité de contenu (CSP), un traitement des fichiers exclusivement en RAM et une suppression automatique des données après chaque opération. Nous ne stockons pas les fichiers sur les disques du serveur.',
+        p: 'Nous utilisons une connexion HTTPS chiffrée, une Content Security Policy, une protection de l’API contre les abus et des limites de requêtes. Surtout, les outils de fichiers fonctionnent dans votre navigateur : vos fichiers n’atteignent jamais notre serveur.',
       },
       {
         h: '6. Publicités et suivi — de manière juste et transparente',
-        p: 'Actuellement, le site n\'affiche aucune publicité. À l\'avenir, nous pourrions introduire des publicités discrètes (par ex. Google AdSense) pour couvrir les coûts de maintenance et de développement — si cela se produit, nous mettrons à jour cet avis. Indépendamment de cela, tous les outils PDF resteront gratuits et sans limite. Google Analytics est utilisé uniquement avec votre consentement et sous forme anonymisée. Nous n\'utilisons pas de pixels de remarketing ni de profilage comportemental.',
+        p: 'Le site n’affiche actuellement aucune publicité. À l’avenir, nous pourrions introduire des publicités discrètes (p. ex. Google AdSense) pour couvrir les frais d’hébergement et de développement ; le cas échéant, nous mettrons cette information à jour. Dans tous les cas, tous les outils PDF resteront gratuits et illimités. Nous utilisons Google Analytics uniquement avec votre consentement, que vous pouvez retirer à tout moment avec le bouton « Paramètres des cookies ». Nous n’utilisons ni pixels de remarketing ni profilage comportemental.',
       },
       {
         h: 'Soutien volontaire',
@@ -235,11 +235,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. La sicurezza prima di tutto',
-        p: 'Utilizziamo crittografia TLS/SSL, Content Security Policy (CSP), elaborazione dei file esclusivamente in RAM e cancellazione automatica dei dati dopo ogni operazione. Non memorizziamo file sui dischi del server.',
+        p: 'Usiamo una connessione HTTPS cifrata, una Content Security Policy, protezione dell’API dagli abusi e limiti di richieste. Soprattutto, gli strumenti per i file funzionano nel tuo browser, quindi i tuoi file non arrivano mai al nostro server.',
       },
       {
         h: '6. Pubblicità e tracciamento — in modo equo e trasparente',
-        p: 'Attualmente il sito non mostra alcuna pubblicità. In futuro, potremmo introdurre annunci discreti (es. Google AdSense) per coprire i costi di manutenzione e sviluppo — se ciò accadrà, aggiorneremo questa informativa. Indipendentemente da ciò, tutti gli strumenti PDF rimarranno gratuiti e senza limiti. Google Analytics è utilizzato solo con il tuo consenso e in forma anonimizzata. Non utilizziamo pixel di remarketing né profilazione comportamentale.',
+        p: 'Al momento il sito non mostra pubblicità. In futuro potremmo introdurre annunci discreti (ad es. Google AdSense) per coprire i costi di hosting e sviluppo; se accadrà, aggiorneremo questa informazione. In ogni caso tutti gli strumenti PDF resteranno gratuiti e senza limiti. Usiamo Google Analytics solo con il tuo consenso, che puoi revocare in qualsiasi momento con il pulsante «Impostazioni cookie». Non usiamo pixel di remarketing né profilazione comportamentale.',
       },
       {
         h: 'Supporto volontario',
@@ -275,11 +275,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. Segurança em primeiro lugar',
-        p: 'Usamos criptografia TLS/SSL, Política de Segurança de Conteúdo (CSP), processamento de arquivos exclusivamente em RAM e exclusão automática de dados após cada operação. Não armazenamos arquivos em discos do servidor.',
+        p: 'Usamos uma ligação HTTPS cifrada, uma Content Security Policy, proteção da API contra abusos e limites de pedidos. Acima de tudo, as ferramentas de ficheiros funcionam no seu navegador, por isso os seus ficheiros nem chegam ao nosso servidor.',
       },
       {
         h: '6. Anúncios e rastreamento — de forma justa e transparente',
-        p: 'Atualmente o site não exibe nenhum anúncio. No futuro, podemos introduzir anúncios discretos (ex. Google AdSense) para cobrir custos de manutenção e desenvolvimento — se isso acontecer, atualizaremos este aviso. Independentemente disso, todas as ferramentas PDF permanecerão gratuitas e ilimitadas. O Google Analytics é usado apenas com seu consentimento e de forma anonimizada. Não usamos pixels de remarketing nem perfil comportamental.',
+        p: 'Atualmente o site não mostra anúncios. No futuro poderemos introduzir anúncios discretos (p. ex. Google AdSense) para cobrir os custos de alojamento e desenvolvimento — se isso acontecer, atualizaremos esta informação. Em qualquer caso, todas as ferramentas PDF continuarão gratuitas e sem limites. Usamos o Google Analytics só com o seu consentimento, que pode retirar a qualquer momento com o botão «Definições de cookies». Não usamos píxeis de remarketing nem criação de perfis comportamentais.',
       },
       {
         h: 'Apoio voluntário',
@@ -315,11 +315,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. Säkerhet först',
-        p: 'Vi använder TLS/SSL-kryptering, Content Security Policy (CSP), filbearbetning endast i RAM och automatisk radering av data efter varje operation. Vi lagrar inte filer på serverdiskar.',
+        p: 'Vi använder en krypterad HTTPS-anslutning, en Content Security Policy, missbruksskydd för API:t och förfrågningsgränser. Viktigast av allt: filverktygen körs i din webbläsare, så dina filer når aldrig vår server.',
       },
       {
         h: '6. Annonser och spårning — rättvist och transparent',
-        p: 'Webbplatsen visar för närvarande inga annonser. I framtiden kan vi införa diskreta annonser (t.ex. Google AdSense) för att täcka underhålls- och utvecklingskostnader — om det händer kommer vi att uppdatera denna information. Oavsett detta kommer alla PDF-verktyg att förbli gratis och obegränsade. Google Analytics används endast med ditt samtycke och i anonymiserad form. Vi använder inte remarketing-pixlar eller beteendeprofilering.',
+        p: 'Webbplatsen visar för närvarande inga annonser. I framtiden kan vi införa diskreta annonser (t.ex. Google AdSense) för att täcka kostnader för drift och utveckling — om det sker uppdaterar vi denna information. Oavsett detta förblir alla PDF-verktyg gratis och obegränsade. Google Analytics använder vi bara med ditt samtycke, som du när som helst kan återkalla med knappen ”Cookie-inställningar”. Vi använder inga remarketingpixlar eller beteendeprofilering.',
       },
       {
         h: 'Frivilligt stöd',
@@ -355,11 +355,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. Sikkerhet først',
-        p: 'Vi bruker TLS/SSL-kryptering, Content Security Policy (CSP), filbehandling kun i RAM og automatisk sletting av data etter hver operasjon. Vi lagrer ikke filer på serverdisker.',
+        p: 'Vi bruker en kryptert HTTPS-tilkobling, en Content Security Policy, vern av API-et mot misbruk og forespørselsgrenser. Viktigst av alt: filverktøyene kjører i nettleseren din, så filene dine kommer aldri til serveren vår.',
       },
       {
         h: '6. Annonser og sporing — rettferdig og transparent',
-        p: 'Nettstedet viser for øyeblikket ingen annonser. I fremtiden kan vi innføre diskrete annonser (f.eks. Google AdSense) for å dekke vedlikeholds- og utviklingskostnader — hvis det skjer, vil vi oppdatere denne informasjonen. Uavhengig av dette vil alle PDF-verktøy forbli gratis og ubegrensede. Google Analytics brukes kun med ditt samtykke og i anonymisert form. Vi bruker ikke remarketing-piksler eller atferdsprofilering.',
+        p: 'Nettstedet viser for tiden ingen annonser. I fremtiden kan vi innføre diskrete annonser (f.eks. Google AdSense) for å dekke kostnader til drift og utvikling — skjer det, oppdaterer vi denne informasjonen. Uansett forblir alle PDF-verktøy gratis og ubegrensede. Google Analytics bruker vi bare med ditt samtykke, som du når som helst kan trekke tilbake med knappen «Innstillinger for informasjonskapsler». Vi bruker ingen remarketingpiksler eller atferdsprofilering.',
       },
       {
         h: 'Frivillig støtte',
@@ -396,11 +396,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. الأمان أولاً',
-        p: 'نستخدم تشفير TLS/SSL، سياسة أمان المحتوى (CSP)، معالجة الملفات فقط في الذاكرة العشوائية (RAM)، وحذف البيانات تلقائيًا بعد كل عملية. لا نخزن الملفات على أقراص الخادم.',
+        p: 'نستخدم اتصال HTTPS مشفّرًا وسياسة أمان المحتوى وحماية واجهة API من إساءة الاستخدام وحدودًا للطلبات. والأهم أن أدوات الملفات تعمل في متصفحك، فلا تصل ملفاتك إلى خادمنا أصلًا.',
       },
       {
         h: '6. الإعلانات والتتبع — بإنصاف وشفافية',
-        p: 'الموقع لا يعرض حاليًا أي إعلانات. في المستقبل، قد نقدم إعلانات غير مزعجة (مثل Google AdSense) لتغطية تكاليف الصيانة والتطوير — إذا حدث ذلك، سنقوم بتحديث هذا الإشعار. بغض النظر عن ذلك، جميع أدوات PDF ستبقى مجانية وغير محدودة. Google Analytics يُستخدم فقط بموافقتك وبشكل مجهول. لا نستخدم بكسلات إعادة التسويق أو التنميط السلوكي.',
+        p: 'لا يعرض الموقع حاليًا أي إعلانات. قد نُدخل في المستقبل إعلانات غير مزعجة (مثل Google AdSense) لتغطية تكاليف الاستضافة والتطوير — وإن حدث ذلك فسنحدّث هذه المعلومات. وفي جميع الأحوال ستبقى كل أدوات PDF مجانية وبلا حدود. نستخدم Google Analytics فقط بموافقتك، ويمكنك سحبها في أي وقت عبر زر «إعدادات ملفات تعريف الارتباط». لا نستخدم بكسلات إعادة الاستهداف ولا التنميط السلوكي.',
       },
       {
         h: 'دعم تطوعي',
@@ -436,11 +436,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. امنیت در اولویت',
-        p: 'ما از رمزنگاری TLS/SSL، خط مشی امنیت محتوا (CSP)، پردازش فایل‌ها فقط در RAM و حذف خودکار داده‌ها پس از هر عملیات استفاده می‌کنیم. فایل‌ها را روی دیسک‌های سرور ذخیره نمی‌کنیم.',
+        p: 'از اتصال رمزنگاری‌شدهٔ HTTPS، سیاست امنیت محتوا، محافظت API در برابر سوءاستفاده و سقف درخواست‌ها استفاده می‌کنیم. مهم‌تر از همه، ابزارهای فایل در مرورگر شما اجرا می‌شوند، پس فایل‌های شما اصلاً به سرور ما نمی‌رسند.',
       },
       {
         h: '6. تبلیغات و ردیابی — منصفانه و شفاف',
-        p: 'وب‌سایت در حال حاضر هیچ تبلیغاتی نمایش نمی‌دهد. در آینده، ممکن است تبلیغات غیرمزاحم (مانند Google AdSense) را برای پوشش هزینه‌های نگهداری و توسعه معرفی کنیم — اگر این اتفاق بیفتد، این اطلاعیه را به‌روزرسانی می‌کنیم. صرف نظر از این، همه ابزارهای PDF رایگان و بدون محدودیت باقی خواهند ماند. Google Analytics فقط با رضایت شما و به صورت ناشناس استفاده می‌شود. ما از پیکسل‌های بازاریابی مجدد یا پروفایل‌سازی رفتاری استفاده نمی‌کنیم.',
+        p: 'سایت در حال حاضر هیچ تبلیغی نشان نمی‌دهد. ممکن است در آینده برای پوشش هزینه‌های میزبانی و توسعه تبلیغات کم‌مزاحمت (مثلاً Google AdSense) اضافه کنیم — اگر چنین شود، این اطلاعات را به‌روز می‌کنیم. در هر حال همهٔ ابزارهای PDF رایگان و بدون محدودیت می‌مانند. از Google Analytics فقط با رضایت شما استفاده می‌کنیم که هر زمان می‌توانید با دکمهٔ «تنظیمات کوکی» آن را پس بگیرید. از پیکسل‌های بازاریابی مجدد یا نمایه‌سازی رفتاری استفاده نمی‌کنیم.',
       },
       {
         h: 'حمایت داوطلبانه',
@@ -476,11 +476,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. सुरक्षा पहले',
-        p: 'हम TLS/SSL एन्क्रिप्शन, सामग्री सुरक्षा नीति (CSP), केवल RAM में फ़ाइल प्रोसेसिंग और प्रत्येक ऑपरेशन के बाद स्वचालित डेटा हटाने का उपयोग करते हैं। हम सर्वर डिस्क पर फ़ाइलें संग्रहीत नहीं करते।',
+        p: 'हम एन्क्रिप्टेड HTTPS कनेक्शन, Content Security Policy, API को दुरुपयोग से सुरक्षा और अनुरोध सीमाओं का उपयोग करते हैं। सबसे महत्वपूर्ण, फ़ाइल टूल आपके ब्राउज़र में चलते हैं, इसलिए आपकी फ़ाइलें हमारे सर्वर तक पहुँचती ही नहीं।',
       },
       {
         h: '6. विज्ञापन और ट्रैकिंग — निष्पक्ष और पारदर्शी रूप से',
-        p: 'वर्तमान में साइट कोई विज्ञापन प्रदर्शित नहीं करती है। भविष्य में, हम रखरखाव और विकास लागतों को कवर करने के लिए विनीत विज्ञापन (जैसे Google AdSense) शुरू कर सकते हैं — यदि ऐसा होता है, तो हम इस सूचना को अपडेट करेंगे। इसके बावजूद, सभी PDF उपकरण मुफ्त और असीमित रहेंगे। Google Analytics का उपयोग केवल आपकी सहमति से और अज्ञात रूप में किया जाता है। हम रीमार्केटिंग पिक्सेल या व्यवहार प्रोफाइलिंग का उपयोग नहीं करते।',
+        p: 'साइट अभी कोई विज्ञापन नहीं दिखाती। भविष्य में होस्टिंग और विकास की लागत पूरी करने के लिए हम सीमित विज्ञापन (जैसे Google AdSense) जोड़ सकते हैं — ऐसा हुआ तो हम यह जानकारी अपडेट करेंगे। किसी भी स्थिति में सभी PDF टूल मुफ़्त और असीमित रहेंगे। हम Google Analytics का उपयोग केवल आपकी सहमति से करते हैं, जिसे आप «कुकी सेटिंग्स» बटन से कभी भी वापस ले सकते हैं। हम रीमार्केटिंग पिक्सेल या व्यवहार-आधारित प्रोफ़ाइलिंग का उपयोग नहीं करते।',
       },
       {
         h: 'स्वैच्छिक समर्थन',
@@ -516,11 +516,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. セキュリティを最優先',
-        p: 'TLS/SSL暗号化、コンテンツセキュリティポリシー（CSP）、RAMのみでのファイル処理、各操作後の自動データ削除を採用しています。サーバーディスクにファイルを保存することはありません。',
+        p: '暗号化された HTTPS 接続、Content Security Policy、API の不正利用対策、リクエスト上限を採用しています。何より、ファイルツールはブラウザで動作するため、お客様のファイルが当サイトのサーバーに届くことはありません。',
       },
       {
         h: '6. 広告とトラッキング — 公正かつ透明に',
-        p: '現在、サイトは広告を表示していません。将来的に、メンテナンスと開発コストをカバーするために控えめな広告（例：Google AdSense）を導入する可能性があります — その場合は、この通知を更新します。いずれにしても、すべてのPDFツールは無料で制限なく利用可能です。Google Analyticsはお客様の同意がある場合にのみ、匿名化された形で使用されます。リマーケティングピクセルや行動プロファイリングは使用していません。',
+        p: '現在、サイトに広告は表示していません。今後、ホスティングと開発の費用をまかなうため控えめな広告（例：Google AdSense）を導入する可能性があります。その場合はこの情報を更新します。いずれにしても、すべての PDF ツールは無料・無制限のままです。Google Analytics はご同意いただいた場合にのみ使用し、その同意は「Cookie 設定」ボタンでいつでも撤回できます。リマーケティングピクセルや行動プロファイリングは使用しません。',
       },
       {
         h: '任意のサポート',
@@ -556,11 +556,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. 安全第一',
-        p: '我们使用TLS/SSL加密、内容安全策略（CSP）、仅内存文件处理以及每次操作后自动删除数据。我们不会将文件存储在服务器磁盘上。',
+        p: '我们使用加密的 HTTPS 连接、Content Security Policy、API 防滥用保护和请求上限。最重要的是，文件工具在您的浏览器中运行，因此您的文件根本不会到达我们的服务器。',
       },
       {
         h: '6. 广告和跟踪 — 公正透明',
-        p: '目前网站不显示任何广告。未来，我们可能会引入谨慎的广告（例如 Google AdSense）来覆盖维护和开发成本 — 如果发生这种情况，我们将更新此通知。无论如何，所有PDF工具将保持免费且无限制。Google Analytics 仅在您同意的情况下以匿名形式使用。我们不使用再营销像素或行为分析。',
+        p: '网站目前不展示任何广告。将来我们可能会引入不打扰的广告（例如 Google AdSense）以支付托管和开发费用——如果发生，我们会更新这些信息。无论如何，所有 PDF 工具都将保持免费且不限次数。我们仅在您同意后使用 Google Analytics，您可以随时通过“Cookie 设置”按钮撤回同意。我们不使用再营销像素或行为画像。',
       },
       {
         h: '自愿支持',
@@ -596,11 +596,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. Güvenlik öncelikli',
-        p: 'TLS/SSL şifreleme, İçerik Güvenlik Politikası (CSP), yalnızca RAM\'de dosya işleme ve her işlemden sonra otomatik veri silme kullanıyoruz. Dosyaları sunucu disklerinde saklamıyoruz.',
+        p: 'Şifreli HTTPS bağlantısı, Content Security Policy, API\'yi kötüye kullanıma karşı koruma ve istek sınırları kullanırız. En önemlisi, dosya araçları tarayıcınızda çalışır; yani dosyalarınız sunucumuza hiç ulaşmaz.',
       },
       {
         h: '6. Reklamlar ve izleme — adil ve şeffaf bir şekilde',
-        p: 'Site şu anda hiçbir reklam göstermemektedir. Gelecekte, bakım ve geliştirme maliyetlerini karşılamak için gizli reklamlar (ör. Google AdSense) ekleyebiliriz — bu olursa, bu bildirimi güncelleyeceğiz. Bundan bağımsız olarak, tüm PDF araçları ücretsiz ve sınırsız kalacaktır. Google Analytics yalnızca izninizle ve anonimleştirilmiş biçimde kullanılır. Yeniden pazarlama pikselleri veya davranışsal profilleme kullanmıyoruz.',
+        p: 'Site şu anda reklam göstermiyor. Gelecekte barındırma ve geliştirme maliyetlerini karşılamak için ölçülü reklamlar (ör. Google AdSense) ekleyebiliriz — bu olursa bu bilgiyi güncelleyeceğiz. Her durumda tüm PDF araçları ücretsiz ve sınırsız kalacak. Google Analytics\'i yalnızca izninizle kullanırız; izninizi istediğiniz zaman «Çerez ayarları» düğmesiyle geri çekebilirsiniz. Yeniden pazarlama pikselleri veya davranışsal profilleme kullanmayız.',
       },
       {
         h: 'Gönüllü destek',
@@ -636,11 +636,11 @@ const content: Record<string, { title: string; subtitle: string; sections: Secti
       },
       {
         h: '5. Öryggi fyrst',
-        p: 'Við notum TLS/SSL dulkóðun, Content Security Policy (CSP), skráavinnslu eingöngu í vinnsluminni (RAM) og sjálfvirka eyðingu gagna eftir hverja aðgerð. Við geymum ekki skrár á diskum miðlara.',
+        p: 'Við notum dulkóðaða HTTPS-tengingu, Content Security Policy, varnir API gegn misnotkun og hámörk beiðna. Mikilvægast er að skráaverkfærin keyra í vafranum þínum, svo skrárnar þínar berast aldrei á netþjóninn okkar.',
       },
       {
         h: '6. Auglýsingar og rakning — réttlátt og gagnsætt',
-        p: 'Vefsíðan sýnir engar auglýsingar eins og er. Í framtíðinni gætum við kynnt til sögunnar lúmskar auglýsingar (t.d. Google AdSense) til að standa straum af viðhalds- og þróunarkostnaði — ef það gerist munum við uppfæra þessa tilkynningu. Óháð þessu verða öll PDF tæki áfram ókeypis og ótakmörkuð. Google Analytics er aðeins notað með þínu samþykki og í nafnlausu formi. Við notum ekki endurmarkaðsmyndpunkta eða hegðunarsnið.',
+        p: 'Vefurinn birtir sem stendur engar auglýsingar. Í framtíðinni gætum við tekið upp hógværar auglýsingar (t.d. Google AdSense) til að standa undir kostnaði við rekstur og þróun — gerist það uppfærum við þessar upplýsingar. Hvað sem því líður verða öll PDF-verkfæri áfram ókeypis og án takmarkana. Google Analytics notum við aðeins með samþykki þínu, sem þú getur dregið til baka hvenær sem er með hnappinum „Stillingar vafrakaka“. Við notum engar endurmarkaðssetningarpixla eða hegðunarsnið.',
       },
       {
         h: 'Sjálfboðaliðastuðningur',

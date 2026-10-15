@@ -171,7 +171,7 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
         {[
-          { icon: '🔒', text: t('feature.no_upload_browser', locale) },
+          { icon: '🔒', text: t('feature.ai_file_local', locale) },
           { icon: '🤖', text: t('feature.ai_analysis', locale) },
         ].map((item, i) => (
           <div key={i} className="tool-feature-card rounded-xl p-4 border">

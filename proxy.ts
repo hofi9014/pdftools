@@ -72,6 +72,23 @@ export function checkRateLimit(ip: string): boolean {
   return entry.count <= RATE_LIMIT_REQUESTS;
 }
 
+/**
+ * An address as it may appear in a log: IPv4 without its last part (203.0.113.0), IPv6 cut to its
+ * /48 prefix (2001:db8:85a3::). Enough to see where a burst of rejected requests comes from,
+ * without keeping who sent them (data minimisation, GDPR art. 5(1)(c)). Rate limiting itself uses
+ * the full address, in memory only. Only rejected requests are logged at all — an ordinary API
+ * call used to write its method, path and full IP to the hosting logs every time.
+ */
+export function maskIp(ip: string): string {
+  const v4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.\d{1,3}$/.exec(ip);
+  if (v4) return `${v4[1]}.${v4[2]}.${v4[3]}.0`;
+  if (ip.includes(':')) {
+    const head = ip.split('::')[0]!.split(':').filter(Boolean).slice(0, 3);
+    return `${head.join(':')}::`;
+  }
+  return 'unknown';
+}
+
 function detectLocale(request: NextRequest): string {
   const cookie = request.cookies.get('x-detected-locale');
   if (cookie?.value && (LOCALES as readonly string[]).includes(cookie.value)) {
@@ -96,9 +113,8 @@ export function proxy(request: NextRequest) {
   const method = request.method;
 
   if (pathname.startsWith('/api/')) {
-    console.log(`[${new Date().toISOString()}] ${method} ${pathname} ip=${ip}`);
     if (!checkRateLimit(ip)) {
-      console.warn(`[RATE LIMIT] ${method} ${pathname} ip=${ip}`);
+      console.warn(`[RATE LIMIT] ${method} ${pathname} ip=${maskIp(ip)}`);
       return NextResponse.json(
         { error: 'Zbyt wiele żądań. Spróbuj ponownie za chwilę.', code: 'rate_limited' },
         { status: 429, headers: { 'Retry-After': '60' } }
@@ -128,7 +144,7 @@ export function proxy(request: NextRequest) {
       }
       if (!originIsAllowed) {
         const reportedOrigin = originHeader || '<none>';
-        console.warn(`[CSRF] ${method} ${pathname} origin=${reportedOrigin} ip=${ip}`);
+        console.warn(`[CSRF] ${method} ${pathname} origin=${reportedOrigin} ip=${maskIp(ip)}`);
         return NextResponse.json(
           { error: 'Nieautoryzowane źródło żądania.', code: 'forbidden' },
           { status: 403 }
@@ -140,7 +156,7 @@ export function proxy(request: NextRequest) {
       if (contentLength) {
         const size = parseInt(contentLength, 10);
         if (!isNaN(size) && size > MAX_FILE_SIZE_BYTES) {
-          console.warn(`[FILE TOO LARGE] ${method} ${pathname} size=${size} ip=${ip}`);
+          console.warn(`[FILE TOO LARGE] ${method} ${pathname} size=${size} ip=${maskIp(ip)}`);
           return NextResponse.json(
             { error: `Plik jest za duży. Maksymalny rozmiar: ${MAX_FILE_SIZE_BYTES / 1024 / 1024}MB.`, code: 'too_large', params: { mb: MAX_FILE_SIZE_BYTES / 1024 / 1024 } },
             { status: 413 }
