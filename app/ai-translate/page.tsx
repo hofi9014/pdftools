@@ -85,7 +85,7 @@ export default function AiTranslate({ locale: forcedLocale }: { locale?: Locale 
       </div>
 
       <div className="flex justify-center gap-2 mb-6">
-        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
+        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={t('cloud.add', locale)} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">

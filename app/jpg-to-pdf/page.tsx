@@ -98,7 +98,7 @@ export default function JPGToPDF({ locale: forcedLocale }: { locale?: Locale } =
       </div>
 
       <div className="flex justify-center gap-2 mb-6">
-        <CloudFilePicker onFilesPicked={handleFiles} accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff,.webp" label={"☁️ " + t('cloud.add', locale)} />
+        <CloudFilePicker onFilesPicked={handleFiles} accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff,.webp" label={t('cloud.add', locale)} />
       </div>
 
       {files.length > 0 && (

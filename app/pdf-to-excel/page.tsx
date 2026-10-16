@@ -133,7 +133,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
       </div>
 
       <div className="flex justify-center gap-2 mb-6">
-        <CloudFilePicker onFilesPicked={handleFiles} label={"☁️ " + t('cloud.add', locale)} />
+        <CloudFilePicker onFilesPicked={handleFiles} label={t('cloud.add', locale)} />
       </div>
 
       {files.length > 0 && (

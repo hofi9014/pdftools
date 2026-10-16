@@ -86,7 +86,7 @@ export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale }
       </div>
 
       <div className="flex justify-center gap-2 mb-6">
-        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
+        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={t('cloud.add', locale)} />
       </div>
 
         <div className="tool-info-box rounded-2xl p-5 mb-6">

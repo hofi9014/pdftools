@@ -155,7 +155,7 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
         </div>
 
         <div className="flex justify-center gap-2 mb-6">
-          <CloudFilePicker onFilesPicked={(f) => { setFile(f[0] || null); setError(''); }} label={"☁️ " + t('cloud.add', locale)} />
+          <CloudFilePicker onFilesPicked={(f) => { setFile(f[0] || null); setError(''); }} label={t('cloud.add', locale)} />
         </div>
 
         <div>
