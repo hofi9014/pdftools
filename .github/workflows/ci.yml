@@ -30,7 +30,7 @@ jobs:
       # OCR language files (~63 MB) are downloaded by the postinstall script; a file already
       # present is not downloaded again, so the cache only has to be in place before npm ci.
       - name: Cache OCR language data
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: public/tesseract/lang-data
           key: ocr-lang-${{ hashFiles('lib/ocr-languages.json') }}
