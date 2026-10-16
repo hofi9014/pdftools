@@ -33,7 +33,8 @@ console.log('  standard_fonts copied');
 // which under plain Node is a path relative to lib/. If that copy exists it must be the SAME
 // version as the installed package, or every pdf.js call fails with "API version does not match
 // the Worker version" after an upgrade. Only refreshed where it already exists — never created
-// (a deployment has no such directory and bundles the worker from node_modules).
+// (a deployment has no such directory and bundles the worker from node_modules); `npm run test:all`
+// (scripts/run-tests.mjs) creates it on a fresh clone and in CI.
 const localWorkerDir = join(root, 'lib', 'pdfjs-dist', 'build');
 if (existsSync(localWorkerDir)) {
   copyFileSync(join(pdfjsDir, 'build', 'pdf.worker.min.mjs'), join(localWorkerDir, 'pdf.worker.min.mjs'));

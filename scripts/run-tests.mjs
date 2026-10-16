@@ -5,11 +5,23 @@
 // Each script gets its own process and a time limit; a failure prints the last lines of that
 // script's output so the CI log shows why without scrolling through the passing ones.
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+
+// lib/client-pdf.ts points pdf.js at its worker with
+// `new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url)`. A bundler resolves that to
+// node_modules; plain Node (every test script here) resolves it relative to lib/, so the tests need
+// a copy at lib/pdfjs-dist/build/. The copy is gitignored and never deployed — a fresh clone or CI
+// gets it here, from the installed package, so its version always matches.
+const workerDir = join(root, 'lib', 'pdfjs-dist', 'build');
+mkdirSync(workerDir, { recursive: true });
+copyFileSync(
+  join(root, 'node_modules', 'pdfjs-dist', 'build', 'pdf.worker.min.mjs'),
+  join(workerDir, 'pdf.worker.min.mjs'),
+);
 const scripts = Object.keys(JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).scripts)
   .filter((name) => name.startsWith('test:') && !name.startsWith('test:e2e') && name !== 'test:all');
 
