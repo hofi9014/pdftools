@@ -115,7 +115,7 @@ export default function OpenOfficeToPDF({ locale: forcedLocale }: { locale?: Loc
       </div>
 
       <div className="flex justify-center gap-2 mb-6">
-        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} accept=".odt" label={"☁️ " + t('cloud.add', locale)} />
+        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} accept=".odt" label={t('cloud.add', locale)} />
       </div>
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 mb-6">

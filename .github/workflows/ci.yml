@@ -56,7 +56,7 @@ jobs:
           npx next start -p 3000 > next.log 2>&1 &
           for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000/pl && break; sleep 2; done
           status=0
-          for t in a11y-axe rtl-layout cookie-consent mobile-menu home-link-locale language-detection guides-404 tools-real-pdf; do
+          for t in a11y-axe rtl-layout narrow-screen-overflow cookie-consent mobile-menu home-link-locale language-detection guides-404 tools-real-pdf; do
             echo "::group::$t"
             npm run -s test:e2e-$t || status=1
             echo "::endgroup::"

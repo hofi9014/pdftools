@@ -100,7 +100,7 @@ export default function ProtectPDF({ locale: forcedLocale }: { locale?: Locale }
         </div>
 
       <div className="flex justify-center gap-2 mb-6">
-        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
+        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={t('cloud.add', locale)} />
       </div>
 
         {/* Hasło */}

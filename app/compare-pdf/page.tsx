@@ -142,9 +142,9 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
         </div>
       </div>
 
-      <div className="flex justify-center gap-2 mb-6">
-        <CloudFilePicker onFilesPicked={(f) => handleFile('A')(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
-        <CloudFilePicker onFilesPicked={(f) => handleFile('B')(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
+      <div className="flex flex-wrap justify-center gap-2 mb-6">
+        <CloudFilePicker onFilesPicked={(f) => handleFile('A')(f[0] || null)} label={t('cloud.add', locale)} />
+        <CloudFilePicker onFilesPicked={(f) => handleFile('B')(f[0] || null)} label={t('cloud.add', locale)} />
       </div>
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}

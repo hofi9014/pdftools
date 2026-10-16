@@ -58,16 +58,18 @@ export default function UrlToPdf({ locale: forcedLocale }: { locale?: Locale } =
 
       <div className="tool-card rounded-2xl border p-6 mb-6">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('page.url.url_label', locale)}</label>
-        <div className="flex gap-3">
+        {/* The example button moves below the field when the row is too narrow for both, instead
+            of pushing the page wider than a phone screen (its label is long in most languages). */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <input
             type="url"
             value={url}
             onChange={e => { setUrl(e.target.value); setSuccess(false); setError(''); }}
             placeholder="https://example.com"
-            className="flex-1 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 tool-heading"
+            className="flex-1 min-w-0 basis-48 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 bg-gray-50 dark:bg-gray-700 tool-heading"
           />
           <button onClick={() => setUrl('https://example.com')}
-            className="text-xs !text-[var(--coffee-accent-ink)] hover:underline whitespace-nowrap">{t('page.url.example_btn', locale)}</button>
+            className="text-xs !text-[var(--coffee-accent-ink)] hover:underline text-start">{t('page.url.example_btn', locale)}</button>
         </div>
       </div>
 

@@ -98,7 +98,7 @@ export default function AddPage({ locale: forcedLocale }: { locale?: Locale } = 
       </div>
 
       <div className="flex justify-center gap-2 mb-6">
-        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={"☁️ " + t('cloud.add', locale)} />
+        <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={t('cloud.add', locale)} />
       </div>
 
       <div className="tool-card rounded-2xl border p-6 mb-6">
