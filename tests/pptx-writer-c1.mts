@@ -64,6 +64,8 @@ async function main(): Promise<number> {
   const bytes = Buffer.from(await blob.arrayBuffer());
   check('pptx blob non-empty', bytes.length > 0, `${bytes.length} bytes`);
 
+  // test-output/ is gitignored, so a fresh clone does not have it yet.
+  (await import('node:fs')).mkdirSync(join(ROOT, 'test-output'), { recursive: true });
   const out = join(ROOT, 'test-output', 'allegro-C1.pptx');
   const writeFile = (await import('node:fs/promises')).writeFile;
   await writeFile(out, bytes);

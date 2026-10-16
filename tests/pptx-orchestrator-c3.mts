@@ -5,7 +5,7 @@
 // is done afterwards with python-pptx.
 import { register } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
@@ -73,6 +73,8 @@ async function main(): Promise<number> {
   const pptxBytes = Buffer.from(await blob.arrayBuffer());
   check('pptx blob non-empty', pptxBytes.length > 0, `${pptxBytes.length} bytes`);
 
+  // test-output/ is gitignored, so a fresh clone (CI) does not have it yet.
+  mkdirSync(join(ROOT, 'test-output'), { recursive: true });
   const out = join(ROOT, 'test-output', 'allegro-C3.pptx');
   await writeFile(out, pptxBytes);
   check('wrote pptx to test-output/allegro-C3.pptx', true, out);
