@@ -67,7 +67,7 @@ const de: LegalTexts = {
         p: 'Daten werden in unserem Auftrag verarbeitet von oder empfangen von:',
         items: [
           'Vercel Inc. (USA) — Hosting der Website und des Anwendungsservers.',
-          'Upstash, Inc. (USA) — Datenbank der Anfragelimit-Zähler (IP-Adresse und Zahl der Anfragen).',
+          'Upstash, Inc. (USA) — Datenbank der Anfragelimit-Zähler (IP-Adresse und Zahl der Anfragen). Die Datenbank steht im Raum Washington, D.C. (USA, Region iad1).',
           'OpenRouter, Inc. (USA) und der Modellanbieter, an den OpenRouter die Anfrage weitergibt — nur wenn Sie KI-Funktionen nutzen.',
           'Google LLC (USA) — Google Analytics, nur mit Ihrer Einwilligung.',
           'Behörden — nur wenn das Gesetz es verlangt.',

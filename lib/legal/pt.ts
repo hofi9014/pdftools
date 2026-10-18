@@ -67,7 +67,7 @@ const pt: LegalTexts = {
         p: 'Os dados são tratados por nossa conta por, ou recebidos por:',
         items: [
           'Vercel Inc. (EUA) — alojamento do site e do servidor da aplicação.',
-          'Upstash, Inc. (EUA) — base de dados dos contadores de limites (endereço IP e número de pedidos).',
+          'Upstash, Inc. (EUA) — base de dados dos contadores de limites (endereço IP e número de pedidos). A base de dados fica na região de Washington, D.C. (EUA, região iad1).',
           'OpenRouter, Inc. (EUA) e o fornecedor do modelo a quem a OpenRouter passar o pedido — só quando usa as funções de IA.',
           'Google LLC (EUA) — Google Analytics, só com o seu consentimento.',
           'Autoridades públicas — só quando a lei o exigir.',

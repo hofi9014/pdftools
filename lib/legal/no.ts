@@ -67,7 +67,7 @@ const no: LegalTexts = {
         p: 'Opplysningene behandles på våre vegne av, eller mottas av:',
         items: [
           'Vercel Inc. (USA) — drift av nettstedet og programserveren.',
-          'Upstash, Inc. (USA) — databasen for grensetellerne (IP-adresse og antall forespørsler).',
+          'Upstash, Inc. (USA) — databasen for grensetellerne (IP-adresse og antall forespørsler). Databasen ligger i Washington D.C.-området (USA, region iad1).',
           'OpenRouter, Inc. (USA) og modelleverandøren OpenRouter sender forespørselen til — bare når du bruker KI-funksjonene.',
           'Google LLC (USA) — Google Analytics, bare med ditt samtykke.',
           'Offentlige myndigheter — bare når loven krever det.',
