@@ -67,7 +67,7 @@ const is: LegalTexts = {
         p: 'Eftirtaldir vinna með upplýsingarnar fyrir okkar hönd eða fá þær:',
         items: [
           'Vercel Inc. (Bandaríkjunum) — hýsing vefsins og forritsþjónsins.',
-          'Upstash, Inc. (Bandaríkjunum) — gagnagrunnur hámarksteljara (IP-tala og fjöldi beiðna).',
+          'Upstash, Inc. (Bandaríkjunum) — gagnagrunnur hámarksteljara (IP-tala og fjöldi beiðna). Gagnagrunnurinn er á Washington D.C.-svæðinu (Bandaríkjunum, svæði iad1).',
           'OpenRouter, Inc. (Bandaríkjunum) og veitandi líkansins sem OpenRouter sendir beiðnina til — aðeins þegar þú notar gervigreindareiginleika.',
           'Google LLC (Bandaríkjunum) — Google Analytics, aðeins með samþykki þínu.',
           'Opinber yfirvöld — aðeins þegar lög krefjast þess.',

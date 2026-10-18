@@ -21,6 +21,9 @@ const { URL_TO_PDF_LIMIT, URL_TO_PDF_WINDOW_SECONDS } = await import('../app/api
 const { MAX_UPLOAD_MB } = await import('../lib/upload-limit.ts');
 type Doc = (typeof legalTexts)['pl']['privacy'];
 
+/** The Upstash database's region, as shown in its Vercel storage settings (see the check below). */
+const UPSTASH_REGION = 'iad1';
+
 let fails = 0;
 function check(cond: boolean, msg: string): void {
   console.log(`  ${cond ? 'PASS' : 'FAIL'} ${msg}`);
@@ -67,6 +70,11 @@ for (const l of locales) {
   need(hasNum(privacy, 12) && hasNum(rodo, 12), 'language cookie 12 months');
   need(hasNum(privacy, 14), 'GA retention 14 months');
   for (const name of ['Vercel', 'Upstash', 'OpenRouter', 'Google LLC']) need(privacy.includes(name) && rodo.includes(name.replace(' LLC', '')), `recipient ${name}`);
+  // Where the rate-limit counters (keyed by IP address) are stored. Read from the store's settings
+  // on 2026-10-18 with `vercel api /v1/storage/stores`: Upstash for Redis, metadata.primaryRegion
+  // "iad1" (Washington, D.C., USA), readRegions []. If the database is ever moved, change
+  // UPSTASH_REGION here and the sentence in every lib/legal/<locale>.ts.
+  need(privacy.includes(UPSTASH_REGION), `privacy: where the Upstash database is (${UPSTASH_REGION})`);
   need(privacy.includes('x-detected-locale') && rodo.includes('x-detected-locale'), 'the language cookie by name');
   need(privacy.includes('_ga') && rodo.includes('_ga'), 'the GA cookies by name');
   need(privacy.includes('2023/1795') && rodo.includes('2023/1795'), 'the DPF adequacy decision');

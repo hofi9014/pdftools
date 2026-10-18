@@ -67,7 +67,7 @@ const sv: LegalTexts = {
         p: 'Uppgifterna behandlas för vår räkning av, eller tas emot av:',
         items: [
           'Vercel Inc. (USA) — drift av webbplatsen och programservern.',
-          'Upstash, Inc. (USA) — databasen för gränsräknarna (IP-adress och antal förfrågningar).',
+          'Upstash, Inc. (USA) — databasen för gränsräknarna (IP-adress och antal förfrågningar). Databasen finns i Washington D.C.-området (USA, region iad1).',
           'OpenRouter, Inc. (USA) och modelleverantören som OpenRouter skickar förfrågan till — bara när du använder AI-funktionerna.',
           'Google LLC (USA) — Google Analytics, bara med ditt samtycke.',
           'Myndigheter — bara när lagen kräver det.',

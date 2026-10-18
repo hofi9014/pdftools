@@ -67,7 +67,7 @@ const tr: LegalTexts = {
         p: 'Veriler adımıza şu taraflarca işlenir veya bunlara iletilir:',
         items: [
           'Vercel Inc. (ABD) — sitenin ve uygulama sunucusunun barındırılması.',
-          'Upstash, Inc. (ABD) — istek sınırı sayaçlarının veritabanı (IP adresi ve istek sayısı).',
+          'Upstash, Inc. (ABD) — istek sınırı sayaçlarının veritabanı (IP adresi ve istek sayısı). Veritabanı Washington, D.C. bölgesindedir (ABD, iad1 bölgesi).',
           'OpenRouter, Inc. (ABD) ve OpenRouter\'ın isteği ilettiği model sağlayıcısı — yalnızca yapay zekâ özelliklerini kullandığınızda.',
           'Google LLC (ABD) — Google Analytics, yalnızca izninizle.',
           'Kamu makamları — yalnızca yasanın gerektirdiği durumlarda.',

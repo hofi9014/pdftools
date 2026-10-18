@@ -67,7 +67,7 @@ const pl: LegalTexts = {
         p: 'Dane przetwarzają na nasze zlecenie albo otrzymują je:',
         items: [
           'Vercel Inc. (USA) — hosting strony i serwera aplikacji.',
-          'Upstash, Inc. (USA) — baza liczników limitów zapytań (adres IP i liczba zapytań).',
+          'Upstash, Inc. (USA) — baza liczników limitów zapytań (adres IP i liczba zapytań). Baza znajduje się w rejonie Waszyngtonu (USA, region iad1).',
           'OpenRouter, Inc. (USA) i dostawca modelu, któremu OpenRouter przekaże zapytanie — tylko gdy korzystasz z funkcji AI.',
           'Google LLC (USA) — Google Analytics, tylko po Twojej zgodzie.',
           'Organy państwowe — wyłącznie gdy wymaga tego prawo.',

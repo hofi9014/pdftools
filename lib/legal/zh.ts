@@ -67,7 +67,7 @@ const zh: LegalTexts = {
         p: '数据由以下各方代表我们处理或接收：',
         items: [
           'Vercel Inc.（美国）——网站和应用服务器的托管。',
-          'Upstash, Inc.（美国）——请求上限计数器数据库（IP 地址和请求次数）。',
+          'Upstash, Inc.（美国）——请求上限计数器数据库（IP 地址和请求次数）。数据库位于华盛顿特区一带（美国，区域 iad1）。',
           'OpenRouter, Inc.（美国）以及 OpenRouter 转交请求的模型提供商——仅在您使用 AI 功能时。',
           'Google LLC（美国）——Google Analytics，仅在您同意后。',
           '公共机关——仅在法律要求时。',
