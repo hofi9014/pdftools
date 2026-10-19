@@ -45,16 +45,16 @@ const ROOT = join(here, '..');
 
 console.log('=== ground truth: actual app/engine behavior matches what the corrected guides now claim ===');
 {
-  const protectPage = readFileSync(join(ROOT, 'app', 'protect-pdf', 'page.tsx'), 'utf-8');
+  const protectPage = readFileSync(join(ROOT, 'app', '(unprefixed)', 'protect-pdf', 'page.tsx'), 'utf-8');
   check(protectPage.includes('password.length < 4'), 'protect-pdf UI really enforces a 4-character minimum (not 6)');
   const clientPdf = readFileSync(join(ROOT, 'lib', 'client-pdf.ts'), 'utf-8');
   check(/protectPdfClient[\s\S]{0,200}password\.length < 4/.test(clientPdf), 'protectPdfClient (engine) really throws below 4 characters (not 6)');
 
-  const wordPage = readFileSync(join(ROOT, 'app', 'pdf-to-word', 'page.tsx'), 'utf-8');
+  const wordPage = readFileSync(join(ROOT, 'app', '(unprefixed)', 'pdf-to-word', 'page.tsx'), 'utf-8');
   check(/onClick=\{handleConvert\}/.test(wordPage), 'pdf-to-word conversion really is only triggered by a button onClick (not automatically on file add)');
   check(!/useEffect\([^)]*handleConvert/.test(wordPage), 'sanity: no useEffect auto-triggers handleConvert on file change');
 
-  for (const [tool, file] of [['merge', 'app/merge/page.tsx'], ['jpg-to-pdf', 'app/jpg-to-pdf/page.tsx']] as [string, string][]) {
+  for (const [tool, file] of [['merge', 'app/(unprefixed)/merge/page.tsx'], ['jpg-to-pdf', 'app/(unprefixed)/jpg-to-pdf/page.tsx']] as [string, string][]) {
     const src = readFileSync(join(ROOT, file), 'utf-8');
     check(/moveFile\(i, i - 1\)/.test(src) && /moveFile\(i, i \+ 1\)/.test(src), `${tool}: real reordering is via ↑/↓ moveFile() buttons`);
     check(!/draggable/.test(src), `${tool}: sanity — no \`draggable\` attribute exists (confirms drag-to-reorder is genuinely absent, not just undocumented)`);
@@ -89,7 +89,7 @@ console.log('\n=== guide content: false claims are gone, in all 16 locales, repl
 
   // split guide: the app has "page by page" / "custom ranges" / "split by selection" — there is
   // no every-N-pages mode, and selection mode yields TWO files (selected + the rest).
-  const splitPage = readFileSync(join(ROOT, 'app', 'split', 'page.tsx'), 'utf-8');
+  const splitPage = readFileSync(join(ROOT, 'app', '(unprefixed)', 'split', 'page.tsx'), 'utf-8');
   check(/const bufs = await splitPDF\(file\)/.test(splitPage) && !/pagesPerFile|everyN|every_n|perFile/i.test(splitPage), 'split page: "fixed" mode really is one file per page (splitPDF(file), no N input)');
   check(/results\.push\(\{ data: rest/.test(splitPage), 'split page: selection mode really emits a second file with the remaining pages');
   const splitGuide = readFileSync(join(ROOT, 'content', 'guides', 'split-pdf', 'how-to-split-pdf-online.ts'), 'utf-8');

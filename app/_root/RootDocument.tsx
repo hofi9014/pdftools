@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { LocaleProvider } from "@/lib/locale-context";
@@ -7,8 +6,8 @@ import PwaRegister from "@/components/PwaRegister";
 import Magnifier from "@/components/Magnifier";
 import CookieConsent from "@/components/CookieConsent";
 import MetaUpdater from "@/components/MetaUpdater";
-import { tools } from "@/lib/tools";
-import "./globals.css";
+import { localeToHtmlLang, isRtlLocale, type Locale } from "@/lib/i18n";
+import "@/app/globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,42 +19,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "OptimaPDF - Free online PDF tools",
-    template: "%s | OptimaPDF",
-  },
-    description: `Merge, split, compress, convert and edit PDF files online for free. ${tools.length} PDF tools, AI Chat, AI Summary, AI Translate, PDF editor, electronic signature, OCR, password protection. No installation, secure and fast.`,
-    keywords: ["PDF", "merge PDF", "split PDF", "compress PDF", "convert PDF", "PDF editor", "OCR PDF", "AI PDF", "free PDF tools", "PDF to PowerPoint", "compare PDF", "Excel to PDF", "AI PDF translator"],
-  robots: { index: true, follow: true },
-  openGraph: {
-    title: "OptimaPDF - Free online PDF tools",
-    description: `Merge, split, compress, convert and edit PDFs for free online. ${tools.length} PDF tools, AI Chat, AI Summary, AI Translate, PDF editor, electronic signature, OCR, password protection. No installation, secure and fast.`,
-    url: "https://optimapdf.com",
-    siteName: "OptimaPDF",
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "OptimaPDF - Free online PDF tools",
-    description: `Merge, split, compress, convert and edit PDFs for free online. ${tools.length} PDF tools, AI Chat, AI Summary, AI Translate, PDF editor, electronic signature, OCR, password protection.`,
-  },
-  icons: {
-    icon: { url: "/icon?v=2", sizes: "32x32", type: "image/png" },
-    apple: { url: "/icons/apple-touch-icon-180.png", sizes: "180x180" },
-  },
-  manifest: "/manifest.json",
-  other: {
-    "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "default",
-    "mobile-web-app-capable": "yes",
-  },
-};
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+/**
+ * The <html> document shared by the app's root layouts. The page's language and direction are
+ * written into the server HTML (crawlers, link previews, screen readers and the first paint of
+ * Arabic/Persian pages read them before any script runs); components/HtmlLang.tsx keeps them in
+ * sync on the client afterwards. `locale` is undefined only for the unprefixed legacy routes,
+ * whose language is the visitor's stored preference and is known only in the browser.
+ */
+export default function RootDocument({ locale, children }: { locale?: Locale; children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang={locale ? localeToHtmlLang(locale) : "en"}
+      dir={locale && isRtlLocale(locale) ? "rtl" : "ltr"}
+      suppressHydrationWarning
+    >
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
         <Script id="theme-init" strategy="beforeInteractive">
           {`try{const t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`}

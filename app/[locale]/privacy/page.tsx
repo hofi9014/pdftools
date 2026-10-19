@@ -1,4 +1,4 @@
-import PrivacyPage from '../../privacy/page';
+import PrivacyPage from '../../(unprefixed)/privacy/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

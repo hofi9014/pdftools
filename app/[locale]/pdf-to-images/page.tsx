@@ -1,4 +1,4 @@
-import PdfToImages from '../../pdf-to-images/page';
+import PdfToImages from '../../(unprefixed)/pdf-to-images/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

@@ -38,7 +38,7 @@ function check(cond: boolean, msg: string): void {
 
 console.log('=== source check: handleAsk() clears error before doing async work ===');
 {
-  const src = readFileSync(join(ROOT, 'app/ai-chat/page.tsx'), 'utf8');
+  const src = readFileSync(join(ROOT, 'app/(unprefixed)/ai-chat/page.tsx'), 'utf8');
   const handleAskMatch = src.match(/const handleAsk = async \(\) => \{[\s\S]*?\n  \};/);
   check(!!handleAskMatch, 'handleAsk function body found in source');
   const body = handleAskMatch?.[0] ?? '';

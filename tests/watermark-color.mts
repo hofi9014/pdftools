@@ -56,7 +56,7 @@ const bad = await watermarkFill(await addWatermark(file, 'POUFNE', { color: 'red
 check(near(bad, [0.5, 0.5, 0.5]), `an invalid colour falls back to grey (${bad?.join(' ')})`);
 
 console.log('\n=== watermark page: the file and the preview use the chosen colour and angle ===');
-const page = readFileSync(join(ROOT, 'app/watermark-pdf/page.tsx'), 'utf8');
+const page = readFileSync(join(ROOT, 'app/(unprefixed)/watermark-pdf/page.tsx'), 'utf8');
 const call = /addWatermark\(file, text, \{([\s\S]*?)\}\)/.exec(page)?.[1] ?? '';
 check(/\bcolor\b/.test(call), 'the chosen colour is passed to addWatermark');
 check(/rotation: WATERMARK_ROTATION/.test(call), 'the angle passed to addWatermark is the one the preview shows');

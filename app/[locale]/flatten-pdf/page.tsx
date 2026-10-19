@@ -1,4 +1,4 @@
-import FlattenPdf from '../../flatten-pdf/page';
+import FlattenPdf from '../../(unprefixed)/flatten-pdf/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

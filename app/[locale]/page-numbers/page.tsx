@@ -1,4 +1,4 @@
-import PageNumbers from '../../page-numbers/page';
+import PageNumbers from '../../(unprefixed)/page-numbers/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

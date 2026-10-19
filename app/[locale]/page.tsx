@@ -1,4 +1,4 @@
-import Home from '../page';
+import Home from '../(unprefixed)/page';
 import type { Locale } from '@/lib/i18n';
 
 export default async function LocaleHome({ params }: { params: Promise<{ locale: string }> }) {

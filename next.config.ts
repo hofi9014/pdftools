@@ -32,6 +32,10 @@ const csp = [
 const nextConfig: NextConfig = {
   serverExternalPackages: ['@napi-rs/canvas'],
   poweredByHeader: false,
+  // app/global-not-found.tsx: with several root layouts there is no single layout for a 404.
+  experimental: {
+    globalNotFound: true,
+  },
   async redirects() {
     // all locale segments EXCEPT 'guide' which conflicts with /guide static page
     const segments = ['przewodnik', 'guides', 'guides-fr', 'anleitungen', 'guias', 'guias-pt', 'guider', 'guider-no', 'handbaekur', 'rehber', 'دليل', 'راهنما', 'गाइड', 'ガイド', '指南'];

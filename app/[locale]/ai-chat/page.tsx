@@ -1,4 +1,4 @@
-import AIChat from '../../ai-chat/page';
+import AIChat from '../../(unprefixed)/ai-chat/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

@@ -1,8 +1,14 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { locales } from '@/lib/i18n';
+import { locales, type Locale } from '@/lib/i18n';
+import RootDocument from '@/app/_root/RootDocument';
+import { rootMetadata } from '@/lib/root-metadata';
 
 const baseUrl = 'https://optimapdf.com';
+
+// Only the 16 languages exist: anything else in this position (/xx, /wp-admin) is an unknown
+// address and gets the site's 404 page (app/global-not-found.tsx), not a page rendered on demand.
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -16,6 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   }
   languages['x-default'] = `${baseUrl}/en`;
   return {
+    ...rootMetadata,
     alternates: {
       canonical: `${baseUrl}/${locale}`,
       languages,
@@ -35,5 +42,6 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   if (!(locales as readonly string[]).includes(locale)) {
     notFound();
   }
-  return <>{children}</>;
+  // Root layout: the language comes from the URL, so the server HTML carries the right lang/dir.
+  return <RootDocument locale={locale as Locale}>{children}</RootDocument>;
 }

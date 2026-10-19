@@ -1,4 +1,4 @@
-import GuidePage from '../../guide/page';
+import GuidePage from '../../(unprefixed)/guide/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

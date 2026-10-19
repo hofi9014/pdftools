@@ -1,4 +1,4 @@
-import ComparePDF from '../../compare-pdf/page';
+import ComparePDF from '../../(unprefixed)/compare-pdf/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

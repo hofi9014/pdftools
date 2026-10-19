@@ -171,7 +171,7 @@ console.log('\n=== the counter itself ===');
 }
 
 console.log('\n=== the pages use the localized text ===');
-for (const f of ['app/ai-chat/page.tsx', 'app/ai-summary/page.tsx', 'app/ai-translate/page.tsx', 'app/url-to-pdf/page.tsx']) {
+for (const f of ['app/(unprefixed)/ai-chat/page.tsx', 'app/(unprefixed)/ai-summary/page.tsx', 'app/(unprefixed)/ai-translate/page.tsx', 'app/(unprefixed)/url-to-pdf/page.tsx']) {
   check(/apiErrorText\(err, locale\)/.test(readFileSync(join(ROOT, f), 'utf8')), `${f} shows apiErrorText(err, locale)`);
 }
 {

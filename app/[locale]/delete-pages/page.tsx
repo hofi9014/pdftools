@@ -1,4 +1,4 @@
-import DeletePages from '../../delete-pages/page';
+import DeletePages from '../../(unprefixed)/delete-pages/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

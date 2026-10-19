@@ -30,7 +30,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 
 for (const page of ['protect-pdf', 'unlock-pdf']) {
-  const src = readFileSync(join(root, 'app', page, 'page.tsx'), 'utf-8');
+  const src = readFileSync(join(root, 'app', '(unprefixed)', page, 'page.tsx'), 'utf-8');
   const buttonMatch = src.match(/<button[\s\S]*?onClick=\{\(\) => setShowPassword\(!showPassword\)\}[\s\S]*?<\/button>/);
   check(!!buttonMatch, `[${page}] sanity: found the password-toggle button`);
   if (buttonMatch) {

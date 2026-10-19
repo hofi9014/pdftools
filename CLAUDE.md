@@ -54,15 +54,26 @@ your training data either — check the local docs when something looks off.
 ### Tool pages: two files per tool, not one
 
 Every tool lives as **two page files**:
-- `app/{tool}/page.tsx` — the actual `'use client'` component with all logic. Takes an
-  optional `locale` prop; falls back to the `useLocale()` context hook when not given (this
-  is what legacy non-prefixed routes render).
+- `app/(unprefixed)/{tool}/page.tsx` — the actual `'use client'` component with all logic.
+  Takes an optional `locale` prop; falls back to the `useLocale()` context hook when not given
+  (this is what legacy non-prefixed routes render).
 - `app/[locale]/{tool}/page.tsx` — a thin async server component: resolves `params.locale`,
-  builds `generateMetadata` via `lib/metadata.ts`, and renders the sibling component with
-  `locale` forced. No client logic belongs here.
+  builds `generateMetadata` via `lib/metadata.ts`, and renders the sibling component (imported
+  as `'../../(unprefixed)/{tool}/page'`) with `locale` forced. No client logic belongs here.
 
 Adding a new tool means creating both files; the locale list (`LOCALES`) is currently
-duplicated between `proxy.ts` and `lib/i18n.ts` — keep them in sync.
+duplicated between `proxy.ts`, its `config.matcher` and `lib/i18n.ts` — keep them in sync.
+
+### Several root layouts (there is no `app/layout.tsx`)
+
+So that the server HTML already carries `<html lang dir>` for the page's language, each branch
+is its own root layout, all rendering `app/_root/RootDocument.tsx` (metadata in
+`lib/root-metadata.ts`): `app/[locale]/layout.tsx` (language from the URL;
+`dynamicParams = false`, so an unknown first segment is a 404), `app/guides/[locale]/layout.tsx`
+(language from the localized guides segment) and `app/(unprefixed)/layout.tsx` (`/` and the
+legacy URLs, `lang="en"` until the client knows the stored language). Moving between branches
+is a full page load. Unmatched URLs render `app/global-not-found.tsx`
+(`experimental.globalNotFound` in `next.config.ts`). Proven by `e2e/server-lang.mts`.
 
 ### API surface is intentionally tiny
 

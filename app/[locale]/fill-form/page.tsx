@@ -1,4 +1,4 @@
-import FillForm from '../../fill-form/page';
+import FillForm from '../../(unprefixed)/fill-form/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

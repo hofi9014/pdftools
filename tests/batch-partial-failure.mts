@@ -41,7 +41,7 @@ const PAGES: [string, RegExp][] = [
   ['ocr-pdf', /await ocrPdfClient/],
 ];
 for (const [slug, convertCall] of PAGES) {
-  const page = readFileSync(join(ROOT, `app/${slug}/page.tsx`), 'utf8');
+  const page = readFileSync(join(ROOT, `app/(unprefixed)/${slug}/page.tsx`), 'utf8');
   check(/await runBatch\(files,/.test(page), `${slug}: converts through runBatch`);
   check(!/for \(let i = 0; i < files\.length; i\+\+\) \{/.test(page), `${slug}: the old single-try/catch loop over files is gone`);
   check(convertCall.test(page), `${slug}: still calls its converter`);
