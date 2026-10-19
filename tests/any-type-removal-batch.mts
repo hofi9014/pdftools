@@ -47,9 +47,14 @@ try {
 }
 
 console.log('\n--- eslint error count for both files dropped by exactly 2 (the two any usages, nothing else) ---');
+// shell: true joins the arguments unquoted, and bash (CI) reads the parentheses of
+// app/(unprefixed)/… as syntax; cmd.exe on Windows does not, so the bug only showed in CI.
+function shellQuote(arg: string): string {
+  return `"${arg}"`;
+}
 function eslintProblemCount(file: string): number {
   try {
-    execFileSync('npx', ['eslint', file], { cwd: repoRoot, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'], shell: true });
+    execFileSync('npx', ['eslint', shellQuote(file)], { cwd: repoRoot, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'], shell: true });
     return 0;
   } catch (e: unknown) {
     const err = e as { stdout?: string };
@@ -59,7 +64,7 @@ function eslintProblemCount(file: string): number {
 }
 function eslintOutput(files: string[]): string {
   try {
-    return execFileSync('npx', ['eslint', ...files], { cwd: repoRoot, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'], shell: true });
+    return execFileSync('npx', ['eslint', ...files.map(shellQuote)], { cwd: repoRoot, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'], shell: true });
   } catch (e: unknown) {
     const err = e as { stdout?: string };
     return err.stdout ?? '';
