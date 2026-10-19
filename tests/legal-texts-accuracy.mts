@@ -90,19 +90,19 @@ check(bad.length === 0, `numbers, recipients, cookie names and the "Cookie setti
 
 console.log('\n=== the pages use these texts ===');
 for (const page of ['privacy', 'rodo', 'security']) {
-  const src = read(`app/${page}/page.tsx`);
+  const src = read(`app/(unprefixed)/${page}/page.tsx`);
   check(src.includes(`legalFor(locale).${page}`) && src.split('\n').length < 20, `/${page} renders lib/legal (the old inline text is gone: ${src.split('\n').length} lines)`);
 }
 const component = read('components/LegalDocument.tsx');
 check(!/^\s*<main/m.test(component) && /^\s*<div className="max-w-3xl/m.test(component), 'the legal page layout opens no second <main> (its wrapper is a <div>)');
-const principles = read('app/nasze-zasady/page.tsx');
+const principles = read('app/(unprefixed)/nasze-zasady/page.tsx');
 const missing = locales.filter((l) => !principles.includes(legalTexts[l].principles.security.replace(/'/g, "\\'")) || !principles.includes(legalTexts[l].principles.tracking.replace(/'/g, "\\'")));
 check(missing.length === 0, `"Our principles" carries the same two paragraphs in every language (${missing.join(', ') || 'all 16'})`);
 check(!/RAM|zanonimizowan|anonymi[sz]ed|anonimizzat|anonimizad/i.test(principles), '"Our principles" no longer claims RAM processing or anonymised analytics');
 
 console.log('\n=== the AI tools do not claim everything stays in the browser ===');
 for (const page of ['ai-chat', 'ai-translate', 'ai-summary']) {
-  check(!read(`app/${page}/page.tsx`).includes("t('feature.no_upload_browser'"), `/${page} does not show "Everything stays in your browser"`);
+  check(!read(`app/(unprefixed)/${page}/page.tsx`).includes("t('feature.no_upload_browser'"), `/${page} does not show "Everything stays in your browser"`);
 }
 const noAiKey = locales.filter((l) => !all[l]!['feature.ai_file_local']);
 check(noAiKey.length === 0, `the accurate line ("only the extracted text goes to the AI") exists in every language (${noAiKey.join(', ') || 'all 16'})`);

@@ -1,4 +1,4 @@
-import ProtectPDF from '../../protect-pdf/page';
+import ProtectPDF from '../../(unprefixed)/protect-pdf/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

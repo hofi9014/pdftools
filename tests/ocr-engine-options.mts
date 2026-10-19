@@ -105,7 +105,7 @@ check(!(await ocr.ocrLanguageAvailable('xyz', (async () => { throw new Error('of
 
 console.log('\n=== every offered language is provisioned ===');
 const listed = JSON.parse(readFileSync(join(ROOT, 'lib/ocr-languages.json'), 'utf8')) as string[];
-const pageSrc = readFileSync(join(ROOT, 'app/ocr-pdf/page.tsx'), 'utf8');
+const pageSrc = readFileSync(join(ROOT, 'app/(unprefixed)/ocr-pdf/page.tsx'), 'utf8');
 const offered = [...pageSrc.matchAll(/\{ value: '([a-z_]+)', labelKey: 'page\.ocr\.lang_/g)].map((m) => m[1]!);
 check(offered.length >= 30, `sanity: read the page's language list (${offered.length})`);
 check([...offered].sort().join() === [...listed].sort().join(), `the page offers exactly the provisioned languages (${listed.length})`);

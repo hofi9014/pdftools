@@ -22,10 +22,17 @@ const infoPageLabel: Record<string, string> = {
   wsparcie: 'nav.support',
 };
 
+/** usePathname() is percent-encoded (/guides/%D8%AF…), the slugs it is compared with are not. */
+function pathSegments(pathname: string): string[] {
+  return pathname.split('/').filter(Boolean).map((seg) => {
+    try { return decodeURIComponent(seg); } catch { return seg; }
+  });
+}
+
 export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale }) {
   const pathname = usePathname();
   const locale = forcedLocale ?? useHydrationSafeLocale();
-  const segments = pathname.split('/').filter(Boolean);
+  const segments = pathSegments(pathname);
 
   // Guide article titles come from content/guides (lib/guides.ts), loaded dynamically —
   // not imported statically here — so this site-wide component (rendered on every page)
@@ -42,7 +49,7 @@ export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale 
       // Recomputed from `pathname` (already a dependency below) rather than closing over
       // the outer `segments` array, which is a fresh reference every render and would
       // otherwise force this effect to run on every re-render regardless of navigation.
-      for (const seg of pathname.split('/').filter(Boolean)) {
+      for (const seg of pathSegments(pathname)) {
         const article = articles.find(a => a.slug === seg);
         if (article) found[seg] = article.title[locale] || article.title.en;
       }
@@ -70,13 +77,17 @@ export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale 
           // to (e.g. "merge-pdf" for the "merge" tool, "split-pdf" for "split") — confirmed
           // against every category directory currently in content/guides. Falling back to
           // the suffix-stripped slug catches those without a separate category-name system.
+          // /guides/{segment}/…: the first segment is only the prefix, the second is always the
+          // localized guides hub — decided by position, because two of those segments are
+          // themselves "guides" (en) and "guide" (it) and were read as the prefix / the /guide page.
+          const inGuides = segments[0] === 'guides';
+          if (inGuides && i === 0) return null;
           const key = keyBySlug[seg] || keyBySlug[seg.replace(/-pdf$/, '')];
           let label: string;
-          if (key) {
+          if (inGuides && i === 1) {
+            label = t('guides.breadcrumb', locale);
+          } else if (key) {
             label = t(`tool.${key}`, locale);
-          } else if (seg === 'guides') {
-            // skip — the next segment is the locale segment
-            return null;
           } else if (seg === 'guide') {
             label = t('nav.guide', locale);
           } else if (guidesLocaleSegments.has(seg)) {

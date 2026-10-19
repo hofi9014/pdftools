@@ -57,11 +57,11 @@ console.log('\n--- verify the i18n migration add-edit-i18n.mjs would have perfor
 
 console.log('\n=== tools.length used instead of a hardcoded count ===');
 {
-  const pageSrc = readFileSync(join(repoRoot, 'app', 'page.tsx'), 'utf-8');
-  const layoutSrc = readFileSync(join(repoRoot, 'app', 'layout.tsx'), 'utf-8');
+  const pageSrc = readFileSync(join(repoRoot, 'app', '(unprefixed)', 'page.tsx'), 'utf-8');
+  const layoutSrc = ['app/_root/RootDocument.tsx', 'lib/root-metadata.ts'].map((p) => readFileSync(join(repoRoot, p), 'utf-8')).join('\n');
   check(!pageSrc.includes('gradient-text">40<'), 'app/page.tsx no longer hardcodes "40" in the hero stats');
   check(pageSrc.includes('{tools.length}'), 'app/page.tsx renders {tools.length} instead');
-  check(!layoutSrc.includes('40 PDF tools'), 'app/layout.tsx no longer hardcodes "40 PDF tools" in any metadata description');
+  check(!layoutSrc.includes('40 PDF tools'), 'the root document (RootDocument + root-metadata) no longer hardcodes "40 PDF tools" in any metadata description');
   check((layoutSrc.match(/\$\{tools\.length\} PDF tools/g) || []).length === 3, 'all 3 metadata description strings now interpolate ${tools.length}');
   check(tools.length === 40, `tools.length is 40 after removing the duplicate 'jpg' (PDF do JPG) entry — got ${tools.length}`);
 }
@@ -71,7 +71,7 @@ console.log('\n=== dead redirectTo field removed from lib/tools.ts ===');
   const toolsSrc = readFileSync(join(repoRoot, 'lib', 'tools.ts'), 'utf-8');
   check(!toolsSrc.includes('redirectTo'), 'redirectTo is gone from both the ToolDef interface and the jpg entry');
   // The actual redirect behavior lives in the two page.tsx files and must be untouched by this cleanup.
-  const legacyRedirect = readFileSync(join(repoRoot, 'app', 'pdf-to-jpg', 'page.tsx'), 'utf-8');
+  const legacyRedirect = readFileSync(join(repoRoot, 'app', '(unprefixed)', 'pdf-to-jpg', 'page.tsx'), 'utf-8');
   const localeRedirect = readFileSync(join(repoRoot, 'app', '[locale]', 'pdf-to-jpg', 'page.tsx'), 'utf-8');
   check(legacyRedirect.includes("redirect('/pdf-to-images')"), 'the actual pdf-to-jpg -> pdf-to-images redirect (root route) is untouched');
   check(localeRedirect.includes('/pdf-to-images'), 'the actual pdf-to-jpg -> pdf-to-images redirect (locale-prefixed route) is untouched');

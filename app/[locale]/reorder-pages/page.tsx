@@ -1,4 +1,4 @@
-import ReorderPages from '../../reorder-pages/page';
+import ReorderPages from '../../(unprefixed)/reorder-pages/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

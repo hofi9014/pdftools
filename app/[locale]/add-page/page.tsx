@@ -1,4 +1,4 @@
-import AddPage from '../../add-page/page';
+import AddPage from '../../(unprefixed)/add-page/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

@@ -1,4 +1,4 @@
-import WordToPDF from '../../word-to-pdf/page';
+import WordToPDF from '../../(unprefixed)/word-to-pdf/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

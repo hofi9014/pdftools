@@ -1,4 +1,4 @@
-import ExtractPages from '../../extract-pages/page';
+import ExtractPages from '../../(unprefixed)/extract-pages/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

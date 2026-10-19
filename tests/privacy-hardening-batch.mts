@@ -53,8 +53,10 @@ console.log('=== the core guarantee: no app/*/page.tsx silently gains a network 
   // apiFetch() (lib/api-error.ts) is fetch() with a localized "no connection" error — a page
   // calling it makes a network call just the same, so it counts here exactly like fetch().
   const NETWORK_PATTERN = /\bfetch\s*\(|\bapiFetch\s*\(|XMLHttpRequest|\baxios\b/;
-  const appDir = join(repoRoot, 'app');
-  const toolDirs = readdirSync(appDir, { withFileTypes: true }).filter(d => d.isDirectory() && d.name !== 'api' && d.name !== '[locale]');
+  // The client page components live in the app/(unprefixed) route group (the root layout for the
+  // legacy unprefixed URLs); app/[locale]/* only re-renders them.
+  const appDir = join(repoRoot, 'app', '(unprefixed)');
+  const toolDirs = readdirSync(appDir, { withFileTypes: true }).filter(d => d.isDirectory());
   check(toolDirs.length >= 45, `sanity: found a substantial number of app/* page directories (got ${toolDirs.length})`);
 
   const violations: string[] = [];
@@ -97,9 +99,9 @@ console.log('\n=== edit-pdf fonts are self-hosted, not fetched from Google at ru
 
 console.log('\n=== Google Analytics is not loaded before consent ===');
 {
-  const layoutSrc = readFileSync(join(repoRoot, 'app', 'layout.tsx'), 'utf-8');
-  check(!layoutSrc.includes('googletagmanager.com'), 'app/layout.tsx no longer unconditionally loads gtag.js');
-  check(!layoutSrc.includes("gtag('consent'"), 'the old always-runs consent-default-denied script is gone from layout.tsx');
+  const layoutSrc = ['app/_root/RootDocument.tsx', 'lib/root-metadata.ts'].map((p) => readFileSync(join(repoRoot, p), 'utf-8')).join('\n');
+  check(!layoutSrc.includes('googletagmanager.com'), 'the root document (RootDocument + root-metadata) no longer unconditionally loads gtag.js');
+  check(!layoutSrc.includes("gtag('consent'"), 'the old always-runs consent-default-denied script is gone from the root document');
 
   const consentSrc = readFileSync(join(repoRoot, 'components', 'CookieConsent.tsx'), 'utf-8');
   check(consentSrc.includes('googletagmanager.com'), 'CookieConsent.tsx now owns the GA script tags');
@@ -109,8 +111,8 @@ console.log('\n=== Google Analytics is not loaded before consent ===');
 
 console.log('\n=== url-to-pdf has an inline "leaves your device" disclosure, like the AI tools ===');
 {
-  const urlPageSrc = readFileSync(join(repoRoot, 'app', 'url-to-pdf', 'page.tsx'), 'utf-8');
-  check(urlPageSrc.includes("t('page.url_warning', locale)"), 'app/url-to-pdf/page.tsx renders the new url_warning banner');
+  const urlPageSrc = readFileSync(join(repoRoot, 'app', '(unprefixed)', 'url-to-pdf', 'page.tsx'), 'utf-8');
+  check(urlPageSrc.includes("t('page.url_warning', locale)"), 'app/(unprefixed)/url-to-pdf/page.tsx renders the new url_warning banner');
 
   const i18nSrc = readFileSync(join(repoRoot, 'lib', 'i18n.ts'), 'utf-8');
   const urlWarningCount = (i18nSrc.match(/'page\.url_warning':/g) || []).length;

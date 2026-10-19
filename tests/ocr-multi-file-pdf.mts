@@ -31,7 +31,7 @@ function check(cond: boolean, msg: string): void {
 console.log('=== U4: OCR keeps every file\'s PDF output, and the promised ZIP is real ===');
 
 const here = dirname(fileURLToPath(import.meta.url));
-const src = readFileSync(join(here, '..', 'app', 'ocr-pdf', 'page.tsx'), 'utf-8');
+const src = readFileSync(join(here, '..', 'app', '(unprefixed)', 'ocr-pdf', 'page.tsx'), 'utf-8');
 
 check(!/if \(i === 0\) setPdfData/.test(src), 'the "only keep file #0" pattern is gone from source');
 check(!/import JSZip from 'jszip'/.test(src), 'the dead, never-used JSZip import is gone');

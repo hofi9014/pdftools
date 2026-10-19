@@ -77,7 +77,7 @@ const { readFileSync } = await import('node:fs');
 const { fileURLToPath } = await import('node:url');
 const { dirname, join } = await import('node:path');
 const here = dirname(fileURLToPath(import.meta.url));
-const src = readFileSync(join(here, '..', 'app', 'compress', 'page.tsx'), 'utf-8');
+const src = readFileSync(join(here, '..', 'app', '(unprefixed)', 'compress', 'page.tsx'), 'utf-8');
 check(!src.includes('r.name.startsWith(file.name.replace'), 'the old prefix-matching lookup is gone from the source');
 check(src.includes('results.find((r) => r.fileIdx === i)'), 'the index-based lookup (by the file index each result records) is present');
 check(/fileIdx: files\.indexOf\(file\)/.test(src), 'each result records the index of its own file');

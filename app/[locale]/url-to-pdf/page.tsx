@@ -1,4 +1,4 @@
-import UrlToPdf from '../../url-to-pdf/page';
+import UrlToPdf from '../../(unprefixed)/url-to-pdf/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

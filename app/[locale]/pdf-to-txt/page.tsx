@@ -1,4 +1,4 @@
-import PDFToTxt from '../../pdf-to-txt/page';
+import PDFToTxt from '../../(unprefixed)/pdf-to-txt/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

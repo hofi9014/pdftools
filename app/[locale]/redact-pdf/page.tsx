@@ -1,4 +1,4 @@
-import RedactPdf from '../../redact-pdf/page';
+import RedactPdf from '../../(unprefixed)/redact-pdf/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

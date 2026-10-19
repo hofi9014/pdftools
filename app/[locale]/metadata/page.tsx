@@ -1,4 +1,4 @@
-import MetadataPageComponent from '../../metadata/page';
+import MetadataPageComponent from '../../(unprefixed)/metadata/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

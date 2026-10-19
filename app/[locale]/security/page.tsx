@@ -1,4 +1,4 @@
-import SecurityPage from '../../security/page';
+import SecurityPage from '../../(unprefixed)/security/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

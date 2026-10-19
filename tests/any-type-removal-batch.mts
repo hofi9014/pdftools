@@ -30,8 +30,8 @@ console.log('=== any removed from pdf-to-images format select + terms sections m
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..');
 
-const imagesSrc = readFileSync(join(repoRoot, 'app', 'pdf-to-images', 'page.tsx'), 'utf-8');
-const termsSrc = readFileSync(join(repoRoot, 'app', 'terms', 'page.tsx'), 'utf-8');
+const imagesSrc = readFileSync(join(repoRoot, 'app', '(unprefixed)', 'pdf-to-images', 'page.tsx'), 'utf-8');
+const termsSrc = readFileSync(join(repoRoot, 'app', '(unprefixed)', 'terms', 'page.tsx'), 'utf-8');
 
 check(!imagesSrc.includes('e.target.value as any'), 'pdf-to-images: "as any" is gone from the format select handler');
 check(imagesSrc.includes("e.target.value as 'png' | 'jpeg' | 'webp'"), 'pdf-to-images: replaced with the real union type the format state already uses');
@@ -65,11 +65,11 @@ function eslintOutput(files: string[]): string {
     return err.stdout ?? '';
   }
 }
-const imagesProblems = eslintProblemCount('app/pdf-to-images/page.tsx');
-const termsProblems = eslintProblemCount('app/terms/page.tsx');
+const imagesProblems = eslintProblemCount('app/(unprefixed)/pdf-to-images/page.tsx');
+const termsProblems = eslintProblemCount('app/(unprefixed)/terms/page.tsx');
 check(imagesProblems >= 0, `pdf-to-images/page.tsx eslint ran successfully — ${imagesProblems} problems remain (pre-existing, unrelated to this fix)`);
 check(termsProblems >= 0, `terms/page.tsx eslint ran successfully — ${termsProblems} problems remain (pre-existing, unrelated to this fix)`);
-const combinedOutput = eslintOutput(['app/pdf-to-images/page.tsx', 'app/terms/page.tsx']);
+const combinedOutput = eslintOutput(['app/(unprefixed)/pdf-to-images/page.tsx', 'app/(unprefixed)/terms/page.tsx']);
 check(!combinedOutput.includes('no-explicit-any'), 'no-explicit-any no longer appears anywhere in either file\'s lint output');
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);

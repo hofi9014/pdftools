@@ -1,4 +1,4 @@
-import AiSummary from '../../ai-summary/page';
+import AiSummary from '../../(unprefixed)/ai-summary/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

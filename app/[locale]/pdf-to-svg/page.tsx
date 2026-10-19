@@ -1,4 +1,4 @@
-import PdfToSvg from '../../pdf-to-svg/page';
+import PdfToSvg from '../../(unprefixed)/pdf-to-svg/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';

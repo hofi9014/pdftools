@@ -29,7 +29,7 @@ function check(cond: boolean, msg: string): void {
 console.log('=== ai-chat: t(key, locale, params) used instead of manual placeholder replacement ===');
 
 const here = dirname(fileURLToPath(import.meta.url));
-const src = readFileSync(join(here, '..', 'app', 'ai-chat', 'page.tsx'), 'utf-8');
+const src = readFileSync(join(here, '..', 'app', '(unprefixed)', 'ai-chat', 'page.tsx'), 'utf-8');
 
 console.log('--- source no longer manually replaces placeholders ---');
 check(!src.includes(".replace('{wordCount}'"), 'the manual .replace(\'{wordCount}\', ...) chain is gone');

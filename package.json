@@ -188,6 +188,7 @@
     "test:e2e-cookie-consent": "npx --yes tsx e2e/cookie-consent.mts",
     "test:e2e-a11y-axe": "npx --yes tsx e2e/a11y-axe.mts",
     "test:e2e-narrow-screen-overflow": "npx --yes tsx e2e/narrow-screen-overflow.mts",
+    "test:e2e-server-lang": "npx --yes tsx e2e/server-lang.mts",
     "test:all": "node scripts/run-tests.mjs"
   },
   "dependencies": {

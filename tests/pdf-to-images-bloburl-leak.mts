@@ -38,7 +38,7 @@ function check(cond: boolean, msg: string): void {
 console.log('=== pdf-to-images: Blob URL leak fixed, no double-revoke ===');
 
 const here = dirname(fileURLToPath(import.meta.url));
-const src = readFileSync(join(here, '..', 'app', 'pdf-to-images', 'page.tsx'), 'utf-8');
+const src = readFileSync(join(here, '..', 'app', '(unprefixed)', 'pdf-to-images', 'page.tsx'), 'utf-8');
 
 console.log('--- clearImages revokes from the render closure, not inside the setState updater ---');
 check(/const clearImages = \(\) => \{\s*images\.forEach\(img => URL\.revokeObjectURL\(img\.url\)\);\s*setImages\(\[\]\);\s*\}/.test(src), 'clearImages reads `images` directly and revokes before calling setImages([]) — not inside a functional updater');

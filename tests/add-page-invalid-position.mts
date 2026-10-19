@@ -38,7 +38,7 @@ function check(cond: boolean, msg: string): void {
 
 console.log('=== source-level: handleSubmit validates the custom position before calling addBlankPage ===');
 {
-  const src = readFileSync(join(ROOT, 'app', 'add-page', 'page.tsx'), 'utf-8');
+  const src = readFileSync(join(ROOT, 'app', '(unprefixed)', 'add-page', 'page.tsx'), 'utf-8');
   const startIdx = src.indexOf("position === 'custom'");
   const endIdx = src.indexOf('const result = await addBlankPage');
   const branchSrc = src.slice(startIdx, endIdx);

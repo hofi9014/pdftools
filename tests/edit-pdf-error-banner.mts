@@ -29,8 +29,8 @@ function check(cond: boolean, msg: string): void {
 console.log('=== edit-pdf: file validation uses the styled error banner, not alert() ===');
 
 const here = dirname(fileURLToPath(import.meta.url));
-const src = readFileSync(join(here, '..', 'app', 'edit-pdf', 'page.tsx'), 'utf-8');
-const mergeSrc = readFileSync(join(here, '..', 'app', 'merge', 'page.tsx'), 'utf-8');
+const src = readFileSync(join(here, '..', 'app', '(unprefixed)', 'edit-pdf', 'page.tsx'), 'utf-8');
+const mergeSrc = readFileSync(join(here, '..', 'app', '(unprefixed)', 'merge', 'page.tsx'), 'utf-8');
 
 check(!/\balert\(/.test(src), 'no alert() calls remain anywhere in the file');
 check(src.includes("const [error, setError] = useState('')"), "the component has 'error' state");
