@@ -23,12 +23,20 @@ export async function initPdfjs(): Promise<void> {
   return pdfjsInitPromise;
 }
 
-export function pdfjsDocOptions(data: Uint8Array): { data: Uint8Array; cMapUrl: string; cMapPacked: boolean; standardFontDataUrl: string } {
+/**
+ * fontExtraProperties: the converters read each font's real /BaseFont name ("Helvetica-Bold")
+ * from page.commonObjs (buildFontNameMap, extractTextBlocks) — that is how bold and italic, and
+ * the font family, are known. From pdf.js 6.4 the font object handed to the page carries `name`
+ * only when the document is opened with this option (6.3 always carried it); without it every
+ * conversion silently lost bold and italic.
+ */
+export function pdfjsDocOptions(data: Uint8Array): { data: Uint8Array; cMapUrl: string; cMapPacked: boolean; standardFontDataUrl: string; fontExtraProperties: boolean } {
   return {
     data,
     cMapUrl: '/pdfjs-dist/cmaps/',
     cMapPacked: true,
     standardFontDataUrl: '/pdfjs-dist/standard_fonts/',
+    fontExtraProperties: true,
   };
 }
 
