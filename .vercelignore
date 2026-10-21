@@ -12,4 +12,5 @@ diagnose.ts
 *.traineddata
 test-*
 *.pdf
-*.jpg
+# root-level scratch renders only (test_render*.jpg); public/og-image.jpg is the link-preview picture
+/*.jpg

@@ -6,6 +6,7 @@ import type { Locale } from '@/lib/i18n';
 import { localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
 import { getArticlesByCategory, getAllCategories } from '@/lib/guides';
 import CTATool from '@/components/guides/CTATool';
+import { socialMetadata, fullTitle } from '@/lib/metadata';
 
 const categoryLabels: Record<string, Record<Locale, string>> = {
   'compress-pdf': {
@@ -77,9 +78,16 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale: localeSegment, category } = await params;
   const locale = localeFromSegment(localeSegment) as Locale;
   const label = getCategoryLabel(category, locale);
+  const description = t('guides.hub_subtitle', locale);
+  const url = (l: Locale) => `https://optimapdf.com/guides/${getLocaleSegment(l)}/${category}`;
+  const languages: Record<string, string> = {};
+  for (const l of locales) languages[l] = url(l);
+  languages['x-default'] = url('en');
   return {
     title: label,
-    description: t('guides.hub_subtitle', locale),
+    description,
+    alternates: { canonical: url(locale), languages },
+    ...socialMetadata({ locale, title: fullTitle(label), description, url: url(locale) }),
   };
 }
 

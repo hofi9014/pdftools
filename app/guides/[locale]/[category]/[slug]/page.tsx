@@ -10,6 +10,7 @@ import ContentBlockRenderer from '@/components/guides/ContentBlockRenderer';
 import CTATool from '@/components/guides/CTATool';
 import { validateGuides } from '@/lib/guides-validate';
 import { safeJsonLd } from '@/lib/safe-json-ld';
+import { socialMetadata, fullTitle } from '@/lib/metadata';
 
 if (process.env.NODE_ENV === 'production') {
   const { errors } = validateGuides();
@@ -52,15 +53,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title,
     description,
     alternates: { canonical, languages },
-    openGraph: {
-      title,
-      description,
-      url: canonical,
-      siteName: 'OptimaPDF',
-      type: 'article',
-      publishedTime: article.publishedAt,
-      modifiedTime: article.updatedAt,
-    },
+    ...socialMetadata({ locale, title: fullTitle(title), description, url: canonical, type: 'article', publishedTime: article.publishedAt, modifiedTime: article.updatedAt }),
   };
 }
 

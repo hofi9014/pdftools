@@ -191,6 +191,8 @@
     "test:e2e-a11y-axe": "npx --yes tsx e2e/a11y-axe.mts",
     "test:e2e-narrow-screen-overflow": "npx --yes tsx e2e/narrow-screen-overflow.mts",
     "test:e2e-server-lang": "npx --yes tsx e2e/server-lang.mts",
+    "test:e2e-link-preview-headers": "npx --yes tsx e2e/link-preview-headers.mts",
+    "test:e2e-csp-no-eval": "npx --yes tsx e2e/csp-no-eval.mts",
     "test:all": "node scripts/run-tests.mjs"
   },
   "dependencies": {

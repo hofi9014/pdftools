@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { locales, type Locale } from '@/lib/i18n';
+import { locales, t, type Locale } from '@/lib/i18n';
 import RootDocument from '@/app/_root/RootDocument';
 import { rootMetadata } from '@/lib/root-metadata';
+import { socialMetadata } from '@/lib/metadata';
 
 const baseUrl = 'https://optimapdf.com';
 
@@ -21,8 +22,16 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     languages[l] = `${baseUrl}/${l}`;
   }
   languages['x-default'] = `${baseUrl}/en`;
+  // The home page has no metadata of its own: its title, description and link preview are these,
+  // in the language of the address (before, /pl, /de, … all said "Free online PDF tools").
+  const known = (locales as readonly string[]).includes(locale) ? (locale as Locale) : 'en';
+  const title = t('meta.title', known);
+  const description = t('meta.description', known);
   return {
     ...rootMetadata,
+    title: { default: title, template: '%s | OptimaPDF' },
+    description,
+    ...socialMetadata({ locale: known, title, description, url: `${baseUrl}/${known}` }),
     alternates: {
       canonical: `${baseUrl}/${locale}`,
       languages,

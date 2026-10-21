@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { tools } from '@/lib/tools';
+import { OG_IMAGE } from '@/lib/metadata';
 
 /** Metadata shared by every root layout (app/[locale], app/guides/[locale], app/(unprefixed)). */
 export const rootMetadata: Metadata = {
@@ -17,11 +18,13 @@ export const rootMetadata: Metadata = {
     siteName: 'OptimaPDF',
     locale: 'en_US',
     type: 'website',
+    images: [OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'OptimaPDF - Free online PDF tools',
     description: `Merge, split, compress, convert and edit PDFs for free online. ${tools.length} PDF tools, AI Chat, AI Summary, AI Translate, PDF editor, electronic signature, OCR, password protection.`,
+    images: [{ url: OG_IMAGE.url, alt: OG_IMAGE.alt }],
   },
   icons: {
     icon: { url: '/icon?v=2', sizes: '32x32', type: 'image/png' },
