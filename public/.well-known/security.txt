@@ -1,0 +1,5 @@
+Contact: mailto:kontakt@optimapdf.com
+Expires: 2027-10-21T00:00:00.000Z
+Preferred-Languages: pl, en
+Canonical: https://optimapdf.com/.well-known/security.txt
+Policy: https://optimapdf.com/en/security

@@ -5,6 +5,7 @@ import type { Locale } from '@/lib/i18n';
 import { localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
 import { getAllArticles, getAllCategories } from '@/lib/guides';
 import type { GuideArticle } from '@/types/guide';
+import { socialMetadata, fullTitle } from '@/lib/metadata';
 
 const categoryLabels: Record<string, Record<Locale, string>> = {
   'compress-pdf': {
@@ -65,9 +66,19 @@ function getCategoryLabel(category: string, locale: Locale): string {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale: localeSegment } = await params;
   const locale = localeFromSegment(localeSegment) as Locale;
+  const title = t('guides.hub_title', locale);
+  const description = t('guides.hub_subtitle', locale);
+  const url = (l: Locale) => `https://optimapdf.com/guides/${getLocaleSegment(l)}`;
+  const languages: Record<string, string> = {};
+  for (const l of locales) languages[l] = url(l);
+  languages['x-default'] = url('en');
   return {
-    title: t('guides.hub_title', locale),
-    description: t('guides.hub_subtitle', locale),
+    // The hub is in the same segment as the guides root layout, whose title template does not
+    // reach it — so the full title is given here (it read "Anleitungen", not "… | OptimaPDF").
+    title: { absolute: fullTitle(title) },
+    description,
+    alternates: { canonical: url(locale), languages },
+    ...socialMetadata({ locale, title: fullTitle(title), description, url: url(locale) }),
   };
 }
 

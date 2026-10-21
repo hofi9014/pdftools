@@ -7,9 +7,20 @@ import type { NextConfig } from "next";
 // `openrouter.ai` in connect-src (the browser never calls it directly — only our own
 // /api/ai server route does) were removed: none of them were reachable from the browser, so
 // they only widened where an XSS could exfiltrate data to, with no functional upside.
+// 'unsafe-eval' only for `next dev` (its hot reload evaluates code). The built site needs none:
+// the one thing that compiles code is WebAssembly (OCR, tesseract.js), which 'wasm-unsafe-eval'
+// allows without letting a script turn strings into code — measured with e2e/csp-no-eval.mts.
+const evalSource = process.env.NODE_ENV === 'production' ? "'wasm-unsafe-eval'" : "'unsafe-eval' 'wasm-unsafe-eval'";
+
+// Pages a sign-in popup returns to: they hand the token to the window that opened them through
+// window.opener, which a Cross-Origin-Opener-Policy on them would cut (the popup has just been on
+// the provider's site). Every other page sends same-origin-allow-popups: no other site's window
+// can reach this one, and the popups this page opens keep their link back to it.
+const OAUTH_RETURN_PAGES = ['/dropbox-oauth.html', '/onedrive-oauth.html', '/onedrive-picker-oauth.html', '/sharepoint-oauth.html'];
+
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.google-analytics.com https://apis.google.com https://accounts.google.com https://www.dropbox.com https://js.live.net",
+  `script-src 'self' 'unsafe-inline' ${evalSource} https://www.googletagmanager.com https://*.google-analytics.com https://apis.google.com https://accounts.google.com https://www.dropbox.com https://js.live.net`,
   "style-src 'self' 'unsafe-inline'",
   "style-src-elem 'self' 'unsafe-inline'",
   "font-src 'self' data:",
@@ -79,8 +90,14 @@ const nextConfig: NextConfig = {
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
 
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
         ],
       },
+      // Later entries win for the same header (Next docs): the sign-in return pages opt out.
+      ...OAUTH_RETURN_PAGES.map((source) => ({
+        source,
+        headers: [{ key: 'Cross-Origin-Opener-Policy', value: 'unsafe-none' }],
+      })),
     ];
   },
 };

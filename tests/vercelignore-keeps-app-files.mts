@@ -23,16 +23,19 @@ function check(cond: boolean, msg: string): void {
 
 const patterns = readFileSync(join(ROOT, '.vercelignore'), 'utf8').split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
 // .vercelignore uses .gitignore syntax; the patterns in this file are plain names and "*" globs
-// without slashes, which match a path segment at any depth.
+// without slashes, which match a path segment at any depth, or such a glob after a leading "/",
+// which matches at the top level only ("/*.jpg": test_render.jpg, not public/og-image.jpg).
 const toRegex = (p: string) => new RegExp('^' + p.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$');
-const regexes = patterns.map((p) => ({ p, re: toRegex(p) }));
+const regexes = patterns.map((p) => ({ p, rootOnly: p.startsWith('/'), re: toRegex(p.replace(/^\//, '')) }));
 const ignoredBy = (path: string): string | undefined => {
-  for (const seg of path.split('/')) {
-    const hit = regexes.find((r) => r.re.test(seg));
+  const segs = path.split('/');
+  for (let i = 0; i < segs.length; i++) {
+    const hit = regexes.find((r) => (!r.rootOnly || i === 0) && r.re.test(segs[i]!));
     if (hit) return hit.p;
   }
   return undefined;
 };
+check(ignoredBy('test_render.jpg') === '/*.jpg' && ignoredBy('public/og-image.jpg') === undefined, 'root-level scratch .jpg files are ignored, the link-preview picture is not');
 
 console.log('=== .vercelignore must not remove files the app is built from ===');
 check(!patterns.includes('proxy.ts'), 'proxy.ts (CSRF check, rate limit, locale redirects) is not ignored');
