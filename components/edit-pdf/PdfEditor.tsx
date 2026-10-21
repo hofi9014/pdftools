@@ -81,7 +81,8 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
         const pdfjsLib = await import('pdfjs-dist');
         await initPdfjs();
         const buf = await file.arrayBuffer();
-        const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+        // fontExtraProperties: extractTextBlocks reads each font's real name (see pdfjsDocOptions).
+        const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf), fontExtraProperties: true }).promise;
         if (cancel) { doc.cleanup(); return; }
         pdfjsDocRef.current = doc;
         setPageCount(doc.numPages);
