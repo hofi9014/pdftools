@@ -198,8 +198,14 @@ console.log('\n=== pages of different sizes ===');
   const pagesIn = sizes.map(([w, h]) => mk(w, h));
   const mixedDocx = await renderFixedPagesToDocx(pagesIn);
   const xml = await (await JSZip.loadAsync(await mixedDocx.arrayBuffer())).file('word/document.xml')!.async('string');
-  const sectionEnds = [...xml.matchAll(/<w:p><w:pPr>((?:(?!<\/w:pPr>).)*)<w:sectPr>/g)].map((m) => m[1]!);
-  check(sectionEnds.length === 2 && sectionEnds.every((s) => /w:line="20" w:lineRule="exact"/.test(s)), `the paragraph that closes a section is 1 pt high (${sectionEnds.length} of them)`);
+  // docx ≤ 9.11 closes a section with an extra EMPTY paragraph carrying the <w:sectPr> — a full
+  // default line under a full page, which would spill onto an empty page, so the writer makes it
+  // 1 pt. docx 9.12 puts the <w:sectPr> into the section's last content paragraph instead (no
+  // extra paragraph at all). Either way: every paragraph closing a section has an exact line
+  // height, and one without text is 1 pt.
+  const sectionEnds = [...xml.matchAll(/<w:p><w:pPr>((?:(?!<\/w:pPr>).)*)<w:sectPr>(?:(?!<\/w:p>).)*<\/w:p>/g)].map((m) => ({ pPr: m[1]!, empty: !m[0].includes('<w:t') }));
+  check(sectionEnds.length === 2 && sectionEnds.every((s) => /w:lineRule="exact"/.test(s.pPr) && (!s.empty || /w:line="20" w:lineRule="exact"/.test(s.pPr))),
+    `the paragraph that closes a section has an exact height, 1 pt when empty (${sectionEnds.length} of them, ${sectionEnds.filter((s) => s.empty).length} empty)`);
   check(/<w:pgSz w:w="16840" w:h="11900" w:orient="landscape"\/>/.test(xml), 'the landscape page is written as landscape, wide side as its width');
   check((xml.match(/w:lineRule="exact"/g) ?? []).length === (xml.match(/<w:p>/g) ?? []).length, 'every paragraph has an exact line height');
   for (const [name, pages] of [['.docx', await readFixedDocx(mixedDocx)], ['.odt', await readFixedOdt(await renderFixedPagesToOdt(pagesIn, { textBoxes: false }))]] as const) {
