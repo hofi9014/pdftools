@@ -147,6 +147,21 @@ export function inferParagraphLayout(
   return { alignment, leftIndentPt: Math.round(leftIndentPt * 10) / 10, spacingBeforePt: Math.round(spacingBeforePt * 10) / 10 };
 }
 
+/** Space between a bullet and its text, pt: Word's own default hanging indent (360 twips). */
+export const LIST_HANGING_PT = 18;
+
+/**
+ * Where a bulleted list item's text starts, from the left margin, and the hanging indent for its
+ * bullet. Taken from the page (the item's text start), not from Word's numbering definition: that
+ * definition indents level n by 36 pt × (n + 1), so an item at "level 2" — the extraction's level
+ * is the item's distance from the page edge — sat 108 pt in from the margin instead of the 18 pt
+ * of the source, every line came out narrower and a full page spilled onto the next one.
+ */
+export function listItemIndent(block: TextBlock, margins: PageMargins): { leftPt: number; hangingPt: number } {
+  const leftPt = Math.max(LIST_HANGING_PT, block.bounds.x - margins.left);
+  return { leftPt: Math.round(leftPt * 10) / 10, hangingPt: LIST_HANGING_PT };
+}
+
 /**
  * The smallest painted fill that fully contains the block's text (3 pt tolerance), as a hex
  * colour. Light text on a coloured band (white on orange, white on black) was written to Word

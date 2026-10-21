@@ -24,10 +24,11 @@
 import { chromium, type Page } from 'playwright';
 import { register } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, basename } from 'node:path';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import JSZip from 'jszip';
 import { findOffice, convertToPdf, saveAsOdt, stopOffice } from './helpers/openoffice.mts';
+import { findMsOffice, wordOpen } from './helpers/msoffice.mts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, '..');
@@ -259,6 +260,20 @@ if (EXTRA) {
 }
 await browser.close();
 
+// A paragraph the way a glyph-by-glyph PDF arrives: "ć" is a run of its own. Apache OpenOffice's
+// Word import dropped such a run and broke the paragraph; both word processors open it below.
+const LONE_C = join(outDir, 'lone-c.docx');
+{
+  (globalThis as Record<string, unknown>).DOMParser = (await import('@xmldom/xmldom')).DOMParser;
+  const { renderIRToDocx } = await import('../lib/client-pdf-docx.ts');
+  const r = (text: string, x: number) => ({ text, fontName: 'Arial', fontSize: 12, width: text.length * 6, height: 12, position: { x, y: 700 }, color: '#000000', bold: false, italic: false, rotation: 0 });
+  const runs = [r('Trzeba to zrobi', 72), r('ć', 162), r(' dzisiaj, a nie odkłada', 168), r('ć', 306), r('.', 312)];
+  const blob = await renderIRToDocx([{ width: 595, height: 842, blocks: [{ kind: 'paragraph', runs, bounds: { x: 72, y: 690, width: 250, height: 14 } }] }]);
+  writeFileSync(LONE_C, new Uint8Array(await blob.arrayBuffer()));
+  const xml = await (await JSZip.loadAsync(readFileSync(LONE_C))).file('word/document.xml')!.async('string');
+  check(!/<w:t xml:space="preserve">ć<\/w:t>/.test(xml), 'no run of the written file is a lone "ć"');
+}
+
 // ---------------------------------------------------------------- 2-4. a real word processor
 const office = findOffice();
 if (!office) {
@@ -394,16 +409,7 @@ if (!office) {
 
   console.log('\n=== a lone "ć" run survives the word processor ===');
   {
-    (globalThis as Record<string, unknown>).DOMParser = (await import('@xmldom/xmldom')).DOMParser;
-    const { renderIRToDocx } = await import('../lib/client-pdf-docx.ts');
-    const r = (text: string, x: number) => ({ text, fontName: 'Arial', fontSize: 12, width: text.length * 6, height: 12, position: { x, y: 700 }, color: '#000000', bold: false, italic: false, rotation: 0 });
-    // The way a glyph-by-glyph PDF arrives: "ć" is a run of its own.
-    const runs = [r('Trzeba to zrobi', 72), r('ć', 162), r(' dzisiaj, a nie odkłada', 168), r('ć', 306), r('.', 312)];
-    const blob = await renderIRToDocx([{ width: 595, height: 842, blocks: [{ kind: 'paragraph', runs, bounds: { x: 72, y: 690, width: 250, height: 14 } }] }]);
-    const path = join(outDir, 'lone-c.docx');
-    writeFileSync(path, new Uint8Array(await blob.arrayBuffer()));
-    const xml = await (await JSZip.loadAsync(readFileSync(path))).file('word/document.xml')!.async('string');
-    check(!/<w:t xml:space="preserve">ć<\/w:t>/.test(xml), 'no run of the written file is a lone "ć"');
+    const path = LONE_C;
     await convertToPdf(office, [[path, pdfOf('lone-c.docx')]]);
     const read = await readPdf(readFileSync(pdfOf('lone-c.docx')));
     const text = read[0]!.lines.map((l) => l.text).join(' | ');
@@ -420,6 +426,89 @@ if (!office) {
     }
   }
   await stopOffice(office);
+}
+
+// ---------------------------------------------------------------- 5. Microsoft Word
+// The same documents judged by the word processor most readers of a .docx have. Opened read-only
+// with repair turned off: a document Word would have to repair does not open at all.
+const ms = findMsOffice();
+if (!ms?.word) {
+  console.log('\n  SKIP Microsoft Word is not installed — the .docx files were not opened in Word');
+} else {
+  console.log('\n=== opened in Microsoft Word and compared with the source PDF ===');
+  const wordPdf = (name: string): string => join(outDir, name.replace(/\.docx$/, '-word.pdf'));
+  const names = ['brochure-fixed.docx', 'brochure-flow.docx', 'photos.docx', 'allegro-flow.docx', 'lone-c.docx', ...(EXTRA ? ['extra.docx'] : [])];
+  const opened = wordOpen(names.map((n) => [join(outDir, n), wordPdf(n)] as [string, string]));
+  for (const r of opened) check(r.ok, `${basename(r.in)}: Word opens it without repairing it (${r.ok ? `${r.pages} pages` : r.error})`);
+  const report = (c: Comparison): string => `${c.found}/${c.lines} lines found, worst baseline ${c.worstY.toFixed(1)} pt, worst left edge ${c.worstX.toFixed(1)} pt, ${c.offBy5} off by more than 5 pt, worst line end ${c.worstRight.toFixed(1)} pt, pixel difference ${(c.pixelDiff * 100).toFixed(1)}%`;
+  const boxDiff = (a: PageRead, b: PageRead, box: { x: number; y: number; w: number; h: number }, pageWidthPt: number): number => {
+    if (a.width !== b.width || a.height !== b.height) return 1;
+    const k = a.width / pageWidthPt;
+    let sum = 0;
+    let n = 0;
+    for (let y = Math.ceil(box.y * k); y < Math.min(a.height, Math.floor((box.y + box.h) * k)); y++) {
+      for (let x = Math.ceil(box.x * k); x < Math.min(a.width, Math.floor((box.x + box.w) * k)); x++) { sum += Math.abs(a.gray[y * a.width + x]! - b.gray[y * a.width + x]!); n++; }
+    }
+    return sum / Math.max(1, n) / 255;
+  };
+  const okNames = new Set(opened.filter((r) => r.ok).map((r) => basename(r.in)));
+
+  if (okNames.has('brochure-fixed.docx')) {
+    const source = await readPdf(fixture('chrome-brochure.pdf'));
+    const got = await readPdf(readFileSync(wordPdf('brochure-fixed.docx')));
+    const c = compare(source, got);
+    console.log(`  brochure-fixed.docx in Word: ${report(c)}`);
+    check(c.pagesEqual, 'Word: the same number of pages as the PDF');
+    check(c.wordsEqual, 'Word: the same words on every page');
+    check(c.found === c.lines && c.offBy5 === 0, 'Word: every line is within 5 pt of its place');
+    check(c.worstY <= 2.5 && c.worstX <= 2.5, `Word: in fact within 2.5 pt (baseline ${c.worstY.toFixed(2)}, left ${c.worstX.toFixed(2)})`);
+    check(c.worstRight <= 4, `Word: lines end where they ended (${c.worstRight.toFixed(2)} pt)`);
+    check(c.pixelDiff < 0.05, `Word: the page looks like the PDF (${(c.pixelDiff * 100).toFixed(2)}% grey difference at 50 dpi)`);
+    const grounds = [{ name: 'price badge', x: 425, y: 192, w: 165, h: 78 }, { name: 'footer band', x: 0, y: 796, w: 595, h: 44 }]
+      .map((g) => ({ name: g.name, diff: got[0] ? boxDiff(source[0]!, got[0], g, 595.28) : 1 }));
+    check(grounds.every((g) => g.diff < 0.08), `Word: text on a coloured ground is not boxed in (${grounds.map((g) => `${g.name} ${(g.diff * 100).toFixed(1)} %`).join(', ')})`);
+  }
+  if (okNames.has('brochure-flow.docx')) {
+    const c = compare(await readPdf(fixture('chrome-brochure.pdf')), await readPdf(readFileSync(wordPdf('brochure-flow.docx'))));
+    console.log(`  brochure-flow.docx in Word (flow engine, for comparison): ${report(c)}`);
+  }
+  if (okNames.has('photos.docx')) {
+    const photoSource = (await readPdf(fixture('photos.pdf')))[0]!;
+    const pages = await readPdf(readFileSync(wordPdf('photos.docx')));
+    const c = compare([photoSource], pages);
+    const worst = pages[0] ? Math.max(...PHOTOS.map((ph) => boxDiff(photoSource, pages[0]!, ph, PHOTO_PAGE.width))) : 1;
+    check(c.pagesEqual && c.wordsEqual && c.found === c.lines, `photos.docx in Word: one page, the same words, every line found (${report(c)})`);
+    // A photo hidden under the page picture (wrong stacking order), or moved, differs by 20 % and more.
+    check(worst < 0.04, `photos.docx in Word: both photos are drawn above the page picture, where the PDF has them (${(worst * 100).toFixed(1)} % grey difference inside their boxes)`);
+  }
+  if (okNames.has('allegro-flow.docx')) {
+    const { PDFDocument, PDFDict, PDFName } = await import('pdf-lib');
+    const pdf = await PDFDocument.load(readFileSync(wordPdf('allegro-flow.docx')));
+    const fonts = new Set<string>();
+    for (const [, obj] of pdf.context.enumerateIndirectObjects()) {
+      if (obj instanceof PDFDict && obj.get(PDFName.of('Type')) === PDFName.of('Font')) fonts.add(String(obj.get(PDFName.of('BaseFont'))).replace(/^\/(?:[A-Z]{6}\+)?/, ''));
+    }
+    const list = [...fonts].sort();
+    const src = await readPdf(fixture('allegro-raport.pdf'));
+    const got = await readPdf(readFileSync(wordPdf('allegro-flow.docx')));
+    const words = (pages: PageRead[]) => new Set(pages.flatMap((p) => p.words.map(norm)));
+    const srcWords = words(src);
+    const gotWords = words(got);
+    const covered = [...srcWords].filter((w) => gotWords.has(w)).length / srcWords.size;
+    console.log(`  allegro-flow.docx in Word: ${got.length} pages (source ${src.length}), ${(covered * 100).toFixed(1)}% of the distinct words, fonts ${list.join(', ')}`);
+    check(list.length > 0 && list.every((f) => /^Arial/.test(f)), `allegro-flow.docx in Word: sans-serif text is set in a sans-serif face (${list.join(', ')})`);
+    check(covered >= 0.99, `allegro-flow.docx in Word: the words of the PDF are there (${(covered * 100).toFixed(1)}%)`);
+    check(got.length === src.length, `allegro-flow.docx in Word: one page per page of the PDF (${got.length}/${src.length})`);
+  }
+  if (okNames.has('lone-c.docx')) {
+    const read = await readPdf(readFileSync(wordPdf('lone-c.docx')));
+    const text = read[0]!.lines.map((l) => l.text).join(' | ');
+    check(read[0]!.lines.length === 1 && /zrobić dzisiaj, a nie odkładać\./.test(text), `lone-c.docx in Word: one line, both letters present: "${text}"`);
+  }
+  if (EXTRA && okNames.has('extra.docx')) {
+    const c = compare(await readPdf(readFileSync(EXTRA)), await readPdf(readFileSync(wordPdf('extra.docx'))));
+    console.log(`  extra.docx in Word: pages ${c.pagesEqual ? 'equal' : 'DIFFER'}, words ${c.wordsEqual ? 'equal' : 'DIFFER'}, ${report(c)}`);
+  }
 }
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);

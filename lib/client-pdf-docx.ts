@@ -4,7 +4,7 @@
 import { PDFDocument, PDFName, rgb, type PDFFont, type PDFPage, type PDFImage } from 'pdf-lib';
 import type JSZip from 'jszip';
 import { applyConditionalFormatting } from './xlsx-conditional-formatting';
-import { splitAtBlankLines, findBox, splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, columnLayoutFrame, findBackgroundFill, separateLines, blocksInReadingOrder, type PageMargins } from './pdf/docxLayout';
+import { splitAtBlankLines, findBox, splitDotLeader, inferMargins, inferPageColumn, inferParagraphLayout, columnLayoutFrame, listItemIndent, findBackgroundFill, separateLines, blocksInReadingOrder, type PageMargins } from './pdf/docxLayout';
 import { protectSingleCharRuns } from './pdf/docxRunSafety';
 import { classifyFont, docxFontFamily, fixedFontFamily, odfFontFace, type FontClass } from './pdf/fontFamilies';
 
@@ -1144,6 +1144,8 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
     // One source page = one Word page: a break before the first element of every page but the first.
     let pendingBreak = pageIdx > 0;
     const pageColumn = inferPageColumn(page);
+    const pageListLevels = page.blocks.filter((b): b is IRListItemBlock => b.kind === 'list-item').map((b) => b.level);
+    const pageListBase = pageListLevels.length ? Math.min(...pageListLevels) : 0;
     let prevTextual: (IRBlock & { bounds: IRRect }) | undefined;
     const push = (child: unknown) => allChildren.push(child);
     for (const block of blocksInReadingOrder(page.blocks, page.height)) {
@@ -1283,15 +1285,21 @@ export async function renderIRToDocx(pages: IRPageIR[], images?: Map<string, Wri
         }));
       } else if (block.kind === 'list-item') {
         const li = block as IRListItemBlock;
-        const level = Math.min(li.level, 8);
+        // The extraction's level is the item's distance from the page edge; the shallowest item
+        // of the page is the first level (a round bullet), deeper ones nest below it.
+        const level = Math.min(Math.max(li.level - pageListBase, 0), 8);
         // A numbered marker ("1.", "2)") is written as literal text with a hanging indent — a
         // Word bullet replaced every number with a dot and lost the numbering.
         const numbered = /^\d+[.)]$/.test(li.marker);
+        // The indent comes from where the item's text stands on the page: a paragraph's own
+        // indent overrides the one in Word's numbering definition.
+        const ind = listItemIndent(li, columnLayoutFrame(li, page, pageColumn, margins).margins);
+        const lo = layoutOpts();
         push(new Paragraph({
-          ...layoutOpts(),
-          ...(numbered
-            ? { indent: { left: twips(18 * (level + 1) + 18), hanging: twips(18) } }
-            : { bullet: { level } }),
+          ...lo,
+          ...(numbered ? {} : { bullet: { level } }),
+          // A frame's right indent (set in layoutOpts) is kept.
+          indent: { ...(lo.indent ?? {}), left: twips(ind.leftPt), hanging: twips(ind.hangingPt) },
           children: numbered
             ? [new TextRun({ children: [li.marker, new Tab()] }), ...irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink, fontOf)]
             : irRunsToTextRuns(TextRun, li.runs, ExternalHyperlink, fontOf),

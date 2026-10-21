@@ -4,7 +4,8 @@
 // PDF→TXT / HTML / EPUB / ODT / Word on allegro-raport.pdf (27 pages, images, ligatures), PDF→PPTX
 // (one slide per page, text present), PDF→SVG (one svg per page), PDF→Excel on the schedule PDF
 // (3 sheets, dense grid) and on an invoice printed from a browser (text and a two-page table, read
-// back by a spreadsheet application when one is installed).
+// back by a spreadsheet application when one is installed). Where Microsoft Office is installed,
+// the presentation is opened in PowerPoint and both workbooks in Excel as well.
 import { chromium, type Page } from 'playwright';
 import { register } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -13,6 +14,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import JSZip from 'jszip';
 import { findOffice, convertToPdf, stopOffice } from './helpers/openoffice.mts';
 import { invoiceItems, invoiceTotals } from './fixtures/make-invoice-pdf.mts';
+import { findMsOffice, excelOpen, powerpointOpen } from './helpers/msoffice.mts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, '..');
@@ -30,6 +32,10 @@ function check(cond: boolean, msg: string): void {
 const allegro = readFileSync(join(ROOT, 'test-real-pdfs', 'allegro-raport.pdf'));
 const schedule = readFileSync(join(ROOT, 'test-fixtures', 'xlsx_EPZ_SIERPIEN_2026.pdf'));
 const invoice = readFileSync(join(ROOT, 'test-real-pdfs', 'chrome-invoice.pdf'));
+// Microsoft Office, when installed, opens the downloads too (e2e/helpers/msoffice.mts).
+const ms = findMsOffice();
+const msDir = join(ROOT, 'test-output', 'e2e-converters-msoffice');
+mkdirSync(msDir, { recursive: true });
 
 async function sourceText(bytes: Uint8Array): Promise<string> {
   const doc = await pdfjsLib.getDocument({ data: new Uint8Array(bytes), standardFontDataUrl: join(ROOT, 'node_modules/pdfjs-dist/standard_fonts/') + '/' }).promise;
@@ -123,6 +129,18 @@ console.log('\n=== PDF → PowerPoint ===');
   for (const n of slides) text += ' ' + strip(await zip.file(n)!.async('string'));
   const rc = recall(src, text);
   check(rc > 0.99, `${(rc * 100).toFixed(1)}% of the source words`);
+  if (!ms?.powerpoint) console.log('  SKIP Microsoft PowerPoint is not installed: the presentation is not opened in it');
+  else {
+    const path = join(msDir, 'allegro.pptx');
+    writeFileSync(path, r.bytes);
+    const [res] = powerpointOpen([[path, join(msDir, 'allegro-pptx.pdf')]]);
+    check(!!res?.ok && res.slides === 27, `Microsoft PowerPoint opens it without repairing it, 27 slides (${res?.ok ? res.slides : res?.error})`);
+    if (res?.ok) {
+      const shown = await sourceText(new Uint8Array(readFileSync(join(msDir, 'allegro-pptx.pdf'))));
+      const rcPp = recall(src, shown);
+      check(rcPp > 0.99, `and shows ${(rcPp * 100).toFixed(1)}% of the source words (read from the PDF PowerPoint prints)`);
+    }
+  }
 }
 
 console.log('\n=== PDF → SVG ===');
@@ -151,6 +169,18 @@ console.log('\n=== PDF → Excel (schedule PDF, 3 sheets) ===');
   const need = [...new Set(words(await sourceText(new Uint8Array(schedule))))].filter((w) => !/^arkusz\d$/.test(w)); // sheet names live in workbook.xml
   const rc = need.filter((w) => have.has(w)).length / need.length;
   check(rc === 1,`${(rc * 100).toFixed(1)}% of the distinct source words are in the cells (${need.length} words)`);
+  if (!ms?.excel) console.log('  SKIP Microsoft Excel is not installed: the workbook is not opened in it');
+  else {
+    const path = join(msDir, 'schedule.xlsx');
+    writeFileSync(path, r.bytes);
+    const [res] = excelOpen([[path, null]]);
+    check(!!res?.ok && res.sheets?.length === 3, `Microsoft Excel opens it without repairing it, three sheets (${res?.ok ? res.sheets?.map((s) => `${s.name} ${s.rows}×${s.cols}`).join(', ') : res?.error})`);
+    if (res?.ok) {
+      const shownWords = new Set(words(res.sheets!.flatMap((s) => s.cells.map((c) => c.text)).join(' ')));
+      const rcX = need.filter((w) => shownWords.has(w)).length / need.length;
+      check(rcX === 1, `and shows ${(rcX * 100).toFixed(1)}% of the distinct source words in its cells`);
+    }
+  }
 }
 
 // A PDF that is not a sheet printed by this app: an invoice from a browser. It used to end in
@@ -222,6 +252,42 @@ console.log('\n=== PDF → Excel (an invoice printed from a browser) ===');
     // The total is a number with "zł" in its format; Calc shows it with its own thousands space.
     check(/zł$/.test(net?.[7] ?? '') && amount(net?.[7]?.replace(/zł$/, '')) === Number(invoiceTotals.net.toFixed(2)), `the total stands under the value column, as a number shown with "zł" (${net?.join('|')})`);
     check(table.some((f) => f[0] === 'Sprzedawca' && f.includes('Nabywca')), 'seller and buyer are two cells of one row');
+  }
+
+  // The same workbook in Microsoft Excel: opened read-only without repair, every cell read as
+  // Excel shows it, together with whether Excel holds it as a number.
+  if (!ms?.excel) console.log('  SKIP Microsoft Excel is not installed: the workbook is not opened in it');
+  else {
+    const path = join(msDir, 'faktura.xlsx');
+    writeFileSync(path, r.bytes);
+    const [res] = excelOpen([[path, null]]);
+    const sheet = res?.sheets?.[0];
+    check(!!res?.ok && !!sheet, `Microsoft Excel opens it without repairing it (${res?.ok ? `${sheet?.name}: ${sheet?.rows}×${sheet?.cols}` : res?.error})`);
+    if (sheet) {
+      const at = (row: number, col: number) => sheet.cells.find((c) => c.r === row && c.c === col);
+      const rowOf = (marker: string) => sheet.cells.find((c) => c.c === 2 && c.text.startsWith(marker + ' '))?.r;
+      const amount = (t: string | undefined): number => Number((t ?? '').replace(/[^\d,.-]/g, '').replace(/[.,](?=\d{3}\b)/g, '').replace(',', '.'));
+      let wrong = 0;
+      const notNumbers: string[] = [];
+      for (const it of invoiceItems) {
+        const row = rowOf(it.marker);
+        if (!row) { wrong++; continue; }
+        const price = at(row, 6);
+        const gross = at(row, 8);
+        if (at(row, 1)?.text !== String(it.lp) || at(row, 2)?.text !== `${it.marker} ${it.name}` || at(row, 4)?.text !== String(it.qty)
+          || at(row, 5)?.text !== 'szt.' || at(row, 7)?.text !== '23%'
+          || amount(price?.text) !== Number(it.price.toFixed(2)) || amount(gross?.text) !== Number(it.gross.toFixed(2))) wrong++;
+        if (!price?.number || !gross?.number) notNumbers.push(it.marker);
+      }
+      check(sheet.rows === 48 && sheet.cols === 8, `48 rows of 8 columns in Excel too (${sheet.rows}×${sheet.cols})`);
+      check(wrong === 0, `Excel reads all 34 items with every value in its column (${wrong} wrong)`);
+      check(notNumbers.length === 0, `and holds every price and value as a number it can add up (${notNumbers.length ? notNumbers.join(', ') : 'all 68'})`);
+      const first = at(rowOf(invoiceItems[0]!.marker)!, 6)?.text ?? '';
+      check(/^\d+[.,]\d{2}$/.test(first), `amounts show two decimals in Excel (${first})`);
+      const netLabel = sheet.cells.find((c) => c.text === 'Razem netto:');
+      const net = netLabel ? at(netLabel.r, 8) : undefined;
+      check(!!net?.number && /zł$/.test(net.text) && amount(net.text.replace(/zł$/, '')) === Number(invoiceTotals.net.toFixed(2)), `the net total is a number Excel shows with "zł" (${net?.text})`);
+    }
   }
 }
 

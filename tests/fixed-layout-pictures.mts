@@ -243,6 +243,9 @@ const odt = await renderFixedPagesToOdt(result.pages, { textBoxes: false });
   check(anchors.length === 5 && anchors.every((a) => a.includes('behindDoc="1"')), `.docx: five anchored pictures, all behind the text (${anchors.length})`);
   const heights = anchors.map((a) => Number(/relativeHeight="(\d+)"/.exec(a)?.[1]));
   check(heights.every((h, i) => i === 0 || h > heights[i - 1]!), `stacked in painting order above the page picture (${heights.join(' < ')})`);
+  // Microsoft Word honours that order only for values in its own range (it writes 251658240 and
+  // up): with 1, 2, 3 it drew the page picture over the photos (measured in Word 16, 2026-10-19).
+  check(heights.every((h) => h >= 251658240), `in the range Word itself writes (${heights[0]} and up)`);
   const offsets = [...xml.matchAll(/<wp:posOffset>(-?\d+)<\/wp:posOffset>/g)].map((m) => Number(m[1]) / 12700);
   check(Math.abs(offsets[2]! - A.x) < 0.1 && Math.abs(offsets[3]! - A.y) < 0.1, `positions from the page's corner (first photo at ${offsets[2]!.toFixed(1)}, ${offsets[3]!.toFixed(1)} pt)`);
   check(Object.keys(zip.files).filter((n) => n.startsWith('word/media/') && !n.endsWith('/')).length === 5, 'five picture files');
