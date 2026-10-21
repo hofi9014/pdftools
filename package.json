@@ -149,6 +149,7 @@
     "test:e2e-edit-pdf-drag": "npx --yes tsx e2e/edit-pdf-drag.mts",
     "test:sitemap-canonical-urls": "npx --yes tsx tests/sitemap-canonical-urls.mts",
     "test:docx-font-family": "npx --yes tsx tests/docx-font-family.mts",
+    "test:docx-list-indent": "npx --yes tsx tests/docx-list-indent.mts",
     "test:docx-layout": "npx --yes tsx tests/docx-layout.mts",
     "test:docx-rotated-text": "npx --yes tsx tests/docx-rotated-text.mts",
     "test:docx-toc-leader": "npx --yes tsx tests/docx-toc-leader.mts",

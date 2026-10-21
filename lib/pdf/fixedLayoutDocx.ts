@@ -198,9 +198,10 @@ export async function renderFixedPagesToDocx(pages: FixedPage[]): Promise<Blob> 
     // A new section already starts on a new page.
     if (pageIdx > 0 && !newSection) head.pageBreakBefore = true;
     // Anchored to the page, behind the text: the page picture first, then each photo above it.
-    // zIndex is the stacking order among the pictures behind the text; it starts at 1 because
-    // the library takes 0 for "not set" and writes a huge default — the page picture would then
-    // lie ABOVE the photos in Word.
+    // zIndex (written as relativeHeight) is the stacking order among the pictures behind the text.
+    // Word honours it only in its own range — it writes 251658240 and up, in steps of 1024; with
+    // 1, 2, 3 it drew the page picture over the photos (measured in Word 16). The library takes 0
+    // for "not set", which the range avoids as well.
     const anchored = (pic: { data: Uint8Array; mime: string }, x: number, y: number, width: number, height: number, zIndex: number): unknown => new ImageRun({
       type: pic.mime === 'image/png' ? 'png' : 'jpg',
       data: pic.data,
@@ -216,8 +217,9 @@ export async function renderFixedPagesToDocx(pages: FixedPage[]): Promise<Blob> 
         wrap: { type: TextWrappingType.NONE },
       },
     });
-    if (page.background) head.children.push(anchored(page.background, 0, 0, layout.width, layout.height, 1));
-    (page.pictures ?? []).forEach((pic, i) => head.children.push(anchored(pic, pic.x, pic.y, pic.width, pic.height, i + 2)));
+    const WORD_Z_BASE = 251658240;
+    if (page.background) head.children.push(anchored(page.background, 0, 0, layout.width, layout.height, WORD_Z_BASE));
+    (page.pictures ?? []).forEach((pic, i) => head.children.push(anchored(pic, pic.x, pic.y, pic.width, pic.height, WORD_Z_BASE + (i + 1) * 1024)));
     children.push(new Paragraph(head));
     children.push(...emitBlocks(layout.blocks, 0, FIXED_PAGE_HEAD_PT));
   });
