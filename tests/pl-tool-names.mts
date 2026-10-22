@@ -11,6 +11,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { t } from '../lib/i18n';
+import { i18nSource } from './helpers/i18n-source.mts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 let fails = 0;
@@ -20,7 +21,7 @@ function check(cond: boolean, msg: string): void {
 }
 
 console.log('=== Polish conversion tool names keep the English direction ===');
-const src = readFileSync(join(ROOT, 'lib/i18n.ts'), 'utf8');
+const src = i18nSource();
 const keys = [...new Set([...src.matchAll(/'(tool\.[a-z0-9_]+)':/g)].map((m) => m[1]!))];
 // Format/product names stay as they are in Polish (inflected: "Excela", "Worda", "PowerPointa");
 // the few ordinary words are translated.

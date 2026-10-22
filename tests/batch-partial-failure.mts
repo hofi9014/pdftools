@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { runBatch } from '../lib/batch';
+import { i18nSource } from './helpers/i18n-source.mts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 let fails = 0;
@@ -54,7 +55,7 @@ for (const [slug, convertCall] of PAGES) {
 const comp = readFileSync(join(ROOT, 'components/BatchFailures.tsx'), 'utf8');
 check(/batch\.partial_failed/.test(comp) && /batch\.all_failed/.test(comp), 'BatchFailures shows the partial and all-failed messages');
 
-const i18n = readFileSync(join(ROOT, 'lib/i18n.ts'), 'utf8');
+const i18n = i18nSource();
 const partialLines = i18n.split('\n').filter((l) => l.includes("'batch.partial_failed':"));
 check(partialLines.length === 16 && partialLines.every((l) => l.includes('{failed}') && l.includes('{total}')),
   'the partial-failure message has {failed} and {total} in all 16 locales');

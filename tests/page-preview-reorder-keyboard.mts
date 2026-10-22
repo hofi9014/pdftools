@@ -1,3 +1,4 @@
+import { i18nSource } from './helpers/i18n-source.mts';
 // Audit finding (Medium, ui area) — components/PagePreview.tsx's reorder mode had no keyboard
 // alternative to HTML5 mouse drag-and-drop, unlike app/merge/page.tsx's file list, which offers
 // ↑/↓ buttons for the same kind of reordering.
@@ -69,7 +70,7 @@ check(!/opacity-0 group-hover:opacity-100/.test(src), 'the old hover-only (not k
 check(/displayPos > 0/.test(src) && /displayPos < displayPages\.length - 1/.test(src), 'buttons are conditionally hidden at the array boundaries (first page has no up button, last has no down button)');
 
 console.log('\n--- i18n: preview.move_up / preview.move_down present for all 16 locales ---');
-const i18nSrc = readFileSync(join(here, '..', 'lib', 'i18n.ts'), 'utf-8');
+const i18nSrc = i18nSource();
 const localesMatch = i18nSrc.match(/^export const locales = \[([^\]]+)\]/m);
 if (!localesMatch) {
   console.log('  FAIL could not find the locales export in lib/i18n.ts');

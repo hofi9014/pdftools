@@ -6,7 +6,8 @@ import PwaRegister from "@/components/PwaRegister";
 import Magnifier from "@/components/Magnifier";
 import CookieConsent from "@/components/CookieConsent";
 import MetaUpdater from "@/components/MetaUpdater";
-import { localeToHtmlLang, isRtlLocale, type Locale } from "@/lib/i18n";
+import Translations from "@/components/Translations";
+import { localeToHtmlLang, isRtlLocale, messagesFor, type Locale } from "@/lib/i18n";
 import "@/app/globals.css";
 
 const geistSans = Geist({
@@ -26,7 +27,29 @@ const geistMono = Geist_Mono({
  * sync on the client afterwards. `locale` is undefined only for the unprefixed legacy routes,
  * whose language is the visitor's stored preference and is known only in the browser.
  */
-export default function RootDocument({ locale, children }: { locale?: Locale; children: React.ReactNode }) {
+export default function RootDocument({ locale, allTranslations: AllTranslations, children }: {
+  locale?: Locale;
+  /**
+   * Required when there is no locale: components/AllTranslations.tsx, passed in by the two callers
+   * that need it (app/(unprefixed)/layout.tsx, app/global-not-found.tsx). Importing it here would
+   * put all 16 dictionaries on every page — Next loads every client component a layout imports.
+   */
+  allTranslations?: React.ComponentType<{ children: React.ReactNode }>;
+  children: React.ReactNode;
+}) {
+  // `locale` is also the language every client component uses (lib/locale-context.tsx), so the
+  // page loads just this one dictionary (components/Translations.tsx).
+  const shell = (
+    <LocaleProvider defaultLocale={locale ?? "en"} routeLocale={locale}>
+      <LayoutShell>
+        <PwaRegister />
+        <MetaUpdater />
+        <CookieConsent />
+        <Magnifier />
+        <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">{children}</main>
+      </LayoutShell>
+    </LocaleProvider>
+  );
   return (
     <html
       lang={locale ? localeToHtmlLang(locale) : "en"}
@@ -42,15 +65,11 @@ export default function RootDocument({ locale, children }: { locale?: Locale; ch
         </Script>
         <div className="mesh-bg" />
         <div className="grain-overlay" />
-        <LocaleProvider defaultLocale="en">
-          <LayoutShell>
-            <PwaRegister />
-            <MetaUpdater />
-            <CookieConsent />
-            <Magnifier />
-            <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">{children}</main>
-          </LayoutShell>
-        </LocaleProvider>
+        {locale ? (
+          <Translations locale={locale} messages={messagesFor(locale)}>{shell}</Translations>
+        ) : (
+          AllTranslations ? <AllTranslations>{shell}</AllTranslations> : shell
+        )}
       </body>
     </html>
   );
