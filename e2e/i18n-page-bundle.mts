@@ -158,18 +158,21 @@ async function open(stored: Locale | null): Promise<{ page: Page; problems: stri
   await page.context().close();
 }
 
-{
+// [address, stored language, language the header ends up in]: the address language wins.
+for (const [path, stored, shown] of [['/xx/nie-ma', 'pl', 'pl'], ['/pl/nie-ma-takiej-strony', null, 'pl'], ['/ja/nope', 'de', 'ja'], ['/a/b/c', 'de', 'de']] as Array<[string, Locale | null, Locale]>) {
   // The 404 page has no language in its address: it follows the stored one, so it loads all 16.
-  const { page, problems } = await open('pl');
-  const res = await page.goto(BASE_URL + '/xx/nie-ma', { waitUntil: 'load' });
-  await page.waitForFunction((s) => document.querySelector('header')?.textContent?.includes(s), t('nav.home', 'pl'), { timeout: 15000 }).catch(() => {});
+  // It also threw React error #418 on every unknown address until 2026-10-22: it is built once,
+  // under /_not-found, so the breadcrumb trail in its HTML ("Home / _not found") never matched the
+  // one the browser built from the real address. The 404 page now has no trail.
+  const { page, problems } = await open(stored);
+  const res = await page.goto(BASE_URL + path, { waitUntil: 'load' });
+  const home = t('nav.home', shown);
+  await page.waitForFunction((s) => document.querySelector('header')?.textContent?.includes(s), home, { timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(1500);
   const nav = await page.locator('header').innerText();
-  check(res?.status() === 404 && nav.includes(t('nav.home', 'pl')), `404 with Polish stored: the header is Polish ("${t('nav.home', 'pl')}")`);
-  // Only the missing-language check here: the built 404 page has a hydration error (React #418)
-  // of its own, on production before this change too and with nothing stored — not a language
-  // problem, and absent under `next dev`. See AGENTS.md (FINDING 2026-10-22, per-page dictionaries).
-  const missing = problems.filter((p) => p.includes('[i18n]'));
-  check(missing.length === 0, `no missing language${missing.length ? `: ${missing.join(' | ')}` : ''}`);
+  check(res?.status() === 404 && nav.includes(home), `404 at ${path}${stored ? ` with ${stored} stored` : ''}: the header says "${home}"`);
+  check(!(await page.content()).includes('_not found'), `${path}: no "Home / _not found" trail`);
+  check(problems.length === 0, `${path}: no missing language or hydration error${problems.length ? `: ${problems.join(' | ')}` : ''}`);
   await page.context().close();
 }
 

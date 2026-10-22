@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function GlobalNotFound() {
   return (
-    <RootDocument allTranslations={AllTranslations}>
+    <RootDocument allTranslations={AllTranslations} notFound>
       <div className="flex flex-col items-center justify-center gap-2 py-24 px-4 text-center">
         <h1 className="text-4xl font-bold tool-heading">404</h1>
         <p className="text-gray-500 dark:text-gray-400">This page could not be found.</p>

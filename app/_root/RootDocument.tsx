@@ -27,7 +27,7 @@ const geistMono = Geist_Mono({
  * sync on the client afterwards. `locale` is undefined only for the unprefixed legacy routes,
  * whose language is the visitor's stored preference and is known only in the browser.
  */
-export default function RootDocument({ locale, allTranslations: AllTranslations, children }: {
+export default function RootDocument({ locale, allTranslations: AllTranslations, notFound = false, children }: {
   locale?: Locale;
   /**
    * Required when there is no locale: components/AllTranslations.tsx, passed in by the two callers
@@ -35,13 +35,21 @@ export default function RootDocument({ locale, allTranslations: AllTranslations,
    * put all 16 dictionaries on every page — Next loads every client component a layout imports.
    */
   allTranslations?: React.ComponentType<{ children: React.ReactNode }>;
+  /**
+   * The 404 page (app/global-not-found.tsx). It is rendered once at build time, under the address
+   * /_not-found, and served for every unknown address, so a trail built from the address said
+   * "Home / _not found" in the HTML and something else in the browser — React then threw away
+   * the server HTML (error #418) on every 404. A page that does not exist has no trail, and it
+   * takes the language of the address only after hydration (components/LayoutShell.tsx).
+   */
+  notFound?: boolean;
   children: React.ReactNode;
 }) {
   // `locale` is also the language every client component uses (lib/locale-context.tsx), so the
   // page loads just this one dictionary (components/Translations.tsx).
   const shell = (
     <LocaleProvider defaultLocale={locale ?? "en"} routeLocale={locale}>
-      <LayoutShell>
+      <LayoutShell notFound={notFound}>
         <PwaRegister />
         <MetaUpdater />
         <CookieConsent />
