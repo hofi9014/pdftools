@@ -61,6 +61,41 @@ console.log(`=== what each page downloads (${probes.size} languages with a disti
   }
 }
 
+console.log('\n=== page texts: each page carries its own language only ===');
+{
+  // Before: the FAQ, help, principles, support, terms and legal pages and the home page's guide
+  // cards held their text in all 16 languages in client code (tests/localize-page-data.mts).
+  const { faqData } = await import('../content/pages/faq.ts');
+  const { helpData } = await import('../content/pages/help.ts');
+  const { content: rules } = await import('../content/pages/nasze-zasady.ts');
+  const { content: support } = await import('../content/pages/wsparcie.ts');
+  const { content: terms } = await import('../content/pages/terms.ts');
+  const { legalTexts } = await import('../lib/legal/index.ts');
+  const { homeGuideCards } = await import('../lib/guide-cards.ts');
+  const card = homeGuideCards()[0]!;
+  const pick: Array<[string, (l: Locale) => string | undefined]> = [
+    ['faq', (l) => faqData[0]!.items[0]!.a[l]],
+    ['help', (l) => helpData[0]!.items[0]!.a[l]],
+    ['nasze-zasady', (l) => (rules as Record<string, { sections: Array<{ h: string }> }>)[l]?.sections[0]?.h],
+    ['wsparcie', (l) => (support as Record<string, { subtitle: string }>)[l]?.subtitle],
+    ['terms', (l) => (terms as Record<string, { sections: Array<{ p?: string }> }>)[l]?.sections[0]?.p],
+    ['privacy', (l) => legalTexts[l].privacy.sections[0]?.p],
+    ['', (l) => card.excerpt[l]],
+  ];
+  for (const [page, text] of pick) {
+    for (const locale of ['pl', 'ja', 'ar'] as Locale[]) {
+      const path = `/${locale}${page ? '/' + page : ''}`;
+      const { html, js } = await pageBytes(path);
+      const others = locales.filter((l) => l !== locale).filter((l) => {
+        const v = text(l);
+        return v && v !== text(locale) && v.length > 20 && (present(js, v) || present(html, v.slice(0, 60)));
+      });
+      const own = text(locale);
+      check(others.length === 0 && !!own && present(html, own.slice(0, 60)), `${path}: its text in its language only${others.length ? ` (also: ${others.join(', ')})` : ''}`);
+    }
+  }
+}
+
 console.log('\n=== every component renders in the page language (real browser, a different language stored) ===');
 const browser = await chromium.launch();
 async function open(stored: Locale | null): Promise<{ page: Page; problems: string[] }> {

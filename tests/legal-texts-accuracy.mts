@@ -95,7 +95,7 @@ for (const page of ['privacy', 'rodo', 'security']) {
 }
 const component = read('components/LegalDocument.tsx');
 check(!/^\s*<main/m.test(component) && /^\s*<div className="max-w-3xl/m.test(component), 'the legal page layout opens no second <main> (its wrapper is a <div>)');
-const principles = read('app/(unprefixed)/nasze-zasady/page.tsx');
+const principles = read('content/pages/nasze-zasady.ts');
 const missing = locales.filter((l) => !principles.includes(legalTexts[l].principles.security.replace(/'/g, "\\'")) || !principles.includes(legalTexts[l].principles.tracking.replace(/'/g, "\\'")));
 check(missing.length === 0, `"Our principles" carries the same two paragraphs in every language (${missing.join(', ') || 'all 16'})`);
 check(!/RAM|zanonimizowan|anonymi[sz]ed|anonimizzat|anonimizad/i.test(principles), '"Our principles" no longer claims RAM processing or anonymised analytics');
