@@ -58,7 +58,7 @@ console.log('\n--- verify the i18n migration add-edit-i18n.mjs would have perfor
 
 console.log('\n=== tools.length used instead of a hardcoded count ===');
 {
-  const pageSrc = readFileSync(join(repoRoot, 'app', '(unprefixed)', 'page.tsx'), 'utf-8');
+  const pageSrc = readFileSync(join(repoRoot, 'components', 'pages', 'HomeView.tsx'), 'utf-8');
   const layoutSrc = ['app/_root/RootDocument.tsx', 'lib/root-metadata.ts'].map((p) => readFileSync(join(repoRoot, p), 'utf-8')).join('\n');
   check(!pageSrc.includes('gradient-text">40<'), 'app/page.tsx no longer hardcodes "40" in the hero stats');
   check(pageSrc.includes('{tools.length}'), 'app/page.tsx renders {tools.length} instead');

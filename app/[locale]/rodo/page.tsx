@@ -1,4 +1,5 @@
-import RodoPage from '../../(unprefixed)/rodo/page';
+import LegalDocument from '@/components/LegalDocument';
+import { legalFor } from '@/lib/legal';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';
@@ -10,6 +11,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function LocaleRodo({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  return <RodoPage locale={locale as Locale} />;
+  return <LegalDocument doc={legalFor(locale).rodo} icon="🛡️" locale={locale as Locale} />;
 }
 

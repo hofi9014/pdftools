@@ -201,7 +201,8 @@
     "test:e2e-csp-no-eval": "npx --yes tsx e2e/csp-no-eval.mts",
     "test:all": "node scripts/run-tests.mjs",
     "test:i18n-per-page": "npx --yes tsx tests/i18n-per-page.mts",
-    "test:e2e-i18n-page-bundle": "npx --yes tsx e2e/i18n-page-bundle.mts"
+    "test:e2e-i18n-page-bundle": "npx --yes tsx e2e/i18n-page-bundle.mts",
+    "test:localize-page-data": "npx --yes tsx tests/localize-page-data.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

@@ -1,0 +1,215 @@
+// Text of the /terms page in all 16 languages (moved out of its client component on
+// 2026-10-22). /{locale}/terms hands the view one language (lib/localize-data.ts); only the
+// unprefixed /terms, whose language is known only in the browser, sends all of them.
+export const content = {
+  pl: {
+    title: 'Regulamin',
+    updated: 'Ostatnia aktualizacja: 29 czerwca 2026',
+    sections: [
+      {
+        h: '1. Postanowienia ogólne',
+        p: 'Niniejszy Regulamin określa zasady korzystania z serwisu OptimaPDF (optimapdf.com) prowadzonego przez Leszka Hofmana, Dąbrówka Nowa, Polska. Korzystając z serwisu, akceptujesz postanowienia niniejszego Regulaminu.',
+      },
+      {
+        h: '2. Opis usług',
+        p: 'Serwis OptimaPDF oferuje darmowe narzędzia online do edycji, konwersji i zarządzania plikami PDF. Wszystkie narzędzia są dostępne bez rejestracji. Przetwarzanie plików odbywa się lokalnie w przeglądarce użytkownika — pliki nie są wysyłane na serwer (z wyjątkiem funkcji URL-to-PDF).',
+      },
+      {
+        h: '3. Odpowiedzialność',
+        p: 'OptimaPDF dokłada wszelkich starań, aby narzędzia działały poprawnie, ale nie gwarantuje ciągłości działania ani braku błędów. Użytkownik korzysta z serwisu na własną odpowiedzialność. Zaleca się tworzenie kopii zapasowych plików przed przetwarzaniem.',
+      },
+      {
+        h: '4. Prawa autorskie',
+        p: 'Nazwa i logo OptimaPDF są własnością serwisu. Kopiowanie, modyfikacja lub dystrybucja kodu bez zgody jest zabroniona.',
+      },
+      {
+        h: '5. Prywatność',
+        p: 'Szczegółowe informacje o przetwarzaniu danych znajdują się w Polityce prywatności.',
+      },
+      {
+        h: '6. Kontakt',
+        p: 'W sprawach związanych z Regulaminem można kontaktować się pod adresem: kontakt@optimapdf.com.',
+      },
+    ],
+  },
+  de: {
+    title: 'Nutzungsbedingungen',
+    updated: 'Letzte Aktualisierung: 29. Juni 2026',
+    sections: [
+      { h: '1. Allgemeine Bestimmungen', p: 'Diese Nutzungsbedingungen regeln die Nutzung von OptimaPDF (optimapdf.com), betrieben von Leszek Hofman, Dąbrówka Nowa, Polen. Durch die Nutzung des Dienstes akzeptieren Sie diese Bedingungen.' },
+      { h: '2. Dienstleistungsbeschreibung', p: 'OptimaPDF bietet kostenlose Online-PDF-Bearbeitungs-, Konvertierungs- und Verwaltungswerkzeuge. Alle Werkzeuge sind ohne Registrierung verfügbar. Die Dateiverarbeitung erfolgt lokal in Ihrem Browser — Dateien werden nicht an unseren Server gesendet (außer URL-to-PDF).' },
+      { h: '3. Haftung', p: 'OptimaPDF bemüht sich um Genauigkeit, garantiert jedoch keine unterbrechungsfreie Nutzung. Benutzern wird empfohlen, Sicherungskopien ihrer Dateien zu erstellen.' },
+      { h: '4. Urheberrecht', p: 'Der Name und das Logo von OptimaPDF sind Eigentum des Dienstes. Das Kopieren oder Verteilen des Codes ohne Genehmigung ist verboten.' },
+      { h: '5. Datenschutz', p: 'Einzelheiten zur Datenverarbeitung finden Sie in unserer Datenschutzerklärung.' },
+      { h: '6. Kontakt', p: 'Für Anfragen: kontakt@optimapdf.com.' },
+    ],
+  },
+  es: {
+    title: 'Términos de Uso',
+    updated: 'Última actualización: 29 de junio de 2026',
+    sections: [
+      { h: '1. Disposiciones generales', p: 'Estos Términos de Uso rigen el uso de OptimaPDF (optimapdf.com), operado por Leszek Hofman, Dąbrówka Nowa, Polonia. Al utilizar el servicio, usted acepta estos términos.' },
+      { h: '2. Descripción del servicio', p: 'OptimaPDF ofrece herramientas gratuitas de edición, conversión y gestión de PDF en línea. Todas las herramientas están disponibles sin registro. El procesamiento de archivos se realiza localmente en su navegador — los archivos no se envían a nuestro servidor (excepto URL-to-PDF).' },
+      { h: '3. Responsabilidad', p: 'OptimaPDF se esfuerza por la exactitud pero no garantiza un servicio ininterrumpido. Se aconseja a los usuarios que mantengan copias de seguridad de sus archivos.' },
+      { h: '4. Derechos de autor', p: 'El nombre y el logo de OptimaPDF son propiedad del servicio. Está prohibido copiar o distribuir el código sin permiso.' },
+      { h: '5. Privacidad', p: 'Consulte nuestra Política de Privacidad para detalles sobre el procesamiento de datos.' },
+      { h: '6. Contacto', p: 'Para consultas: kontakt@optimapdf.com.' },
+    ],
+  },
+  pt: {
+    title: 'Termos de Utilização',
+    updated: 'Última atualização: 29 de junho de 2026',
+    sections: [
+      { h: '1. Disposições Gerais', p: 'Estes Termos de Utilização regulam a utilização do OptimaPDF (optimapdf.com), operado por Leszek Hofman, Dąbrówka Nowa, Polónia. Ao utilizar o serviço, o utilizador aceita estes termos.' },
+      { h: '2. Descrição do Serviço', p: 'O OptimaPDF oferece ferramentas gratuitas de edição, conversão e gestão de PDF em linha. Todas as ferramentas estão disponíveis sem registo. O processamento de ficheiros é feito localmente no navegador do utilizador — os ficheiros não são enviados para o nosso servidor (exceto URL-to-PDF).' },
+      { h: '3. Responsabilidade', p: 'O OptimaPDF esforça-se pela precisão mas não garante um serviço ininterrupto. Aconselha-se os utilizadores a manterem cópias de segurança dos seus ficheiros.' },
+      { h: '4. Direitos de Autor', p: 'O nome e o logótipo do OptimaPDF são propriedade do serviço. É proibido copiar ou distribuir o código sem autorização.' },
+      { h: '5. Privacidade', p: 'Consulte a nossa Política de Privacidade para detalhes sobre o processamento de dados.' },
+      { h: '6. Contacto', p: 'Para esclarecimentos: kontakt@optimapdf.com.' },
+    ],
+  },
+  no: {
+    title: 'Bruksvilkår',
+    updated: 'Sist oppdatert: 29. juni 2026',
+    sections: [
+      { h: '1. Generelle vilkår', p: 'Disse bruksvilkårene regulerer bruken av OptimaPDF (optimapdf.com), driftet av Leszek Hofman, Dąbrówka Nowa, Polen. Ved å bruke tjenesten aksepterer du disse vilkårene.' },
+      { h: '2. Tjenestebeskrivelse', p: 'OptimaPDF tilbyr gratis nettbaserte PDF-redigerings-, konverterings- og administrasjonsverktøy. Alle verktøy er tilgjengelige uten registrering. Filbehandling skjer lokalt i nettleseren din — filer sendes ikke til vår server (unntatt URL-to-PDF).' },
+      { h: '3. Ansvar', p: 'OptimaPDF streber etter nøyaktighet, men garanterer ikke uavbrutt tjeneste. Brukere anbefales å sikkerhetskopiere filene sine.' },
+      { h: '4. Opphavsrett', p: 'OptimaPDF-navnet og -logoen er eiendom til tjenesten. Kopiering eller distribusjon av koden uten tillatelse er forbudt.' },
+      { h: '5. Personvern', p: 'Se vår personvernpolicy for detaljer om databehandling.' },
+      { h: '6. Kontakt', p: 'For henvendelser: kontakt@optimapdf.com.' },
+    ],
+  },
+  sv: {
+    title: 'Användarvillkor',
+    updated: 'Senast uppdaterad: 29 juni 2026',
+    sections: [
+      { h: '1. Allmänna användarvillkor', p: 'Dessa användarvillkor reglerar användningen av OptimaPDF (optimapdf.com), drivet av Leszek Hofman, Dąbrówka Nowa, Polen. Genom att använda tjänsten accepterar du dessa villkor.' },
+      { h: '2. Tjänstebeskrivning', p: 'OptimaPDF erbjuder gratis onlineverktyg för redigering, konvertering och hantering av PDF-filer. Alla verktyg är tillgängliga utan registrering. Filhantering sker lokalt i din webbläsare — filer skickas inte till vår server (undantaget URL-to-PDF).' },
+      { h: '3. Ansvar', p: 'OptimaPDF strävar efter noggrannhet men garanterar inte oavbruten tjänst. Användare rekommenderas att säkerhetskopiera sina filer.' },
+      { h: '4. Upphovsrätt', p: 'OptimaPDF-namnet och logotypen är tjänstens egendom. Kopiering eller distribution av koden utan tillstånd är förbjudet.' },
+      { h: '5. Integritet', p: 'Se vår integritetspolicy för detaljer om databehandling.' },
+      { h: '6. Kontakt', p: 'För förfrågningar: kontakt@optimapdf.com.' },
+    ],
+  },
+  fr: {
+    title: 'Conditions d\'Utilisation',
+    updated: 'Dernière mise à jour : 29 juin 2026',
+    sections: [
+      { h: '1. Conditions Générales', p: 'Les présentes Conditions d\'Utilisation régissent l\'utilisation d\'OptimaPDF (optimapdf.com), exploité par Leszek Hofman, Dąbrówka Nowa, Pologne. En utilisant le service, vous acceptez ces conditions.' },
+      { h: '2. Description du service', p: 'OptimaPDF propose des outils gratuits en ligne pour l\'édition, la conversion et la gestion de fichiers PDF. Tous les outils sont accessibles sans inscription. Le traitement des fichiers s\'effectue localement dans votre navigateur — les fichiers ne sont pas envoyés à notre serveur (sauf URL-to-PDF).' },
+      { h: '3. Responsabilité', p: 'OptimaPDF s\'efforce d\'assurer l\'exactitude des informations mais ne garantit pas une disponibilité ininterrompue du service. Il est conseillé aux utilisateurs de conserver des copies de sauvegarde de leurs fichiers.' },
+      { h: '4. Droits d\'auteur', p: 'Le nom et le logo d\'OptimaPDF sont la propriété du service. La copie ou la distribution du code sans autorisation est interdite.' },
+      { h: '5. Confidentialité', p: 'Veuillez consulter notre Politique de Confidentialité pour plus de détails concernant le traitement des données.' },
+      { h: '6. Contact', p: 'Pour toute demande : kontakt@optimapdf.com.' },
+    ],
+  },
+  ar: {
+    title: 'شروط الخدمة',
+    updated: 'آخر تحديث: 29 يونيو 2026',
+    sections: [
+      { h: '1. الأحكام العامة', p: 'تحكم شروط الخدمة هذه استخدامك لموقع OptimaPDF (optimapdf.com)، الذي يُشغّله Leszek Hofman، Dąbrówka Nowa، بولندا. باستخدامك للخدمة، أنت تقبل هذه الشروط.' },
+      { h: '2. وصف الخدمة', p: 'يوفر OptimaPDF أدوات مجانية عبر الإنترنت لتحرير ملفات PDF وتحويلها وإدارتها. جميع الأدوات متاحة بدون تسجيل. تتم معالجة الملفات محلياً في متصفحك — لا يتم إرسال الملفات إلى خادمنا (باستثناء URL-to-PDF).' },
+      { h: '3. المسؤولية', p: 'بذل OptimaPDF جهوداً لضمان دقة المعلومات ولكنه لا يضمن خدمة دون انقطاع. يُنصح المستخدمون بالاحتفاظ بنسخ احتياطية من ملفاتهم.' },
+      { h: '4. حقوق النشر', p: 'اسم OptimaPDF وشعاره هما ملك للخدمة. يُحظر نسخ الكود أو توزيعه دون إذن.' },
+      { h: '5. الخصوصية', p: 'راجع سياسة الخصوصية الخاصة بنا لمزيد من التفاصيل حول معالجة البيانات.' },
+      { h: '6. للتواصل', p: 'للاستفسارات: kontakt@optimapdf.com.' },
+    ],
+  },
+  fa: {
+    title: 'شرایط استفاده',
+    updated: 'آخرین به‌روزرسانی: ۲۹ ژوئن ۲۰۲۶',
+    sections: [
+      { h: '۱. مقررات کلی', p: 'این شرایط استفاده، استفاده شما از OptimaPDF (optimapdf.com) را که توسط Leszek Hofman، Dąbrówka Nowa، لهستان اداره می‌شود، تنظیم می‌کند. با استفاده از سرویس، شما این شرایط را می‌پذیرید.' },
+      { h: '۲. توضیحات سرویس', p: 'OptimaPDF ابزارهای رایگان آنلاین برای ویرایش، تبدیل و مدیریت فایل‌های PDF ارائه می‌دهد. تمام ابزارها بدون ثبت‌نام در دسترس هستند. پردازش فایل‌ها به صورت محلی در مرورگر شما انجام می‌شود — فایل‌ها به سرور ما ارسال نمی‌شوند (به استثنای URL-to-PDF).' },
+      { h: '۳. مسئولیت', p: 'OptimaPDF تلاش می‌کند اطلاعات دقیق ارائه دهد اما خدمات بدون وقفه را تضمین نمی‌کند. به کاربران توصیه می‌شود نسخه‌های پشتیبان از فایل‌های خود نگهداری کنند.' },
+      { h: '۴. حق نشر', p: 'نام و لوگوی OptimaPDF متعلق به سرویس است. کپی یا توزیع کد بدون اجازه ممنوع است.' },
+      { h: '۵. حریم خصوصی', p: 'برای جزئیات بیشتر در مورد پردازش داده‌ها، سیاست حفظ حریم خصوصی ما را مشاهده کنید.' },
+      { h: '۶. تماس', p: 'برای پرسش‌ها: kontakt@optimapdf.com.' },
+    ],
+  },
+  hi: {
+    title: 'सेवा की शर्तें',
+    updated: 'अंतिम अपडेट: 29 जून 2026',
+    sections: [
+      { h: '1. सामान्य प्रावधान', p: 'ये सेवा की शर्तें OptimaPDF (optimapdf.com) के उपयोग को नियंत्रित करती हैं, जिसे Leszek Hofman, Dąbrówka Nowa, पोलैंड संचालित करते हैं। सेवा का उपयोग करके, आप इन शर्तों को स्वीकार करते हैं।' },
+      { h: '2. सेवा का विवरण', p: 'OptimaPDF मुफ़्त ऑनलाइन PDF संपादन, रूपांतरण और प्रबंधन उपकरण प्रदान करता है। सभी उपकरण बिना पंजीकरण के उपलब्ध हैं। फ़ाइल प्रसंस्करण आपके ब्राउज़र में स्थानीय रूप से होता है — फ़ाइलें हमारे सर्वर को नहीं भेजी जातीं (URL-to-PDF को छोड़कर)।' },
+      { h: '3. दायित्व', p: 'OptimaPDF सटीकता के लिए प्रयास करता है लेकिन निर्बाध सेवा की गारंटी नहीं देता। उपयोगकर्ताओं को अपनी फ़ाइलों का बैकअप रखने की सलाह दी जाती है।' },
+      { h: '4. कॉपीराइट', p: 'OptimaPDF का नाम और लोगो सेवा की संपत्ति है। अनुमति के बिना कोड की प्रतिलिपि बनाना या वितरित करना मना है।' },
+      { h: '5. गोपनीयता', p: 'डेटा प्रसंस्करण के बारे में विवरण के लिए हमारी गोपनीयता नीति देखें।' },
+      { h: '6. संपर्क', p: 'पूछताछ के लिए: kontakt@optimapdf.com.' },
+    ],
+  },
+  is: {
+    title: 'Þjónustuskilmálar',
+    updated: 'Síðast uppfært: 29. júní 2026',
+    sections: [
+      { h: '1. Almenn ákvæði', p: 'Þessi þjónustuskilmálar stjórna notkun þinni á OptimaPDF (optimapdf.com), sem Leszek Hofman, Dąbrówka Nowa, Pólland rekur. Með því að nota þjónustuna samþykkir þú þessa skilmála.' },
+      { h: '2. Lýsing á þjónustu', p: 'OptimaPDF býður upp á ókeypis PDF-breytingar, umbreytingar og stjórntæki á netinu. Öll tæki eru tiltæk án skráningar. Vinnsla skráa fer fram staðbundið í vafraranum þínum — skrár eru ekki sendar til vefþjónsins (nema URL-to-PDF).' },
+      { h: '3. Ábyrgð', p: 'OptimaPDF reynir að vera nákvæmt en tryggir ekki óslitna þjónustu. Notendum er ráðlagt að geyma afrit af skráum sínum.' },
+      { h: '4. Höfundarréttur', p: 'Nafn og merki OptimaPDF eru eign þjónustunnar. Óheimilt er að afrita eða dreifa kóða án leyfis.' },
+      { h: '5. Persónuvernd', p: 'Sjáðu persónuverndarstefnu okkar fyrir upplýsingar um meðferð gagna.' },
+      { h: '6. Samband', p: 'Fyrir fyrirspurnir: kontakt@optimapdf.com.' },
+    ],
+  },
+  it: {
+    title: 'Condizioni d\'Uso',
+    updated: 'Ultimo aggiornamento: 29 giugno 2026',
+    sections: [
+      { h: '1. Disposizioni generali', p: 'Le presenti Condizioni d\'Uso regolano l\'utilizzo di OptimaPDF (optimapdf.com), gestito da Leszek Hofman, Dąbrówka Nowa, Polonia. Utilizzando il servizio, accettate queste condizioni.' },
+      { h: '2. Descrizione del servizio', p: 'OptimaPDF offre strumenti gratuiti online per la modifica, la conversione e la gestione di file PDF. Tutti gli strumenti sono disponibili senza registrazione. L\'elaborazione dei file avviene localmente nel vostro browser — i file non vengono inviati al nostro server (ad eccezione di URL-to-PDF).' },
+      { h: '3. Responsabilità', p: 'OptimaPDF si impegna per l\'accuratezza ma non garantisce un servizio ininterrotto. Si consiglia agli utenti di conservare copie di sicurezza dei propri file.' },
+      { h: '4. Copyright', p: 'Il nome e il logo di OptimaPDF sono proprietà del servizio. È vietato copiare o distribuire il codice senza autorizzazione.' },
+      { h: '5. Privacy', p: 'Consultate la nostra Informativa sulla Privacy per i dettagli sul trattamento dei dati.' },
+      { h: '6. Contatto', p: 'Per domande: kontakt@optimapdf.com.' },
+    ],
+  },
+  ja: {
+    title: '利用規約',
+    updated: '最終更新日：2026年6月29日',
+    sections: [
+      { h: '1. 総則', p: '本利用規約は、Leszek Hofman、Dąbrówka Nowa、ポーランドが運営するOptimaPDF（optimapdf.com）の利用条件を定めるものです。本サービスをご利用になることで、お客様は本規約に同意いただいたものとみなされます。' },
+      { h: '2. サービスの説明', p: 'OptimaPDFは、PDFの編集、変換、管理のための無料オンラインツールを提供しています。すべてのツールは登録なしで利用できます。ファイルの処理はお客様のブラウザでローカルに行われます。ファイルがサーバーに送信されることはありません（URL-to-PDFを除く）。' },
+      { h: '3. 責任', p: 'OptimaPDFは正確性を追求していますが、中断のないサービスを保証するものではありません。お客様にはファイルのバックアップを取ることをお勧めします。' },
+      { h: '4. 著作権', p: 'OptimaPDFの名称とロゴはサービスの所有物です。許可なくコードを複製または配布することは禁止されています。' },
+      { h: '5. プライバシー', p: 'データ処理の詳細については、プライバシーポリシーをご覧ください。' },
+      { h: '6. お問い合わせ', p: 'お問い合わせ：kontakt@optimapdf.com。' },
+    ],
+  },
+  tr: {
+    title: 'Kullanım Koşulları',
+    updated: 'Son güncelleme: 29 Haziran 2026',
+    sections: [
+      { h: '1. Genel hükümler', p: 'Bu Kullanım Koşulları, OptimaPDF\u2019yi (optimapdf.com) Leszek Hofman, Dąbrówka Nowa, Polonya\u2019nın işlettiği hizmeti kullanımınızı düzenler. Hizmeti kullanarak bu koşulları kabul etmiş olursunuz.' },
+      { h: '2. Hizmet açıklaması', p: 'OptimaPDF, PDF düzenleme, dönüştürme ve yönetimi için ücretsiz çevrimiçi araçlar sunar. Tüm araçlar kayıt olmadan kullanılabilir. Dosya işleme tarayıcınızda yerel olarak gerçekleşir \u2014 dosyalar sunucumuza gönderilmez (URL-to-PDF hariç).' },
+      { h: '3. Sorumluluk', p: 'OptimaPDF doğruluk için çaba gösterir ancak kesintisiz hizmet garanti etmez. Kullanıcıların dosyalarının yedeklerini saklamaları tavsiye edilir.' },
+      { h: '4. Telif hakkı', p: 'OptimaPDF adı ve logosu hizmetin malıdır. İzinsiz kodu kopyalamak veya dağıtmak yasaktır.' },
+      { h: '5. Gizlilik', p: 'Veri işleme hakkında ayrıntılı bilgi için Gizlilik Politikamıza bakınız.' },
+      { h: '6. İletişim', p: 'Sorularınız için: kontakt@optimapdf.com.' },
+    ],
+  },
+  zh: {
+    title: '使用条款',
+    updated: '最后更新：2026年6月29日',
+    sections: [
+      { h: '1. 总则', p: '本使用条款规定了您对OptimaPDF（optimapdf.com）的使用条件，该服务由Leszek Hofman、Dąbrówka Nowa、波兰运营。使用本服务即表示您同意这些条款。' },
+      { h: '2. 服务说明', p: 'OptimaPDF提供免费的在线PDF编辑、转换和管理工具。所有工具无需注册即可使用。文件处理在您的浏览器中本地进行——文件不会发送到我们的服务器（URL-to-PDF除外）。' },
+      { h: '3. 责任', p: 'OptimaPDF致力于提供准确的信息，但不保证服务不中断。建议用户保留文件的备份。' },
+      { h: '4. 版权', p: 'OptimaPDF的名称和标志是服务的所有物。未经许可复制或分发代码是禁止的。' },
+      { h: '5. 隐私', p: '有关数据处理的详细信息，请参阅我们的隐私政策。' },
+      { h: '6. 联系方式', p: '如有疑问，请联系：kontakt@optimapdf.com。' },
+    ],
+  },
+  en: {
+    title: 'Terms of Service',
+    updated: 'Last updated: June 29, 2026',
+    sections: [
+      { h: '1. General Provisions', p: 'These Terms of Service govern your use of OptimaPDF (optimapdf.com), operated by Leszek Hofman, Dąbrówka Nowa, Poland. By using the service, you accept these terms.' },
+      { h: '2. Service Description', p: 'OptimaPDF offers free online PDF editing, conversion and management tools. All tools are available without registration. File processing happens locally in your browser — files are not sent to our server (except URL-to-PDF).' },
+      { h: '3. Liability', p: 'OptimaPDF strives for accuracy but does not guarantee uninterrupted service. Users are advised to keep backups of their files.' },
+      { h: '4. Copyright', p: 'The OptimaPDF name and logo are property of the service. Copying or distributing the code without permission is prohibited.' },
+      { h: '5. Privacy', p: 'See our Privacy Policy for details on data processing.' },
+      { h: '6. Contact', p: 'For inquiries: kontakt@optimapdf.com.' },
+    ],
+  },
+};
