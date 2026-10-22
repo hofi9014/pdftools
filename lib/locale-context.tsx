@@ -20,11 +20,13 @@ interface LocaleCtx {
   setLocale: (l: Locale) => void;
   setLocaleLocal: (l: Locale) => void;
   mounted: boolean;
+  /** The language in the address (/de/…, /guides/anleitungen/…); undefined on unprefixed pages. */
+  routeLocale?: Locale;
 }
 
 const LocaleContext = createContext<LocaleCtx>({ locale: 'en', setLocale: () => {}, setLocaleLocal: () => {}, mounted: false });
 
-export function LocaleProvider({ children, defaultLocale }: { children: ReactNode; defaultLocale?: Locale }) {
+export function LocaleProvider({ children, defaultLocale, routeLocale }: { children: ReactNode; defaultLocale?: Locale; routeLocale?: Locale }) {
   const [locale, setLocale] = useState<Locale>(defaultLocale || 'en');
   const [mounted, setMounted] = useState(false);
 
@@ -51,7 +53,7 @@ export function LocaleProvider({ children, defaultLocale }: { children: ReactNod
   };
 
   return (
-    <LocaleContext.Provider value={{ locale, setLocale: handleSet, setLocaleLocal: handleSetLocal, mounted }}>
+    <LocaleContext.Provider value={{ locale, setLocale: handleSet, setLocaleLocal: handleSetLocal, mounted, routeLocale }}>
       {children}
     </LocaleContext.Provider>
   );
@@ -61,9 +63,19 @@ export function useLocale() {
   return useContext(LocaleContext);
 }
 
-/** Returns locale during SSR/hydration, only switching to the detected locale after mount. */
+/**
+ * The language to render in. On a page with a language in its address, that language — from the
+ * server render on. Elsewhere 'en' during SSR/hydration, then the stored or detected one.
+ *
+ * FINDING (2026-10-22): this used to ignore the address, so components without a locale prop (the
+ * PDF editor's toolbar and panels, page thumbnails, cloud pickers/savers, the install section)
+ * rendered in English on the server and then in the visitor's STORED language — on /de/edit-pdf
+ * the toolbar said "Select (V)", or "Zaznacz (V)" with Polish stored. With one dictionary per
+ * page (lib/i18n.ts) such a component would not find its language at all.
+ */
 export function useHydrationSafeLocale(): Locale {
-  const { locale, mounted } = useLocale();
+  const { locale, mounted, routeLocale } = useLocale();
+  if (routeLocale) return routeLocale;
   if (typeof window === 'undefined' || !mounted) return 'en';
   return locale;
 }

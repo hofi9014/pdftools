@@ -1,10 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { t } from '@/lib/i18n';
+import { useHydrationSafeLocale } from '@/lib/locale-context';
 
 const levels = [100, 125, 150, 175, 200];
 const STORAGE_KEY = 'pdftools-zoom';
 
 export default function Magnifier() {
+  const locale = useHydrationSafeLocale();
   const [open, setOpen] = useState(false);
   const [zoom, setZoom] = useState(100);
 
@@ -58,7 +61,7 @@ export default function Magnifier() {
             className="w-full text-start px-4 py-2 rounded-lg text-sm font-medium transition hover:bg-[var(--coffee-surface-hover)] cursor-pointer"
             style={{ color: 'var(--coffee-text-tertiary)' }}
           >
-            Reset
+            {t('magnifier.reset', locale)}
           </button>
         </div>
       )}
@@ -70,7 +73,9 @@ export default function Magnifier() {
           color: '#fff',
           borderColor: 'var(--coffee-border)',
         }}
-        title="Powiększ / Zoom"
+        title={t('magnifier.zoom', locale)}
+        aria-label={t('magnifier.zoom', locale)}
+        aria-expanded={open}
       >
         🔍
       </button>

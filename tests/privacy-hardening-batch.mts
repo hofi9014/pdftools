@@ -30,6 +30,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { getFontFamily } from '../lib/pdf/fonts';
+import { i18nSource } from './helpers/i18n-source.mts';
 
 let fails = 0;
 function check(cond: boolean, msg: string): void {
@@ -114,7 +115,7 @@ console.log('\n=== url-to-pdf has an inline "leaves your device" disclosure, lik
   const urlPageSrc = readFileSync(join(repoRoot, 'app', '(unprefixed)', 'url-to-pdf', 'page.tsx'), 'utf-8');
   check(urlPageSrc.includes("t('page.url_warning', locale)"), 'app/(unprefixed)/url-to-pdf/page.tsx renders the new url_warning banner');
 
-  const i18nSrc = readFileSync(join(repoRoot, 'lib', 'i18n.ts'), 'utf-8');
+  const i18nSrc = i18nSource();
   const urlWarningCount = (i18nSrc.match(/'page\.url_warning':/g) || []).length;
   const aiWarningCount = (i18nSrc.match(/'page\.ai_warning':/g) || []).length;
   check(urlWarningCount === 16, `page.url_warning exists for all 16 locales — got ${urlWarningCount}`);

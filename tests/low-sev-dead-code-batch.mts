@@ -28,6 +28,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { i18nSource } from './helpers/i18n-source.mts';
 
 let fails = 0;
 function check(cond: boolean, msg: string): void {
@@ -48,7 +49,7 @@ check(!existsSync(join(repoRoot, 'add-edit-i18n.mjs')), 'add-edit-i18n.mjs no lo
 console.log('\n--- verify the i18n migration add-edit-i18n.mjs would have performed is genuinely already complete ---');
 {
   const editKeys = JSON.parse(readFileSync(join(repoRoot, 'edit-keys.json'), 'utf-8'));
-  const i18nSrc = readFileSync(join(repoRoot, 'lib', 'i18n.ts'), 'utf-8');
+  const i18nSrc = i18nSource();
   const enKeys = Object.keys(editKeys.en);
   const incomplete = enKeys.filter(k => (i18nSrc.split(`'${k}':`).length - 1) < 16);
   check(enKeys.length === 71, `edit-keys.json still lists the expected 71 keys — got ${enKeys.length}`);

@@ -21,6 +21,7 @@ globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
 
 import { PDFDocument, PDFArray, PDFRawStream, decodePDFRawStream } from 'pdf-lib';
 import { addWatermark } from '../lib/client-pdf';
+import { i18nSource } from './helpers/i18n-source.mts';
 
 let fails = 0;
 function check(cond: boolean, msg: string): void {
@@ -63,7 +64,7 @@ check(/rotation: WATERMARK_ROTATION/.test(call), 'the angle passed to addWaterma
 check(!/#FF0000/i.test(page), 'the preview no longer hard-codes red');
 check(/transform: `rotate\(-\$\{WATERMARK_ROTATION\}deg\)`/.test(page), 'the preview is rotated like the file');
 check(/type="color"/.test(page) && /page\.watermark\.color_label/.test(page), 'the page has a labelled colour picker');
-const i18n = readFileSync(join(ROOT, 'lib/i18n.ts'), 'utf8');
+const i18n = i18nSource();
 check((i18n.match(/'page\.watermark\.color_label': '[^']+'/g) ?? []).length === 16, 'the colour label is translated in all 16 locales');
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);

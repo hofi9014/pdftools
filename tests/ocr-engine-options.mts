@@ -18,6 +18,7 @@ import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { PDFDocument, degrees } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
+import { i18nSource } from './helpers/i18n-source.mts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, '..');
@@ -112,7 +113,7 @@ check([...offered].sort().join() === [...listed].sort().join(), `the page offers
 const script = readFileSync(join(ROOT, 'scripts/copy-tesseract-assets.mjs'), 'utf8');
 check(/ocr-languages\.json/.test(script) && !/const langs = \['pol', 'eng'\]/.test(script), 'the asset script downloads every listed language, not just pol and eng');
 check(/page\.ocr\.err_language_unavailable/.test(pageSrc), 'the page shows the localized "language data unavailable" message');
-const i18n = readFileSync(join(ROOT, 'lib/i18n.ts'), 'utf8');
+const i18n = i18nSource();
 check((i18n.match(/'page\.ocr\.err_language_unavailable':/g) ?? []).length === 16, 'that message exists in all 16 locales');
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
