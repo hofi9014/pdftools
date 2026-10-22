@@ -1,4 +1,5 @@
 'use client';
+import { useSyncExternalStore } from 'react';
 import { usePathname } from 'next/navigation';
 import { type Locale, locales } from '@/lib/i18n';
 import { localeFromSegment } from '@/lib/guides-slugs';
@@ -35,9 +36,17 @@ export function extractLocaleFromPath(pathname: string): Locale | undefined {
   return undefined;
 }
 
-export default function LayoutShell({ children }: { children: React.ReactNode }) {
+const noSubscribe = () => () => {};
+
+export default function LayoutShell({ children, notFound = false }: { children: React.ReactNode; notFound?: boolean }) {
   const pathname = usePathname();
-  const locale = extractLocaleFromPath(pathname);
+  // The 404 page (app/global-not-found.tsx) is built once, without the address it will be shown
+  // at, so its HTML carries no language from the address and no trail. Hydrating it with the
+  // address language (/pl/nie-ma → Polish header over an English one) or with a trail built
+  // from the address made React discard the page (error #418) on every unknown address. During
+  // hydration it now renders as the server did; the address language follows right after.
+  const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
+  const locale = notFound && !hydrated ? undefined : extractLocaleFromPath(pathname);
 
   return (
     <>
@@ -45,7 +54,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       <HtmlLang locale={locale} />
       <SchemaHowTo locale={locale} />
       <Header locale={locale} />
-      <Breadcrumbs locale={locale} />
+      {!notFound && <Breadcrumbs locale={locale} />}
       {children}
       <Footer locale={locale} />
     </>
