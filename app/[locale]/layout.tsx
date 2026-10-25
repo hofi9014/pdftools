@@ -7,9 +7,6 @@ import { socialMetadata } from '@/lib/metadata';
 
 const baseUrl = 'https://optimapdf.com';
 
-// Only the 16 languages exist: anything else in this position (/xx, /wp-admin) is an unknown
-// address and gets the site's 404 page (app/global-not-found.tsx), not a page rendered on demand.
-export const dynamicParams = false;
 
 export async function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -48,6 +45,9 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   // cast. Confirmed root cause of the "/[locale] 100% errors" in Observability:
   // reproduced live on production (GET /xx -> 500, ~2.3s) before this fix.
   // See AUDYT-BEZPIECZENSTWA.md, Drobne obserwacje.
+  // This check is also why there is no `dynamicParams = false` here (removed 2026-10-22): with it
+  // Next 16.4.2 answered /xx with HTTP 500 (NoFallbackError). Unknown single segments are sent
+  // to the 404 page by proxy.ts; addresses it does not see (/.env) end here with a 404.
   if (!(locales as readonly string[]).includes(locale)) {
     notFound();
   }
