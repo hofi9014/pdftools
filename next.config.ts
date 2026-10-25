@@ -40,6 +40,9 @@ const csp = [
   "upgrade-insecure-requests",
 ].join('; ');
 
+// The 16 language prefixes; tests/vercelignore-keeps-app-files.mts fails if this drifts from lib/i18n.ts.
+const LOCALE_SEGMENTS = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'];
+
 const nextConfig: NextConfig = {
   serverExternalPackages: ['@napi-rs/canvas'],
   poweredByHeader: false,
@@ -76,6 +79,26 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
     ];
+  },
+  async rewrites() {
+    return {
+      // An address whose first segment is no language, no route and no file (/xx, /xx/merge,
+      // /index.html, /.env) would otherwise reach app/[locale] with that segment as its locale.
+      // Next 16.3 answered it with the site's 404 page only under `dynamicParams = false`, which
+      // Next 16.4 turns into HTTP 500 (NoFallbackError) — and without it both render a bare 404
+      // with no header. afterFiles rewrites run after public files and static pages (the legacy
+      // unprefixed pages, sitemap.xml, robots.txt, icon.png are served first) and before dynamic
+      // routes, so only such addresses get here; under a real language a missing page is the
+      // site's 404 page in both versions. The address in the browser stays as typed.
+      afterFiles: [
+        {
+          // `(?![^/])`, not `$`: the excluded word must end the SEGMENT — `$` here is the end of the
+          // whole address, so `pl$` would let /pl/merge through to the 404 page.
+          source: `/:first((?!(?:${LOCALE_SEGMENTS.join('|')}|guides|api|_next)(?![^/]))[^/]+)/:rest*`,
+          destination: '/en/__not-found',
+        },
+      ],
+    };
   },
   async headers() {
     return [

@@ -79,6 +79,10 @@ const matcherLocales = /\(\?:((?:[a-z]{2}\|)+[a-z]{2})\)\(\?:\/\|\$\)/.exec(page
 check(locales.length === 16, `sanity: read LOCALES from proxy.ts (${locales.length})`);
 check([...locales].sort().join() === [...i18nLocales].sort().join(), 'proxy.ts LOCALES equals lib/i18n.ts locales');
 check([...locales].sort().join() === [...matcherLocales].sort().join(), `the matcher's locale list equals LOCALES (${matcherLocales.length})`);
+// next.config.ts sends addresses whose first segment is no language to the 404 page (afterFiles
+// rewrite); a language missing from its list would turn that language's whole site into a 404.
+const configLocales = [...(/const LOCALE_SEGMENTS = \[([^\]]*)\]/.exec(readFileSync(join(ROOT, 'next.config.ts'), 'utf8'))?.[1] ?? '').matchAll(/'([a-z]{2})'/g)].map((m) => m[1]!);
+check([...configLocales].sort().join() === [...i18nLocales].sort().join(), `next.config.ts LOCALE_SEGMENTS equals lib/i18n.ts locales (${configLocales.length})`);
 const stillMatched = locales.flatMap((l) => [`/${l}`, `/${l}/merge`, `/${l}/guide`]).filter((p) => mre.test(p));
 check(stillMatched.length === 0, `skips every /{locale} and /{locale}/… path (${stillMatched.slice(0, 5).join(', ')})`);
 

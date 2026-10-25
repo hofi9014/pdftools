@@ -87,7 +87,9 @@ check(bad.length === 0, `${paths.length} pages (home, two tools, privacy, FAQ, g
 }
 
 // An unknown address still answers 404 (the root layout moved; the 404 page must not break).
-for (const p of ['/xx', '/pl/nie-ma-takiej-strony', '/a/b/c']) {
+// /xx/merge, /index.html and /.env reach app/[locale] with a made-up locale; they lost the header
+// once `dynamicParams = false` had to go for Next 16.4 (next.config.ts afterFiles rewrite).
+for (const p of ['/xx', '/pl/nie-ma-takiej-strony', '/a/b/c', '/xx/merge', '/index.html', '/.env']) {
   const res = await fetch(BASE_URL + p, { redirect: 'manual' });
   const html = await res.text();
   // …and keeps the site's header, as it did with the single root layout (app/global-not-found.tsx).
