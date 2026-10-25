@@ -12,6 +12,15 @@ updates:
       # Minor and patch updates of everything in one PR instead of dozens.
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # The types must match the Node that runs the code: 24 on Vercel (project setting) and in CI
+      # (ci.yml). Move this together with both when the runtime moves to a new major version.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # @types/pako 3 is an empty stub for pako 3, which ships its own types; the pako this app
+      # imports is 1.x (through pdf-lib and jszip), which needs @types/pako 2.
+      - dependency-name: "@types/pako"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
