@@ -102,6 +102,7 @@ const sv: Record<string, string> = {
   'home.subtitle': 'Snabbt, säkert, gratis. Ingen installation.',
   'home.subtitle2': 'Redigera, konvertera och skydda PDF-filer direkt i din webbläsare.',
   'home.ai_note': 'AI-verktyg (chatt, sammanfattning, översättare) fungerar online och kräver en extern AI-tjänst — detaljer på varje verktygssida.',
+  'home.local_footnote': '4 verktyg fungerar utanför webbläsaren. {ai}: bara texten som tagits ur filen skickas till en extern AI-tjänst, själva filen stannar hos dig. {url}: vår server hämtar sidan du anger, dina filer skickas inte.',
   'home.search_no_results': 'Inga verktyg hittades som matchar „{query}“.',
   'home.title': 'Alla PDF-verktyg på ett ställe',
   'lang.switch': 'Byt språk',

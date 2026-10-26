@@ -124,6 +124,7 @@ const en: Record<string, string> = {
   'home.subtitle': 'Fast, secure, free. No installation.',
   'home.subtitle2': 'Edit, convert, and secure PDFs directly in your browser.',
   'home.ai_note': 'AI tools (Chat, Summary, Translate) work online and require an external AI service — details on each tool page.',
+  'home.local_footnote': '4 tools work outside your browser. {ai} — only the text extracted from your file goes to an external AI service; the file itself stays with you. {url} — our server fetches the page you enter; none of your files are sent.',
   'home.search_no_results': 'No tools found for “{query}”.',
   'home.title': 'All PDF tools in one place',
   'lang.switch': 'Switch language',

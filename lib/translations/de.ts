@@ -102,6 +102,7 @@ const de: Record<string, string> = {
   'home.subtitle': 'Schnell, sicher, kostenlos. Keine Installation erforderlich.',
   'home.subtitle2': 'Bearbeiten, konvertieren und schützen Sie PDFs direkt in Ihrem Browser.',
   'home.ai_note': 'KI-Werkzeuge (Chat, Zusammenfassung, Übersetzer) arbeiten online und erfordern einen externen KI-Dienst — Details auf den jeweiligen Werkzeugseiten.',
+  'home.local_footnote': '4 Werkzeuge arbeiten außerhalb des Browsers. {ai} — an einen externen KI-Dienst geht nur der aus der Datei extrahierte Text, die Datei selbst bleibt bei Ihnen. {url} — die angegebene Seite ruft unser Server ab, Ihre Dateien werden nicht gesendet.',
   'home.search_no_results': 'Keine Werkzeuge gefunden, die „{query}“ entsprechen.',
   'home.title': 'Alle PDF-Werkzeuge an einem Ort',
   'lang.switch': 'Sprache wechseln',

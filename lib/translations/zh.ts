@@ -133,6 +133,7 @@ const zh: Record<string, string> = {
   'home.subtitle': '快速、安全、免费。无需安装。',
   'home.subtitle2': '直接在浏览器中编辑、转换和保护PDF。',
   'home.ai_note': 'AI工具（聊天、摘要、翻译）在线运行，需要外部AI服务 — 详情请参阅各工具页面。',
+  'home.local_footnote': '有4个工具在浏览器之外运行。{ai}：只有从文件中提取的文本会发送到外部AI服务，文件本身留在您这里。{url}：您输入的网页由我们的服务器获取，您的文件不会被发送。',
   'home.search_no_results': '未找到与“{query}”匹配的工具。',
   'home.title': '所有PDF工具汇聚一处',
   'lang.switch': '切换语言',

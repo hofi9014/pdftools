@@ -102,6 +102,7 @@ const tr: Record<string, string> = {
   'home.subtitle': 'Hızlı, güvenli, ücretsiz. Kurulum gerekmez.',
   'home.subtitle2': 'Edit, convert and secure PDFs directly in your browser.',
   'home.ai_note': 'AI araçları (Sohbet, Özet, Çevirmen) çevrimiçi çalışır ve harici bir AI hizmeti gerektirir — her araç sayfasında ayrıntılar.',
+  'home.local_footnote': '4 araç tarayıcının dışında çalışır. {ai}: harici AI hizmetine yalnızca dosyadan çıkarılan metin gider, dosyanın kendisi sizde kalır. {url}: girdiğiniz sayfayı sunucumuz indirir, dosyalarınız gönderilmez.',
   'home.search_no_results': '„{query}“ ile eşleşen araç bulunamadı.',
   'home.title': 'Tüm PDF araçları tek bir yerde',
   'lang.switch': 'Dil değiştir',

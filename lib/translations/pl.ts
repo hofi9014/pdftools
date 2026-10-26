@@ -122,6 +122,7 @@ const pl: Record<string, string> = {
   'home.subtitle': 'Szybko, bezpiecznie, za darmo. Bez instalacji.',
   'home.subtitle2': 'Edytuj, konwertuj i zabezpieczaj PDF-y bezpośrednio w przeglądarce.',
   'home.ai_note': 'Narzędzia AI (Chat, Streszczenie, Tłumacz) działają online i wymagają zewnętrznego serwisu AI — szczegóły na podstronach.',
+  'home.local_footnote': 'Poza przeglądarką działają 4 narzędzia. {ai} — do zewnętrznego serwisu AI trafia tylko tekst wyodrębniony z pliku, sam plik zostaje u Ciebie. {url} — podaną stronę pobiera nasz serwer, Twoje pliki nie są wysyłane.',
   'home.search_no_results': 'Nie znaleziono narzędzi pasujących do „{query}”.',
   'home.title': 'Wszystkie narzędzia PDF w jednym miejscu',
   'lang.switch': 'Przełącz język',
