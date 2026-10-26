@@ -102,6 +102,7 @@ const is: Record<string, string> = {
   'home.subtitle': 'Hratt, öruggt, ókeypis. Engin uppsetning.',
   'home.subtitle2': 'Breyttu, umbreyttu og verndaðu PDF beint í vafranum þínum.',
   'home.ai_note': 'AI-verkfæri (spjall, samantekt, þýðandi) starfa á netinu og krefjast ytri AI-þjónustu — nánar á hverri verkfærasíðu.',
+  'home.local_footnote': '4 verkfæri vinna utan vafrans. {ai}: aðeins texti úr skránni fer til ytri AI-þjónustu, skráin sjálf verður eftir hjá þér. {url}: þjónninn okkar sækir síðuna sem þú tilgreinir, skrárnar þínar eru ekki sendar.',
   'home.search_no_results': 'Engin verkfæri fundust sem passa við „{query}“.',
   'home.title': 'Öll PDF verkfæri á einum stað',
   'lang.switch': 'Skipta um tungumál',

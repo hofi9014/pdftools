@@ -102,6 +102,7 @@ const it: Record<string, string> = {
   'home.subtitle': 'Veloce, sicuro, gratuito. Nessuna installazione necessaria.',
   'home.subtitle2': 'Modifica, converti e proteggi PDF direttamente nel tuo browser.',
   'home.ai_note': 'Gli strumenti AI (Chat, Riepilogo, Traduttore) funzionano online e richiedono un servizio AI esterno — dettagli su ogni pagina dello strumento.',
+  'home.local_footnote': '4 strumenti funzionano fuori dal browser. {ai}: a un servizio AI esterno va solo il testo estratto dal file, il file resta a te. {url}: la pagina indicata viene scaricata dal nostro server, i tuoi file non vengono inviati.',
   'home.search_no_results': 'Nessuno strumento trovato corrispondente a «{query}».',
   'home.title': 'Tutti gli strumenti PDF in un unico posto',
   'lang.switch': 'Cambia lingua',

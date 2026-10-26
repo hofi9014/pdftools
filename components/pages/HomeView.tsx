@@ -146,10 +146,15 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
               <li>✓ {t('stats.local', locale)} {t('stats.local_sub', locale)}<sup aria-hidden="true">*</sup></li>
               <li>✓ 100% {t('stats.free', locale)}</li>
             </ul>
-            {/* The "local" claims carry an asterisk: the AI tools keep the file in the browser but send
-                its extracted text to an external AI service. */}
+            {/* The "local" claims carry an asterisk naming the 4 tools that are not local: the AI tools
+                keep the file in the browser but send its extracted text to an external AI service, and
+                URL to PDF fetches the page on our server (app/api/url-to-pdf). */}
             <p className="text-xs leading-relaxed max-w-[44em]" style={{ color: 'var(--coffee-text-secondary)' }}>
-              * {t('home.ai_note', locale)} {t('feature.ai_file_local', locale)}
+              * {t('home.local_footnote', locale, {
+                ai: ['aichat', 'aisummary', 'translate'].map(k => t(`tool.${k}`, locale))
+                  .join(locale === 'ja' || locale === 'zh' ? '、' : locale === 'ar' || locale === 'fa' ? '، ' : ', '),
+                url: t('tool.url', locale),
+              })}
             </p>
           </div>
 

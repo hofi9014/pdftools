@@ -102,6 +102,7 @@ const es: Record<string, string> = {
   'home.subtitle': 'Rápido, seguro, gratis. Sin instalación.',
   'home.subtitle2': 'Edita, convierte y protege PDFs directamente en tu navegador.',
   'home.ai_note': 'Las herramientas de IA (Chat, Resumen, Traductor) funcionan en línea y requieren un servicio de IA externo — detalles en cada página de herramienta.',
+  'home.local_footnote': '4 herramientas funcionan fuera del navegador. {ai}: solo el texto extraído del archivo va a un servicio de IA externo; el archivo se queda contigo. {url}: nuestro servidor descarga la página indicada; tus archivos no se envían.',
   'home.search_no_results': 'No se encontraron herramientas que coincidan con «{query}».',
   'home.title': 'Todas las herramientas PDF en un solo lugar',
   'lang.switch': 'Cambiar idioma',
