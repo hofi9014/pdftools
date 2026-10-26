@@ -41,12 +41,20 @@ function typechecks(snippet: string): boolean {
   try {
     const file = join(dir, 'check.ts');
     writeFileSync(file, `/// <reference path="${typesPath}" />\n${snippet}\n`);
+    // The snippet gets its own tsconfig: TypeScript 7 refuses a file named on the command line
+    // while the project's tsconfig.json sits in the working directory (TS5112), and the flag
+    // that skips that check does not exist in TypeScript 5.
+    const config = join(dir, 'tsconfig.json');
+    writeFileSync(config, JSON.stringify({
+      compilerOptions: { noEmit: true, strict: true, target: 'es2020', moduleResolution: 'bundler', module: 'esnext', lib: ['es2020', 'dom'], types: [] },
+      files: ['check.ts'],
+    }));
     try {
       // Run from the project root (so tsc resolves the local typescript install) but
-      // with --moduleResolution bundler (matching the project's own tsconfig — its
-      // @types packages need this to resolve their own internal imports) and --types
+      // with moduleResolution bundler (matching the project's own tsconfig — its
+      // @types packages need this to resolve their own internal imports) and types
       // emptied, so no ambient globals beyond dom/es2020 leak into this snippet.
-      execFileSync('npx', ['tsc', '--noEmit', '--strict', '--target', 'es2020', '--moduleResolution', 'bundler', '--lib', 'es2020,dom', file], {
+      execFileSync('npx', ['tsc', '-p', config], {
         cwd: ROOT,
         stdio: 'pipe',
         shell: true,

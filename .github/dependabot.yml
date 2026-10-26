@@ -21,6 +21,11 @@ updates:
       # imports is 1.x (through pdf-lib and jszip), which needs @types/pako 2.
       - dependency-name: "@types/pako"
         update-types: ["version-update:semver-major"]
+      # TypeScript 7 (the native compiler) has no JavaScript API, and typescript-eslint, which
+      # eslint-config-next uses, supports TypeScript below 6.1 only: with 7, `eslint` does not
+      # start at all. tsc and next build pass on 7. Drop this once typescript-eslint supports it.
+      - dependency-name: "typescript"
+        versions: [">=7.0.0"]
 
   - package-ecosystem: github-actions
     directory: /
