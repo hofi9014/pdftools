@@ -3,93 +3,104 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-figtree), system-ui, "Segoe UI", sans-serif;
+  --font-display: var(--font-bricolage), var(--font-figtree), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
   --breakpoint-xs: 375px;
 }
 
+/* "Pracownia" palette (2026-10-26): warm peach paper, the orange of the logo as the accent.
+   --coffee-accent is for borders, glows and fills without text; --coffee-accent-ink is for text
+   and for fills behind text (buttons) — it keeps WCAG AA on every light ground below. */
 :root {
-  --cat-edit: #A3733F; /* category heading text: 4:1 on the page, #C28F5B was 2.75:1 */
-  --cat-edit-bg: rgba(194,143,91,0.12);
-  --cat-edit-border: #C28F5B;
-  --cat-convert: #4A90A4;
-  --cat-convert-bg: rgba(74,144,164,0.12);
-  --cat-convert-border: #4A90A4;
-  --cat-secure: #B5573F;
-  --cat-secure-bg: rgba(181,87,63,0.12);
-  --cat-secure-border: #B5573F;
-  --cat-more: #7C6A9C;
-  --cat-more-bg: rgba(124,106,156,0.12);
-  --cat-more-border: #7C6A9C;
-  --coffee-bg: #FDFBF7;
-  --coffee-bg-alt: #F7F3EE;
-  --coffee-surface: rgba(255,255,255,0.7);
+  --cat-edit: #A0561A;
+  --cat-edit-bg: #FFEBD6;
+  --cat-edit-border: #E8853A;
+  --cat-convert: #2F6FB0;
+  --cat-convert-bg: #E3EEFF;
+  --cat-convert-border: #5B95D6;
+  --cat-secure: #B23A2E;
+  --cat-secure-bg: #FFE4E1;
+  --cat-secure-border: #D9665A;
+  --cat-more: #6E55A3;
+  --cat-more-bg: #EEE7FA;
+  --cat-more-border: #9B84CC;
+  --coffee-bg: #FFF8F1;
+  --coffee-bg-alt: #FFEFE2;
+  --coffee-surface: rgba(255,255,255,0.78);
   --coffee-surface-solid: #FFFFFF;
-  --coffee-surface-hover: #F7F3EE;
-  --coffee-border: rgba(60,36,21,0.08);
-  --coffee-border-strong: rgba(60,36,21,0.15);
-  --coffee-text: #2C1810;
-  --coffee-text-secondary: #6B4F3E;
-  --coffee-text-tertiary: #7B675B;
-  --coffee-accent: #C28F5B;
-  --coffee-accent-hover: #B07D4A;
-  /* Accent used for text and as the fill behind text: the gold --coffee-accent is too light
-     for either on a light page (2.8:1 against white); this keeps WCAG AA (4.5:1). */
-  --coffee-accent-ink: #835D3C;
-  --coffee-accent-ink-hover: #6D4C31;
+  --coffee-surface-hover: #FFF1E4;
+  --coffee-border: rgba(110,55,20,0.11);
+  --coffee-border-strong: rgba(110,55,20,0.2);
+  --coffee-text: #2B1C12;
+  --coffee-text-secondary: #6B5242;
+  --coffee-text-tertiary: #775E4E;
+  --coffee-accent: #E8712A;
+  --coffee-accent-hover: #D9631E;
+  --coffee-accent-ink: #B83E0C;
+  --coffee-accent-ink-hover: #9A330A;
   --coffee-on-accent: #FFFFFF;
-  --coffee-accent-subtle: rgba(194,143,91,0.1);
-  --coffee-accent-soft: #F5EDE4;
-  --coffee-accent-glow: rgba(194,143,91,0.2);
-  --coffee-gold: #D4A574;
-  --coffee-gold-glow: rgba(212,165,116,0.3);
-  --coffee-card-bg: rgba(255,255,255,0.6);
-  --coffee-badge-bg: #F5EDE4;
-  --coffee-badge-text: #7D6241;
-  --coffee-mesh-1: rgba(212,165,116,0.08);
-  --coffee-mesh-2: rgba(194,143,91,0.05);
-  --coffee-mesh-3: rgba(245,237,228,0.4);
+  --coffee-accent-subtle: rgba(232,113,42,0.09);
+  --coffee-accent-soft: #FFE6D2;
+  --coffee-accent-glow: rgba(240,110,30,0.22);
+  --coffee-gold: #F6A04D;
+  --coffee-gold-glow: rgba(246,160,77,0.22);
+  --coffee-card-bg: rgba(255,255,255,0.7);
+  --coffee-badge-bg: #FFE6D2;
+  --coffee-badge-text: #9A330A;
+  --coffee-mesh-1: rgba(255,170,110,0.16);
+  --coffee-mesh-2: rgba(255,200,150,0.12);
+  --coffee-mesh-3: rgba(255,236,220,0.5);
+  --coffee-shadow: 0 10px 28px rgba(90,40,10,0.08);
 }
 
 .dark {
-  --cat-edit: #D4A574;
-  --cat-edit-bg: rgba(212,165,116,0.15);
-  --cat-edit-border: #D4A574;
-  --cat-convert: #6BB0C4;
-  --cat-convert-bg: rgba(107,176,196,0.15);
-  --cat-convert-border: #6BB0C4;
-  --cat-secure: #CC7259;
-  --cat-secure-bg: rgba(204,114,89,0.15);
-  --cat-secure-border: #CC7259;
-  --cat-more: #9B8AB8;
-  --cat-more-bg: rgba(155,138,184,0.15);
-  --cat-more-border: #9B8AB8;
-  --coffee-bg: #0A0807;
-  --coffee-bg-alt: #141110;
-  --coffee-surface: rgba(20,17,16,0.8);
-  --coffee-surface-solid: #141110;
-  --coffee-surface-hover: #1C1816;
-  --coffee-border: rgba(255,255,255,0.06);
-  --coffee-border-strong: rgba(255,255,255,0.12);
-  --coffee-text: #F5EDE4;
-  --coffee-text-secondary: rgba(245,237,228,0.65);
-  --coffee-text-tertiary: rgba(245,237,228,0.55);
-  --coffee-accent: #D4A574;
-  --coffee-accent-hover: #E0B888;
-  --coffee-accent-ink: #D4A574;
-  --coffee-accent-ink-hover: #E0B888;
-  --coffee-on-accent: #1A120C;
-  --coffee-accent-subtle: rgba(212,165,116,0.08);
-  --coffee-accent-soft: rgba(212,165,116,0.12);
-  --coffee-accent-glow: rgba(212,165,116,0.15);
-  --coffee-gold: #C28F5B;
-  --coffee-gold-glow: rgba(194,143,91,0.25);
-  --coffee-card-bg: rgba(20,17,16,0.5);
-  --coffee-badge-bg: rgba(212,165,116,0.1);
-  --coffee-badge-text: #D4A574;
-  --coffee-mesh-1: rgba(212,165,116,0.06);
-  --coffee-mesh-2: rgba(194,143,91,0.04);
-  --coffee-mesh-3: rgba(20,17,16,0.4);
+  --cat-edit: #FFB070;
+  --cat-edit-bg: #3B2717;
+  --cat-edit-border: #FF9B57;
+  --cat-convert: #8DBBF0;
+  --cat-convert-bg: #1C2B3F;
+  --cat-convert-border: #6FA4E0;
+  --cat-secure: #FF9A8C;
+  --cat-secure-bg: #3E211E;
+  --cat-secure-border: #E07A6D;
+  --cat-more: #C2AEEB;
+  --cat-more-bg: #2D2440;
+  --cat-more-border: #A68FD6;
+  --coffee-bg: #18110C;
+  --coffee-bg-alt: #201710;
+  --coffee-surface: rgba(35,25,18,0.82);
+  --coffee-surface-solid: #231912;
+  --coffee-surface-hover: #2E2118;
+  --coffee-border: rgba(255,225,200,0.08);
+  --coffee-border-strong: rgba(255,225,200,0.15);
+  --coffee-text: #F8EBDF;
+  --coffee-text-secondary: #C9B19E;
+  --coffee-text-tertiary: #B09784;
+  --coffee-accent: #FF8A3D;
+  --coffee-accent-hover: #FF9B57;
+  --coffee-accent-ink: #FF9B57;
+  --coffee-accent-ink-hover: #FFB07A;
+  --coffee-on-accent: #1A0E06;
+  --coffee-accent-subtle: rgba(255,138,61,0.08);
+  --coffee-accent-soft: #3A2619;
+  --coffee-accent-glow: rgba(255,120,40,0.2);
+  --coffee-gold: #FFB36B;
+  --coffee-gold-glow: rgba(255,150,70,0.16);
+  --coffee-card-bg: rgba(35,25,18,0.6);
+  --coffee-badge-bg: #3A2619;
+  --coffee-badge-text: #FF9B57;
+  --coffee-mesh-1: rgba(255,120,40,0.08);
+  --coffee-mesh-2: rgba(255,150,70,0.05);
+  --coffee-mesh-3: rgba(24,17,12,0.4);
+  --coffee-shadow: 0 10px 28px rgba(0,0,0,0.3);
+}
+
+@layer base {
+  h1, h2, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
 }
 
 html {
@@ -155,7 +166,8 @@ body {
 .coffee-card {
   background-color: var(--coffee-surface-solid);
   border: 1px solid var(--coffee-border);
-  border-radius: 16px;
+  border-radius: 20px;
+  box-shadow: var(--coffee-shadow);
   transition: all 0.25s;
 }
 
@@ -177,13 +189,13 @@ body {
   background-color: var(--coffee-accent-ink);
   color: var(--coffee-on-accent);
   border: none;
-  padding: 12px 28px;
-  border-radius: 9999px;
-  font-weight: 600;
+  padding: 13px 24px;
+  border-radius: 14px;
+  font-weight: 700;
   font-size: 15px;
   cursor: pointer;
   transition: all 0.25s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 18px var(--coffee-accent-glow);
 }
 
 .btn-accent:hover {
@@ -200,9 +212,9 @@ body {
   background: transparent;
   color: var(--coffee-text);
   border: 1px solid var(--coffee-border-strong);
-  padding: 12px 28px;
-  border-radius: 9999px;
-  font-weight: 500;
+  padding: 13px 24px;
+  border-radius: 14px;
+  font-weight: 600;
   font-size: 15px;
   cursor: pointer;
   transition: all 0.2s;
@@ -390,4 +402,49 @@ body {
   .glass-card:hover, .coffee-card:hover, .btn-accent:hover {
     transform: none;
   }
+}
+
+/* Floating labels around the home-page illustration */
+.hero-chip {
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--coffee-surface-solid);
+  color: var(--coffee-text);
+  box-shadow: 0 12px 28px rgba(60,25,5,0.14);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ===== Drop zones and secondary blue controls on tool pages =====
+   The tool pages share one drop-zone markup (border-2 border-dashed border-gray-300 …) and use
+   Tailwind blue for links and the cloud button. These rules give them the site accent without
+   editing ~40 pages; the colours come from the tokens, so both themes follow. */
+.border-dashed.border-gray-300,
+:where(.dark) .border-dashed.dark\:border-gray-600 {
+  border-color: var(--coffee-accent) !important;
+  background-color: var(--coffee-surface-solid);
+}
+.border-dashed.hover\:bg-gray-50:hover,
+:where(.dark) .border-dashed.dark\:hover\:bg-gray-700:hover {
+  background-color: var(--coffee-accent-subtle) !important;
+}
+.border-dashed.bg-blue-50,
+:where(.dark) .border-dashed.dark\:bg-blue-900\/20 {
+  background-color: var(--coffee-accent-soft) !important;
+}
+.hover\:border-blue-400:hover,
+:where(.dark) .dark\:hover\:border-blue-500:hover {
+  border-color: var(--coffee-accent) !important;
+}
+.text-blue-600,
+:where(.dark) .dark\:text-blue-400 {
+  color: var(--coffee-accent-ink) !important;
+}
+.border-blue-200,
+:where(.dark) .dark\:border-blue-800 {
+  border-color: var(--coffee-border-strong) !important;
+}
+.hover\:bg-blue-50:hover {
+  background-color: var(--coffee-accent-subtle) !important;
 }

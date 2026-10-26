@@ -6,50 +6,30 @@ import { getToolIcon } from '@/lib/icons';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import type { GuideCard } from '@/lib/guide-cards';
 import InstallSection from '@/components/InstallSection';
+import PdfBadge from '@/components/PdfBadge';
 import { tools, toolPath, categories } from '@/lib/tools';
 
 const aiTools = new Set(['aichat', 'aisummary', 'translate']);
 
-const catBorder = (k: string) => `var(--cat-${k}-border)`;
-const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const catBg = (k: string) => `var(--cat-${k}-bg)`;
+const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 type ToolInfo = (typeof tools)[number];
 type CategoryInfo = (typeof categories)[number];
 
+const cardStyle = { backgroundColor: 'var(--coffee-surface-solid)', border: '1px solid var(--coffee-border)' };
+
 function ToolCard({ tool, locale }: { tool: ToolInfo; locale: Locale }) {
   return (
-    <a key={tool.key} href={toolPath(tool.key)}
-      className="group"
-      style={{
-        display: 'flex', flexDirection: 'column' as const,
-        padding: '1.25rem 1.5rem', borderRadius: '16px',
-        backgroundColor: 'var(--coffee-surface-solid)',
-        border: `1px solid var(--coffee-border)`,
-        borderLeft: `3px solid ${catBorder(tool.category)}`,
-        transition: 'all 0.25s',
-        textDecoration: 'none',
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.borderColor = catBorder(tool.category);
-        e.currentTarget.style.boxShadow = `0 4px 20px color-mix(in srgb, ${catBorder(tool.category)} 20%, transparent)`;
-        e.currentTarget.style.transform = 'translateY(-2px)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.borderColor = 'var(--coffee-border)';
-        e.currentTarget.style.boxShadow = 'none';
-        e.currentTarget.style.transform = 'translateY(0)';
-      }}>
-      <div className="text-3xl sm:text-4xl mb-3">{getToolIcon(tool.key)}</div>
-      <h4 className="font-bold mb-1 text-sm sm:text-base" style={{ color: 'var(--coffee-text)' }}>{t(`tool.${tool.key}`, locale)}</h4>
+    <a href={toolPath(tool.key)} className="coffee-card flex flex-col gap-3 p-4 sm:p-5 no-underline">
+      <span className="self-start text-2xl sm:text-3xl px-3 py-2.5 rounded-2xl" style={{ backgroundColor: catBg(tool.category) }}>
+        {getToolIcon(tool.key)}
+      </span>
+      <h4 className="font-bold text-sm sm:text-base" style={{ color: 'var(--coffee-text)' }}>{t(`tool.${tool.key}`, locale)}</h4>
       <p className="text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--coffee-text-tertiary)' }}>{t(`desc.${tool.key}`, locale)}</p>
       {aiTools.has(tool.key) && (
-        <span className="inline-block mt-2 text-[10px] font-medium px-2 py-0.5 rounded-full"
-          style={{
-            backgroundColor: 'color-mix(in srgb, var(--coffee-accent) 12%, transparent)',
-            color: 'var(--coffee-accent-ink)',
-            border: '1px solid color-mix(in srgb, var(--coffee-accent) 25%, transparent)',
-            alignSelf: 'flex-start',
-          }}>
+        <span className="self-start text-[11px] font-semibold px-2 py-0.5 rounded-full"
+          style={{ backgroundColor: 'var(--coffee-badge-bg)', color: 'var(--coffee-badge-text)' }}>
           {t('hero.ai_badge', locale)}
         </span>
       )}
@@ -62,12 +42,11 @@ function ToolCatalog({ groups, locale }: { groups: { cat: CategoryInfo; filtered
     <>
       {groups.map(({ cat, filtered }) => (
         <div key={cat.key} className="mb-12 last:mb-0">
-          <h3 className="text-xl font-bold mb-5 flex items-center gap-2"
-            style={{ color: `var(--cat-${cat.key})` }}>
-            <span>{cat.icon}</span>
+          <h3 className="font-display text-xl font-extrabold mb-5 flex items-center gap-3" style={{ color: 'var(--coffee-text)' }}>
+            <span aria-hidden="true" className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: catBg(cat.key) }}>{cat.icon}</span>
             <span>{t(`nav.category.${cat.key === 'more' ? 'more' : cat.key}`, locale)}</span>
           </h3>
-          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {filtered.map((tool) => (
               <ToolCard key={tool.key} tool={tool} locale={locale} />
             ))}
@@ -119,82 +98,75 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
     fa: 'جستجوی ابزارها...',
     zh: '搜索工具...',
   };
+  const placeholder = searchPlaceholder[locale] || 'Search tools...';
 
   return (
     <div>
-      {/* Hero */}
-      <section className="relative overflow-hidden py-24 px-4 text-center">
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: 'radial-gradient(ellipse 80% 50% at 50% 20%, var(--coffee-accent-glow) 0%, transparent 70%), radial-gradient(ellipse 50% 40% at 80% 60%, var(--coffee-gold-glow) 0%, transparent 60%)'
+      {/* Hero: the tool search sits in the first screen, next to a fan of the file types the tools handle */}
+      <section className="relative overflow-hidden px-4 pt-10 pb-12 sm:pt-14 sm:pb-16">
+        <div aria-hidden="true" className="absolute pointer-events-none rounded-full" style={{
+          insetInlineEnd: '-12rem', top: '-4rem', width: '46rem', height: '46rem',
+          background: 'radial-gradient(circle, var(--coffee-accent-glow) 0%, transparent 62%)',
         }} />
-        <div className="relative max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium mb-6 border" style={{
-            backgroundColor: 'var(--coffee-badge-bg)',
-            color: 'var(--coffee-badge-text)',
-            borderColor: 'var(--coffee-border)'
-          }}>
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--coffee-accent)', boxShadow: '0 0 8px var(--coffee-accent)' }} />
-            {t('hero.badge', locale)}
+        <div className="relative max-w-7xl mx-auto grid lg:grid-cols-[1.08fr_0.92fr] gap-10 lg:gap-12 items-center">
+          <div className="flex flex-col gap-5 min-w-0">
+            <span className="self-start inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-bold"
+              style={{ backgroundColor: 'var(--coffee-badge-bg)', color: 'var(--coffee-badge-text)' }}>
+              <span aria-hidden="true">🔒</span>{t('hero.badge', locale)}
+            </span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] [text-wrap:balance]" style={{ color: 'var(--coffee-text)' }}>
+              {t('home.title', locale)}
+            </h1>
+            <p className="text-lg sm:text-xl leading-relaxed max-w-[34em]" style={{ color: 'var(--coffee-text-secondary)' }}>
+              {t('hero.subtitle', locale)}
+            </p>
+            <div className="mt-1 p-4 sm:p-5 rounded-[22px] border-2 border-dashed flex flex-col sm:flex-row sm:items-center gap-4"
+              style={{ borderColor: 'var(--coffee-accent)', backgroundColor: 'var(--coffee-surface-solid)', boxShadow: 'var(--coffee-shadow)' }}>
+              <span aria-hidden="true" className="hidden sm:block text-4xl shrink-0"><PdfBadge /></span>
+              <label htmlFor="tool-search" className="sr-only">{placeholder}</label>
+              <input
+                id="tool-search"
+                type="search"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder={placeholder}
+                className="flex-1 min-w-0 px-4 py-3 rounded-xl text-base outline-none transition-shadow"
+                style={{
+                  backgroundColor: 'var(--coffee-bg)',
+                  border: '2px solid var(--coffee-border)',
+                  color: 'var(--coffee-text)',
+                }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'var(--coffee-accent)'; e.currentTarget.style.boxShadow = '0 0 0 3px var(--coffee-accent-glow)'; }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'var(--coffee-border)'; e.currentTarget.style.boxShadow = 'none'; }}
+              />
+              <a href="#tools" className="btn-accent justify-center shrink-0 no-underline">{t('home.cta', locale)}</a>
+            </div>
+            <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold" style={{ color: 'var(--coffee-text-secondary)' }}>
+              <li>✓ {tools.length} {t('stats.tools', locale)}</li>
+              <li>✓ {t('stats.local', locale)} {t('stats.local_sub', locale)}<sup aria-hidden="true">*</sup></li>
+              <li>✓ 100% {t('stats.free', locale)}</li>
+            </ul>
+            {/* The "local" claims carry an asterisk: the AI tools keep the file in the browser but send
+                its extracted text to an external AI service. */}
+            <p className="text-xs leading-relaxed max-w-[44em]" style={{ color: 'var(--coffee-text-secondary)' }}>
+              * {t('home.ai_note', locale)} {t('feature.ai_file_local', locale)}
+            </p>
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-4 leading-tight" style={{ color: 'var(--coffee-text)' }}>
-            {t('home.title', locale)}
-          </h1>
-          <p className="text-lg sm:text-xl mb-10 max-w-xl mx-auto" style={{ color: 'var(--coffee-text-secondary)' }}>
-            {t('home.subtitle', locale)}
-          </p>
-          <div className="flex items-center justify-center gap-4">
-            <a href="#tools" className="btn-accent text-base">
-              {t('home.cta', locale)}
-            </a>
-            <a href={toolPath('privacy', locale)} className="btn-ghost text-base">
-              {t('hero.privacy', locale)}
-            </a>
+
+          {/* Decorative: the file types the tools handle, and what the tools do with them */}
+          <div aria-hidden="true" className="relative hidden md:block h-[440px] select-none">
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[330px] h-[330px] rounded-full" style={{ backgroundColor: 'var(--coffee-accent-soft)' }} />
+            <span className="absolute left-[6%] top-[24%] text-[88px] -rotate-[14deg]"><PdfBadge type="DOC" /></span>
+            <span className="absolute left-[30%] top-[12%] text-[124px] -rotate-2 z-[2]"><PdfBadge /></span>
+            <span className="absolute right-[6%] top-[26%] text-[88px] rotate-12"><PdfBadge type="XLS" /></span>
+            <span className="absolute left-[14%] bottom-[10%] text-[66px] rotate-[8deg]"><PdfBadge type="PPT" /></span>
+            <span className="absolute right-[16%] bottom-[8%] text-[60px] -rotate-[9deg]"><PdfBadge type="ODT" /></span>
+            <span dir="ltr" className="hero-chip absolute left-0 top-[6%] z-[3]">🗜️ 1155 kB → 416 kB</span>
+            <span className="hero-chip absolute right-0 top-[64%] z-[3]">✍️ {t('tool.sign', locale)}</span>
+            <span className="hero-chip absolute left-[18%] bottom-0 z-[3]">🔒 {t('feature.local_short', locale)}*</span>
           </div>
         </div>
       </section>
-
-      {/* Stats */}
-      <div className="flex justify-center gap-6 sm:gap-16 py-8 px-4">
-        <div className="text-center">
-          <div className="text-4xl font-black gradient-text">{tools.length}</div>
-          <div className="text-sm mt-1" style={{ color: 'var(--coffee-text-tertiary)' }}>{t('stats.tools', locale)}</div>
-        </div>
-        <div className="w-px self-stretch" style={{ backgroundColor: 'var(--coffee-border-strong)' }} />
-        <div className="text-center">
-          <div className="text-4xl font-black gradient-text">{t('stats.local', locale)}</div>
-          <div className="text-sm mt-1" style={{ color: 'var(--coffee-text-tertiary)' }}>{t('stats.local_sub', locale)}</div>
-        </div>
-        <div className="w-px self-stretch" style={{ backgroundColor: 'var(--coffee-border-strong)' }} />
-        <div className="text-center">
-          <div className="text-4xl font-black gradient-text">100%</div>
-          <div className="text-sm mt-1" style={{ color: 'var(--coffee-text-tertiary)' }}>{t('stats.free', locale)}</div>
-        </div>
-      </div>
-
-      {/* Limits note */}
-      <div className="max-w-2xl mx-auto px-4 text-center">
-        <p className="text-xs leading-relaxed" style={{ color: 'var(--coffee-text-tertiary)' }}>
-          {t('home.limit_note', locale)}
-        </p>
-      </div>
-
-      {/* Search bar */}
-      <div className="max-w-md mx-auto px-4 py-6">
-        <input
-          type="text"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder={searchPlaceholder[locale] || 'Search tools...'}
-          className="w-full px-5 py-3 rounded-xl text-base outline-none transition-shadow"
-          style={{
-            backgroundColor: 'var(--coffee-surface-solid)',
-            border: '2px solid var(--coffee-border)',
-            color: 'var(--coffee-text)',
-          }}
-          onFocus={e => { e.currentTarget.style.borderColor = 'var(--coffee-accent)'; e.currentTarget.style.boxShadow = '0 0 0 3px var(--coffee-accent-glow)'; }}
-          onBlur={e => { e.currentTarget.style.borderColor = 'var(--coffee-border)'; e.currentTarget.style.boxShadow = 'none'; }}
-        />
-      </div>
 
       {/* Live search results */}
       {search && (
@@ -213,20 +185,20 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
 
       {/* Popular tools */}
       <section id="popular" className="max-w-7xl mx-auto px-4 py-8">
-        <h2 className="text-3xl font-bold text-center mb-3" style={{ color: 'var(--coffee-text)' }}>{t('home.popular_title', locale)}</h2>
-        <p className="text-center mb-10" style={{ color: 'var(--coffee-text-secondary)' }}>
-          {t('home.popular_subtitle', locale)}
-        </p>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+        <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
+          <div>
+            <h2 className="text-3xl font-extrabold" style={{ color: 'var(--coffee-text)' }}>{t('home.popular_title', locale)}</h2>
+            <p className="mt-1" style={{ color: 'var(--coffee-text-secondary)' }}>{t('home.popular_subtitle', locale)}</p>
+          </div>
+          <a href="#tools" className="font-bold link-accent no-underline">{t('home.cta', locale)}</a>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {['merge','compress','word','split','edit','sign','wordtopdf','protect'].map((key) => {
             const tool = tools.find(t => t.key === key);
             return tool ? (
-              <a key={tool.key} href={toolPath(tool.key)}
-                className="coffee-card p-5 sm:p-6 group relative overflow-hidden"
-                style={{ borderColor: 'var(--coffee-accent)', borderWidth: '1.5px' }}>
-                <div className="absolute top-0 left-0 w-full h-1" style={{ background: 'var(--coffee-accent)' }} />
-                <div className="text-3xl sm:text-4xl mb-3">{getToolIcon(tool.key)}</div>
-                <h3 className="font-bold mb-1 text-sm sm:text-base" style={{ color: 'var(--coffee-text)' }}>{t(`tool.${tool.key}`, locale)}</h3>
+              <a key={tool.key} href={toolPath(tool.key)} className="coffee-card flex flex-col gap-3 p-4 sm:p-5 no-underline">
+                <span className="self-start text-3xl px-3 py-2.5 rounded-2xl" style={{ backgroundColor: catBg(tool.category) }}>{getToolIcon(tool.key)}</span>
+                <h3 className="font-bold text-base sm:text-lg" style={{ color: 'var(--coffee-text)' }}>{t(`tool.${tool.key}`, locale)}</h3>
                 <p className="text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--coffee-text-tertiary)' }}>{t(`desc.${tool.key}`, locale)}</p>
               </a>
             ) : null;
@@ -234,64 +206,34 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="max-w-5xl mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12" style={{ color: 'var(--coffee-text)' }}>{t('home.howto_title', locale)}</h2>
-        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4">
-          {/* Connecting line on desktop */}
-          <div className="hidden md:block absolute top-12 left-[calc(16.67%+2rem)] right-[calc(16.67%+2rem)] h-px"
-            style={{ background: 'repeating-linear-gradient(90deg, var(--coffee-border-strong) 0, var(--coffee-border-strong) 8px, transparent 8px, transparent 16px)' }} />
+      {/* How it works — a real sequence, so the steps are numbered */}
+      <section className="max-w-7xl mx-auto px-4 py-10">
+        <div className="rounded-[26px] p-6 sm:p-9 grid gap-6 lg:grid-cols-[1.1fr_1fr_1fr_1fr] lg:items-center" style={{ backgroundColor: 'var(--coffee-bg-alt)' }}>
+          <div>
+            <h2 className="text-2xl sm:text-[28px] font-extrabold leading-tight" style={{ color: 'var(--coffee-text)' }}>{t('home.howto_title', locale)}</h2>
+            <a href={toolPath('guide', locale)} className="inline-block mt-2 text-sm font-semibold link-accent no-underline">{t('home.howto_guide', locale)}</a>
+          </div>
           {[
             { num: '1', title: t('home.howto_step1', locale), desc: t('home.howto_desc1', locale) },
             { num: '2', title: t('home.howto_step2', locale), desc: t('home.howto_desc2', locale) },
             { num: '3', title: t('home.howto_step3', locale), desc: t('home.howto_desc3', locale) },
-          ].map((step, i) => (
-            <div key={i} className="relative flex flex-col items-center text-center">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold mb-4"
-                style={{ backgroundColor: 'var(--coffee-accent-ink)', color: 'var(--coffee-on-accent)' }}>
-                {step.num}
+          ].map((step) => (
+            <div key={step.num} className="flex gap-3.5 items-start">
+              <span className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-extrabold"
+                style={{ backgroundColor: 'var(--coffee-accent-ink)', color: 'var(--coffee-on-accent)' }}>{step.num}</span>
+              <div>
+                <h3 className="font-bold" style={{ color: 'var(--coffee-text)' }}>{step.title}</h3>
+                <p className="text-sm leading-relaxed mt-0.5" style={{ color: 'var(--coffee-text-secondary)' }}>{step.desc}</p>
               </div>
-              <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--coffee-text)' }}>{step.title}</h3>
-              <p className="text-sm leading-relaxed max-w-xs" style={{ color: 'var(--coffee-text-secondary)' }}>{step.desc}</p>
             </div>
           ))}
-        </div>
-        <div className="text-center mt-10">
-          <a href={toolPath('guide', locale)} className="inline-flex items-center gap-1 font-medium text-sm transition-opacity hover:opacity-80"
-            style={{ color: 'var(--coffee-accent-ink)' }}>
-            {t('home.howto_guide', locale)}
-          </a>
-        </div>
-      </section>
-
-      <InstallSection />
-
-      {/* Cloud feature */}
-      <section className="max-w-3xl mx-auto px-4 py-4">
-        <div className="rounded-xl p-4 text-xs leading-relaxed" style={{
-          backgroundColor: 'color-mix(in srgb, var(--coffee-accent) 8%, transparent)',
-          border: '1px solid color-mix(in srgb, var(--coffee-accent) 20%, transparent)',
-          color: 'var(--coffee-text-secondary)'
-        }}>
-          {t('cloud.feature', locale)}
-        </div>
-      </section>
-
-      {/* Offline PWA pitch */}
-      <section className="max-w-3xl mx-auto px-4 py-4">
-        <div className="rounded-xl p-4 text-xs leading-relaxed" style={{
-          backgroundColor: 'color-mix(in srgb, var(--coffee-accent) 8%, transparent)',
-          border: '1px solid color-mix(in srgb, var(--coffee-accent) 20%, transparent)',
-          color: 'var(--coffee-text-secondary)'
-        }}>
-          {t('hero.offline_pitch', locale)}
         </div>
       </section>
 
       {/* Scenarios */}
-      <section className="max-w-5xl mx-auto px-4 py-8">
-        <h2 className="text-3xl font-bold text-center mb-10" style={{ color: 'var(--coffee-text)' }}>{t('home.scenarios_title', locale)}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <section className="max-w-7xl mx-auto px-4 py-8">
+        <h2 className="text-3xl font-extrabold mb-6" style={{ color: 'var(--coffee-text)' }}>{t('home.scenarios_title', locale)}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
             { key: 'compress', href: '/compress' },
             { key: 'edit', href: '/edit-pdf' },
@@ -300,24 +242,8 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
             { key: 'protect', href: '/protect-pdf' },
             { key: 'word', href: '/pdf-to-word' },
           ].map(s => (
-            <a key={s.key} href={s.href}
-              className="group flex items-start gap-3 p-4 rounded-xl transition-all"
-              style={{
-                backgroundColor: 'var(--coffee-surface-solid)',
-                border: '1px solid var(--coffee-border)',
-                textDecoration: 'none',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = 'var(--coffee-accent)';
-                e.currentTarget.style.boxShadow = '0 4px 20px var(--coffee-accent-glow)';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = 'var(--coffee-border)';
-                e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}>
-              <span className="text-sm leading-relaxed" style={{ color: 'var(--coffee-text)' }}>
+            <a key={s.key} href={s.href} className="coffee-card flex items-start gap-3 p-5 no-underline">
+              <span className="text-sm sm:text-base leading-relaxed" style={{ color: 'var(--coffee-text)' }}>
                 {t(`home.scenarios_${s.key}`, locale)}
               </span>
             </a>
@@ -325,47 +251,48 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
         </div>
       </section>
 
+      <InstallSection />
+
+      {/* Cloud import and offline use */}
+      <section className="max-w-7xl mx-auto px-4 py-4 grid gap-4 md:grid-cols-2">
+        <p className="rounded-2xl p-5 text-sm leading-relaxed" style={{ ...cardStyle, color: 'var(--coffee-text-secondary)' }}>
+          {t('cloud.feature', locale)}
+        </p>
+        <p className="rounded-2xl p-5 text-sm leading-relaxed" style={{ ...cardStyle, color: 'var(--coffee-text-secondary)' }}>
+          {t('hero.offline_pitch', locale)}
+        </p>
+      </section>
+
       {/* Guides */}
-      <section className="max-w-5xl mx-auto px-4 py-4">
-        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--coffee-surface-solid)', border: '1px solid var(--coffee-border)' }}>
-          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--coffee-text)' }}>📚 {t('nav.guides', locale)}</h2>
-          <p className="text-sm mb-4" style={{ color: 'var(--coffee-text-secondary)' }}>
-            {t('desc.guide', locale)}
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            {guides.slice(0, 4).map(article => {
-              const title = (article.title as Record<string, string>)[locale] || article.title.en;
-              const excerpt = (article.excerpt as Record<string, string>)[locale] || article.excerpt.en;
-              return (
-                <a key={article.slug} href={`/guides/${localeGuidesSlug[locale]}/${article.category}/${article.slug}`}
-                  className="block p-4 rounded-xl transition"
-                  style={{ backgroundColor: 'var(--coffee-surface)', border: '1px solid var(--coffee-border)' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--coffee-accent)'; e.currentTarget.style.boxShadow = '0 4px 20px var(--coffee-accent-glow)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--coffee-border)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}>
-                  <h3 className="font-semibold text-sm mb-1" style={{ color: 'var(--coffee-text)' }}>{title}</h3>
-                  <p className="text-xs leading-relaxed line-clamp-2" style={{ color: 'var(--coffee-text-secondary)' }}>{excerpt}</p>
-                </a>
-              );
-            })}
-          </div>
-          <a href={`/guides/${localeGuidesSlug[locale]}`}
-            className="inline-flex items-center gap-1 text-sm font-medium transition-opacity hover:opacity-80"
-            style={{ color: 'var(--coffee-accent-ink)' }}>
-            {t('guides.all_guides', locale)} →
-          </a>
+      <section className="max-w-7xl mx-auto px-4 py-8">
+        <h2 className="text-3xl font-extrabold mb-2" style={{ color: 'var(--coffee-text)' }}>📚 {t('nav.guides', locale)}</h2>
+        <p className="mb-6" style={{ color: 'var(--coffee-text-secondary)' }}>{t('desc.guide', locale)}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          {guides.slice(0, 4).map(article => {
+            const title = (article.title as Record<string, string>)[locale] || article.title.en;
+            const excerpt = (article.excerpt as Record<string, string>)[locale] || article.excerpt.en;
+            return (
+              <a key={article.slug} href={`/guides/${localeGuidesSlug[locale]}/${article.category}/${article.slug}`}
+                className="coffee-card block p-5 no-underline">
+                <h3 className="font-bold text-base mb-1.5" style={{ color: 'var(--coffee-text)' }}>{title}</h3>
+                <p className="text-sm leading-relaxed line-clamp-3" style={{ color: 'var(--coffee-text-secondary)' }}>{excerpt}</p>
+              </a>
+            );
+          })}
         </div>
+        <a href={`/guides/${localeGuidesSlug[locale]}`} className="inline-flex items-center gap-1 font-bold link-accent no-underline">
+          {t('guides.all_guides', locale)} →
+        </a>
       </section>
 
       {/* Tools */}
-      <section id="tools" className="max-w-7xl mx-auto px-4 py-16">
+      <section id="tools" className="max-w-7xl mx-auto px-4 py-14">
         {!search && (
           <>
-            <h2 className="text-3xl font-bold text-center mb-3" style={{ color: 'var(--coffee-text)' }}>{t('home.pdfTools', locale)}</h2>
-            <p className="text-center mb-12" style={{ color: 'var(--coffee-text-secondary)' }}>
-              {t('home.subtitle2', locale)}
-            </p>
-            <p className="text-center mb-6 text-xs" style={{ color: 'var(--coffee-text-secondary)' }}>
-              {t('home.ai_note', locale)}
+            <h2 className="text-3xl sm:text-4xl font-extrabold mb-2" style={{ color: 'var(--coffee-text)' }}>{t('home.pdfTools', locale)}</h2>
+            <p className="mb-3" style={{ color: 'var(--coffee-text-secondary)' }}>{t('home.subtitle2', locale)}</p>
+            <p className="mb-10 text-xs leading-relaxed max-w-3xl" style={{ color: 'var(--coffee-text-secondary)' }}>
+              {t('home.ai_note', locale)} {t('home.limit_note', locale)}
             </p>
             <ToolCatalog groups={filteredTools} locale={locale} />
           </>
