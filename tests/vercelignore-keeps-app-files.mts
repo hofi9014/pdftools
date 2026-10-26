@@ -86,5 +86,21 @@ check([...configLocales].sort().join() === [...i18nLocales].sort().join(), `next
 const stillMatched = locales.flatMap((l) => [`/${l}`, `/${l}/merge`, `/${l}/guide`]).filter((p) => mre.test(p));
 check(stillMatched.length === 0, `skips every /{locale} and /{locale}/… path (${stillMatched.slice(0, 5).join(', ')})`);
 
+// Each deployment is a full copy of the site (~0.5 GB) kept for its retention period, and the
+// Hobby plan holds 10 GB in total: Dependabot pull requests (tested by CI) made 15 preview
+// deployments in one month and helped push Deployment Storage to ~12 GB. Vercel matches the
+// branch keys with minimatch, where "*" stops at "/" — Dependabot branches have several.
+console.log('\n=== Dependabot branches do not create deployments ===');
+// minimatch comes with the ESLint tooling; version 3 exports the function itself, later ones a named export.
+const mm = (await import('minimatch')) as unknown as { minimatch?: (p: string, g: string) => boolean; default: ((p: string, g: string) => boolean) & { minimatch?: (p: string, g: string) => boolean } };
+const minimatch = mm.minimatch ?? mm.default.minimatch ?? mm.default;
+const enabled = (JSON.parse(readFileSync(join(ROOT, 'vercel.json'), 'utf8')) as { git?: { deploymentEnabled?: Record<string, boolean> } }).git?.deploymentEnabled ?? {};
+const deploys = (branch: string) => {
+  const rules = Object.entries(enabled).filter(([pattern]) => minimatch(branch, pattern));
+  return rules.length === 0 || rules.some(([, on]) => on);
+};
+for (const b of ['dependabot/npm_and_yarn/typescript-7.0.2', 'dependabot/github_actions/actions/cache-6']) check(!deploys(b), `no deployment for ${b}`);
+for (const b of ['main', 'fix/dependabot-notes']) check(deploys(b), `${b} still deploys`);
+
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);
