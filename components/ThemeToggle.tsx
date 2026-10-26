@@ -19,16 +19,27 @@ export default function ThemeToggle({ locale: forcedLocale }: { locale?: Locale 
     setDark(isDark);
   }, []);
 
-  const toggle = () => {
-    const next = !dark;
+  const choose = (next: boolean) => {
     setDark(next);
     document.documentElement.classList.toggle('dark', next);
     localStorage.setItem('theme', next ? 'dark' : 'light');
   };
 
-  return (
-    <button onClick={toggle} className="p-3 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition min-h-[44px] min-w-[44px] flex items-center justify-center text-lg" title={dark ? t('theme.light', locale) : t('theme.dark', locale)}>
-      {dark ? '☀️' : '🌙'}
+  // Both themes stay visible as a two-button switch, so the current theme is shown, not implied.
+  const option = (isDark: boolean, icon: string, label: string) => (
+    <button type="button" onClick={() => choose(isDark)} aria-pressed={dark === isDark} title={label} aria-label={label}
+      className="w-9 h-9 rounded-[10px] flex items-center justify-center text-base transition cursor-pointer"
+      style={{ backgroundColor: dark === isDark ? 'var(--coffee-accent-soft)' : 'transparent' }}>
+      <span aria-hidden="true">{icon}</span>
     </button>
+  );
+
+  return (
+    <div role="group" aria-label={t('theme.dark', locale) + ' / ' + t('theme.light', locale)}
+      className="flex items-center p-[3px] rounded-[13px] border"
+      style={{ borderColor: 'var(--coffee-border-strong)', backgroundColor: 'var(--coffee-surface-solid)' }}>
+      {option(false, '☀️', t('theme.light', locale))}
+      {option(true, '🌙', t('theme.dark', locale))}
+    </div>
   );
 }

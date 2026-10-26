@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Figtree, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { LocaleProvider } from "@/lib/locale-context";
 import LayoutShell from "@/components/LayoutShell";
@@ -10,9 +10,16 @@ import Translations from "@/components/Translations";
 import { localeToHtmlLang, isRtlLocale, messagesFor, type Locale } from "@/lib/i18n";
 import "@/app/globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+// latin-ext carries Polish, Czech, Turkish and Icelandic letters; with "latin" alone those glyphs
+// fell back to a system face in the middle of a word.
+const bodyFont = Figtree({
+  variable: "--font-figtree",
+  subsets: ["latin", "latin-ext"],
+});
+
+const displayFont = Bricolage_Grotesque({
+  variable: "--font-bricolage",
+  subsets: ["latin", "latin-ext"],
 });
 
 const geistMono = Geist_Mono({
@@ -64,7 +71,7 @@ export default function RootDocument({ locale, allTranslations: AllTranslations,
       dir={locale && isRtlLocale(locale) ? "rtl" : "ltr"}
       suppressHydrationWarning
     >
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
+      <body className={`${bodyFont.variable} ${displayFont.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
         <Script id="theme-init" strategy="beforeInteractive">
           {`try{const t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`}
         </Script>

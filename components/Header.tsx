@@ -56,8 +56,8 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link href={homePath(locale)} className="flex items-center gap-2 shrink-0">
           <img src="/icons/logo-88.png" alt="" width={44} height={44} className="h-11 w-11" />
-          <span className="hidden xs:inline text-xl font-bold" style={{ color: 'var(--coffee-text)' }}>OptimaPDF</span>
-          <span className="xs:hidden text-xl font-bold" style={{ color: 'var(--coffee-text)' }}>OP</span>
+          <span className="hidden xs:inline font-display text-[22px] font-extrabold" style={{ color: 'var(--coffee-text)' }}>Optima<span style={{ color: 'var(--coffee-accent-ink)' }}>PDF</span></span>
+          <span className="xs:hidden font-display text-[22px] font-extrabold" style={{ color: 'var(--coffee-text)' }}>O<span style={{ color: 'var(--coffee-accent-ink)' }}>P</span></span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1 text-sm font-medium" style={{ color: 'var(--coffee-text-secondary)' }}>

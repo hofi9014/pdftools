@@ -40,17 +40,17 @@ export default function Magnifier() {
   return (
     <div className="fixed bottom-6 right-6 z-[999] flex flex-col items-end gap-2">
       {open && (
-        <div className="bg-[var(--coffee-surface-solid)] dark:bg-[#1C1A18] border border-[var(--coffee-border)] rounded-xl shadow-2xl p-2 min-w-[140px] backdrop-blur-xl">
+        <div className="bg-[var(--coffee-surface-solid)] border border-[var(--coffee-border)] rounded-xl shadow-2xl p-2 min-w-[140px] backdrop-blur-xl">
           {levels.map(l => (
             <button
               key={l}
               onClick={() => handleZoom(l)}
               className={`w-full text-start px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer ${
                 zoom === l
-                  ? 'bg-[var(--coffee-accent)] text-white'
+                  ? 'bg-[var(--coffee-accent-ink)]'
                   : 'hover:bg-[var(--coffee-surface-hover)]'
               }`}
-              style={{ color: zoom === l ? '#fff' : 'var(--coffee-text-secondary)' }}
+              style={{ color: zoom === l ? 'var(--coffee-on-accent)' : 'var(--coffee-text-secondary)' }}
             >
               {l}%
             </button>
@@ -67,11 +67,11 @@ export default function Magnifier() {
       )}
       <button
         onClick={() => setOpen(!open)}
-        className="w-11 h-11 rounded-xl shadow-lg flex items-center justify-center text-lg transition cursor-pointer hover:scale-110 border"
+        className="w-14 h-14 rounded-full flex items-center justify-center text-2xl transition cursor-pointer hover:scale-110"
         style={{
-          backgroundColor: 'var(--coffee-accent)',
-          color: '#fff',
-          borderColor: 'var(--coffee-border)',
+          backgroundColor: 'var(--coffee-accent-ink)',
+          color: 'var(--coffee-on-accent)',
+          boxShadow: '0 10px 24px var(--coffee-accent-glow)',
         }}
         title={t('magnifier.zoom', locale)}
         aria-label={t('magnifier.zoom', locale)}
