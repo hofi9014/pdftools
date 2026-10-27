@@ -75,6 +75,8 @@ export default function FaqView({ locale: forcedLocale, faqData }: { locale?: Lo
           <div key={cat.key} className="tool-card rounded-2xl border overflow-hidden">
             <button
               onClick={() => toggleSection(cat.key)}
+              aria-expanded={openSections.has(cat.key)}
+              aria-controls={`faq-section-${cat.key}`}
               className="w-full flex items-center justify-between px-6 py-4 text-left transition hover:bg-[var(--coffee-surface-hover)]"
             >
               <span className="font-bold text-base" style={{ color: 'var(--coffee-text)' }}>
@@ -88,12 +90,13 @@ export default function FaqView({ locale: forcedLocale, faqData }: { locale?: Lo
               </svg>
             </button>
 
-            {openSections.has(cat.key) && (
-              <div className="border-t" style={{ borderColor: 'var(--coffee-border)' }}>
+            <div id={`faq-section-${cat.key}`} hidden={!openSections.has(cat.key)} className="border-t" style={{ borderColor: 'var(--coffee-border)' }}>
                 {cat.items.map(item => (
                   <div key={item.key}>
                     <button
                       onClick={() => toggleItem(item.key)}
+                      aria-expanded={openItems.has(item.key)}
+                      aria-controls={`faq-answer-${item.key}`}
                       className="w-full flex items-center justify-between px-6 py-3.5 text-left transition hover:bg-[var(--coffee-surface-hover)] gap-3"
                     >
                       <div className="flex items-center gap-3 min-w-0">
@@ -110,8 +113,7 @@ export default function FaqView({ locale: forcedLocale, faqData }: { locale?: Lo
                       </svg>
                     </button>
 
-                    {openItems.has(item.key) && (
-                      <div className="px-6 pb-4" style={{ backgroundColor: 'var(--coffee-accent-soft)' }}>
+                    <div id={`faq-answer-${item.key}`} hidden={!openItems.has(item.key)} className="px-6 pb-4" style={{ backgroundColor: 'var(--coffee-accent-soft)' }}>
                         <div className="pt-3 pb-2 text-sm leading-relaxed" style={{ color: 'var(--coffee-text)' }}>
                           {lc(locale, item.a)}
                         </div>
@@ -123,11 +125,9 @@ export default function FaqView({ locale: forcedLocale, faqData }: { locale?: Lo
                           {t('help.open_tool', locale)} →
                         </Link>
                       </div>
-                    )}
                   </div>
                 ))}
               </div>
-            )}
           </div>
         ))}
       </div>

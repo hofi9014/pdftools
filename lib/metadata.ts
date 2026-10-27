@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { locales, t, type Locale } from '@/lib/i18n';
-import { keyBySlug } from '@/lib/tools';
+import { keyBySlug, toolProcessing } from '@/lib/tools';
 import { legalFor } from '@/lib/legal';
 
 const baseUrl = 'https://optimapdf.com';
@@ -80,15 +80,32 @@ function legalLead(locale: Locale, doc: 'privacy' | 'security'): string | undefi
   return (end > 0 ? intro.slice(0, end + 1) : intro).trim();
 }
 
+/**
+ * A tool page's title and description as search results show them. The title names the tool and
+ * what people search for with it ("online", "free"); the description is the tool's one-line
+ * purpose followed by what sets it apart — no sign-up, no watermark, and where the file goes
+ * (stays in the browser; for the AI tools only extracted text leaves it; URL to PDF has our
+ * server fetch the page). Before, the description was the bare purpose, 20-55 characters, so
+ * search engines built the snippet from the page text, which is mostly the menu.
+ */
+export function toolSearchMetadata(toolKey: string, locale: Locale): { title: string; description: string } {
+  const tool = t(`tool.${toolKey}`, locale);
+  return {
+    title: t('seo.title', locale, { tool }),
+    description: t(`seo.desc_${toolProcessing(toolKey)}`, locale, { desc: t(`desc.${toolKey}`, locale) }),
+  };
+}
+
 export function pageMetadata(locale: string, slug: string, overrides?: { title?: string; description?: string }): Metadata {
   const clean = stripLeading(slug);
   const toolKey = keyBySlug[clean];
   const info = INFO_PAGES[clean];
   const l = locale as Locale;
-  const title = overrides?.title ?? (toolKey ? t(`tool.${toolKey}`, l) : info ? t(info.title, l) : t('meta.title', l));
+  const toolSearch = toolKey ? toolSearchMetadata(toolKey, l) : undefined;
+  const title = overrides?.title ?? (toolSearch ? toolSearch.title : info ? t(info.title, l) : t('meta.title', l));
   // The GDPR page's introduction opens with the controller's name, so it reuses the privacy lead.
   const lead = clean === 'security' ? legalLead(l, 'security') : clean === 'privacy' || clean === 'rodo' ? legalLead(l, 'privacy') : undefined;
-  const description = overrides?.description ?? (toolKey ? t(`desc.${toolKey}`, l) : info?.description ? t(info.description, l) : lead ?? t('meta.description', l));
+  const description = overrides?.description ?? (toolSearch ? toolSearch.description : info?.description ? t(info.description, l) : lead ?? t('meta.description', l));
   return {
     title,
     description,

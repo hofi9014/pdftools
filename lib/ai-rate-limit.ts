@@ -2,7 +2,7 @@ import { Redis } from '@upstash/redis';
 
 const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000;
 const DAILY_WINDOW_SECONDS = 24 * 60 * 60;
-const DAILY_LIMIT = 15;
+export const DAILY_LIMIT = 15;
 const KEY_PREFIX = 'ai_rl:';
 
 // Vercel injects the Upstash Redis vars with a `KV` segment in the middle.

@@ -2,6 +2,7 @@ import AIChat from '../../(unprefixed)/ai-chat/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';
+import ToolGuide from '@/components/ToolGuide';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -10,7 +11,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function LocaleAIChat({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  return <AIChat locale={locale as Locale} />;
+  return (
+    <>
+      <AIChat locale={locale as Locale} />
+      <ToolGuide slug="ai-chat" locale={locale as Locale} />
+    </>
+  );
 }
 
 

@@ -16,7 +16,7 @@
 //
 // Plain HTTP fetches. Needs the BUILT site (next start): `next dev` keeps 'unsafe-eval' on purpose.
 import { locales, t, type Locale } from '../lib/i18n.ts';
-import { OG_LOCALES } from '../lib/metadata.ts';
+import { OG_LOCALES, toolSearchMetadata } from '../lib/metadata.ts';
 import { localeGuidesSlug } from '../lib/guides-slugs.ts';
 import { getAllArticles } from '../lib/guides.ts';
 import { buildCanonicalUrl } from '../lib/guides-canonical.ts';
@@ -47,7 +47,8 @@ const article = getAllArticles()[0]!;
 const cases: PageCase[] = [];
 for (const l of locales) {
   cases.push({ path: `/${l}`, locale: l, title: t('meta.title', l), type: 'website' });
-  cases.push({ path: `/${l}/merge`, locale: l, title: `${t('tool.merge', l)} | OptimaPDF`, type: 'website' });
+  // Tool titles carry the search words since 2026-10-27 ("Połącz PDF online za darmo").
+  cases.push({ path: `/${l}/merge`, locale: l, title: `${toolSearchMetadata('merge', l).title} | OptimaPDF`, type: 'website' });
   cases.push({ path: `/${l}/privacy`, locale: l, title: `${t('breadcrumb.privacy', l)} | OptimaPDF`, type: 'website' });
   cases.push({ path: `/guides/${localeGuidesSlug[l]}`, locale: l, title: `${t('guides.hub_title', l)} | OptimaPDF`, type: 'website' });
   cases.push({ path: `/guides/${localeGuidesSlug[l]}/${article.category}`, locale: l, title: '', type: 'website' });
@@ -83,7 +84,7 @@ check(problems.length === 0, `every page has its own title, description, address
 // The cards are in the page's language, not English everywhere.
 {
   const pl = metas(await (await fetch(`${BASE_URL}/pl/merge`)).text());
-  check(pl.get('twitter:description')?.[0] === t('desc.merge', 'pl'), `the X card of /pl/merge is in Polish ("${pl.get('twitter:description')?.[0]}")`);
+  check(pl.get('twitter:description')?.[0] === toolSearchMetadata('merge', 'pl').description, `the X card of /pl/merge is in Polish ("${pl.get('twitter:description')?.[0]}")`);
 }
 
 // Every page of a language has its own <title>: the nine information pages used to carry the home
