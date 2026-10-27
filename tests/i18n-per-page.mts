@@ -49,7 +49,11 @@ console.log('\n=== who may import the full set ===');
   // AllTranslations into RootDocument put all 16 dictionaries back on every page (measured).
   const all = importing(/from ['"]@\/components\/AllTranslations['"]/);
   check(all.sort().join() === ['app/(unprefixed)/layout.tsx', 'app/global-not-found.tsx'].join(), `AllTranslations is imported only by the two documents without a language (${all.join(', ')})`);
-  check(!read('app/_root/RootDocument.tsx').includes('AllTranslations"') && read('app/_root/RootDocument.tsx').includes('messagesFor(locale)'), 'RootDocument passes the page its own dictionary and does not import the full set');
+  // Since 2026-10-27 the page's dictionary is one cached script per language, not page data
+  // (four copies of it in every prerendered page made up ~250 MB of each deployment).
+  const doc = read('app/_root/RootDocument.tsx');
+  check(!doc.includes('AllTranslations"') && doc.includes('messagesSrc(locale)') && doc.includes('src={messages} strategy="beforeInteractive"') && !doc.includes('messagesFor('),
+    'RootDocument loads the page’s own dictionary as a script before hydration, not as page data, and does not import the full set');
 }
 
 console.log('\n=== the page dictionary ===');
@@ -93,6 +97,26 @@ console.log('\n=== components follow the page language ===');
   const mag = read('components/Magnifier.tsx');
   check(!mag.includes('Powiększ') && mag.includes("t('magnifier.zoom', locale)") && mag.includes("aria-label={t('magnifier.zoom', locale)}"), 'the zoom button is named in the page language (was "Powiększ / Zoom" everywhere)');
   check(locales.every((l) => all[l]!['magnifier.zoom'] && all[l]!['magnifier.reset']) && new Set(locales.map((l) => all[l]!['magnifier.zoom'])).size >= 14, 'its labels exist in all 16 languages');
+}
+
+console.log('\n=== the dictionary script (lib/i18n-asset.ts, app/[locale]/messages.js) ===');
+{
+  const { messagesScript, messagesSrc } = await import('../lib/i18n-asset.ts');
+  const { messagesFor, MESSAGES_GLOBAL } = await import('../lib/i18n.ts');
+  const { GET } = await import('../app/[locale]/messages.js/route.ts');
+  for (const l of ['pl', 'ja', 'ar'] as const) {
+    const sandbox: Record<string, unknown> = {};
+    new Function('self', messagesScript(l))(sandbox);
+    const got = (sandbox[MESSAGES_GLOBAL] as Record<string, Record<string, string>>)[l];
+    check(JSON.stringify(got) === JSON.stringify(messagesFor(l)), `${l}: the script defines exactly the page dictionary (${Object.keys(got ?? {}).length} keys)`);
+    check(new RegExp(`^/${l}/messages\\.js\\?v=[0-9a-f]{12}$`).test(messagesSrc(l)), `${l}: versioned address ${messagesSrc(l)}`);
+    const res = await GET(new Request('http://x'), { params: Promise.resolve({ locale: l }) });
+    check(res.status === 200 && (await res.text()) === messagesScript(l) && /immutable/.test(res.headers.get('cache-control') ?? '') && /javascript/.test(res.headers.get('content-type') ?? ''),
+      `${l}: the route serves it as cacheable JavaScript`);
+  }
+  check(messagesSrc('pl') !== messagesSrc('de'), 'each language has its own address');
+  const bad = await GET(new Request('http://x'), { params: Promise.resolve({ locale: 'xx' }) });
+  check(bad.status === 404, 'an unknown language is a 404');
 }
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
