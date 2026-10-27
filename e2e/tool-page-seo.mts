@@ -78,6 +78,17 @@ for (const l of ['pl', 'de', 'ja']) {
   check(!!org && !!site && site.inLanguage === l && site.url === `https://optimapdf.com/${l}`, `/${l}: Organization and WebSite data in the page language`);
 }
 
+// Internal links go straight to the page, never through the proxy's redirect for addresses without
+// a language. Until 2026-10-27 the home page linked every tool card as /merge, /compress… (55
+// links, each a 307 to /{locale}/…) — the site's strongest page pointing search engines at redirects.
+for (const p of ['/pl', '/de', '/ar', '/pl/merge', '/pl/faq', '/guides/przewodnik/merge-pdf/how-to-merge-pdf-online']) {
+  const { html } = await get(p);
+  const lang = p.startsWith('/guides') ? 'pl' : p.split('/')[1]!;
+  const hrefs = [...html.matchAll(/<a\b[^>]*\bhref="(\/[^"]*)"/g)].map((m) => decode(m[1]!));
+  const bad = hrefs.filter((h) => !h.startsWith(`/${lang}/`) && h !== `/${lang}` && !h.startsWith('/guides/') && !h.startsWith('/#') && !h.startsWith(`/${lang}#`));
+  check(hrefs.length > 20 && bad.length === 0, `${p}: ${hrefs.length} internal links, all with the page language${bad.length ? ` — ${bad.length} without: ${[...new Set(bad)].slice(0, 6).join(', ')}` : ''}`);
+}
+
 // The tab icon: every icon the page links (and /favicon.ico, which browsers ask for on their own)
 // is served as an image. Until 2026-10-27 the page linked /icon?v=2, a 404.
 {

@@ -209,6 +209,8 @@
     "test:e2e-tool-page-seo": "npx --yes tsx e2e/tool-page-seo.mts",
     "test:indexnow-key": "npx tsx tests/indexnow-key.mts",
     "test:favicon-links": "npx tsx tests/favicon-links.mts",
+    "test:office-document-to-pdf": "npx tsx tests/office-document-to-pdf.mts",
+    "test:e2e-no-upload": "npx --yes tsx e2e/no-upload.mts",
     "indexnow": "node scripts/indexnow.mjs"
   },
   "dependencies": {
