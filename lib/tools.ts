@@ -77,6 +77,27 @@ export function toolProcessing(key: string): 'local' | 'ai' | 'url' {
   return NON_LOCAL_TOOLS[key] ?? 'local';
 }
 
+/**
+ * What people usually do next, or instead, after each tool — shown under the tool as links
+ * ("You might also need"). Hand-picked workflows: merge → compress, sign → protect, OCR → Word.
+ */
+export const RELATED_TOOLS: Record<string, [string, string, string]> = {
+  merge: ['compress', 'reorder', 'pagenumbers'], split: ['extract', 'merge', 'delete'], compress: ['merge', 'images', 'protect'],
+  rotate: ['crop', 'reorder', 'merge'], crop: ['rotate', 'compress', 'edit'], delete: ['extract', 'reorder', 'merge'],
+  extract: ['split', 'delete', 'merge'], reorder: ['merge', 'delete', 'rotate'], addpage: ['merge', 'pagenumbers', 'reorder'],
+  edit: ['sign', 'watermark', 'redact'], pagenumbers: ['merge', 'watermark', 'addpage'], watermark: ['protect', 'pagenumbers', 'flatten'],
+  redact: ['protect', 'flatten', 'edit'], flatten: ['fillform', 'pdfa', 'redact'], metadata: ['pdfa', 'protect', 'compress'],
+  word: ['ocr', 'compress', 'wordtopdf'], wordtopdf: ['word', 'merge', 'protect'], jpgTopdf: ['compress', 'merge', 'ocr'],
+  images: ['jpgTopdf', 'compress', 'svg'], excel: ['excel2pdf', 'word', 'ocr'], excel2pdf: ['excel', 'merge', 'protect'],
+  ppt: ['word', 'images', 'compress'], openoffice: ['pdf2openoffice', 'merge', 'compress'], pdf2openoffice: ['openoffice', 'word', 'ocr'],
+  txt: ['ocr', 'word', 'aisummary'], svg: ['images', 'html2pdf', 'compress'], epub: ['txt', 'word', 'compress'],
+  html: ['url', 'merge', 'compress'], html2pdf: ['html', 'txt', 'word'], url: ['html', 'compress', 'merge'],
+  protect: ['unlock', 'sign', 'watermark'], unlock: ['protect', 'compress', 'edit'], sign: ['fillform', 'protect', 'edit'],
+  aichat: ['aisummary', 'translate', 'ocr'], aisummary: ['aichat', 'translate', 'txt'], translate: ['aisummary', 'aichat', 'word'],
+  ocr: ['word', 'txt', 'compress'], compare: ['merge', 'edit', 'aisummary'], fillform: ['sign', 'flatten', 'protect'],
+  pdfa: ['metadata', 'protect', 'flatten'],
+};
+
 export interface CategoryDef {
   key: string;
   icon: string;

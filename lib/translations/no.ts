@@ -121,6 +121,7 @@ const no: Record<string, string> = {
   'toolpage.a_device': 'Ja. Det fungerer i nettleseren på mobil og datamaskin, uten at du installerer noe.',
   'toolpage.online_note': 'Krever internettilkobling.',
   'toolpage.guide_link': 'Veiledning: {title}',
+  'toolpage.related_heading': 'Du kan også få bruk for',
   'home.search_no_results': 'Fant ingen verktøy som matcher „{query}“.',
   'home.title': 'Alle PDF-verktøy på ett sted',
   'lang.switch': 'Bytt språk',

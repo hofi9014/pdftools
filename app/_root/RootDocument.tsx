@@ -22,9 +22,12 @@ const displayFont = Bricolage_Grotesque({
   subsets: ["latin", "latin-ext"],
 });
 
+// Used only in a few code/number fields, so it is not preloaded: a preload on every page competed
+// with the page's own CSS and text fonts on slow connections.
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
 /**

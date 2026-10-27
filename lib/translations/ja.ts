@@ -121,6 +121,7 @@ const ja: Record<string, string> = {
   'toolpage.a_device': 'はい。スマートフォンでもパソコンでもブラウザで動作し、インストールは不要です。',
   'toolpage.online_note': 'インターネット接続が必要です。',
   'toolpage.guide_link': 'ガイド：{title}',
+  'toolpage.related_heading': 'こちらもおすすめ',
   'home.search_no_results': '「{query}」に一致するツールが見つかりませんでした。',
   'home.title': 'すべてのPDFツールが1か所に',
   'lang.switch': '言語を切り替え',

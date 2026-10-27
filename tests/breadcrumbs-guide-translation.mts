@@ -27,6 +27,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { keyBySlug } from '../lib/tools';
 import { t, locales } from '../lib/i18n';
+import { categoryTool } from '../lib/guide-category-tools';
 import { getAllArticles } from '../lib/guides';
 
 let fails = 0;
@@ -45,7 +46,7 @@ const root = join(here, '..');
 
 console.log('--- source check: Breadcrumbs.tsx actually wires up both fixes (not just data-side proof) ---');
 const breadcrumbsSrc = readFileSync(join(root, 'components', 'Breadcrumbs.tsx'), 'utf-8');
-check(breadcrumbsSrc.includes("keyBySlug[seg] || keyBySlug[seg.replace(/-pdf$/, '')]"), 'the tool-key lookup falls back to the "-pdf"-suffix-stripped slug for guide categories');
+check(breadcrumbsSrc.includes("(inGuides && categoryTool[seg]) || keyBySlug[seg] || keyBySlug[seg.replace(/-pdf$/, '')]"), 'guide categories resolve through categoryTool, then the slug, then the "-pdf"-stripped slug');
 check(breadcrumbsSrc.includes("await import('@/lib/guides')"), 'guide article data is loaded via a dynamic import (not bundled into every page)');
 check(breadcrumbsSrc.includes('guideTitles[seg]'), 'the render path actually reads the resolved guide title before falling back to the slug-derived label');
 const guideCategories = readdirSync(join(root, 'content', 'guides'), { withFileTypes: true })
@@ -55,8 +56,10 @@ const guideCategories = readdirSync(join(root, 'content', 'guides'), { withFileT
 check(guideCategories.length > 0, `sanity: found guide categories (${guideCategories.join(', ')})`);
 
 for (const category of guideCategories) {
-  const key = keyBySlug[category] || keyBySlug[category.replace(/-pdf$/, '')];
-  check(!!key, `[${category}] resolves to a real tool key (direct or "-pdf"-suffix-stripped) — got "${key}"`);
+  // Same order as Breadcrumbs.tsx: the category's declared tool first (2026-10-27: "pdf-to-jpg"
+  // is the "images" tool, which suffix-stripping alone could not resolve).
+  const key = categoryTool[category] || keyBySlug[category] || keyBySlug[category.replace(/-pdf$/, '')];
+  check(!!key, `[${category}] resolves to a real tool key — got "${key}"`);
   if (key) {
     const label = t(`tool.${key}`, 'pl');
     check(label !== `tool.${key}` && label !== category, `[${category}] Polish label is a real translation, not a fallback or the raw slug (got "${label}")`);

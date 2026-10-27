@@ -206,7 +206,10 @@
     "test:localize-page-data": "npx --yes tsx tests/localize-page-data.mts",
     "test:home-local-footnote": "npx tsx tests/home-local-footnote.mts",
     "test:tool-page-seo": "npx tsx tests/tool-page-seo.mts",
-    "test:e2e-tool-page-seo": "npx --yes tsx e2e/tool-page-seo.mts"
+    "test:e2e-tool-page-seo": "npx --yes tsx e2e/tool-page-seo.mts",
+    "test:indexnow-key": "npx tsx tests/indexnow-key.mts",
+    "test:favicon-links": "npx tsx tests/favicon-links.mts",
+    "indexnow": "node scripts/indexnow.mjs"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

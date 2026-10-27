@@ -6,6 +6,11 @@ import protectPdfHowTo from './protect-pdf/how-to-protect-pdf-online';
 import unlockPdfHowTo from './unlock-pdf/how-to-unlock-pdf-online';
 import pdfToWordHowTo from './pdf-to-word/how-to-convert-pdf-to-word';
 import jpgToPdfHowTo from './jpg-to-pdf/how-to-convert-jpg-to-pdf';
+import pdfToJpgHowTo from './pdf-to-jpg/how-to-convert-pdf-to-jpg';
+import wordToPdfHowTo from './word-to-pdf/how-to-convert-word-to-pdf';
+import signPdfHowTo from './sign-pdf/how-to-sign-pdf-online';
+import ocrPdfHowTo from './ocr-pdf/how-to-ocr-pdf';
+import editPdfHowTo from './edit-pdf/how-to-edit-pdf-online';
 
 const guides: GuideArticle[] = [
   compressPdfHowTo,
@@ -15,6 +20,11 @@ const guides: GuideArticle[] = [
   unlockPdfHowTo,
   pdfToWordHowTo,
   jpgToPdfHowTo,
+  pdfToJpgHowTo,
+  wordToPdfHowTo,
+  signPdfHowTo,
+  ocrPdfHowTo,
+  editPdfHowTo,
 ];
 
 export default guides;

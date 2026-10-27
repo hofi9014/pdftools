@@ -20,7 +20,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 const root = process.cwd();
 const { locales, t } = await import('../lib/i18n.ts');
-const { tools, NON_LOCAL_TOOLS, toolProcessing } = await import('../lib/tools.ts');
+const { tools, NON_LOCAL_TOOLS, toolProcessing, RELATED_TOOLS, toolPath } = await import('../lib/tools.ts');
 const { toolHowToSteps, howToSlugs } = await import('../content/tool-howto.ts');
 const { toolSearchMetadata, pageMetadata } = await import('../lib/metadata.ts');
 const { default: ToolGuide, toolFaq } = await import('../components/ToolGuide.tsx');
@@ -109,6 +109,9 @@ for (const tl of tools) {
     check(app.name === t(`tool.${tl.key}`, l) && app.url === `https://optimapdf.com/${l}/${tl.slug}` && app.isAccessibleForFree === true, `${tl.slug}/${l}: WebApplication data`);
     if (guide) check(text.includes(`/guides/`) && text.includes(guide.title[l]), `${tl.slug}/${l}: links its guide`);
     else check(!html.includes('/guides/'), `${tl.slug}/${l}: no guide link without a guide`);
+    const related = RELATED_TOOLS[tl.key] ?? [];
+    check(related.length === 3 && new Set(related).size === 3 && !related.includes(tl.key) && related.every((k) => tools.some((x) => x.key === k)), `${tl.slug}: three other real tools as related`);
+    check(text.includes(t('toolpage.related_heading', l)) && related.every((k) => html.includes(`href="${toolPath(k, l)}"`) && text.includes(t(`tool.${k}`, l))), `${tl.slug}/${l}: links its related tools in the page language`);
     if (toolProcessing(tl.key) === 'ai') check(text.includes(String(DAILY_LIMIT)) && text.includes(t('toolpage.online_note', l)), `${tl.slug}/${l}: AI answers state the daily limit and the internet need`);
   }
 }
@@ -147,6 +150,26 @@ for (const l of ['pl', 'en', 'ja', 'ar']) {
   }
 }
 pass('FAQ and help answers in the HTML');
+
+// --- 6b. Tool names: no two tools share a name in one language --------------------------------
+// Until 2026-10-27 "Redact PDF" was named exactly like "Edit PDF" in Arabic, Hindi and Chinese,
+// so the menu showed two tools with the same name (and Spanish "Redactar" means "to write").
+for (const l of locales) {
+  const names = tools.map((tl) => t(`tool.${tl.key}`, l).toLowerCase());
+  const dup = names.filter((n, i) => names.indexOf(n) !== i);
+  check(dup.length === 0, `${l}: every tool has its own name${dup.length ? ` (duplicates: ${dup.join(', ')})` : ''}`);
+}
+check(t('tool.redact', 'es') !== 'Redactar PDF', 'es: redaction is not called "Redactar" (= to write)');
+pass('tool names');
+
+// --- 6c. Guide categories have a name in every language and point at a real tool ---------------
+const { categoryLabels, categoryTool } = await import('../lib/guide-categories.ts');
+const { TOOL_SLUGS } = await import('../types/guide.ts');
+for (const g of guides) {
+  check(locales.every((l) => !!categoryLabels[g.category]?.[l]), `guide category ${g.category}: name in 16 languages`);
+  check(categoryTool[g.category] === g.relatedTool && (TOOL_SLUGS as readonly string[]).includes(g.relatedTool), `guide category ${g.category}: call to action = ${g.relatedTool}`);
+}
+pass(`${guides.length} guides, ${new Set(guides.map((g) => g.category)).size} categories`);
 
 // --- 7. Organization and WebSite on the home page ----------------------------------------------------
 for (const l of locales) {
