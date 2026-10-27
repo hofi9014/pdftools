@@ -23,11 +23,15 @@ export function isRtlLocale(locale: Locale): boolean {
 // Where the dictionaries live (2026-10-22). They are in lib/translations/<locale>.ts. On the
 // server and in tests `all` below holds all 16. The browser bundle gets an empty object instead:
 // package.json "imports" maps '#translations' to lib/translations/none.ts for the browser.
-// Each page registers its own language from app/_root/RootDocument.tsx (components/
-// Translations.tsx, the dictionary passed as data), and pages whose language is known only in
+// Each page loads its own language as one cached script, /<locale>/messages.js (lib/i18n-asset.ts,
+// components/Translations.tsx; until 2026-10-27 it was passed as page data, four copies in every
+// prerendered page), and pages whose language is known only in
 // the browser register all of them (components/AllTranslations.tsx). Before, every page loaded
 // one 918 kB script holding all 16 languages (176 kB over the wire with brotli).
 export const all: Record<string, Record<string, string>> = { ...bundled };
+
+/** The global /<locale>/messages.js fills in the browser (lib/i18n-asset.ts, components/Translations.tsx). */
+export const MESSAGES_GLOBAL = '__OPTIMA_I18N';
 
 /** Makes a dictionary available to t() — used in the browser, where none are bundled. */
 export function registerMessages(locale: string, messages: Record<string, string>): void {

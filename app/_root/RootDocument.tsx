@@ -7,7 +7,8 @@ import Magnifier from "@/components/Magnifier";
 import CookieConsent from "@/components/CookieConsent";
 import MetaUpdater from "@/components/MetaUpdater";
 import Translations from "@/components/Translations";
-import { localeToHtmlLang, isRtlLocale, messagesFor, type Locale } from "@/lib/i18n";
+import { localeToHtmlLang, isRtlLocale, type Locale } from "@/lib/i18n";
+import { messagesSrc } from "@/lib/i18n-asset";
 import "@/app/globals.css";
 
 // latin-ext carries Polish, Czech, Turkish and Icelandic letters; with "latin" alone those glyphs
@@ -56,7 +57,9 @@ export default function RootDocument({ locale, allTranslations: AllTranslations,
   children: React.ReactNode;
 }) {
   // `locale` is also the language every client component uses (lib/locale-context.tsx), so the
-  // page loads just this one dictionary (components/Translations.tsx).
+  // page loads just this one dictionary: a cached script per language, run before hydration
+  // (lib/i18n-asset.ts, components/Translations.tsx).
+  const messages = locale ? messagesSrc(locale) : undefined;
   const shell = (
     <LocaleProvider defaultLocale={locale ?? "en"} routeLocale={locale}>
       <LayoutShell notFound={notFound}>
@@ -81,10 +84,11 @@ export default function RootDocument({ locale, allTranslations: AllTranslations,
         <Script id="locale-detect" strategy="beforeInteractive">
           {`try{(function(){var ls=localStorage.getItem('locale');if(ls)return;var c=document.cookie.replace(/(?:(?:^|.*;\\s*)x-detected-locale\\s*=\\s*([^;]*).*$)|^.*$/,"$1");if(c)return;var L=['ar','de','en','es','fa','fr','hi','is','it','ja','no','pl','pt','sv','tr','zh'];var d='en',nl=navigator.languages||[navigator.language||'en'];for(var i=0;i<nl.length;i++){var b=nl[i].split('-')[0].toLowerCase();if(L.indexOf(b)!==-1){d=b;break}}document.cookie='x-detected-locale='+d+';path=/;max-age='+(365*24*60*60)+';SameSite=Lax'})()}catch(e){}`}
         </Script>
+        {messages && <Script id="i18n-messages" src={messages} strategy="beforeInteractive" />}
         <div className="mesh-bg" />
         <div className="grain-overlay" />
         {locale ? (
-          <Translations locale={locale} messages={messagesFor(locale)}>{shell}</Translations>
+          <Translations locale={locale} src={messages!}>{shell}</Translations>
         ) : (
           AllTranslations ? <AllTranslations>{shell}</AllTranslations> : shell
         )}

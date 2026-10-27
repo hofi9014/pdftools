@@ -33,12 +33,16 @@ for (const l of locales) {
   if (locales.every((o) => o === l || t(PROBE, o) !== v)) probes.set(l, v);
 }
 
-async function pageBytes(path: string): Promise<{ html: string; js: string }> {
+async function pageBytes(path: string): Promise<{ html: string; js: string; messages: string; messageSrcs: string[] }> {
   const html = await (await fetch(BASE_URL + encodeURI(decodeURI(path)))).text();
   const srcs = [...new Set([...html.matchAll(/src="(\/_next\/static\/(?:immutable\/)?chunks\/[^"]+\.js)"/g)].map((m) => m[1]!))];
   let js = '';
   for (const s of srcs) js += await (await fetch(BASE_URL + s)).text();
-  return { html, js };
+  // The page's dictionary script (lib/i18n-asset.ts), one per language.
+  const messageSrcs = [...new Set([...html.matchAll(/\/([a-z]{2})\/messages\.js\?v=[0-9a-f]+/g)].map((m) => m[0]))];
+  let messages = '';
+  for (const s of messageSrcs) messages += await (await fetch(BASE_URL + s)).text();
+  return { html, js, messages, messageSrcs };
 }
 
 // JSON inside the page's data is escaped; compare on the raw text the way it appears there.
@@ -53,11 +57,14 @@ console.log(`=== what each page downloads (${probes.size} languages with a disti
     [new URL(buildCanonicalUrl(article, 'zh')).pathname, 'zh'],
   ];
   for (const [path, locale] of cases) {
-    const { html, js } = await pageBytes(path);
-    const others = [...probes].filter(([l, v]) => l !== locale && (present(js, v) || present(html, v))).map(([l]) => l);
+    const { html, js, messages, messageSrcs } = await pageBytes(path);
+    const others = [...probes].filter(([l, v]) => l !== locale && (present(js, v) || present(html, v) || present(messages, v))).map(([l]) => l);
     const own = probes.get(locale);
     check(others.length === 0, `${path}: no other language's dictionary in its HTML or scripts${others.length ? ` (found: ${others.join(', ')})` : ''}`);
-    if (own) check(present(html, own) && !present(js, own), `${path}: its own dictionary comes with the page, not in a script`);
+    // Since 2026-10-27 the dictionary is one cached script per language, not page data: four
+    // copies of it in every prerendered page made up ~250 MB of each deployment.
+    check(messageSrcs.length === 1 && messageSrcs[0]!.startsWith(`/${locale}/messages.js?v=`), `${path}: loads exactly its own language's dictionary script (${messageSrcs.join(', ')})`);
+    if (own) check(present(messages, own) && !present(html, own) && !present(js, own), `${path}: its own dictionary comes in that script, not in the page or the app code`);
   }
 }
 
