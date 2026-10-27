@@ -16,4 +16,7 @@ export const categoryTool: Record<string, ToolSlug> = {
   'sign-pdf': 'sign',
   'ocr-pdf': 'ocr',
   'edit-pdf': 'edit',
+  'rotate-pdf': 'rotate',
+  'delete-pages': 'delete',
+  'pdf-to-excel': 'excel',
 };

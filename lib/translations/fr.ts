@@ -618,7 +618,7 @@ const fr: Record<string, string> = {
   'page.reorder.loading': 'Réorganisation des pages...',
   'page.reorder.noselect': 'Aucune page à réorganiser',
   'page.rotate.add_files': 'Ajouter des fichiers PDF',
-  'page.rotate.angle_title': 'Rotation Angle',
+  'page.rotate.angle_title': 'Angle de rotation',
   'page.rotate.button': 'Faire pivoter un fichier PDF',
   'page.rotate.desc': 'Faire pivoter les pages d\'un fichier PDF pour leur donner la bonne orientation',
   'page.rotate.left': 'Pivoter vers la gauche',

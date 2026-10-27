@@ -190,7 +190,7 @@ const tr: Record<string, string> = {
   'tool.delete': 'Sayfaları Sil',
   'tool.edit': 'PDF Düzenle',
   'tool.epub': 'PDF to EPUB',
-  'tool.excel': 'PDF to Excel',
+  'tool.excel': "PDF'den Excel'e",
   'tool.excel2pdf': "Excel'den PDF'e",
   'tool.extract': 'Sayfaları Çıkar',
   'tool.fillform': 'PDF Formu Doldur',

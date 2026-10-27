@@ -11,6 +11,9 @@ import wordToPdfHowTo from './word-to-pdf/how-to-convert-word-to-pdf';
 import signPdfHowTo from './sign-pdf/how-to-sign-pdf-online';
 import ocrPdfHowTo from './ocr-pdf/how-to-ocr-pdf';
 import editPdfHowTo from './edit-pdf/how-to-edit-pdf-online';
+import rotatePdfHowTo from './rotate-pdf/how-to-rotate-pdf';
+import deletePagesHowTo from './delete-pages/how-to-delete-pages-from-pdf';
+import pdfToExcelHowTo from './pdf-to-excel/how-to-convert-pdf-to-excel';
 
 const guides: GuideArticle[] = [
   compressPdfHowTo,
@@ -25,6 +28,9 @@ const guides: GuideArticle[] = [
   signPdfHowTo,
   ocrPdfHowTo,
   editPdfHowTo,
+  rotatePdfHowTo,
+  deletePagesHowTo,
+  pdfToExcelHowTo,
 ];
 
 export default guides;
