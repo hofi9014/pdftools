@@ -218,7 +218,7 @@
     "exceljs": "^4.4.0",
     "jszip": "^3.10.2",
     "next": "^16.4.3",
-    "node-forge": "^1.4.0",
+    "node-forge": "^1.4.1",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^6.4.299",
     "pptxgenjs": "^4.0.1",
