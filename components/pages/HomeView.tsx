@@ -21,7 +21,7 @@ const cardStyle = { backgroundColor: 'var(--coffee-surface-solid)', border: '1px
 
 function ToolCard({ tool, locale }: { tool: ToolInfo; locale: Locale }) {
   return (
-    <a href={toolPath(tool.key)} className="coffee-card flex flex-col gap-3 p-4 sm:p-5 no-underline">
+    <a href={toolPath(tool.key, locale)} className="coffee-card flex flex-col gap-3 p-4 sm:p-5 no-underline">
       <span className="self-start text-2xl sm:text-3xl px-3 py-2.5 rounded-2xl" style={{ backgroundColor: catBg(tool.category) }}>
         {getToolIcon(tool.key)}
       </span>
@@ -201,7 +201,7 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
           {['merge','compress','word','split','edit','sign','wordtopdf','protect'].map((key) => {
             const tool = tools.find(t => t.key === key);
             return tool ? (
-              <a key={tool.key} href={toolPath(tool.key)} className="coffee-card flex flex-col gap-3 p-4 sm:p-5 no-underline">
+              <a key={tool.key} href={toolPath(tool.key, locale)} className="coffee-card flex flex-col gap-3 p-4 sm:p-5 no-underline">
                 <span className="self-start text-3xl px-3 py-2.5 rounded-2xl" style={{ backgroundColor: catBg(tool.category) }}>{getToolIcon(tool.key)}</span>
                 <h3 className="font-bold text-base sm:text-lg" style={{ color: 'var(--coffee-text)' }}>{t(`tool.${tool.key}`, locale)}</h3>
                 <p className="text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--coffee-text-tertiary)' }}>{t(`desc.${tool.key}`, locale)}</p>
@@ -235,21 +235,38 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
         </div>
       </section>
 
+      {/* Proof instead of a promise: how to see in the browser's own tools that no file is sent.
+          e2e/no-upload.mts checks the same thing on every CI run. */}
+      <section aria-labelledby="verify-local" className="max-w-7xl mx-auto px-4 py-6">
+        <div className="rounded-[26px] border-2 border-dashed p-6 sm:p-9 grid gap-6 lg:grid-cols-[1fr_1.25fr] lg:items-start"
+          style={{ borderColor: 'var(--coffee-border)', backgroundColor: 'var(--coffee-surface-solid)' }}>
+          <div>
+            <h2 id="verify-local" className="text-2xl sm:text-[28px] font-extrabold leading-tight" style={{ color: 'var(--coffee-text)' }}>
+              {t('home.verify_title', locale)}
+            </h2>
+            <p className="mt-3 leading-relaxed" style={{ color: 'var(--coffee-text-secondary)' }}>{t('home.verify_intro', locale)}</p>
+            <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--coffee-text-tertiary)' }}>{t('home.verify_note', locale)}</p>
+          </div>
+          <ol className="space-y-4">
+            {(['home.verify_step1', 'home.verify_step2', 'home.verify_step3'] as const).map((key, i) => (
+              <li key={key} className="flex gap-3.5 items-start">
+                <span aria-hidden="true" className="shrink-0 w-9 h-9 rounded-full border-2 flex items-center justify-center font-extrabold"
+                  style={{ borderColor: 'var(--coffee-accent-ink)', color: 'var(--coffee-accent-ink)' }}>{i + 1}</span>
+                <p className="pt-1.5 leading-relaxed" style={{ color: 'var(--coffee-text)' }}>{t(key, locale)}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
       {/* Scenarios */}
       <section className="max-w-7xl mx-auto px-4 py-8">
         <h2 className="text-3xl font-extrabold mb-6" style={{ color: 'var(--coffee-text)' }}>{t('home.scenarios_title', locale)}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[
-            { key: 'compress', href: '/compress' },
-            { key: 'edit', href: '/edit-pdf' },
-            { key: 'merge', href: '/merge' },
-            { key: 'sign', href: '/sign-pdf' },
-            { key: 'protect', href: '/protect-pdf' },
-            { key: 'word', href: '/pdf-to-word' },
-          ].map(s => (
-            <a key={s.key} href={s.href} className="coffee-card flex items-start gap-3 p-5 no-underline">
+          {['compress', 'edit', 'merge', 'sign', 'protect', 'word'].map(key => (
+            <a key={key} href={toolPath(key, locale)} className="coffee-card flex items-start gap-3 p-5 no-underline">
               <span className="text-sm sm:text-base leading-relaxed" style={{ color: 'var(--coffee-text)' }}>
-                {t(`home.scenarios_${s.key}`, locale)}
+                {t(`home.scenarios_${key}`, locale)}
               </span>
             </a>
           ))}

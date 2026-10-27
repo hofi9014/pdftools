@@ -28,6 +28,7 @@ const home = readFileSync(join(process.cwd(), 'components', 'pages', 'HomeView.t
 check(home.includes("['aichat', 'aisummary', 'translate'].map") && home.includes("url: t('tool.url', locale)"),
   'HomeView fills the footnote with the AI tools and URL to PDF');
 check(home.includes("t('home.local_footnote'"), 'HomeView renders home.local_footnote');
+check(home.includes("t('home.verify_title'") && home.includes("'home.verify_step3'"), 'HomeView renders the "check for yourself" section');
 
 for (const loc of locales) {
   const [local, total] = t('stats.local', loc).split('/').map(Number);
@@ -37,6 +38,10 @@ for (const loc of locales) {
   const raw = t('home.local_footnote', loc);
   check(raw !== 'home.local_footnote' && raw.includes('{ai}') && raw.includes('{url}') && raw.includes(String(nonLocal)),
     `${loc}: footnote has {ai}, {url} and the number ${nonLocal}`);
+  // The "check for yourself" section names the same exceptions by number (added 2026-10-27).
+  const note = t('home.verify_note', loc);
+  check(note !== 'home.verify_note' && note.includes(String(nonLocal)) && ['home.verify_title', 'home.verify_intro', 'home.verify_step1', 'home.verify_step2', 'home.verify_step3'].every((k) => t(k, loc) !== k && /\S/.test(t(k, loc))),
+    `${loc}: "check for yourself" section translated, its note names ${nonLocal} exceptions`);
   const filled = t('home.local_footnote', loc, { ai: t('tool.aichat', loc), url: t('tool.url', loc) });
   check(filled.includes(t('tool.url', loc)) && !filled.includes('{'), `${loc}: footnote fills both placeholders`);
 }

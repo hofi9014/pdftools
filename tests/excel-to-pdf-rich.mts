@@ -43,7 +43,10 @@ async function pdfText(blob: Blob): Promise<{ pages: number; text: string }> {
 const xlsx = () => Object.assign(new Blob([readFileSync(join(ROOT, 'test-fixtures/EPZ_SIERPIEN_2026.xlsx'))]), { name: 'EPZ.xlsx' }) as unknown as File;
 
 console.log('=== the page uses the spreadsheet renderer, officeToPdf only as fallback ===');
-const page = readFileSync(join(ROOT, 'app/(unprefixed)/excel-to-pdf/page.tsx'), 'utf8');
+// Since 2026-10-27 the conversion lives in lib/office-document-to-pdf.ts, shared with Word to PDF.
+const pageSrc = readFileSync(join(ROOT, 'app/(unprefixed)/excel-to-pdf/page.tsx'), 'utf8');
+check(/await spreadsheetToPdf\(file\)/.test(pageSrc), 'the page converts through spreadsheetToPdf');
+const page = readFileSync(join(ROOT, 'lib/office-document-to-pdf.ts'), 'utf8');
 check(/await xlsxToIR\(file\)/.test(page) && /renderSpreadsheetIRToPdf\(ir\)/.test(page), 'converts through xlsxToIR → renderSpreadsheetIRToPdf');
 check(/catch \(irErr\)[\s\S]{0,200}officeToPdf\(file\)/.test(page), 'falls back to officeToPdf if the spreadsheet reader fails');
 check(/detectUnsupportedScript\(cellText\)/.test(page), 'falls back for text in a script the embedded font cannot draw');
