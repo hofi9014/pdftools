@@ -86,6 +86,27 @@ export const categoryLabels: Record<string, Record<Locale, string>> = {
     is: 'Breyta PDF', tr: 'PDF Düzenleme', ar: 'تحرير PDF',
     fa: 'ویرایش PDF', hi: 'PDF संपादन', ja: 'PDF編集', zh: '编辑PDF',
   },
+  'rotate-pdf': {
+    pl: 'Obracanie PDF', en: 'Rotate PDF', de: 'PDF drehen',
+    es: 'Rotar PDF', fr: 'Pivoter un PDF', it: 'Ruotare PDF',
+    pt: 'Girar PDF', sv: 'Rotera PDF', no: 'Rotere PDF',
+    is: 'Snúa PDF', tr: 'PDF Döndürme', ar: 'تدوير PDF',
+    fa: 'چرخش PDF', hi: 'PDF घुमाना', ja: 'PDF回転', zh: '旋转PDF',
+  },
+  'delete-pages': {
+    pl: 'Usuwanie stron', en: 'Delete Pages', de: 'Seiten löschen',
+    es: 'Eliminar páginas', fr: 'Supprimer des pages', it: 'Eliminare pagine',
+    pt: 'Eliminar páginas', sv: 'Ta bort sidor', no: 'Slette sider',
+    is: 'Eyða síðum', tr: 'Sayfa Silme', ar: 'حذف الصفحات',
+    fa: 'حذف صفحات', hi: 'पेज हटाना', ja: 'ページ削除', zh: '删除页面',
+  },
+  'pdf-to-excel': {
+    pl: 'PDF do Excela', en: 'PDF to Excel', de: 'PDF zu Excel',
+    es: 'PDF a Excel', fr: 'PDF vers Excel', it: 'PDF in Excel',
+    pt: 'PDF para Excel', sv: 'PDF till Excel', no: 'PDF til Excel',
+    is: 'PDF í Excel', tr: "PDF'den Excel'e", ar: 'PDF إلى Excel',
+    fa: 'PDF به Excel', hi: 'PDF से Excel', ja: 'PDFからExcelへ', zh: 'PDF转Excel',
+  },
 };
 
 export { categoryTool } from '@/lib/guide-category-tools';
