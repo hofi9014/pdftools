@@ -121,6 +121,7 @@ const fr: Record<string, string> = {
   'toolpage.a_device': 'Oui. L\'outil fonctionne dans le navigateur, sur téléphone comme sur ordinateur, sans rien installer.',
   'toolpage.online_note': 'Une connexion internet est nécessaire.',
   'toolpage.guide_link': 'Guide : {title}',
+  'toolpage.related_heading': 'Cela peut aussi vous servir',
   'home.search_no_results': 'Aucun outil trouvé correspondant à «{query}».',
   'home.title': 'Tous les outils PDF en un seul endroit',
   'lang.switch': 'Changer de langue',

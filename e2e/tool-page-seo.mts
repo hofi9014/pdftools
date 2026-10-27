@@ -78,5 +78,17 @@ for (const l of ['pl', 'de', 'ja']) {
   check(!!org && !!site && site.inLanguage === l && site.url === `https://optimapdf.com/${l}`, `/${l}: Organization and WebSite data in the page language`);
 }
 
+// The tab icon: every icon the page links (and /favicon.ico, which browsers ask for on their own)
+// is served as an image. Until 2026-10-27 the page linked /icon?v=2, a 404.
+{
+  const { html } = await get('/pl/merge');
+  const hrefs = [...html.matchAll(/<link rel="(?:icon|apple-touch-icon)"[^>]*href="([^"]+)"/g)].map((m) => decode(m[1]!));
+  const paths = [...new Set([...hrefs, '/favicon.ico'])];
+  for (const h of paths) {
+    const r = await fetch(BASE + h);
+    check(r.status === 200 && /^image\//.test(r.headers.get('content-type') ?? ''), `${h}: ${r.status} ${r.headers.get('content-type')}`);
+  }
+}
+
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);

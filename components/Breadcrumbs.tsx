@@ -6,6 +6,7 @@ import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t, locales, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug, localeFromSegment } from '@/lib/guides-slugs';
 import { keyBySlug, homePath } from '@/lib/tools';
+import { categoryTool } from '@/lib/guide-category-tools';
 
 const guidesLocaleSegments = new Set(Object.values(localeGuidesSlug));
 
@@ -82,7 +83,9 @@ export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale 
           // themselves "guides" (en) and "guide" (it) and were read as the prefix / the /guide page.
           const inGuides = segments[0] === 'guides';
           if (inGuides && i === 0) return null;
-          const key = keyBySlug[seg] || keyBySlug[seg.replace(/-pdf$/, '')];
+          // A guide category names its tool in lib/guide-category-tools.ts ("pdf-to-jpg" is the
+          // "PDF to images" tool, which suffix-stripping could not find).
+          const key = (inGuides && categoryTool[seg]) || keyBySlug[seg] || keyBySlug[seg.replace(/-pdf$/, '')];
           let label: string;
           if (inGuides && i === 1) {
             label = t('guides.breadcrumb', locale);

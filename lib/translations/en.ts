@@ -143,6 +143,7 @@ const en: Record<string, string> = {
   'toolpage.a_device': 'Yes. It works in the browser on a phone and a computer, with nothing to install.',
   'toolpage.online_note': 'It needs an internet connection.',
   'toolpage.guide_link': 'Guide: {title}',
+  'toolpage.related_heading': 'You might also need',
   'home.search_no_results': 'No tools found for “{query}”.',
   'home.title': 'All PDF tools in one place',
   'lang.switch': 'Switch language',

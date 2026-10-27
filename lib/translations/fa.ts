@@ -152,6 +152,7 @@ const fa: Record<string, string> = {
   'toolpage.a_device': 'بله. در مرورگر تلفن و رایانه کار می‌کند و نیازی به نصب چیزی نیست.',
   'toolpage.online_note': 'به اتصال اینترنت نیاز دارد.',
   'toolpage.guide_link': 'راهنما: {title}',
+  'toolpage.related_heading': 'شاید این‌ها هم به کارتان بیاید',
   'home.search_no_results': 'ابزاری مطابق با «{query}» یافت نشد.',
   'home.title': 'تمام ابزارهای PDF در یک مکان',
   'lang.switch': 'تغییر زبان',

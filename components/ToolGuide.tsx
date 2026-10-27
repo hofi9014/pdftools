@@ -3,7 +3,7 @@ import guides from '@/content/guides';
 import { toolHowToSteps } from '@/content/tool-howto';
 import { t, type Locale } from '@/lib/i18n';
 import { getLocaleSegment } from '@/lib/guides-slugs';
-import { keyBySlug, toolProcessing } from '@/lib/tools';
+import { keyBySlug, toolPath, toolProcessing, RELATED_TOOLS } from '@/lib/tools';
 import { toolSearchMetadata } from '@/lib/metadata';
 import { DAILY_LIMIT } from '@/lib/ai-rate-limit';
 import { safeJsonLd } from '@/lib/safe-json-ld';
@@ -99,6 +99,22 @@ export default function ToolGuide({ slug, locale }: { slug: string; locale: Loca
           </div>
         ))}
       </dl>
+
+      <h2 className="text-xl sm:text-2xl font-bold tool-heading mt-10 mb-4">{t('toolpage.related_heading', locale)}</h2>
+      <ul role="list" className="grid gap-3 sm:grid-cols-3">
+        {RELATED_TOOLS[key]!.map((k) => (
+          <li key={k}>
+            <Link
+              href={toolPath(k, locale)}
+              className="block h-full rounded-2xl border p-4 transition hover:border-[var(--coffee-accent)]"
+              style={{ backgroundColor: 'var(--coffee-surface-solid)', borderColor: 'var(--coffee-border)' }}
+            >
+              <span className="block font-semibold" style={{ color: 'var(--coffee-accent-ink)' }}>{t(`tool.${k}`, locale)}</span>
+              <span className="block mt-1 text-sm" style={{ color: 'var(--coffee-text-secondary)' }}>{t(`desc.${k}`, locale)}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
 
       {guide && (
         <p className="mt-8">

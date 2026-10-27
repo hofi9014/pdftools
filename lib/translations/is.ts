@@ -121,6 +121,7 @@ const is: Record<string, string> = {
   'toolpage.a_device': 'Já. Það virkar í vafra í síma og tölvu, án þess að setja neitt upp.',
   'toolpage.online_note': 'Krefst nettengingar.',
   'toolpage.guide_link': 'Leiðbeiningar: {title}',
+  'toolpage.related_heading': 'Þetta gæti líka komið sér vel',
   'home.search_no_results': 'Engin verkfæri fundust sem passa við „{query}“.',
   'home.title': 'Öll PDF verkfæri á einum stað',
   'lang.switch': 'Skipta um tungumál',

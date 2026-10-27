@@ -121,6 +121,7 @@ const de: Record<string, string> = {
   'toolpage.a_device': 'Ja. Es läuft im Browser auf Handy und Computer, ohne Installation.',
   'toolpage.online_note': 'Dafür ist eine Internetverbindung nötig.',
   'toolpage.guide_link': 'Anleitung: {title}',
+  'toolpage.related_heading': 'Das könnte auch helfen',
   'home.search_no_results': 'Keine Werkzeuge gefunden, die „{query}“ entsprechen.',
   'home.title': 'Alle PDF-Werkzeuge an einem Ort',
   'lang.switch': 'Sprache wechseln',

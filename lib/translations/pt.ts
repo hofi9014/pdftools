@@ -121,6 +121,7 @@ const pt: Record<string, string> = {
   'toolpage.a_device': 'Sim. Funciona no navegador do telemóvel e do computador, sem instalar nada.',
   'toolpage.online_note': 'Precisa de ligação à internet.',
   'toolpage.guide_link': 'Guia: {title}',
+  'toolpage.related_heading': 'Também lhe pode ser útil',
   'home.search_no_results': 'Nenhuma ferramenta encontrada correspondente a «{query}».',
   'home.title': 'Todas as ferramentas PDF em um só lugar',
   'lang.switch': 'Trocar idioma',
