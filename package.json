@@ -210,6 +210,7 @@
     "test:indexnow-key": "npx tsx tests/indexnow-key.mts",
     "test:favicon-links": "npx tsx tests/favicon-links.mts",
     "test:office-document-to-pdf": "npx tsx tests/office-document-to-pdf.mts",
+    "test:delete-pages-leftovers": "npx tsx tests/delete-pages-leftovers.mts",
     "test:e2e-no-upload": "npx --yes tsx e2e/no-upload.mts",
     "indexnow": "node scripts/indexnow.mjs"
   },

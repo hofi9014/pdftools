@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFHexString, PDFString, PDFArray, PDFRawStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation, type PDFFont } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFHexString, PDFString, PDFArray, PDFRawStream, PDFStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation, type PDFFont } from 'pdf-lib';
 import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePages, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
@@ -186,14 +186,73 @@ export async function addWatermark(file: File, text: string, options?: { opacity
   return pdf.save();
 }
 
+/** Every PDFRef inside a value: dictionary entries, array items, a stream's dictionary. */
+function forEachRef(value: unknown, visit: (ref: PDFRef) => void, skipKeys: ReadonlySet<string> = new Set()): void {
+  if (value instanceof PDFRef) visit(value);
+  else if (value instanceof PDFArray) value.asArray().forEach((v) => forEachRef(v, visit));
+  else if (value instanceof PDFStream) forEachRef(value.dict, visit, skipKeys);
+  else if (value instanceof PDFDict) {
+    for (const [key, v] of value.entries()) if (!skipKeys.has(key.asString())) forEachRef(v, visit);
+  }
+}
+
+/**
+ * Removes from the file what only the removed pages used — their content streams, images, fonts,
+ * annotations — so a deleted page's content is not left in the saved bytes. FINDING 2026-10-27:
+ * pdf.removePage() only detaches the page from the page tree and pdf-lib saves every object it
+ * holds, so the "deleted" page's text and images stayed in the file, readable with any PDF
+ * inspection tool — a leak for anyone deleting a page with confidential data.
+ *
+ * Deliberately conservative (the redaction incident of 2026-09-28 is the warning, see
+ * lib/pdf-raster.ts): an object is deleted only if it was reachable from a removed page AND no
+ * object left in the whole file points at it, nor the trailer. A font or image another page
+ * still uses is referenced by that page's resources, so it stays by construction — no judgement
+ * about reachability from the document root is involved. Objects pointing at each other only
+ * (rare: an annotation and its popup) stay.
+ */
+function dropRemovedPagesObjects(pdf: PDFDocument, removedPages: PDFRef[]): void {
+  const ctx = pdf.context;
+  const candidates = new Map<string, PDFRef>();
+  // The walk from a removed page must not climb back into the document through /Parent (page
+  // tree) or /P (an annotation's page) — those lead to everything.
+  const upward = new Set(['/Parent', '/P']);
+  const stack = [...removedPages];
+  while (stack.length) {
+    const ref = stack.pop()!;
+    const key = ref.toString();
+    if (candidates.has(key)) continue;
+    candidates.set(key, ref);
+    forEachRef(ctx.lookup(ref), (r) => stack.push(r), upward);
+  }
+  for (const ref of removedPages) {
+    ctx.delete(ref);
+    candidates.delete(ref.toString());
+  }
+  for (let changed = true; changed;) {
+    changed = false;
+    const referenced = new Set<string>();
+    for (const [, obj] of ctx.enumerateIndirectObjects()) forEachRef(obj, (r) => referenced.add(r.toString()));
+    const trailer = ctx.trailerInfo as Record<string, unknown>;
+    for (const k of ['Root', 'Info', 'Encrypt', 'ID']) forEachRef(trailer[k], (r) => referenced.add(r.toString()));
+    for (const [key, ref] of candidates) {
+      if (referenced.has(key)) continue;
+      ctx.delete(ref);
+      candidates.delete(key);
+      changed = true;
+    }
+  }
+}
+
 export async function deletePages(file: File, pageIndices: number[]): Promise<Uint8Array> {
   const buf = await file.arrayBuffer();
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
   if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const sorted = [...new Set(pageIndices)].sort((a, b) => b - a);
   let removedAny = false;
+  const removedRefs: PDFRef[] = [];
   for (const idx of sorted) {
     if (idx >= 0 && idx < pdf.getPageCount()) {
+      removedRefs.push(pdf.getPage(idx).ref);
       pdf.removePage(idx);
       removedAny = true;
     }
@@ -208,6 +267,7 @@ export async function deletePages(file: File, pageIndices: number[]): Promise<Ui
     pdf.catalog.delete(PDFName.of('StructTreeRoot'));
     pdf.catalog.delete(PDFName.of('MarkInfo'));
   }
+  dropRemovedPagesObjects(pdf, removedRefs);
   return pdf.save();
 }
 
