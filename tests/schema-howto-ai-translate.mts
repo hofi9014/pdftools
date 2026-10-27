@@ -34,7 +34,9 @@ function check(cond: boolean, msg: string): void {
 console.log('=== SchemaHowTo: ai-translate has a real HowTo entry, like its ai-chat/ai-summary siblings ===');
 
 const here = dirname(fileURLToPath(import.meta.url));
-const src = readFileSync(join(here, '..', 'components', 'SchemaHowTo.tsx'), 'utf-8');
+// 2026-10-27: the steps moved from components/SchemaHowTo.tsx (a client component) to the
+// server-only content/tool-howto.ts, which the tool pages render as visible text.
+const src = readFileSync(join(here, '..', 'content', 'tool-howto.ts'), 'utf-8');
 
 const toolStepsMatch = src.match(/const toolSteps: Record<string, StepRef\[\]\[\]> = \{[\s\S]*?\n\};/);
 check(!!toolStepsMatch, 'sanity: found the toolSteps registry');
@@ -45,7 +47,7 @@ if (toolStepsMatch) {
 const entryMatch = src.match(/'ai-translate': \[\s*(\[[^\]]*\][,\s]*)+\],/);
 check(!!entryMatch, "sanity: found the 'ai-translate' step list itself");
 if (entryMatch) {
-  check(entryMatch[0].includes('uploadPdfConvert'), 'step 1 is the upload step');
+  check(/\['uploadPdf'\]/.test(entryMatch[0]), 'step 1 is the upload step');
   check(entryMatch[0].includes('selectTargetLanguage'), 'includes a select-target-language step');
   check(entryMatch[0].includes('clickTranslate'), 'includes a click-translate step');
   check(entryMatch[0].includes('readTranslation'), 'includes a read-the-result step');

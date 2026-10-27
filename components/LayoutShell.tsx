@@ -8,7 +8,6 @@ import SkipLink from './SkipLink';
 import Footer from './Footer';
 import Breadcrumbs from './Breadcrumbs';
 import HtmlLang from './HtmlLang';
-import SchemaHowTo from './SchemaHowTo';
 
 // FINDING (2026-09-23) — this only ever recognized a BARE locale code as segments[0] (e.g.
 // /de/merge). Guide URLs are routed as /guides/{localizedSlug}/{category}/{slug} (app/guides/
@@ -52,7 +51,6 @@ export default function LayoutShell({ children, notFound = false }: { children: 
     <>
       <SkipLink locale={locale} />
       <HtmlLang locale={locale} />
-      <SchemaHowTo locale={locale} />
       <Header locale={locale} />
       {!notFound && <Breadcrumbs locale={locale} />}
       {children}

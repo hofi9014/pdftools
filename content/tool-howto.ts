@@ -1,13 +1,8 @@
-'use client';
-import { usePathname } from 'next/navigation';
-import { useHydrationSafeLocale } from '@/lib/locale-context';
-import { t, locales, type Locale } from '@/lib/i18n';
-import { keyBySlug } from '@/lib/tools';
-import { safeJsonLd } from '@/lib/safe-json-ld';
-
-function tr(texts: Record<string, string>, locale: string): string {
-  return texts[locale] || texts.en || '';
-}
+// The "how to" steps of every tool, in all 16 languages. Server only: the tool page renders the
+// steps of its own language (components/ToolGuide.tsx) as visible text and as the matching HowTo
+// structured data. Before, a client component carried every language of every tool to every page
+// (101 kB of script) and put the steps only into the structured data, where no visitor saw them.
+import type { Locale } from '@/lib/i18n';
 
 const L: Record<string, Record<string, string>> = {
   // --- Upload steps ---
@@ -146,24 +141,6 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل مستند OpenOffice',
     fa: 'سند OpenOffice را بارگذاری کنید',
     zh: '上传OpenOffice文档',
-  },
-  uploadHtml: {
-    pl: 'Wklej kod HTML lub prześlij plik HTML',
-    en: 'Paste HTML code or upload an HTML file',
-    de: 'HTML-Code einfügen oder HTML-Datei hochladen',
-    es: 'Pegue código HTML o suba un archivo HTML',
-    fr: 'Collez du code HTML ou téléchargez un fichier HTML',
-    it: 'Incolla codice HTML o carica un file HTML',
-    pt: 'Cole o código HTML ou carregue um arquivo HTML',
-    is: 'Límdu HTML kóða eða hladdu upp HTML skrá',
-    tr: 'HTML kodu yapıştırın veya bir HTML dosyası yükleyin',
-    sv: 'Klistra in HTML-kod eller ladda upp en HTML-fil',
-    no: 'Lim inn HTML-kode eller last opp en HTML-fil',
-    ja: 'HTMLコードを貼り付けるかHTMLファイルをアップロード',
-    hi: 'HTML कोड पेस्ट करें या HTML फ़ाइल अपलोड करें',
-    ar: 'ألصق كود HTML أو قم بتحميل ملف HTML',
-    fa: 'کد HTML را جای‌گذاری کنید یا فایل HTML بارگذاری کنید',
-    zh: '粘贴HTML代码或上传HTML文件',
   },
   enterUrl: {
     pl: 'Wprowadź adres URL strony',
@@ -492,42 +469,6 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اضبط قيم الهوامش: الأعلى والأسفل واليسار واليمين',
     fa: 'مقادیر حاشیه را تنظیم کنید: بالا، پایین، چپ و راست',
     zh: '设置页边距：上、下、左、右',
-  },
-  adjustPageSize: {
-    pl: 'Dostosuj rozmiar i orientację strony',
-    en: 'Adjust page size and orientation',
-    de: 'Passen Sie Seitengröße und Ausrichtung an',
-    es: 'Ajuste el tamaño y la orientación de la página',
-    fr: 'Ajustez la taille et l\'orientation de la page',
-    it: 'Regola dimensioni e orientamento della pagina',
-    pt: 'Ajuste o tamanho e a orientação da página',
-    is: 'Stilltu síðustærð og stefnu',
-    tr: 'Sayfa boyutunu ve yönünü ayarlayın',
-    sv: 'Justera sidstorlek och orientering',
-    no: 'Juster sidestørrelse og retning',
-    ja: 'ページサイズと向きを調整',
-    hi: 'पृष्ठ आकार और अभिविन्यास समायोजित करें',
-    ar: 'ضبط حجم الصفحة واتجاهها',
-    fa: 'اندازه و جهت صفحه را تنظیم کنید',
-    zh: '调整页面大小和方向',
-  },
-  customizePdfOptions: {
-    pl: 'Dostosuj opcje PDF',
-    en: 'Customize PDF options if needed',
-    de: 'Passen Sie PDF-Optionen bei Bedarf an',
-    es: 'Personalice las opciones de PDF si es necesario',
-    fr: 'Personnalisez les options PDF si nécessaire',
-    it: 'Personalizza le opzioni PDF se necessario',
-    pt: 'Personalize as opções de PDF se necessário',
-    is: 'Sérsníddu PDF valkosti ef þörf krefur',
-    tr: 'Gerekirse PDF seçeneklerini özelleştirin',
-    sv: 'Anpassa PDF-alternativ om det behövs',
-    no: 'Tilpass PDF-alternativer om nødvendig',
-    ja: '必要に応じてPDFオプションをカスタマイズ',
-    hi: 'आवश्यकता हो तो PDF विकल्पों को कस्टमाइज़ करें',
-    ar: 'خصص خيارات PDF إذا لزم الأمر',
-    fa: 'در صورت نیاز گزینه‌های PDF را سفارشی کنید',
-    zh: '根据需要自定义PDF选项',
   },
   editMetadata: {
     pl: 'Edytuj tytuł, autora, temat i słowa kluczowe',
@@ -861,23 +802,6 @@ const L: Record<string, Record<string, string>> = {
     fa: 'روی دکمه ذخیره تغییرات کلیک کنید',
     zh: '点击保存更改按钮',
   },
-  clickSign: {
-    pl: 'Kliknij przycisk podpisu', en: 'Click the sign button',
-    de: 'Klicken Sie auf die Schaltfläche Signieren',
-    es: 'Haga clic en el botón Firmar',
-    fr: 'Cliquez sur le bouton Signer',
-    it: 'Clicca sul pulsante Firma',
-    pt: 'Clique no botão Assinar',
-    is: 'Smelltu á undirrita hnappinn',
-    tr: 'İmzala düğmesine tıklayın',
-    sv: 'Klicka på knappen Signera',
-    no: 'Klikk på signer-knappen',
-    ja: '署名ボタンをクリック',
-    hi: 'हस्ताक्षर बटन पर क्लिक करें',
-    ar: 'انقر على زر التوقيع',
-    fa: 'روی دکمه امضا کلیک کنید',
-    zh: '点击签名按钮',
-  },
   clickFlatten: {
     pl: 'Kliknij przycisk spłaszczania', en: 'Click the flatten button',
     de: 'Klicken Sie auf die Schaltfläche Glätten',
@@ -948,24 +872,6 @@ const L: Record<string, Record<string, string>> = {
     zh: '点击编辑按钮',
   },
   clickFill: {
-    pl: 'Kliknij przycisk pobierania',
-    en: 'Click the download button',
-    de: 'Klicken Sie auf die Schaltfläche Herunterladen',
-    es: 'Haga clic en el botón Descargar',
-    fr: 'Cliquez sur le bouton Télécharger',
-    it: 'Clicca sul pulsante Scarica',
-    pt: 'Clique no botão Baixar',
-    is: 'Smelltu á sækja hnappinn',
-    tr: 'İndir düğmesine tıklayın',
-    sv: 'Klicka på knappen Ladda ner',
-    no: 'Klikk på last ned-knappen',
-    ja: 'ダウンロードボタンをクリック',
-    hi: 'डाउनलोड बटन पर क्लिक करें',
-    ar: 'انقر على زر التنزيل',
-    fa: 'روی دکمه دانلود کلیک کنید',
-    zh: '点击下载按钮',
-  },
-  clickSaveChanges: {
     pl: 'Kliknij przycisk pobierania',
     en: 'Click the download button',
     de: 'Klicken Sie auf die Schaltfläche Herunterladen',
@@ -1111,24 +1017,6 @@ const L: Record<string, Record<string, string>> = {
     fa: 'صفحات مورد نظر برای حذف را با کلیک روی تصاویر بندانگشتی انتخاب کنید',
     zh: '点击缩略图选择要删除的页面',
   },
-  selectPagesRedact: {
-    pl: 'Wybierz strony do redakcji klikając miniatury',
-    en: 'Select pages to redact by clicking thumbnails',
-    de: 'Wählen Sie Seiten zum Schwärzen durch Klicken auf Miniaturen aus',
-    es: 'Seleccione las páginas para redactar haciendo clic en las miniaturas',
-    fr: 'Sélectionnez les pages à caviarder en cliquant sur les vignettes',
-    it: 'Seleziona le pagine da oscurare cliccando sulle miniature',
-    pt: 'Selecione as páginas para redigir clicando nas miniaturas',
-    is: 'Veldu síður til að raða með því að smella á smámyndir',
-    tr: 'Küçük resimlere tıklayarak redakte edilecek sayfaları seçin',
-    sv: 'Välj sidor att redigera genom att klicka på miniatyrer',
-    no: 'Velg sider å redigere ved å klikke på miniatyrbilder',
-    ja: 'サムネイルをクリックして墨消しするページを選択',
-    hi: 'थंबनेल पर क्लिक करके रिडैक्ट करने के लिए पृष्ठ चुनें',
-    ar: 'اختر الصفحات للتنقيح بالنقر على الصور المصغرة',
-    fa: 'صفحات مورد نظر برای ویرایش امن را با کلیک روی تصاویر بندانگشتی انتخاب کنید',
-    zh: '点击缩略图选择要编辑的页面',
-  },
 
   // --- Drag and drop reorder ---
   dragReorder: {
@@ -1189,114 +1077,8 @@ const L: Record<string, Record<string, string>> = {
   },
 
   // --- Wait steps ---
-  waitConversion: {
-    pl: 'Poczekaj na konwersję', en: 'Wait for the conversion process',
-    de: 'Warten Sie auf den Konvertierungsvorgang',
-    es: 'Espere el proceso de conversión',
-    fr: 'Attendez le processus de conversion',
-    it: 'Attendi il processo di conversione',
-    pt: 'Aguarde o processo de conversão',
-    is: 'Bíddu eftir umbreytingarferlinu',
-    tr: 'Dönüştürme işlemini bekleyin',
-    sv: 'Vänta på konverteringsprocessen',
-    no: 'Vent på konverteringsprosessen',
-    ja: '変換処理をお待ちください',
-    hi: 'रूपांतरण प्रक्रिया की प्रतीक्षा करें',
-    ar: 'انتظر عملية التحويل',
-    fa: 'منتظر فرآیند تبدیل بمانید',
-    zh: '等待转换过程',
-  },
-  waitExtraction: {
-    pl: 'Poczekaj na ekstrakcję danych',
-    en: 'Wait for data extraction',
-    de: 'Warten Sie auf die Datenextraktion',
-    es: 'Espere la extracción de datos',
-    fr: 'Attendez l\'extraction des données',
-    it: 'Attendi l\'estrazione dei dati',
-    pt: 'Aguarde a extração de dados',
-    is: 'Bíddu eftir gagnaútdrætti',
-    tr: 'Veri çıkarma işlemini bekleyin',
-    sv: 'Vänta på datautdragningen',
-    no: 'Vent på datauttrekking',
-    ja: 'データ抽出をお待ちください',
-    hi: 'डेटा निष्कर्षण की प्रतीक्षा करें',
-    ar: 'انتظر استخراج البيانات',
-    fa: 'منتظر استخراج داده باشید',
-    zh: '等待数据提取',
-  },
-  waitSvgConversion: {
-    pl: 'Poczekaj na konwersję do SVG',
-    en: 'Wait for SVG conversion',
-    de: 'Warten Sie auf die SVG-Konvertierung',
-    es: 'Espere la conversión a SVG',
-    fr: 'Attendez la conversion SVG',
-    it: 'Attendi la conversione SVG',
-    pt: 'Aguarde a conversão para SVG',
-    is: 'Bíddu eftir SVG umbreytingu',
-    tr: 'SVG dönüştürmesini bekleyin',
-    sv: 'Vänta på SVG-konvertering',
-    no: 'Vent på SVG-konvertering',
-    ja: 'SVG変換をお待ちください',
-    hi: 'SVG रूपांतरण की प्रतीक्षा करें',
-    ar: 'انتظر تحويل SVG',
-    fa: 'منتظر تبدیل SVG باشید',
-    zh: '等待SVG转换',
-  },
-  waitEpubConversion: {
-    pl: 'Poczekaj na konwersję do EPUB',
-    en: 'Wait for EPUB conversion',
-    de: 'Warten Sie auf die EPUB-Konvertierung',
-    es: 'Espere la conversión a EPUB',
-    fr: 'Attendez la conversion EPUB',
-    it: 'Attendi la conversione EPUB',
-    pt: 'Aguarde a conversão para EPUB',
-    is: 'Bíddu eftir EPUB umbreytingu',
-    tr: 'EPUB dönüştürmesini bekleyin',
-    sv: 'Vänta på EPUB-konvertering',
-    no: 'Vent på EPUB-konvertering',
-    ja: 'EPUB変換をお待ちください',
-    hi: 'EPUB रूपांतरण की प्रतीक्षा करें',
-    ar: 'انتظر تحويل EPUB',
-    fa: 'منتظر تبدیل EPUB باشید',
-    zh: '等待EPUB转换',
-  },
-  waitAnalysis: {
-    pl: 'Poczekaj na analizę dokumentu przez AI',
-    en: 'Wait for AI to analyze the document',
-    de: 'Warten Sie auf die KI-Analyse des Dokuments',
-    es: 'Espere a que la IA analice el documento',
-    fr: 'Attendez que l\'IA analyse le document',
-    it: 'Attendi che l\'IA analizzi il documento',
-    pt: 'Aguarde a IA analisar o documento',
-    is: 'Bíddu eftir að AI greini skjalið',
-    tr: 'Yapay zekanın belgeyi analiz etmesini bekleyin',
-    sv: 'Vänta på att AI analyserar dokumentet',
-    no: 'Vent på at AI analyserer dokumentet',
-    ja: 'AIが文書を分析するのを待つ',
-    hi: 'AI द्वारा दस्तावेज़ का विश्लेषण करने की प्रतीक्षा करें',
-    ar: 'انتظر حتى يقوم الذكاء الاصطناعي بتحليل المستند',
-    fa: 'منتظر تحلیل سند توسط هوش مصنوعی باشید',
-    zh: '等待AI分析文档',
-  },
 
   // --- Download steps ---
-  downloadPdf: {
-    pl: 'Pobierz plik PDF', en: 'Download the PDF file',
-    de: 'Laden Sie die PDF-Datei herunter',
-    es: 'Descargue el archivo PDF',
-    fr: 'Téléchargez le fichier PDF',
-    it: 'Scarica il file PDF',
-    pt: 'Baixe o arquivo PDF',
-    is: 'Sæktu PDF skránna',
-    tr: 'PDF dosyasını indirin',
-    sv: 'Ladda ner PDF-filen',
-    no: 'Last ned PDF-filen',
-    ja: 'PDFファイルをダウンロード',
-    hi: 'PDF फ़ाइल डाउनलोड करें',
-    ar: 'قم بتنزيل ملف PDF',
-    fa: 'فایل PDF را دانلود کنید',
-    zh: '下载PDF文件',
-  },
   downloadCompressedPdf: {
     pl: 'Pobierz skompresowany plik PDF',
     en: 'Download the compressed PDF file',
@@ -1801,24 +1583,6 @@ const L: Record<string, Record<string, string>> = {
     fa: 'PDF مسطح‌شده را دانلود کنید',
     zh: '下载压平后的PDF',
   },
-  downloadReport: {
-    pl: 'Pobierz raport porównania',
-    en: 'Download the comparison report',
-    de: 'Laden Sie den Vergleichsbericht herunter',
-    es: 'Descargue el informe de comparación',
-    fr: 'Téléchargez le rapport de comparaison',
-    it: 'Scarica il rapporto di confronto',
-    pt: 'Baixe o relatório de comparação',
-    is: 'Sæktu samanburðarskýrsluna',
-    tr: 'Karşılaştırma raporunu indirin',
-    sv: 'Ladda ner jämförelserapporten',
-    no: 'Last ned sammenligningsrapporten',
-    ja: '比較レポートをダウンロード',
-    hi: 'तुलना रिपोर्ट डाउनलोड करें',
-    ar: 'قم بتنزيل تقرير المقارنة',
-    fa: 'گزارش مقایسه را دانلود کنید',
-    zh: '下载比较报告',
-  },
   downloadFilledPdf: {
     pl: 'Pobierz wypełniony plik PDF',
     en: 'Download the filled PDF',
@@ -1872,24 +1636,6 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF المنقح',
     fa: 'PDF ویرایش‌امن‌شده را دانلود کنید',
     zh: '下载已编辑的PDF',
-  },
-  downloadSignedPdfFinal: {
-    pl: 'Pobierz podpisany plik PDF',
-    en: 'Download the signed PDF',
-    de: 'Laden Sie die signierte PDF herunter',
-    es: 'Descargue el PDF firmado',
-    fr: 'Téléchargez le PDF signé',
-    it: 'Scarica il PDF firmato',
-    pt: 'Baixe o PDF assinado',
-    is: 'Sæktu undirrituðu PDF skrána',
-    tr: 'İmzalanmış PDF\'i indirin',
-    sv: 'Ladda ner den signerade PDF-filen',
-    no: 'Last ned den signerte PDF-filen',
-    ja: '署名されたPDFをダウンロード',
-    hi: 'हस्ताक्षरित PDF डाउनलोड करें',
-    ar: 'قم بتنزيل PDF الموقع',
-    fa: 'PDF امضا شده را دانلود کنید',
-    zh: '下载已签名的PDF',
   },
   downloadWebPdf: {
     pl: 'Pobierz PDF strony internetowej',
@@ -1965,24 +1711,6 @@ const L: Record<string, Record<string, string>> = {
     fa: 'خلاصه تولیدشده توسط هوش مصنوعی را بخوانید',
     zh: '阅读AI生成的摘要',
   },
-  receiveAnswers: {
-    pl: 'Otrzymuj odpowiedzi wygenerowane przez AI',
-    en: 'Receive AI-generated answers',
-    de: 'Erhalten Sie KI-generierte Antworten',
-    es: 'Reciba respuestas generadas por IA',
-    fr: 'Recevez des réponses générées par l\'IA',
-    it: 'Ricevi risposte generate dall\'IA',
-    pt: 'Receba respostas geradas por IA',
-    is: 'Fáðu AI-framleidd svör',
-    tr: 'Yapay zeka tarafından oluşturulan yanıtları alın',
-    sv: 'Få AI-genererade svar',
-    no: 'Få AI-genererte svar',
-    ja: 'AI生成の回答を受け取る',
-    hi: 'AI-जनित उत्तर प्राप्त करें',
-    ar: 'تلقي إجابات تم إنشاؤها بواسطة الذكاء الاصطناعي',
-    fa: 'پاسخ‌های تولیدشده توسط هوش مصنوعی را دریافت کنید',
-    zh: '接收AI生成的答案',
-  },
   getAiAnswers: {
     pl: 'Otrzymuj odpowiedzi wygenerowane przez AI',
     en: 'Receive AI-generated answers',
@@ -2000,24 +1728,6 @@ const L: Record<string, Record<string, string>> = {
     ar: 'تلقي إجابات تم إنشاؤها بواسطة الذكاء الاصطناعي',
     fa: 'پاسخ‌های تولیدشده توسط هوش مصنوعی را دریافت کنید',
     zh: '接收AI生成的答案',
-  },
-  clickUnlockBtn: {
-    pl: 'Kliknij przycisk odblokowania',
-    en: 'Click the unlock button',
-    de: 'Klicken Sie auf die Schaltfläche Entsperren',
-    es: 'Haga clic en el botón Desbloquear',
-    fr: 'Cliquez sur le bouton Déverrouiller',
-    it: 'Clicca sul pulsante Sblocca',
-    pt: 'Clique no botão Desbloquear',
-    is: 'Smelltu á aflæsa hnappinn',
-    tr: 'Kilidi Aç düğmesine tıklayın',
-    sv: 'Klicka på knappen Lås upp',
-    no: 'Klikk på lås opp-knappen',
-    ja: 'ロック解除ボタンをクリック',
-    hi: 'अनलॉक बटन पर क्लिक करें',
-    ar: 'انقر على زر إلغاء القفل',
-    fa: 'روی دکمه باز کردن قفل کلیک کنید',
-    zh: '点击解锁按钮',
   },
   selectTargetLanguage: {
     // Same content as page.translate.howto_2 in lib/i18n.ts (already-translated,
@@ -2074,6 +1784,60 @@ const L: Record<string, Record<string, string>> = {
     fa: 'ترجمه تولیدشده توسط هوش مصنوعی را بخوانید',
     zh: '阅读AI生成的翻译',
   },
+  pasteHtml: {
+    pl: 'Wklej kod HTML w pole tekstowe',
+    en: 'Paste the HTML code into the text box',
+    de: 'Fügen Sie den HTML-Code in das Textfeld ein',
+    es: 'Pegue el código HTML en el cuadro de texto',
+    fr: 'Collez le code HTML dans la zone de texte',
+    it: 'Incolla il codice HTML nella casella di testo',
+    pt: 'Cole o código HTML na caixa de texto',
+    is: 'Límdu HTML-kóðann í textareitinn',
+    tr: 'HTML kodunu metin kutusuna yapıştırın',
+    sv: 'Klistra in HTML-koden i textrutan',
+    no: 'Lim inn HTML-koden i tekstfeltet',
+    ja: 'HTMLコードをテキストボックスに貼り付ける',
+    hi: 'HTML कोड को टेक्स्ट बॉक्स में पेस्ट करें',
+    ar: 'الصق شيفرة HTML في مربع النص',
+    fa: 'کد HTML را در کادر متن جای‌گذاری کنید',
+    zh: '将HTML代码粘贴到文本框中',
+  },
+  selectRegionsRedact: {
+    pl: 'Zaznacz na stronach obszary do zakrycia',
+    en: 'Mark the areas to black out on the pages',
+    de: 'Markieren Sie auf den Seiten die Bereiche, die geschwärzt werden sollen',
+    es: 'Marque en las páginas las zonas que desea ocultar',
+    fr: 'Sélectionnez sur les pages les zones à masquer',
+    it: 'Seleziona sulle pagine le aree da oscurare',
+    pt: 'Marque nas páginas as áreas a ocultar',
+    is: 'Merktu svæðin sem á að hylja á síðunum',
+    tr: 'Sayfalarda karartılacak alanları işaretleyin',
+    sv: 'Markera områdena som ska svärtas på sidorna',
+    no: 'Merk områdene som skal sladdes på sidene',
+    ja: 'ページ上で黒塗りする範囲を選択する',
+    hi: 'पृष्ठों पर छिपाए जाने वाले क्षेत्रों को चिह्नित करें',
+    ar: 'حدّد على الصفحات المناطق المراد حجبها',
+    fa: 'در صفحه‌ها بخش‌هایی را که باید پوشانده شوند علامت بزنید',
+    zh: '在页面上框选要涂黑的区域',
+  },
+  clickExtractText: {
+    pl: 'Kliknij przycisk wyodrębnienia tekstu',
+    en: 'Click the extract text button',
+    de: 'Klicken Sie auf die Schaltfläche zum Extrahieren des Textes',
+    es: 'Haga clic en el botón para extraer el texto',
+    fr: 'Cliquez sur le bouton d\'extraction du texte',
+    it: 'Fai clic sul pulsante per estrarre il testo',
+    pt: 'Clique no botão para extrair o texto',
+    is: 'Smelltu á hnappinn til að draga út texta',
+    tr: 'Metni çıkarma düğmesine tıklayın',
+    sv: 'Klicka på knappen för att extrahera texten',
+    no: 'Klikk på knappen for å hente ut teksten',
+    ja: 'テキスト抽出ボタンをクリックする',
+    hi: 'टेक्स्ट निकालने वाले बटन पर क्लिक करें',
+    ar: 'انقر على زر استخراج النص',
+    fa: 'روی دکمه استخراج متن کلیک کنید',
+    zh: '点击提取文本按钮',
+  },
 };
 
 type StepRef = string;
@@ -2089,16 +1853,16 @@ const toolSteps: Record<string, StepRef[][]> = {
     ['uploadPdfCompress'], ['selectCompression'], ['clickCompress'], ['downloadCompressedPdf'],
   ],
   'pdf-to-word': [
-    ['uploadPdfConvert'], ['waitConversion'], ['downloadWord'],
+    ['uploadPdfConvert'], ['clickConvert'], ['downloadWord'],
   ],
   'word-to-pdf': [
-    ['uploadWord'], ['waitConversion'], ['downloadPdfDoc'],
+    ['uploadWord'], ['clickConvert'], ['downloadPdfDoc'],
   ],
   'pdf-to-images': [
     ['uploadPdfConvert'], ['selectImageFormat'], ['clickConvert'], ['downloadZip'],
   ],
   'jpg-to-pdf': [
-    ['uploadJpg'], ['arrangeImages'], ['adjustPageSize'], ['clickConvert'],
+    ['uploadJpg'], ['arrangeImages'], ['clickConvert'], ['downloadPdfDoc'],
   ],
   'protect-pdf': [
     ['uploadPdfProtect'], ['enterPassword'], ['clickProtect'], ['downloadProtectedPdf'],
@@ -2143,37 +1907,37 @@ const toolSteps: Record<string, StepRef[][]> = {
     ['uploadPdfSign'], ['drawSignature'], ['placeSignature'], ['downloadSignedPdf'],
   ],
   'pdf-to-excel': [
-    ['uploadTabularPdf'], ['waitExtraction'], ['downloadExcel'],
+    ['uploadTabularPdf'], ['clickConvert'], ['downloadExcel'],
   ],
   'excel-to-pdf': [
-    ['uploadExcel'], ['waitConversion'], ['downloadPdfDoc'],
+    ['uploadExcel'], ['clickConvert'], ['downloadPdfDoc'],
   ],
   'pdf-to-txt': [
-    ['uploadPdfConvert'], ['waitExtraction'], ['downloadTxt'],
+    ['uploadPdfConvert'], ['clickConvert'], ['downloadTxt'],
   ],
   'html-to-pdf': [
-    ['uploadHtml'], ['customizePdfOptions'], ['clickConvert'], ['downloadPdfDoc'],
+    ['pasteHtml'], ['clickConvert'], ['downloadPdfDoc'],
   ],
   'url-to-pdf': [
     ['enterUrl'], ['clickConvert'], ['downloadWebPdf'],
   ],
   'pdf-to-html': [
-    ['uploadPdfConvert'], ['waitConversion'], ['downloadHtml'],
+    ['uploadPdfConvert'], ['clickConvert'], ['downloadHtml'],
   ],
   'flatten-pdf': [
     ['uploadAnnotatedPdf'], ['clickFlatten'], ['downloadFlattenedPdf'],
   ],
   'pdf-to-powerpoint': [
-    ['uploadPdfConvert'], ['waitConversion'], ['downloadPptx'],
+    ['uploadPdfConvert'], ['clickConvert'], ['downloadPptx'],
   ],
   'pdf-to-svg': [
-    ['uploadPdfConvert'], ['waitSvgConversion'], ['downloadSvg'],
+    ['uploadPdfConvert'], ['clickConvert'], ['downloadSvg'],
   ],
   'redact-pdf': [
-    ['uploadPdf'], ['selectPagesRedact'], ['clickRedact'], ['downloadRedactedPdf'],
+    ['uploadPdf'], ['selectRegionsRedact'], ['clickRedact'], ['downloadRedactedPdf'],
   ],
   'pdf-to-epub': [
-    ['uploadPdfConvert'], ['waitEpubConversion'], ['downloadEpub'],
+    ['uploadPdfConvert'], ['clickConvert'], ['downloadEpub'],
   ],
   'to-pdfa': [
     ['uploadPdf'], ['clickConvert'], ['downloadPdfa'],
@@ -2182,68 +1946,31 @@ const toolSteps: Record<string, StepRef[][]> = {
     ['uploadFormPdf'], ['fillFields'], ['clickFill'], ['downloadFilledPdf'],
   ],
   'openoffice-to-pdf': [
-    ['uploadOdt'], ['waitConversion'], ['downloadPdfDoc'],
+    ['uploadOdt'], ['clickConvert'], ['downloadPdfDoc'],
   ],
   'pdf-to-openoffice': [
-    ['uploadPdfConvert'], ['waitConversion'], ['downloadOdt'],
+    ['uploadPdfConvert'], ['clickConvert'], ['downloadOdt'],
   ],
   'compare-pdf': [
-    ['uploadTwoPdfs'], ['clickCompare'], ['viewDifferences'], ['downloadReport'],
+    ['uploadTwoPdfs'], ['clickCompare'], ['viewDifferences'],
   ],
   'ai-chat': [
-    ['uploadPdfConvert'], ['waitAnalysis'], ['askQuestions'], ['getAiAnswers'],
+    ['uploadPdf'], ['clickExtractText'], ['askQuestions'], ['getAiAnswers'],
   ],
   'ai-summary': [
-    ['uploadPdfConvert'], ['clickSummarize'], ['readSummary'],
+    ['uploadPdf'], ['clickSummarize'], ['readSummary'],
   ],
   'ai-translate': [
-    ['uploadPdfConvert'], ['selectTargetLanguage'], ['clickTranslate'], ['readTranslation'],
+    ['uploadPdf'], ['selectTargetLanguage'], ['clickTranslate'], ['readTranslation'],
   ],
 };
 
-export default function SchemaHowTo({ locale: forcedLocale }: { locale?: Locale }) {
-  const pathname = usePathname();
-  const locale = forcedLocale ?? useHydrationSafeLocale();
-  const parts = pathname.split('/').filter(Boolean);
-  const hasLocale = parts.length > 0 && (locales as readonly string[]).includes(parts[0]!);
-  const segment = hasLocale ? parts[1] : parts[0];
-  if (!segment) return null;
-  const key = keyBySlug[segment];
-  const steps = toolSteps[segment];
-  if (!key || !steps) return null;
-
-  const name = t(`tool.${key}`, locale);
-  const description = t(`desc.${key}`, locale);
-  const url = hasLocale ? `https://optimapdf.com/${parts[0]}/${segment}` : `https://optimapdf.com/${segment}`;
-
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'HowTo',
-    name,
-    description,
-    url,
-    image: 'https://optimapdf.com/icon-512.svg',
-    estimatedCost: { '@type': 'MonetaryAmount', currency: 'PLN', value: '0' },
-    supply: { '@type': 'HowToSupply', name: tr({ pl: 'Plik PDF', en: 'PDF file' }, locale) },
-    tool: { '@type': 'HowToTool', name: 'OptimaPDF' },
-    step: steps.map((refs, i) => {
-      // Safe: every StepRef used in toolSteps corresponds to an entry in L.
-      const text = refs.map(ref => tr(L[ref]!, locale)).join(' ');
-      return {
-        '@type': 'HowToStep',
-        position: i + 1,
-        name: text,
-        text,
-        url: `${url}#step-${i + 1}`,
-      };
-    }),
-    inLanguage: locale,
-  };
-
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
-    />
-  );
+/** The steps of one tool in one language (English where a translation is missing), or undefined. */
+export function toolHowToSteps(slug: string, locale: Locale): string[] | undefined {
+  const steps = toolSteps[slug];
+  if (!steps) return undefined;
+  return steps.map((refs) => refs.map((ref) => L[ref]?.[locale] || L[ref]?.en || '').join(' '));
 }
+
+/** Every tool slug that has steps (for tests). */
+export const howToSlugs = Object.keys(toolSteps);

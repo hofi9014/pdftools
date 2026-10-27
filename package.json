@@ -204,7 +204,9 @@
     "test:i18n-per-page": "npx --yes tsx tests/i18n-per-page.mts",
     "test:e2e-i18n-page-bundle": "npx --yes tsx e2e/i18n-page-bundle.mts",
     "test:localize-page-data": "npx --yes tsx tests/localize-page-data.mts",
-    "test:home-local-footnote": "npx tsx tests/home-local-footnote.mts"
+    "test:home-local-footnote": "npx tsx tests/home-local-footnote.mts",
+    "test:tool-page-seo": "npx tsx tests/tool-page-seo.mts",
+    "test:e2e-tool-page-seo": "npx --yes tsx e2e/tool-page-seo.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

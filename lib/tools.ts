@@ -65,6 +65,18 @@ for (const t of tools) {
   toolCategory[t.key] = t.category;
 }
 
+/**
+ * Where a tool does its work. Every tool runs in the browser except these: the AI tools send the
+ * text extracted from the file to an external AI service, and URL to PDF has our server fetch the
+ * page. The home page footnote, the tool pages' descriptions and their FAQ say so; the tests tie
+ * this list to the pages that actually call the server (tests/home-local-footnote.mts).
+ */
+export const NON_LOCAL_TOOLS: Record<string, 'ai' | 'url'> = { aichat: 'ai', aisummary: 'ai', translate: 'ai', url: 'url' };
+
+export function toolProcessing(key: string): 'local' | 'ai' | 'url' {
+  return NON_LOCAL_TOOLS[key] ?? 'local';
+}
+
 export interface CategoryDef {
   key: string;
   icon: string;

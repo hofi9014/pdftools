@@ -2,6 +2,7 @@ import WordToPDF from '../../(unprefixed)/word-to-pdf/page';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/metadata';
+import ToolGuide from '@/components/ToolGuide';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -10,7 +11,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function LocaleWordToPDF({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  return <WordToPDF locale={locale as Locale} />;
+  return (
+    <>
+      <WordToPDF locale={locale as Locale} />
+      <ToolGuide slug="word-to-pdf" locale={locale as Locale} />
+    </>
+  );
 }
 
 
