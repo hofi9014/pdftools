@@ -50,7 +50,7 @@ const is: LegalTexts = {
           },
           {
             h: '3.6 Google Drive, Dropbox og OneDrive',
-            p: 'Ef þú velur sjálf(ur) að opna skrá úr skýinu eða vista þangað fer skráin beint á milli vafrans þíns og valins veitanda (Google, Dropbox, Microsoft) — ekki í gegnum netþjóninn okkar. Þú skráir þig inn í glugga þess veitanda og skilmálar hans og persónuverndarstefna gilda um aðgerðina. Google Drive veitir okkur aðeins aðgang að skrám sem opnaðar eru eða búnar til með OptimaPDF; Dropbox að vistun skráa; OneDrive og SharePoint að þeim skrám sem gluggi Microsoft biður um.',
+            p: 'Ef þú velur sjálf(ur) að opna skrá úr skýinu eða vista þangað fer skráin beint á milli vafrans þíns og valins veitanda (Google, Dropbox, Microsoft) — ekki í gegnum netþjóninn okkar. Þú skráir þig inn í glugga þess veitanda og skilmálar hans og persónuverndarstefna gilda um aðgerðina. Google Drive veitir okkur aðeins aðgang að skrám sem OptimaPDF opnar eða býr til; Dropbox aðeins til að vista skrár; OneDrive og SharePoint að öllum skrám þínum og vefsvæðum, því þessi Microsoft-tenging hefur ekki þrengri heimild, en aðeins vafrinn þinn notar hana og tókinn berst aldrei á netþjóninn okkar.',
           },
         ],
       },

@@ -50,7 +50,7 @@ const sv: LegalTexts = {
           },
           {
             h: '3.6 Google Drive, Dropbox och OneDrive',
-            p: 'Om du själv väljer att öppna en fil från molnet eller spara dit går filen direkt mellan din webbläsare och den valda leverantören (Google, Dropbox, Microsoft) — inte via vår server. Du loggar in i den leverantörens fönster, och dess villkor och integritetspolicy gäller för åtgärden. Google Drive ger oss bara åtkomst till filer som öppnats eller skapats med OptimaPDF; Dropbox till att spara filer; OneDrive och SharePoint till de filer som Microsoft-fönstret begär.',
+            p: 'Om du själv väljer att öppna en fil från molnet eller spara dit går filen direkt mellan din webbläsare och den valda leverantören (Google, Dropbox, Microsoft) — inte via vår server. Du loggar in i den leverantörens fönster, och dess villkor och integritetspolicy gäller för åtgärden. Google Drive ger oss bara åtkomst till filer som öppnats eller skapats av OptimaPDF; Dropbox bara till att spara filer; OneDrive och SharePoint till alla dina filer och webbplatser, eftersom den här Microsoft-integrationen saknar en snävare behörighet, men bara din webbläsare använder den och token når aldrig vår server.',
           },
         ],
       },

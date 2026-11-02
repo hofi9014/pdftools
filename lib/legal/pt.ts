@@ -50,7 +50,7 @@ const pt: LegalTexts = {
           },
           {
             h: '3.6 Google Drive, Dropbox e OneDrive',
-            p: 'Se escolher abrir um ficheiro da nuvem ou guardá-lo nela, o ficheiro passa diretamente entre o seu navegador e o fornecedor escolhido (Google, Dropbox, Microsoft) — não pelo nosso servidor. Inicia sessão na janela desse fornecedor, cujos termos e política de privacidade se aplicam a essa operação. O Google Drive só nos dá acesso aos ficheiros abertos ou criados com o OptimaPDF; o Dropbox, à gravação de ficheiros; o OneDrive e o SharePoint, aos ficheiros que a janela da Microsoft pedir.',
+            p: 'Se escolher abrir um ficheiro da nuvem ou guardá-lo nela, o ficheiro passa diretamente entre o seu navegador e o fornecedor escolhido (Google, Dropbox, Microsoft) — não pelo nosso servidor. Inicia sessão na janela desse fornecedor, cujos termos e política de privacidade se aplicam a essa operação. O Google Drive dá-nos acesso apenas aos ficheiros abertos ou criados pelo OptimaPDF; o Dropbox, apenas à gravação de ficheiros; o OneDrive e o SharePoint, a todos os seus ficheiros e sites, porque esta integração da Microsoft não tem uma permissão mais restrita, mas só o seu navegador a utiliza e o token nunca chega ao nosso servidor.',
           },
         ],
       },

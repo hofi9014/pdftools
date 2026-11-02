@@ -13,7 +13,6 @@ import type { content as contentType } from '@/content/pages/wsparcie';
 /*  produkcyjnym Stripe (bez 'test_').                                 */
 /*                                                                      */
 const STRIPE_DONATE_URL = 'https://buy.stripe.com/test_aFafZie8kb3OcUecDwgfu00';
-const SUPPORTER_BADGE_URL = '/supporter-badge.svg';                   /* ← ścieżka do odznaki (opcjonalnie)    */
 const IS_TEST_MODE = STRIPE_DONATE_URL.includes('test_');              /* ← automatycznie wykrywa tryb testowy   */
 /* ------------------------------------------------------------------ */
 
@@ -58,19 +57,6 @@ export default function SupportView({ locale: forcedLocale, content }: { locale?
             <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide"
               style={{ backgroundColor: '#fef08a', color: '#854d0e', border: '1px solid #facc15' }}>
               ⚠️ TRYB TESTOWY (Stripe Sandbox)
-            </div>
-          )}
-        </section>
-
-        {/* Supporter badge info */}
-        <section className="text-center">
-          <h2 className="text-lg font-bold tool-heading mb-2">🏅 {lang.donateSection.badgeLabel}</h2>
-          <p className="max-w-lg mx-auto">{lang.donateSection.badgeDesc}</p>
-          {SUPPORTER_BADGE_URL && (
-            <div className="mt-4 flex justify-center gap-4 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border" style={{ borderColor: 'var(--coffee-border)', backgroundColor: 'var(--coffee-badge-bg)' }}>
-                <span>⭐</span> Supporter
-              </span>
             </div>
           )}
         </section>

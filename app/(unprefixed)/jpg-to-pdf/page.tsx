@@ -17,7 +17,7 @@ export default function JPGToPDF({ locale: forcedLocale }: { locale?: Locale } =
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
 
-  const acceptedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/tiff', 'image/webp'];
+  const acceptedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
 
   const handleFiles = (newFiles: FileList | File[] | null) => {
     if (!newFiles || newFiles.length === 0) return;
@@ -90,15 +90,15 @@ export default function JPGToPDF({ locale: forcedLocale }: { locale?: Locale } =
         >
           <div className="text-5xl mb-3">📂</div>
           <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
-          <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">JPG, PNG, GIF, BMP, TIFF, WebP</p>
+          <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">JPG, PNG, GIF, BMP, WebP</p>
           <input id="fileInput" type="file"
-            accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff,.webp"
+            accept=".jpg,.jpeg,.png,.gif,.bmp,.webp"
             multiple className="hidden"
             onChange={e => handleFiles(e.target.files)} />
       </div>
 
       <div className="flex justify-center gap-2 mb-6">
-        <CloudFilePicker onFilesPicked={handleFiles} accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff,.webp" label={t('cloud.add', locale)} />
+        <CloudFilePicker onFilesPicked={handleFiles} accept=".jpg,.jpeg,.png,.gif,.bmp,.webp" label={t('cloud.add', locale)} />
       </div>
 
       {files.length > 0 && (

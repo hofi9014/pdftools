@@ -50,7 +50,7 @@ const tr: LegalTexts = {
           },
           {
             h: '3.6 Google Drive, Dropbox ve OneDrive',
-            p: 'Buluttan dosya açmayı veya buluta kaydetmeyi kendiniz seçerseniz dosya, tarayıcınızla seçtiğiniz sağlayıcı (Google, Dropbox, Microsoft) arasında doğrudan aktarılır — sunucumuz üzerinden geçmez. O sağlayıcının penceresinde oturum açarsınız ve bu işleme onun koşulları ile gizlilik politikası uygulanır. Google Drive bize yalnızca OptimaPDF ile açılan veya oluşturulan dosyalara erişim verir; Dropbox dosya kaydetmeye; OneDrive ve SharePoint ise Microsoft penceresinin istediği dosyalara.',
+            p: 'Buluttan dosya açmayı veya buluta kaydetmeyi kendiniz seçerseniz dosya, tarayıcınızla seçtiğiniz sağlayıcı (Google, Dropbox, Microsoft) arasında doğrudan aktarılır — sunucumuz üzerinden geçmez. O sağlayıcının penceresinde oturum açarsınız ve bu işleme onun koşulları ile gizlilik politikası uygulanır. Google Drive bize yalnızca OptimaPDF ile açılan veya oluşturulan dosyalara erişim verir; Dropbox yalnızca dosya kaydetmeye; OneDrive ve SharePoint tüm dosyalarınıza ve sitelerinize, çünkü bu Microsoft entegrasyonunda daha dar bir izin yoktur, ancak bunu yalnızca tarayıcınız kullanır ve belirteç sunucumuza asla ulaşmaz.',
           },
         ],
       },

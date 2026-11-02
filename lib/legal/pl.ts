@@ -50,7 +50,7 @@ const pl: LegalTexts = {
           },
           {
             h: '3.6 Google Drive, Dropbox i OneDrive',
-            p: 'Jeśli sam wybierzesz plik z chmury albo zapis do chmury, plik przechodzi bezpośrednio między Twoją przeglądarką a wybranym dostawcą (Google, Dropbox, Microsoft) — nie przez nasz serwer. Logujesz się w oknie tego dostawcy i to jego warunki oraz polityka prywatności dotyczą tej operacji. Google Drive daje nam dostęp tylko do plików otwartych lub utworzonych przez OptimaPDF; Dropbox — do zapisu plików; OneDrive i SharePoint — do plików, o które prosi okno Microsoft.',
+            p: 'Jeśli sam wybierzesz plik z chmury albo zapis do chmury, plik przechodzi bezpośrednio między Twoją przeglądarką a wybranym dostawcą (Google, Dropbox, Microsoft) — nie przez nasz serwer. Logujesz się w oknie tego dostawcy i to jego warunki oraz polityka prywatności dotyczą tej operacji. Google Drive daje nam dostęp tylko do plików otwartych lub utworzonych przez OptimaPDF; Dropbox — tylko do zapisu plików; OneDrive i SharePoint — do wszystkich Twoich plików i witryn, bo ta integracja Microsoftu nie ma węższego uprawnienia, ale korzysta z niego wyłącznie Twoja przeglądarka, a token nie trafia na nasz serwer.',
           },
         ],
       },
