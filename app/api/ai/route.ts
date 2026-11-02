@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAiRateLimit, refundAiRateLimit } from '@/lib/ai-rate-limit';
+import { DAILY_LIMIT, MAX_BULK_TEXT_LENGTH, MAX_CHAT_TEXT_LENGTH } from '@/lib/ai-limit';
 import { apiErrorBody } from '@/lib/api-error-codes';
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
@@ -18,9 +19,19 @@ export const PROVIDER_DATA_POLICY = { data_collection: 'deny' } as const;
 // these same limits must be enforced here too, or an arbitrarily large `text`/`question`/
 // `language` gets forwarded straight into the OpenRouter request body (unbounded OpenRouter
 // input-token cost the app pays for, regardless of the response-side max_tokens cap).
-const MAX_TEXT_LENGTH_CHAT = 12000;
-const MAX_TEXT_LENGTH_BULK = 120000;
 const MAX_QUESTION_LENGTH = 2000;
+
+// The most this model returns in one answer (OpenRouter /models: max_completion_tokens 16384).
+// Asking for more changes nothing: the answer stops there with finish_reason "length", which is
+// reported to the page as `partial`.
+const MAX_OUTPUT_TOKENS_TRANSLATE = 16000;
+
+// The language a summary is written in: the page's language, as a closed set so that the field
+// cannot carry instructions for the model. A page cached from before this field sends none.
+const SUMMARY_LANGUAGES: Record<string, string> = {
+  ar: 'Arabic', de: 'German', en: 'English', es: 'Spanish', fa: 'Persian', fr: 'French', hi: 'Hindi', is: 'Icelandic',
+  it: 'Italian', ja: 'Japanese', no: 'Norwegian', pl: 'Polish', pt: 'Portuguese', sv: 'Swedish', tr: 'Turkish', zh: 'Simplified Chinese',
+};
 
 // The real UI (app/ai-translate/page.tsx's LANG_KEYS) only ever sends one of these exact,
 // fixed Polish language names via a <select> dropdown — `language` was previously only
@@ -55,7 +66,7 @@ export async function POST(request: NextRequest) {
     const resetSeconds = Math.ceil((rateCheck.resetAt - Date.now()) / 1000);
     const resetHours = Math.ceil(resetSeconds / 3600);
     return NextResponse.json(
-      apiErrorBody('ai_daily_limit', `Przekroczono dzienny limit 15 zapytań AI. Spróbuj ponownie za ${resetHours > 1 ? `${resetHours} godziny` : 'godzinę'}.`, { hours: resetHours }),
+      apiErrorBody('ai_daily_limit', `Przekroczono dzienny limit ${DAILY_LIMIT} zapytań AI. Spróbuj ponownie za ${resetHours > 1 ? `${resetHours} godziny` : 'godzinę'}.`, { hours: resetHours, limit: DAILY_LIMIT }),
       {
         status: 429,
         headers: {
@@ -77,7 +88,7 @@ export async function POST(request: NextRequest) {
   if (typeof text !== 'string' || text.length === 0) {
     return NextResponse.json(apiErrorBody('invalid_request', 'Pole text jest wymagane.'), { status: 400 });
   }
-  const maxTextLength = task === 'chat' ? MAX_TEXT_LENGTH_CHAT : MAX_TEXT_LENGTH_BULK;
+  const maxTextLength = task === 'chat' ? MAX_CHAT_TEXT_LENGTH : MAX_BULK_TEXT_LENGTH;
   if (text.length > maxTextLength) {
     return NextResponse.json(
       apiErrorBody('invalid_request', `Tekst jest za długi. Maksymalna długość: ${maxTextLength} znaków.`),
@@ -96,6 +107,12 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
+  if (task === 'summary' && language !== undefined && !Object.hasOwn(SUMMARY_LANGUAGES, language)) {
+    return NextResponse.json(
+      apiErrorBody('invalid_request', 'Nieobsługiwany język streszczenia.'),
+      { status: 400 }
+    );
+  }
 
   let systemPrompt: string;
   let userPrompt: string;
@@ -104,13 +121,13 @@ export async function POST(request: NextRequest) {
 
   switch (task) {
     case 'chat':
-      systemPrompt = 'Odpowiadasz na pytania na podstawie dolaczonego dokumentu. Jesli odpowiedz znajduje sie w dokumencie, zacytuj odpowiedni fragment. Jesli nie ma jej w dokumencie, napisz ze dokument nie zawiera tej informacji.';
+      systemPrompt = 'You answer questions based on the attached document. If the answer is in the document, quote the relevant passage. If it is not, say that the document does not contain this information. Answer in the language of the question.';
       userPrompt = 'Dokument:\n' + text + '\n\nPytanie: ' + question;
       maxTokens = 2000;
       temperature = 0.7;
       break;
     case 'summary':
-      systemPrompt = 'Stworz zwięzłe streszczenie poniższego tekstu w języku polskim. Wypisz najważniejsze punkty w formie wypunktowania. Odpowiedz tylko po polsku.';
+      systemPrompt = `Write a concise summary of the text below in ${SUMMARY_LANGUAGES[language ?? 'pl']}. List the key points as bullets. Reply only in ${SUMMARY_LANGUAGES[language ?? 'pl']}.`;
       userPrompt = text;
       maxTokens = 2048;
       temperature = 0.3;
@@ -118,7 +135,7 @@ export async function POST(request: NextRequest) {
     case 'translate':
       systemPrompt = `Przetłumacz poniższy tekst na język ${language}. Zachowaj oryginalne formatowanie, akapity i strukturę. Zwróć tylko przetłumaczony tekst, bez komentarzy.`;
       userPrompt = text;
-      maxTokens = 32000;
+      maxTokens = MAX_OUTPUT_TOKENS_TRANSLATE;
       temperature = 0.2;
       break;
     default:
@@ -175,8 +192,9 @@ export async function POST(request: NextRequest) {
 
   const data = await res.json();
   const content = data?.choices?.[0]?.message?.content || 'Brak odpowiedzi';
+  const partial = data?.choices?.[0]?.finish_reason === 'length';
   return NextResponse.json(
-    { content },
+    { content, partial },
     {
       headers: {
         'X-RateLimit-Remaining': String(rateCheck.remaining),

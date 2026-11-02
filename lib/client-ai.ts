@@ -1,6 +1,12 @@
 import { apiErrorFromResponse, apiFetch } from '@/lib/api-error';
-const MAX_TEXT_LENGTH = 12000;
-const MAX_SUMMARY_TRANSLATE_LENGTH = 120000;
+import { MAX_BULK_TEXT_LENGTH, MAX_CHAT_TEXT_LENGTH } from '@/lib/ai-limit';
+
+/** A summary or translation, and whether it covers only part of the document. */
+export interface AiResult {
+  content: string;
+  /** The text was cut before sending, or the model stopped at its output limit. */
+  partial: boolean;
+}
 
 // FINDING (silent truncation + notice-overflow, 2026-09-21) — two bugs here, found together.
 // (1) askAI already appended a notice into the text sent to the model when truncating (so a
@@ -25,7 +31,7 @@ function truncateWithNotice(text: string, maxLen: number): string {
 }
 
 export async function askAI(text: string, question: string): Promise<string> {
-  const truncated = truncateWithNotice(text, MAX_TEXT_LENGTH);
+  const truncated = truncateWithNotice(text, MAX_CHAT_TEXT_LENGTH);
 
   const res = await apiFetch('/api/ai', {
     method: 'POST',
@@ -38,28 +44,25 @@ export async function askAI(text: string, question: string): Promise<string> {
   return data.content;
 }
 
-export async function summarizeText(text: string): Promise<string> {
+async function bulkRequest(task: 'summary' | 'translate', text: string, language: string): Promise<AiResult> {
   const res = await apiFetch('/api/ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ task: 'summary', text: truncateWithNotice(text, MAX_SUMMARY_TRANSLATE_LENGTH) }),
+    body: JSON.stringify({ task, text: truncateWithNotice(text, MAX_BULK_TEXT_LENGTH), language }),
   });
 
   if (!res.ok) throw await apiErrorFromResponse(res, 'Usługa AI tymczasowo niedostępna');
   const data = await res.json();
-  return data.content;
+  return { content: data.content, partial: text.length > MAX_BULK_TEXT_LENGTH || data.partial === true };
 }
 
-export async function translateText(text: string, targetLang: string): Promise<string> {
-  const res = await apiFetch('/api/ai', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ task: 'translate', text: truncateWithNotice(text, MAX_SUMMARY_TRANSLATE_LENGTH), language: targetLang }),
-  });
+/** `locale` is the page's language: the summary is written in it. */
+export function summarizeText(text: string, locale: string): Promise<AiResult> {
+  return bulkRequest('summary', text, locale);
+}
 
-  if (!res.ok) throw await apiErrorFromResponse(res, 'Usługa AI tymczasowo niedostępna');
-  const data = await res.json();
-  return data.content;
+export function translateText(text: string, targetLang: string): Promise<AiResult> {
+  return bulkRequest('translate', text, targetLang);
 }
 
 

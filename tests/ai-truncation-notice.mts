@@ -90,7 +90,7 @@ try {
     openRouterCalls = 0;
     lastRequestedIp = freshIp('summary-long');
     const longText = 'y'.repeat(130000); // over the 120000 bulk limit -> triggers truncation+notice
-    const result = await summarizeText(longText);
+    const { content: result } = await summarizeText(longText, 'pl');
     check(result === 'ok', `summarizeText with 130000-char text (needs truncation) succeeds, not a 400 (got: ${result})`);
     check(openRouterCalls === 1, 'OpenRouter was actually reached for the truncated summary request');
   }
@@ -100,7 +100,7 @@ try {
     openRouterCalls = 0;
     lastRequestedIp = freshIp('translate-long');
     const longText = 'z'.repeat(130000);
-    const result = await translateText(longText, 'angielski');
+    const { content: result } = await translateText(longText, 'angielski');
     check(result === 'ok', `translateText with 130000-char text (needs truncation) succeeds, not a 400 (got: ${result})`);
     check(openRouterCalls === 1, 'OpenRouter was actually reached for the truncated translate request');
   }
@@ -118,7 +118,7 @@ try {
       }
       return savedFetch(input, init);
     }) as typeof fetch;
-    await summarizeText('w'.repeat(130000));
+    await summarizeText('w'.repeat(130000), 'pl');
     global.fetch = savedFetch;
     check(capturedText.includes('tekst przyciety'), 'the actual request body sent to /api/ai contains the truncation notice');
     check(capturedText.length <= 120000, `truncated+notice text stays within the server's 120000 limit (got ${capturedText.length})`);

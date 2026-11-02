@@ -7,6 +7,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { apiErrorText } from '@/lib/api-error';
 import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
+import AiNotice from '@/components/AiNotice';
 
 const LANG_KEYS = [
   { value: 'angielski', key: 'lang.english' },
@@ -29,7 +30,7 @@ export default function AiTranslate({ locale: forcedLocale }: { locale?: Locale 
   const [targetLang, setTargetLang] = useState('angielski');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [result, setResult] = useState<{ translated: string; original: string } | null>(null);
+  const [result, setResult] = useState<{ translated: string; original: string; partial: boolean } | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const handleFile = (f: File | null) => {
     if (!f) return;
@@ -44,7 +45,7 @@ export default function AiTranslate({ locale: forcedLocale }: { locale?: Locale 
       const text = await extractTextFromPDF(file);
       if (!text.trim()) throw new Error(t('page.translate.no_text', locale));
       const translated = await translateText(text, targetLang);
-      setResult({ translated, original: text.slice(0, 500) });
+      setResult({ translated: translated.content, original: text.slice(0, 500), partial: translated.partial });
     } catch (err: unknown) { setError(apiErrorText(err, locale)); }
     finally { setLoading(false); }
   };
@@ -113,9 +114,7 @@ export default function AiTranslate({ locale: forcedLocale }: { locale?: Locale 
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
 
-      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 rounded-xl p-3 mb-6 text-xs leading-relaxed">
-        ⚠️ {t('page.ai_warning', locale)}
-      </div>
+      <AiNotice locale={locale} />
 
       <button onClick={handleTranslate} disabled={loading || !file}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition mb-6
@@ -126,6 +125,7 @@ export default function AiTranslate({ locale: forcedLocale }: { locale?: Locale 
       {result && (
         <div className="tool-card rounded-2xl border p-6">
           <h2 className="font-bold tool-heading mb-4">{t('page.translate.result_heading', locale)}</h2>
+          {result.partial && <p className="text-amber-800 dark:text-amber-400 text-xs mb-4">{t('ai.partial_result', locale)}</p>}
           <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 max-h-96 overflow-y-auto whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{result.translated}</div>
           <button onClick={() => navigator.clipboard.writeText(result.translated)}
             className="mt-4 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl text-sm text-gray-700 dark:text-gray-300 transition">{t('page.translate.copy_btn', locale)}</button>
@@ -144,8 +144,6 @@ export default function AiTranslate({ locale: forcedLocale }: { locale?: Locale 
           </div>
         ))}
       </div>
-
-      <p className="mt-6 text-center text-xs text-gray-400 dark:text-gray-500">{t('feature.ai_daily_limit', locale)}</p>
     </div>
   );
 }

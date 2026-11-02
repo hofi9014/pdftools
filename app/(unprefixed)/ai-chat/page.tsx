@@ -7,6 +7,8 @@ import { t, type Locale } from '@/lib/i18n';
 import { apiErrorText } from '@/lib/api-error';
 import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
+import AiNotice from '@/components/AiNotice';
+import { MAX_CHAT_TEXT_LENGTH } from '@/lib/ai-limit';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -109,9 +111,7 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
 
           {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
 
-          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 rounded-xl p-3 mb-6 text-xs leading-relaxed">
-            ⚠️ {t('page.ai_warning', locale)}
-          </div>
+          <AiNotice locale={locale} />
 
           <button onClick={handleExtract} disabled={loading || !file}
             className={`w-full py-4 rounded-2xl font-bold text-lg transition
@@ -126,6 +126,11 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
             <button onClick={() => { setExtractedText(''); setMessages([]); setFile(null); setError(''); }}
               className="text-xs !text-[var(--coffee-accent-ink)] hover:underline shrink-0 ms-2">+ {t('page.aichat.new_file', locale)}</button>
           </div>
+          {extractedText.length > MAX_CHAT_TEXT_LENGTH && (
+            <p className="px-4 py-2 border-b border-gray-200 dark:border-gray-600 text-xs text-amber-800 dark:text-amber-400">
+              {t('ai.chat_partial', locale, { limit: new Intl.NumberFormat(locale).format(MAX_CHAT_TEXT_LENGTH), total: new Intl.NumberFormat(locale).format(extractedText.length) })}
+            </p>
+          )}
           <div className="max-h-96 overflow-y-auto p-4 space-y-4">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -169,7 +174,7 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 text-center">
         {[
           { icon: '🔒', text: t('feature.ai_file_local', locale) },
           { icon: '🤖', text: t('feature.ai_analysis', locale) },
@@ -180,8 +185,6 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
           </div>
         ))}
       </div>
-
-      <p className="mt-6 text-center text-xs text-gray-400 dark:text-gray-500">{t('feature.ai_daily_limit', locale)}</p>
     </div>
   );
 }
