@@ -214,6 +214,7 @@
     "test:e2e-no-upload": "npx --yes tsx e2e/no-upload.mts",
     "test:e2e-ai-tools": "npx --yes tsx e2e/ai-tools.mts",
     "test:ai-limit-notice": "npx tsx tests/ai-limit-notice.mts",
+    "test:site-text-accuracy": "npx --yes tsx tests/site-text-accuracy.mts",
     "test:ai-language-and-partial": "npx tsx tests/ai-language-and-partial.mts",
     "indexnow": "node scripts/indexnow.mjs"
   },

@@ -18,7 +18,8 @@ narzędzia; potem języki. Rzeczy wymagające decyzji albo kont właściciela s�
 
 ## Etap 1 — zaufanie i pierwsze wrażenie (sam)
 
-- [ ] 1.1 Narzędzia AI mówią prawdę i działają w języku strony. Rozszerzone po sprawdzeniu:
+- [x] 1.1 (2026-11-02, `9a8e093`; na produkcji: streszczenie po niemiecku i po polsku, pytanie po niemiecku,
+      nieznany język → 400) Narzędzia AI mówią prawdę i działają w języku strony. Rozszerzone po sprawdzeniu:
       - limit przy przycisku (liczba ze wspólnej stałej, nie wpisana w 16 tłumaczeń);
       - FAQ, Pomoc i Zasady (16 języków) obiecywały własny klucz API OpenRouter, którego nie ma;
       - AI Streszczenie odpowiadało po polsku na każdej stronie (zmierzone na produkcji);
@@ -115,8 +116,8 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
       z `e2e/no-upload.mts` na syntetycznym pliku, wyłącznie fakty możliwe do powtórzenia;
       publikacja dopiero po akceptacji treści.
 - [ ] 3.4 Kolejne poradniki do narzędzi bez poradnika (po danych z Search Console).
-- [ ] 3.5 **[WŁAŚCICIEL]** `www.optimapdf.com` przekierowuje kodem 307 (tymczasowym; zmierzone
-      2026-11-02): Vercel → Settings → Domains → ustawić przekierowanie stałe 308.
+- [x] 3.5 (2026-11-02, właściciel; sprawdzone na produkcji) `www.optimapdf.com` przekierowuje stale (308)
+      na `optimapdf.com`; domena główna bez przekierowania, 200.
 - [ ] 3.6 Adresy poradników w języku strony: dziś `/guides/anleitungen/compress-pdf/how-to-compress-pdf-online`
       ma angielską końcówkę we wszystkich 16 językach. Zmiana ze stałymi przekierowaniami, po sprawdzeniu w
       Search Console, ile z tych adresów jest już zaindeksowanych.
@@ -135,8 +136,11 @@ miejsca na wdrożenia (limit Hobby 10 GB).
 
 ## Do decyzji właściciela (nie ruszam bez zgody)
 
-- **[WŁAŚCICIEL]** Krótszy czas przechowywania wdrożeń: Vercel → Settings → Security →
-  Deployment Retention Policy (np. 7 dni).
+- **ZROBIONE 2026-11-02 (właściciel):** przechowywanie wdrożeń: Preview, Canceled i Errored 1 dzień,
+  Production 7 dni (Settings → Build and Deployment). Deployment Storage było 17,6 GB przy limicie 10 GB;
+  do sprawdzenia, czy spadło poniżej limitu.
+- **[DECYZJA]** Wsparcie obiecuje „odznakę Supporter” i „listę supporterów na stronie”, której nie ma:
+  dodać listę czy usunąć obietnicę? (Dziś i tak nikt nie może wpłacić, bo link Stripe jest testowy.)
 - **[DECYZJA]** Faktury KSeF (XML → czytelny PDF) — duży projekt, najpierw sprawdzenie
   przepisów i schematu FA(3).
 - **[DECYZJA]** Filiżanka kawy w kole na stronie głównej — dwa warianty do wyboru.

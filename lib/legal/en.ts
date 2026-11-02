@@ -50,7 +50,7 @@ const en: LegalTexts = {
           },
           {
             h: '3.6 Google Drive, Dropbox and OneDrive',
-            p: 'If you choose to open a file from the cloud or save to it, the file travels directly between your browser and the provider you chose (Google, Dropbox, Microsoft) — not through our server. You sign in in that provider\'s window, and its terms and privacy policy apply to that operation. Google Drive gives us access only to files opened or created by OptimaPDF; Dropbox to saving files; OneDrive and SharePoint to the files the Microsoft window asks for.',
+            p: 'If you choose to open a file from the cloud or save to it, the file travels directly between your browser and the provider you chose (Google, Dropbox, Microsoft) — not through our server. You sign in in that provider\'s window, and its terms and privacy policy apply to that operation. Google Drive gives us access only to files opened or created by OptimaPDF; Dropbox only to saving files; OneDrive and SharePoint to all your files and sites, because this Microsoft integration has no narrower permission, but only your browser uses it and the token never reaches our server.',
           },
         ],
       },

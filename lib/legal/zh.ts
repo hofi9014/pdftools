@@ -50,7 +50,7 @@ const zh: LegalTexts = {
           },
           {
             h: '3.6 Google Drive、Dropbox 和 OneDrive',
-            p: '如果您自行选择从云端打开文件或保存到云端，文件会在您的浏览器与所选服务商（Google、Dropbox、Microsoft）之间直接传输——不经过我们的服务器。您在该服务商的窗口中登录，此操作适用该服务商的条款和隐私政策。Google Drive 只允许我们访问用 OptimaPDF 打开或创建的文件；Dropbox 只用于保存文件；OneDrive 和 SharePoint 只访问 Microsoft 窗口所请求的文件。',
+            p: '如果您自行选择从云端打开文件或保存到云端，文件会在您的浏览器与所选服务商（Google、Dropbox、Microsoft）之间直接传输——不经过我们的服务器。您在该服务商的窗口中登录，此操作适用该服务商的条款和隐私政策。Google Drive 只允许我们访问由 OptimaPDF 打开或创建的文件；Dropbox 只允许保存文件；由于此 Microsoft 集成没有更窄的权限，OneDrive 和 SharePoint 涵盖你的所有文件和站点，但只有你的浏览器会使用该权限，令牌不会发送到我们的服务器。',
           },
         ],
       },

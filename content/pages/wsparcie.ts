@@ -10,8 +10,6 @@ export const content = {
       p: 'OptimaPDF jest darmowy i pozostanie darmowy. Jeśli nasze narzędzia są dla Ciebie przydatne, możesz wesprzeć rozwój serwisu dobrowolną wpłatą. Każda, nawet najmniejsza kwota, pomaga pokryć koszty utrzymania serwerów, API i domeny. Nie ma żadnych zobowiązań — to czysto dobrowolne wsparcie.',
       button: '☕️ Postaw kawę',
       note: 'Płatności obsługiwane bezpiecznie przez Stripe. Konto nie jest wymagane.',
-      badgeLabel: 'Jesteś supporterem OptimaPDF?',
-      badgeDesc: 'Jeśli dokonałeś wpłaty, możesz poprosić o odznakę "Supporter" — wyślij nam e-mail z potwierdzeniem transakcji, a dodamy Cię do listy supporterów na stronie.',
     },
     sections: [
       {
@@ -59,8 +57,6 @@ export const content = {
       p: 'OptimaPDF is free and will remain free. If you find our tools useful, you can support the development of the site with a voluntary donation. Every amount, no matter how small, helps cover server, API, and domain costs. There are no obligations — this is purely voluntary support.',
       button: '☕️ Buy us a coffee',
       note: 'Payments processed securely by Stripe. No account required.',
-      badgeLabel: 'Are you an OptimaPDF supporter?',
-      badgeDesc: 'If you have made a donation, you can request a "Supporter" badge — send us an email with your transaction confirmation and we will add you to the supporter list on the site.',
     },
     sections: [
       {
@@ -108,8 +104,6 @@ export const content = {
       p: 'OptimaPDF ist kostenlos und wird kostenlos bleiben. Wenn Sie unsere Werkzeuge nützlich finden, können Sie die Entwicklung der Seite mit einer freiwilligen Spende unterstützen. Jeder Betrag, egal wie klein, hilft, die Kosten für Server, API und Domain zu decken. Es gibt keine Verpflichtungen — dies ist rein freiwillige Unterstützung.',
       button: '☕️ Spendieren Sie uns einen Kaffee',
       note: 'Zahlungen werden sicher über Stripe abgewickelt. Kein Konto erforderlich.',
-      badgeLabel: 'Sind Sie ein OptimaPDF-Unterstützer?',
-      badgeDesc: 'Wenn Sie eine Spende getätigt haben, können Sie ein "Supporter"-Abzeichen anfordern — senden Sie uns eine E-Mail mit Ihrer Transaktionsbestätigung und wir werden Sie zur Unterstützerliste auf der Seite hinzufügen.',
     },
     sections: [
       {
@@ -157,8 +151,6 @@ export const content = {
       p: 'OptimaPDF es gratuito y seguirá siéndolo. Si encuentra útiles nuestras herramientas, puede apoyar el desarrollo del sitio con una donación voluntaria. Cualquier cantidad, por pequeña que sea, ayuda a cubrir los costos del servidor, la API y el dominio. No hay obligaciones — esto es apoyo puramente voluntario.',
       button: '☕️ Invítenos a un café',
       note: 'Pagos procesados de forma segura por Stripe. No se requiere cuenta.',
-      badgeLabel: '¿Es usted un colaborador de OptimaPDF?',
-      badgeDesc: 'Si ha realizado una donación, puede solicitar una insignia de "Supporter" — envíenos un correo electrónico con la confirmación de su transacción y lo añadiremos a la lista de colaboradores en el sitio.',
     },
     sections: [
       {
@@ -206,8 +198,6 @@ export const content = {
       p: 'O OptimaPDF é gratuito e continuará a ser gratuito. Se achar as nossas ferramentas úteis, pode apoiar o desenvolvimento do site com um donativo voluntário. Qualquer montante, por mais pequeno que seja, ajuda a cobrir os custos do servidor, da API e do domínio. Não há obrigações — isto é um apoio puramente voluntário.',
       button: '☕️ Ofereça-nos um café',
       note: 'Pagamentos processados de forma segura pela Stripe. Não é necessária conta.',
-      badgeLabel: 'É um apoiante do OptimaPDF?',
-      badgeDesc: 'Se fez um donativo, pode solicitar um crachá de "Supporter" — envie-nos um e-mail com a confirmação da sua transação e adicioná-lo-emos à lista de apoiantes no site.',
     },
     sections: [
       {
@@ -255,8 +245,6 @@ export const content = {
       p: 'OptimaPDF er gratis og vil forbli gratis. Hvis du finner verktøyene våre nyttige, kan du støtte utviklingen av nettstedet med en frivillig donasjon. Ethvert beløp, uansett hvor lite, hjelper til med å dekke kostnader til server, API og domene. Det er ingen forpliktelser — dette er rent frivillig støtte.',
       button: '☕️ Kjøp oss en kaffe',
       note: 'Betalinger behandles sikkert via Stripe. Ingen konto nødvendig.',
-      badgeLabel: 'Er du en OptimaPDF-støttespiller?',
-      badgeDesc: 'Hvis du har gitt en donasjon, kan du be om et "Supporter"-merke — send oss en e-post med bekreftelse på transaksjonen din, så legger vi deg til på støttespillerlisten på nettstedet.',
     },
     sections: [
       {
@@ -304,8 +292,6 @@ export const content = {
       p: 'OptimaPDF är gratis och kommer att förbli gratis. Om du tycker att våra verktyg är användbara kan du stödja utvecklingen av webbplatsen med en frivillig donation. Varje belopp, oavsett hur litet, hjälper till att täcka kostnader för server, API och domän. Det finns inga förpliktelser — detta är rent frivilligt stöd.',
       button: '☕️ Bjud oss på en kaffe',
       note: 'Betalningar behandlas säkert via Stripe. Inget konto krävs.',
-      badgeLabel: 'Är du en OptimaPDF-supporter?',
-      badgeDesc: 'Om du har gjort en donation kan du begära ett "Supporter"-märke — skicka oss ett e-postmeddelande med din transaktionsbekräftelse så lägger vi till dig på supporterlistan på webbplatsen.',
     },
     sections: [
       {
@@ -353,8 +339,6 @@ export const content = {
       p: 'OptimaPDF est gratuit et le restera. Si vous trouvez nos outils utiles, vous pouvez soutenir le développement du site par un don volontaire. Chaque montant, aussi petit soit-il, aide à couvrir les coûts du serveur, de l’API et du domaine. Il n’y a aucune obligation — il s’agit d’un soutien purement volontaire.',
       button: '☕️ Offrez-nous un café',
       note: 'Paiements traités en toute sécurité par Stripe. Aucun compte requis.',
-      badgeLabel: 'Êtes-vous un supporter d’OptimaPDF ?',
-      badgeDesc: 'Si vous avez effectué un don, vous pouvez demander un badge "Supporter" — envoyez-nous un e-mail avec la confirmation de votre transaction et nous vous ajouterons à la liste des supporters sur le site.',
     },
     sections: [
       {
@@ -402,8 +386,6 @@ export const content = {
       p: 'OptimaPDF مجاني وسيظل مجانياً. إذا وجدت أدواتنا مفيدة، يمكنك دعم تطوير الموقع من خلال تبرع اختياري. أي مبلغ، مهما كان صغيراً، يساعد في تغطية تكاليف الخادم وواجهة API والنطاق. لا يوجد أي التزام — هذا دعم تطوعي بحت.',
       button: '☕️ اشتر لنا قهوة',
       note: 'تتم معالجة المدفوعات بشكل آمن عبر Stripe. لا حاجة لحساب.',
-      badgeLabel: 'هل أنت أحد داعمي OptimaPDF؟',
-      badgeDesc: 'إذا قمت بالتبرع، يمكنك طلب شارة "Supporter" — أرسل لنا بريداً إلكترونياً مع تأكيد المعاملة وسنضيفك إلى قائمة الداعمين على الموقع.',
     },
     sections: [
       {
@@ -451,8 +433,6 @@ export const content = {
       p: 'OptimaPDF رایگان است و رایگان خواهد ماند. اگر ابزارهای ما را مفید می‌یابید، می‌توانید با یک کمک داوطلبانه از توسعه سایت پشتیبانی کنید. هر مبلغی، هر چقدر هم کوچک، به پوشش هزینه‌های سرور، API و دامنه کمک می‌کند. هیچ اجباری وجود ندارد — این یک حمایت کاملاً داوطلبانه است.',
       button: '☕️ برای ما قهوه بخرید',
       note: 'پرداخت‌ها به صورت امن توسط Stripe پردازش می‌شوند. نیازی به حساب کاربری نیست.',
-      badgeLabel: 'آیا شما از حامیان OptimaPDF هستید؟',
-      badgeDesc: 'اگر کمک مالی کرده‌اید، می‌توانید نشان "Supporter" را درخواست کنید — برای ما ایمیلی با تأیید تراکنش خود ارسال کنید و شما را به فهرست حامیان در سایت اضافه خواهیم کرد.',
     },
     sections: [
       {
@@ -500,8 +480,6 @@ export const content = {
       p: 'OptimaPDF मुफ़्त है और मुफ़्त ही रहेगा। यदि आप हमारे टूल्स को उपयोगी पाते हैं, तो आप स्वैच्छिक दान के साथ साइट के विकास में सहायता कर सकते हैं। हर राशि, चाहे कितनी भी छोटी हो, सर्वर, API और डोमेन की लागतों को कवर करने में मदद करती है। कोई बाध्यता नहीं है — यह पूरी तरह से स्वैच्छिक सहायता है।',
       button: '☕️ हमें कॉफ़ी पिलाएँ',
       note: 'भुगतान Stripe द्वारा सुरक्षित रूप से संसाधित किए जाते हैं। किसी खाते की आवश्यकता नहीं है।',
-      badgeLabel: 'क्या आप एक OptimaPDF समर्थक हैं?',
-      badgeDesc: 'यदि आपने दान किया है, तो आप "Supporter" बैज का अनुरोध कर सकते हैं — अपनी लेन-देन की पुष्टि के साथ हमें एक ईमेल भेजें और हम आपको साइट पर समर्थकों की सूची में जोड़ देंगे।',
     },
     sections: [
       {
@@ -549,8 +527,6 @@ export const content = {
       p: 'OptimaPDF er ókeypis og verður áfram ókeypis. Ef þér finnast tækin okkar gagnleg geturðu stutt þróun síðunnar með frjálsum framlagi. Sérhver upphæð, sama hversu lítil, hjálpar til við að standa straum af kostnaði við netþjón, API og lén. Engin skylda er — þetta er algjörlega frjáls stuðningur.',
       button: '☕️ Bjóddu okkur kaffi',
       note: 'Greiðslur eru unnar á öruggan hátt af Stripe. Einskis reiknings er krafist.',
-      badgeLabel: 'Ert þú stuðningsmaður OptimaPDF?',
-      badgeDesc: 'Ef þú hefur lagt fram framlag geturðu beðið um "Supporter" merki — sendu okkur tölvupóst með staðfestingu á viðskiptum þínum og við bætum þér á lista stuðningsmanna á síðunni.',
     },
     sections: [
       {
@@ -598,8 +574,6 @@ export const content = {
       p: 'OptimaPDF è gratuito e rimarrà gratuito. Se trova utili i nostri strumenti, può sostenere lo sviluppo del sito con una donazione volontaria. Ogni importo, per quanto piccolo, aiuta a coprire i costi del server, delle API e del dominio. Non c’è alcun obbligo — si tratta di un supporto puramente volontario.',
       button: '☕️ Ci offra un caffè',
       note: 'I pagamenti vengono elaborati in modo sicuro da Stripe. Non è richiesto alcun account.',
-      badgeLabel: 'È un sostenitore di OptimaPDF?',
-      badgeDesc: 'Se ha effettuato una donazione, può richiedere un badge "Supporter" — ci invii un’email con la conferma della transazione e la aggiungeremo all’elenco dei sostenitori sul sito.',
     },
     sections: [
       {
@@ -647,8 +621,6 @@ export const content = {
       p: 'OptimaPDFは無料で、今後も無料のままです。ツールが便利だと感じていただけたなら、任意の寄付でサイトの開発をサポートしていただけます。どんなに少額でも、サーバー、API、ドメインの費用を賄う助けになります。義務は一切ありません — これは純粋に任意のサポートです。',
       button: '☕️ コーヒーをご馳走ください',
       note: 'お支払いはStripeによって安全に処理されます。アカウントは必要ありません。',
-      badgeLabel: 'OptimaPDFのサポーターですか？',
-      badgeDesc: '寄付をされた場合、"Supporter"バッジをリクエストできます — 取引確認書を添えてメールをお送りいただければ、サイトのサポーターリストに追加いたします。',
     },
     sections: [
       {
@@ -696,8 +668,6 @@ export const content = {
       p: 'OptimaPDF ücretsizdir ve ücretsiz kalacaktır. Araçlarımızı kullanışlı buluyorsanız, gönüllü bir bağışla sitenin gelişimini destekleyebilirsiniz. Ne kadar küçük olursa olsun, her tutar sunucu, API ve alan adı maliyetlerini karşılamaya yardımcı olur. Hiçbir zorunluluk yoktur — bu tamamen gönüllü bir destektir.',
       button: '☕️ Bize bir kahve ısmarlayın',
       note: 'Ödemeler Stripe tarafından güvenli bir şekilde işlenir. Hesap gerekmez.',
-      badgeLabel: 'Bir OptimaPDF destekçisi misiniz?',
-      badgeDesc: 'Bir bağış yaptıysanız, bir "Supporter" rozeti talep edebilirsiniz — işlem onayınızla birlikte bize bir e-posta gönderin, sizi sitedeki destekçiler listesine ekleyelim.',
     },
     sections: [
       {
@@ -745,8 +715,6 @@ export const content = {
       p: 'OptimaPDF是免费的，并将保持免费。如果您觉得我们的工具有用，您可以通过自愿捐款来支持网站的开发。无论金额多小，都有助于支付服务器、API和域名的费用。没有任何义务——这纯粹是自愿支持。',
       button: '☕️ 请我们喝杯咖啡',
       note: '付款由Stripe安全处理。无需账户。',
-      badgeLabel: '您是OptimaPDF的支持者吗？',
-      badgeDesc: '如果您已经捐款，您可以申请一个"Supporter"徽章——请将您的交易确认信息通过电子邮件发送给我们，我们会将您添加到网站的支持者列表中。',
     },
     sections: [
       {
