@@ -212,6 +212,9 @@
     "test:office-document-to-pdf": "npx tsx tests/office-document-to-pdf.mts",
     "test:delete-pages-leftovers": "npx tsx tests/delete-pages-leftovers.mts",
     "test:e2e-no-upload": "npx --yes tsx e2e/no-upload.mts",
+    "test:e2e-ai-tools": "npx --yes tsx e2e/ai-tools.mts",
+    "test:ai-limit-notice": "npx tsx tests/ai-limit-notice.mts",
+    "test:ai-language-and-partial": "npx tsx tests/ai-language-and-partial.mts",
     "indexnow": "node scripts/indexnow.mjs"
   },
   "dependencies": {

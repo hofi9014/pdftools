@@ -7,6 +7,7 @@ import { t, isRtlLocale, type Locale } from '@/lib/i18n';
 import { apiErrorText } from '@/lib/api-error';
 import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
+import AiNotice from '@/components/AiNotice';
 
 export default function AiSummary({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -30,11 +31,12 @@ export default function AiSummary({ locale: forcedLocale }: { locale?: Locale } 
     try {
       const text = await extractTextFromPDF(file);
       if (!text.trim()) { throw new Error(t('page.aisummary.no_text', locale)); }
-      const result = await summarizeText(text);
-      setSummary(result);
+      const result = await summarizeText(text, locale);
+      setSummary(result.content);
+      if (result.partial) setNote(t('ai.partial_result', locale));
     } catch (err: unknown) { setError(apiErrorText(err, locale)); }
     finally { setLoading(false); }
-  }, [file]);
+  }, [file, locale]);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
@@ -61,21 +63,21 @@ export default function AiSummary({ locale: forcedLocale }: { locale?: Locale } 
           <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={t('cloud.add', locale)} />
         </div>
 
-        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 rounded-xl p-3 mb-6 text-xs leading-relaxed">
-          ⚠️ {t('page.ai_warning', locale)}
-        </div>
+        <AiNotice locale={locale} />
 
         <button type="submit" disabled={!file || loading} className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-medium rounded-xl transition">
           {loading ? <span>{t('page.aisummary.loading', locale)}</span> : <span>{t('page.aisummary.btn_generate', locale)}</span>}
         </button>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
-        {note && <p className="text-amber-600 dark:text-amber-400 text-xs">{note}</p>}
+        {note && <p className="text-amber-800 dark:text-amber-400 text-xs">{note}</p>}
 
         {summary && (
           <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
             <h2 className="font-semibold tool-heading mb-3 text-lg">{t('page.aisummary.summary_heading', locale)}</h2>
             <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap leading-relaxed">{summary}</div>
+            <button type="button" onClick={() => navigator.clipboard.writeText(summary)}
+              className="mt-4 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl text-sm text-gray-700 dark:text-gray-300 transition">{t('page.aisummary.copy_btn', locale)}</button>
           </div>
         )}
       </form>
@@ -87,11 +89,8 @@ export default function AiSummary({ locale: forcedLocale }: { locale?: Locale } 
           <li>{t('page.aisummary.howto_2', locale)}</li>
           <li>{t('page.aisummary.howto_3', locale)}</li>
           <li>{t('page.aisummary.howto_4', locale)}</li>
-          <li>{t('page.aisummary.howto_5', locale)}</li>
         </ul>
       </div>
-
-      <p className="mt-6 text-center text-xs text-gray-400 dark:text-gray-500">{t('feature.ai_daily_limit', locale)}</p>
     </div>
   );
 }

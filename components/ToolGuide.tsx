@@ -5,7 +5,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { getLocaleSegment } from '@/lib/guides-slugs';
 import { keyBySlug, toolPath, toolProcessing, RELATED_TOOLS } from '@/lib/tools';
 import { toolSearchMetadata } from '@/lib/metadata';
-import { DAILY_LIMIT } from '@/lib/ai-rate-limit';
+import { DAILY_LIMIT } from '@/lib/ai-limit';
 import { safeJsonLd } from '@/lib/safe-json-ld';
 
 const SITE = 'https://optimapdf.com';

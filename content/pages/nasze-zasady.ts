@@ -20,7 +20,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Dlaczego istnieje limit AI (15 zapytań dziennie)?',
-        p: 'Funkcje AI (Chat AI, Streszczenie AI, Tłumacz AI) są darmowe i nie wymagają własnego klucza API — każdy użytkownik otrzymuje 15 zapytań dziennie bez żadnych opłat. Limit istnieje, ponieważ każde zapytanie AI kosztuje nas pieniądze (opłaty za API OpenRouter). W przeciwieństwie do narzędzi PDF, które działają w 100% lokalnie w Twojej przeglądarce, AI wymaga komunikacji z zewnętrznym serwerem, co generuje rzeczywiste koszty operacyjne. Limit 15 zapytań dziennie pozwala nam oferować tę funkcję za darmo wszystkim użytkownikom, bez konieczności wprowadzania subskrypcji czy opłat. Jeśli potrzebujesz więcej, możesz skonfigurować własny klucz API OpenRouter — wówczas limit nie obowiązuje.',
+        p: 'Funkcje AI (Chat AI, Streszczenie AI, Tłumacz AI) są darmowe i nie wymagają własnego klucza API — każdy użytkownik otrzymuje 15 zapytań dziennie bez żadnych opłat. Limit istnieje, ponieważ każde zapytanie AI kosztuje nas pieniądze (opłaty za API OpenRouter). W przeciwieństwie do narzędzi PDF, które działają w 100% lokalnie w Twojej przeglądarce, AI wymaga komunikacji z zewnętrznym serwerem, co generuje rzeczywiste koszty operacyjne. Limit 15 zapytań dziennie pozwala nam oferować tę funkcję za darmo wszystkim użytkownikom, bez konieczności wprowadzania subskrypcji czy opłat.',
       },
       {
         h: '3. Twoja prywatność jest najważniejsza',
@@ -60,7 +60,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Why is there an AI limit (15 queries per day)?',
-        p: 'AI features (AI Chat, AI Summary, AI Translate) are free and do not require your own API key — every user gets 15 queries per day at no charge. The limit exists because each AI query costs us money (OpenRouter API fees). Unlike PDF tools which work 100% locally in your browser, AI requires communication with an external server, generating real operational costs. The 15 queries per day limit allows us to offer this feature for free to all users without introducing subscriptions or fees. If you need more, you can configure your own OpenRouter API key — the limit does not apply then.',
+        p: 'AI features (AI Chat, AI Summary, AI Translate) are free and do not require your own API key — every user gets 15 queries per day at no charge. The limit exists because each AI query costs us money (OpenRouter API fees). Unlike PDF tools which work 100% locally in your browser, AI requires communication with an external server, generating real operational costs. The 15 queries per day limit allows us to offer this feature for free to all users without introducing subscriptions or fees.',
       },
       {
         h: '3. Your privacy comes first',
@@ -100,7 +100,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Warum gibt es ein KI-Limit (15 Anfragen pro Tag)?',
-        p: 'KI-Funktionen (KI-Chat, KI-Zusammenfassung, KI-Übersetzer) sind kostenlos und erfordern keinen eigenen API-Schlüssel — jeder Nutzer erhält 15 Anfragen pro Tag kostenlos. Das Limit besteht, weil jede KI-Anfrage uns Geld kostet (OpenRouter-API-Gebühren). Im Gegensatz zu PDF-Werkzeugen, die zu 100 % lokal in Ihrem Browser arbeiten, benötigt KI die Kommunikation mit einem externen Server, was echte Betriebskosten verursacht. Das Limit von 15 Anfragen pro Tag ermöglicht es uns, diese Funktion allen Nutzern kostenlos anzubieten, ohne Abonnements oder Gebühren einführen zu müssen. Wenn Sie mehr benötigen, können Sie Ihren eigenen OpenRouter-API-Schlüssel konfigurieren — dann gilt das Limit nicht.',
+        p: 'KI-Funktionen (KI-Chat, KI-Zusammenfassung, KI-Übersetzer) sind kostenlos und erfordern keinen eigenen API-Schlüssel — jeder Nutzer erhält 15 Anfragen pro Tag kostenlos. Das Limit besteht, weil jede KI-Anfrage uns Geld kostet (OpenRouter-API-Gebühren). Im Gegensatz zu PDF-Werkzeugen, die zu 100 % lokal in Ihrem Browser arbeiten, benötigt KI die Kommunikation mit einem externen Server, was echte Betriebskosten verursacht. Das Limit von 15 Anfragen pro Tag ermöglicht es uns, diese Funktion allen Nutzern kostenlos anzubieten, ohne Abonnements oder Gebühren einführen zu müssen.',
       },
       {
         h: '3. Ihre Privatsphäre steht an erster Stelle',
@@ -140,7 +140,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. ¿Por qué existe un límite de IA (15 consultas al día)?',
-        p: 'Las funciones de IA (Chat IA, Resumen IA, Traductor IA) son gratuitas y no requieren su propia clave API — cada usuario recibe 15 consultas al día sin costo. El límite existe porque cada consulta de IA nos cuesta dinero (tarifas de API de OpenRouter). A diferencia de las herramientas PDF, que funcionan 100 % localmente en su navegador, la IA requiere comunicación con un servidor externo, generando costos operativos reales. El límite de 15 consultas al día nos permite ofrecer esta función de forma gratuita a todos los usuarios sin introducir suscripciones ni tarifas. Si necesita más, puede configurar su propia clave API de OpenRouter — entonces el límite no aplica.',
+        p: 'Las funciones de IA (Chat IA, Resumen IA, Traductor IA) son gratuitas y no requieren su propia clave API — cada usuario recibe 15 consultas al día sin costo. El límite existe porque cada consulta de IA nos cuesta dinero (tarifas de API de OpenRouter). A diferencia de las herramientas PDF, que funcionan 100 % localmente en su navegador, la IA requiere comunicación con un servidor externo, generando costos operativos reales. El límite de 15 consultas al día nos permite ofrecer esta función de forma gratuita a todos los usuarios sin introducir suscripciones ni tarifas.',
       },
       {
         h: '3. Su privacidad es lo primero',
@@ -180,7 +180,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Pourquoi y a-t-il une limite IA (15 requêtes par jour) ?',
-        p: 'Les fonctionnalités IA (Chat IA, Résumé IA, Traduction IA) sont gratuites et ne nécessitent pas votre propre clé API — chaque utilisateur reçoit 15 requêtes par jour sans frais. La limite existe car chaque requête IA nous coûte de l\'argent (frais API OpenRouter). Contrairement aux outils PDF qui fonctionnent 100 % localement dans votre navigateur, l\'IA nécessite une communication avec un serveur externe, générant des coûts opérationnels réels. La limite de 15 requêtes par jour nous permet d\'offrir cette fonctionnalité gratuitement à tous les utilisateurs sans introduire d\'abonnements ni de frais. Si vous avez besoin de plus, vous pouvez configurer votre propre clé API OpenRouter — la limite ne s\'applique alors plus.',
+        p: 'Les fonctionnalités IA (Chat IA, Résumé IA, Traduction IA) sont gratuites et ne nécessitent pas votre propre clé API — chaque utilisateur reçoit 15 requêtes par jour sans frais. La limite existe car chaque requête IA nous coûte de l\'argent (frais API OpenRouter). Contrairement aux outils PDF qui fonctionnent 100 % localement dans votre navigateur, l\'IA nécessite une communication avec un serveur externe, générant des coûts opérationnels réels. La limite de 15 requêtes par jour nous permet d\'offrir cette fonctionnalité gratuitement à tous les utilisateurs sans introduire d\'abonnements ni de frais.',
       },
       {
         h: '3. Votre vie privée est primordiale',
@@ -220,7 +220,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Perché esiste un limite AI (15 richieste al giorno)?',
-        p: 'Le funzionalità AI (Chat AI, Riepilogo AI, Traduttore AI) sono gratuite e non richiedono una propria chiave API — ogni utente riceve 15 richieste al giorno senza alcun costo. Il limite esiste perché ogni richiesta AI ci costa denaro (commissioni API OpenRouter). A differenza degli strumenti PDF, che funzionano al 100 % localmente nel tuo browser, l\'AI richiede comunicazione con un server esterno, generando costi operativi reali. Il limite di 15 richieste al giorno ci permette di offrire questa funzionalità gratuitamente a tutti gli utenti senza introdurre abbonamenti o costi. Se hai bisogno di più, puoi configurare la tua chiave API OpenRouter — allora il limite non si applica.',
+        p: 'Le funzionalità AI (Chat AI, Riepilogo AI, Traduttore AI) sono gratuite e non richiedono una propria chiave API — ogni utente riceve 15 richieste al giorno senza alcun costo. Il limite esiste perché ogni richiesta AI ci costa denaro (commissioni API OpenRouter). A differenza degli strumenti PDF, che funzionano al 100 % localmente nel tuo browser, l\'AI richiede comunicazione con un server esterno, generando costi operativi reali. Il limite di 15 richieste al giorno ci permette di offrire questa funzionalità gratuitamente a tutti gli utenti senza introdurre abbonamenti o costi.',
       },
       {
         h: '3. La tua privacy è al primo posto',
@@ -260,7 +260,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Por que existe um limite de IA (15 consultas por dia)?',
-        p: 'As funcionalidades de IA (Chat IA, Resumo IA, Tradutor IA) são gratuitas e não exigem sua própria chave de API — cada usuário recebe 15 consultas por dia sem custo. O limite existe porque cada consulta de IA nos custa dinheiro (taxas de API do OpenRouter). Ao contrário das ferramentas PDF, que funcionam 100 % localmente no seu navegador, a IA requer comunicação com um servidor externo, gerando custos operacionais reais. O limite de 15 consultas por dia nos permite oferecer este recurso gratuitamente a todos os usuários sem introduzir assinaturas ou taxas. Se precisar de mais, você pode configurar sua própria chave de API OpenRouter — então o limite não se aplica.',
+        p: 'As funcionalidades de IA (Chat IA, Resumo IA, Tradutor IA) são gratuitas e não exigem sua própria chave de API — cada usuário recebe 15 consultas por dia sem custo. O limite existe porque cada consulta de IA nos custa dinheiro (taxas de API do OpenRouter). Ao contrário das ferramentas PDF, que funcionam 100 % localmente no seu navegador, a IA requer comunicação com um servidor externo, gerando custos operacionais reais. O limite de 15 consultas por dia nos permite oferecer este recurso gratuitamente a todos os usuários sem introduzir assinaturas ou taxas.',
       },
       {
         h: '3. Sua privacidade vem primeiro',
@@ -300,7 +300,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Varför finns det en AI-gräns (15 förfrågningar per dag)?',
-        p: 'AI-funktioner (AI-chatt, AI-sammanfattning, AI-översättning) är gratis och kräver ingen egen API-nyckel — varje användare får 15 förfrågningar per dag utan kostnad. Gränsen finns eftersom varje AI-förfrågan kostar oss pengar (OpenRouter API-avgifter). Till skillnad från PDF-verktyg som fungerar 100 % lokalt i din webbläsare, kräver AI kommunikation med en extern server, vilket genererar verkliga driftskostnader. Gränsen på 15 förfrågningar per dag gör att vi kan erbjuda denna funktion gratis till alla användare utan att införa prenumerationer eller avgifter. Om du behöver mer kan du konfigurera din egen OpenRouter API-nyckel — då gäller inte gränsen.',
+        p: 'AI-funktioner (AI-chatt, AI-sammanfattning, AI-översättning) är gratis och kräver ingen egen API-nyckel — varje användare får 15 förfrågningar per dag utan kostnad. Gränsen finns eftersom varje AI-förfrågan kostar oss pengar (OpenRouter API-avgifter). Till skillnad från PDF-verktyg som fungerar 100 % lokalt i din webbläsare, kräver AI kommunikation med en extern server, vilket genererar verkliga driftskostnader. Gränsen på 15 förfrågningar per dag gör att vi kan erbjuda denna funktion gratis till alla användare utan att införa prenumerationer eller avgifter.',
       },
       {
         h: '3. Din integritet kommer först',
@@ -340,7 +340,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Hvorfor finnes det en AI-grense (15 forespørsler per dag)?',
-        p: 'AI-funksjoner (AI-chat, AI-sammendrag, AI-oversetter) er gratis og krever ingen egen API-nøkkel — hver bruker får 15 forespørsler per dag uten kostnad. Grensen finnes fordi hver AI-forespørsel koster oss penger (OpenRouter API-gebyrer). I motsetning til PDF-verktøy som fungerer 100 % lokalt i nettleseren din, krever AI kommunikasjon med en ekstern server, noe som genererer reelle driftskostnader. Grensen på 15 forespørsler per dag gjør at vi kan tilby denne funksjonen gratis til alle brukere uten å innføre abonnementer eller avgifter. Hvis du trenger mer, kan du konfigurere din egen OpenRouter API-nøkkel — da gjelder ikke grensen.',
+        p: 'AI-funksjoner (AI-chat, AI-sammendrag, AI-oversetter) er gratis og krever ingen egen API-nøkkel — hver bruker får 15 forespørsler per dag uten kostnad. Grensen finnes fordi hver AI-forespørsel koster oss penger (OpenRouter API-gebyrer). I motsetning til PDF-verktøy som fungerer 100 % lokalt i nettleseren din, krever AI kommunikasjon med en ekstern server, noe som genererer reelle driftskostnader. Grensen på 15 forespørsler per dag gjør at vi kan tilby denne funksjonen gratis til alle brukere uten å innføre abonnementer eller avgifter.',
       },
       {
         h: '3. Ditt personvern kommer først',
@@ -381,7 +381,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. لماذا يوجد حد للذكاء الاصطناعي (15 استعلامًا يوميًا)؟',
-        p: 'وظائف الذكاء الاصطناعي (الدردشة الذكية، الملخص الذكي، الترجمة الذكية) مجانية ولا تتطلب مفتاح API خاص بك — كل مستخدم يحصل على 15 استعلامًا يوميًا بدون أي رسوم. الحد موجود لأن كل استعلام ذكاء اصطناعي يكلفنا مالًا (رسوم API الخاصة بـ OpenRouter). على عكس أدوات PDF التي تعمل 100٪ محليًا في متصفحك، يتطلب الذكاء الاصطناعي اتصالًا بخادم خارجي، مما يولد تكاليف تشغيلية حقيقية. حد 15 استعلامًا يوميًا يسمح لنا بتقديم هذه الوظيفة مجانًا لجميع المستخدمين دون إدخال اشتراكات أو رسوم. إذا كنت بحاجة إلى المزيد، يمكنك تكوين مفتاح API الخاص بك لـ OpenRouter — عندها لا ينطبق الحد.',
+        p: 'وظائف الذكاء الاصطناعي (الدردشة الذكية، الملخص الذكي، الترجمة الذكية) مجانية ولا تتطلب مفتاح API خاص بك — كل مستخدم يحصل على 15 استعلامًا يوميًا بدون أي رسوم. الحد موجود لأن كل استعلام ذكاء اصطناعي يكلفنا مالًا (رسوم API الخاصة بـ OpenRouter). على عكس أدوات PDF التي تعمل 100٪ محليًا في متصفحك، يتطلب الذكاء الاصطناعي اتصالًا بخادم خارجي، مما يولد تكاليف تشغيلية حقيقية. حد 15 استعلامًا يوميًا يسمح لنا بتقديم هذه الوظيفة مجانًا لجميع المستخدمين دون إدخال اشتراكات أو رسوم.',
       },
       {
         h: '3. خصوصيتك هي الأولوية',
@@ -421,7 +421,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. چرا محدودیت هوش مصنوعی (15 پرسش در روز) وجود دارد؟',
-        p: 'ویژگی‌های هوش مصنوعی (چت هوش مصنوعی، خلاصه‌سازی هوش مصنوعی، ترجمه هوش مصنوعی) رایگان هستند و نیاز به کلید API شخصی ندارند — هر کاربر روزانه 15 پرسش بدون هیچ هزینه‌ای دریافت می‌کند. محدودیت وجود دارد زیرا هر پرسش هوش مصنوعی برای ما هزینه دارد (هزینه‌های API OpenRouter). بر خلاف ابزارهای PDF که 100٪ به صورت محلی در مرورگر شما کار می‌کنند، هوش مصنوعی نیاز به ارتباط با سرور خارجی دارد که هزینه‌های عملیاتی واقعی ایجاد می‌کند. محدودیت 15 پرسش در روز به ما امکان می‌دهد این ویژگی را به صورت رایگان به همه کاربران ارائه دهیم بدون اینکه اشتراک‌ها یا هزینه‌هایی معرفی کنیم. اگر به بیشتر نیاز دارید، می‌توانید کلید API OpenRouter خود را پیکربندی کنید — در آن صورت محدودیت اعمال نمی‌شود.',
+        p: 'ویژگی‌های هوش مصنوعی (چت هوش مصنوعی، خلاصه‌سازی هوش مصنوعی، ترجمه هوش مصنوعی) رایگان هستند و نیاز به کلید API شخصی ندارند — هر کاربر روزانه 15 پرسش بدون هیچ هزینه‌ای دریافت می‌کند. محدودیت وجود دارد زیرا هر پرسش هوش مصنوعی برای ما هزینه دارد (هزینه‌های API OpenRouter). بر خلاف ابزارهای PDF که 100٪ به صورت محلی در مرورگر شما کار می‌کنند، هوش مصنوعی نیاز به ارتباط با سرور خارجی دارد که هزینه‌های عملیاتی واقعی ایجاد می‌کند. محدودیت 15 پرسش در روز به ما امکان می‌دهد این ویژگی را به صورت رایگان به همه کاربران ارائه دهیم بدون اینکه اشتراک‌ها یا هزینه‌هایی معرفی کنیم.',
       },
       {
         h: '3. حریم خصوصی شما در اولویت است',
@@ -461,7 +461,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. AI सीमा (प्रतिदिन 15 क्वेरी) क्यों है?',
-        p: 'AI सुविधाएँ (AI चैट, AI सारांश, AI अनुवाद) मुफ्त हैं और आपकी अपनी API कुंजी की आवश्यकता नहीं है — प्रत्येक उपयोगकर्ता को प्रतिदिन 15 क्वेरी बिना किसी शुल्क के मिलती हैं। सीमा इसलिए मौजूद है क्योंकि प्रत्येक AI क्वेरी में हमें पैसा खर्च होता है (OpenRouter API शुल्क)। PDF उपकरणों के विपरीत जो 100% आपके ब्राउज़र में स्थानीय रूप से काम करते हैं, AI को बाहरी सर्वर के साथ संचार की आवश्यकता होती है, जो वास्तविक परिचालन लागत उत्पन्न करता है। प्रतिदिन 15 क्वेरी की सीमा हमें सदस्यता या शुल्क शुरू किए बिना सभी उपयोगकर्ताओं को यह सुविधा मुफ्त प्रदान करने की अनुमति देती है। यदि आपको अधिक आवश्यकता है, तो आप अपनी स्वयं की OpenRouter API कुंजी कॉन्फ़िगर कर सकते हैं — तब सीमा लागू नहीं होती।',
+        p: 'AI सुविधाएँ (AI चैट, AI सारांश, AI अनुवाद) मुफ्त हैं और आपकी अपनी API कुंजी की आवश्यकता नहीं है — प्रत्येक उपयोगकर्ता को प्रतिदिन 15 क्वेरी बिना किसी शुल्क के मिलती हैं। सीमा इसलिए मौजूद है क्योंकि प्रत्येक AI क्वेरी में हमें पैसा खर्च होता है (OpenRouter API शुल्क)। PDF उपकरणों के विपरीत जो 100% आपके ब्राउज़र में स्थानीय रूप से काम करते हैं, AI को बाहरी सर्वर के साथ संचार की आवश्यकता होती है, जो वास्तविक परिचालन लागत उत्पन्न करता है। प्रतिदिन 15 क्वेरी की सीमा हमें सदस्यता या शुल्क शुरू किए बिना सभी उपयोगकर्ताओं को यह सुविधा मुफ्त प्रदान करने की अनुमति देती है।',
       },
       {
         h: '3. आपकी गोपनीयता सर्वोपरि है',
@@ -501,7 +501,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. AI制限（1日15クエリ）がある理由',
-        p: 'AI機能（AIチャット、AI要約、AI翻訳）は無料で、独自のAPIキーは不要です — すべてのユーザーは1日15クエリを無料で受け取れます。制限があるのは、各AIクエリにコストがかかるためです（OpenRouter API料金）。ブラウザで100％ローカルに動作するPDFツールとは異なり、AIは外部サーバーとの通信が必要で、実際の運用コストが発生します。1日15クエリの制限により、サブスクリプションや料金を導入せずに、この機能をすべてのユーザーに無料で提供できます。さらに必要な場合は、ご自身のOpenRouter APIキーを設定してください — その場合、制限は適用されません。',
+        p: 'AI機能（AIチャット、AI要約、AI翻訳）は無料で、独自のAPIキーは不要です — すべてのユーザーは1日15クエリを無料で受け取れます。制限があるのは、各AIクエリにコストがかかるためです（OpenRouter API料金）。ブラウザで100％ローカルに動作するPDFツールとは異なり、AIは外部サーバーとの通信が必要で、実際の運用コストが発生します。1日15クエリの制限により、サブスクリプションや料金を導入せずに、この機能をすべてのユーザーに無料で提供できます。',
       },
       {
         h: '3. プライバシーを最優先',
@@ -541,7 +541,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. 为什么有AI限额（每天15次查询）？',
-        p: 'AI功能（AI聊天、AI摘要、AI翻译）是免费的，不需要您自己的API密钥 — 每位用户每天可免费获得15次查询。存在限额是因为每次AI查询都会产生费用（OpenRouter API费用）。与100%在浏览器本地运行的PDF工具不同，AI需要与外部服务器通信，产生实际运营成本。每天15次查询的限额使我们能够在无需引入订阅或费用的情况下，向所有用户免费提供此功能。如果您需要更多，可以配置自己的OpenRouter API密钥 — 此时限额不适用。',
+        p: 'AI功能（AI聊天、AI摘要、AI翻译）是免费的，不需要您自己的API密钥 — 每位用户每天可免费获得15次查询。存在限额是因为每次AI查询都会产生费用（OpenRouter API费用）。与100%在浏览器本地运行的PDF工具不同，AI需要与外部服务器通信，产生实际运营成本。每天15次查询的限额使我们能够在无需引入订阅或费用的情况下，向所有用户免费提供此功能。',
       },
       {
         h: '3. 您的隐私至上',
@@ -581,7 +581,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Neden AI limiti (günde 15 sorgu) var?',
-        p: 'AI özellikleri (AI Sohbet, AI Özet, AI Çeviri) ücretsizdir ve kendi API anahtarınızı gerektirmez — her kullanıcı günde 15 sorguyu ücretsiz alır. Limit, her AI sorgusunun bize maliyeti olduğu için vardır (OpenRouter API ücretleri). %100 tarayıcınızda yerel olarak çalışan PDF araçlarının aksine, AI harici bir sunucuyla iletişim gerektirir ve gerçek işletme maliyetleri oluşturur. Günde 15 sorgu limiti, bu özelliği abonelik veya ücret getirmeden tüm kullanıcılara ücretsiz sunmamızı sağlar. Daha fazlasına ihtiyacınız varsa, kendi OpenRouter API anahtarınızı yapılandırabilirsiniz — o zaman limit uygulanmaz.',
+        p: 'AI özellikleri (AI Sohbet, AI Özet, AI Çeviri) ücretsizdir ve kendi API anahtarınızı gerektirmez — her kullanıcı günde 15 sorguyu ücretsiz alır. Limit, her AI sorgusunun bize maliyeti olduğu için vardır (OpenRouter API ücretleri). %100 tarayıcınızda yerel olarak çalışan PDF araçlarının aksine, AI harici bir sunucuyla iletişim gerektirir ve gerçek işletme maliyetleri oluşturur. Günde 15 sorgu limiti, bu özelliği abonelik veya ücret getirmeden tüm kullanıcılara ücretsiz sunmamızı sağlar.',
       },
       {
         h: '3. Gizliliğiniz en önemlisi',
@@ -621,7 +621,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Af hverju er AI mark (15 fyrirspurnir á dag)?',
-        p: 'AI aðgerðir (AI spjall, AI samantekt, AI þýðandi) eru ókeypis og þurfa ekki þinn eigin API lykil — hver notandi fær 15 fyrirspurnir á dag án nokkurs kostnaðar. Markið er til vegna þess að hver AI fyrirspurn kostar okkur peninga (OpenRouter API gjöld). Ólíkt PDF tækjum sem vinna 100% staðbundið í vafranum þínum, þarf AI samskipti við utanaðkomandi miðlara, sem myndar raunverulegan rekstrarkostnað. 15 fyrirspurnir á dag markið gerir okkur kleift að bjóða þennan eiginleika ókeypis öllum notendum án þess að taka upp áskriftir eða gjöld. Ef þú þarft meira geturðu stillt þinn eigin OpenRouter API lykil — þá gildir markið ekki.',
+        p: 'AI aðgerðir (AI spjall, AI samantekt, AI þýðandi) eru ókeypis og þurfa ekki þinn eigin API lykil — hver notandi fær 15 fyrirspurnir á dag án nokkurs kostnaðar. Markið er til vegna þess að hver AI fyrirspurn kostar okkur peninga (OpenRouter API gjöld). Ólíkt PDF tækjum sem vinna 100% staðbundið í vafranum þínum, þarf AI samskipti við utanaðkomandi miðlara, sem myndar raunverulegan rekstrarkostnað. 15 fyrirspurnir á dag markið gerir okkur kleift að bjóða þennan eiginleika ókeypis öllum notendum án þess að taka upp áskriftir eða gjöld.',
       },
       {
         h: '3. Næði þitt kemur fyrst',

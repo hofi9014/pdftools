@@ -55,8 +55,8 @@ console.log('\n=== the client shows the visitor\'s language ===');
   check(apiErrorText(e1, 'pl').startsWith('Nieprawidłowy adres'), 'Polish visitor still gets Polish');
   check(apiErrorText(e1, 'ja') !== apiErrorText(e1, 'pl') && !/[a-ząćęłńóśźż]{6}/i.test(apiErrorText(e1, 'ja').replace(/https?/g, '')), 'Japanese visitor gets Japanese');
 
-  const e2 = await apiErrorFromResponse(json(429, { error: 'Przekroczono dzienny limit…', code: 'ai_daily_limit', params: { hours: 7 } }), 'fallback');
-  check(apiErrorText(e2, 'en').includes('about 7 h'), `parameters are filled in: "${apiErrorText(e2, 'en')}"`);
+  const e2 = await apiErrorFromResponse(json(429, { error: 'Przekroczono dzienny limit…', code: 'ai_daily_limit', params: { hours: 7, limit: 15 } }), 'fallback');
+  check(apiErrorText(e2, 'en').includes('about 7 h') && apiErrorText(e2, 'en').includes('15') && !apiErrorText(e2, 'en').includes('{'), `parameters are filled in: "${apiErrorText(e2, 'en')}"`);
 
   const e3 = await apiErrorFromResponse(json(400, { error: 'Zupełnie nowy błąd serwera.', code: 'not_a_known_code' }), 'fallback');
   check(apiErrorText(e3, 'de') === 'Zupełnie nowy błąd serwera.', 'an unknown code falls back to the server\'s own text');
@@ -176,7 +176,21 @@ for (const f of ['app/(unprefixed)/ai-chat/page.tsx', 'app/(unprefixed)/ai-summa
 }
 {
   const client = readFileSync(join(ROOT, 'lib/client-ai.ts'), 'utf8');
-  check((client.match(/apiErrorFromResponse\(res,/g) ?? []).length === 3 && !/await res\.json\(\);\s*throw new Error\(data\.error/.test(client), 'client-ai reads error responses defensively in all three calls');
+  check(!/await res\.json\(\);\s*throw new Error\(data\.error/.test(client), 'client-ai does not parse an error body as JSON before checking it');
+  // By behaviour, not by counting call sites: all three calls meet a gateway's HTML error page.
+  const { askAI, summarizeText, translateText } = await import('../lib/client-ai');
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () => new Response('<html><body>504 Gateway Timeout</body></html>', { status: 504, headers: { 'content-type': 'text/html' } })) as typeof fetch;
+  for (const [name, call] of [
+    ['askAI', () => askAI('tekst', 'pytanie')],
+    ['summarizeText', () => summarizeText('tekst', 'de')],
+    ['translateText', () => translateText('tekst', 'angielski')],
+  ] as const) {
+    let thrown: unknown;
+    try { await call(); } catch (e) { thrown = e; }
+    check(thrown instanceof ApiError && thrown.status === 504 && !/Unexpected token/.test(thrown.message), `${name}: an HTML error page gives a readable error, not a JSON parse error`);
+  }
+  globalThis.fetch = originalFetch;
   const proxySrc = readFileSync(join(ROOT, 'proxy.ts'), 'utf8');
   check(!/from '@\/lib\/(api-error|i18n)'/.test(proxySrc), 'the proxy does not pull the translations into its bundle');
 }

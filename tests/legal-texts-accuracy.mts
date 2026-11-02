@@ -38,7 +38,7 @@ const hasNum = (text: string, n: number): boolean => new RegExp(`(^|[^0-9])${n}(
 const aiRoute = read('app/api/ai/route.ts');
 const aiLimit = read('lib/ai-rate-limit.ts');
 const proxy = read('proxy.ts');
-const DAILY = Number(/const DAILY_LIMIT = (\d+)/.exec(aiLimit)?.[1]);
+const DAILY = Number(/const DAILY_LIMIT = (\d+)/.exec(read('lib/ai-limit.ts'))?.[1]);
 const DAILY_HOURS = Number(/const DAILY_WINDOW_MS = (\d+) \* 60 \* 60 \* 1000/.exec(aiLimit)?.[1]);
 const PROXY_PER_MINUTE = Number(/const RATE_LIMIT_REQUESTS = (\d+)/.exec(proxy)?.[1]);
 const COOKIE_DAYS = Number(/x-detected-locale=\$\{code\};path=\/;max-age=\$\{(\d+) \* 24 \* 60 \* 60\}/.exec(read('components/LanguageSelector.tsx'))?.[1]);
