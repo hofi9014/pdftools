@@ -152,7 +152,8 @@ miejsca na wdrożenia (limit Hobby 10 GB).
   wspierających zniknęła ze strony Wsparcia w 16 językach (`15e9d61`, sprawdzone na produkcji).
 - **[DECYZJA]** Faktury KSeF (XML → czytelny PDF) — duży projekt, najpierw sprawdzenie
   przepisów i schematu FA(3).
-- **[DECYZJA]** Filiżanka kawy w kole na stronie głównej — dwa warianty do wyboru.
+- **ZROBIONE 2026-11-04 (wygląd zatwierdzony przez właściciela):** filiżanka kawy z parą w kole na
+  stronie głównej, za ikonami, w całości w kole (`components/HeroCoffeeCup.tsx`, `test:hero-coffee-cup`).
 - **[DECYZJA]** Ikony (1.5).
 - **[DECYZJA]** „Nasze zasady” zapowiadają płatny plan dla firm i możliwe reklamy AdSense. To Twoje
   plany, więc ich nie zmieniam, ale oba wymagają planu Vercel Pro — czy zostawić te zdania?
