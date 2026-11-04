@@ -404,6 +404,28 @@ body {
   }
 }
 
+/* Coffee cup in the home-page circle (components/HeroCoffeeCup.tsx). Each wisp of steam rises
+   and fades on a loop; with reduced motion the animation ends at once and the wisps keep their
+   resting opacity, so the steam stays visible but still. */
+.hero-steam {
+  --steam-rest: 0.8;
+  --steam-peak: 1;
+  opacity: var(--steam-rest);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: hero-steam-rise 6s ease-in-out infinite;
+}
+.hero-steam-2 { animation-delay: 2s; }
+.hero-steam-3 { animation-delay: 4s; }
+@keyframes hero-steam-rise {
+  0% { opacity: 0; transform: translateY(14px) scaleY(0.85); }
+  35% { opacity: var(--steam-peak); }
+  100% { opacity: 0; transform: translateY(-22px) scaleY(1.1) skewX(-4deg); }
+}
+.dark .hero-cup { filter: brightness(0.86) saturate(0.9); }
+.dark .hero-steam-group { fill: #F3E6D4; }
+.dark .hero-steam { --steam-rest: 0.38; --steam-peak: 0.55; }
+
 /* Floating labels around the home-page illustration */
 .hero-chip {
   padding: 10px 14px;
