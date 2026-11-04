@@ -2,7 +2,7 @@
 // the home page. Purely decorative: the parent is aria-hidden. Shaped like a real breakfast
 // cup: a deep bowl on a short foot ring that stands in the well of a dished saucer
 // with a raised, lipped rim. Light falls from the upper left: the glaze is shaded with layered
-// gradients and a faint grain, with a contact shadow under the base and a cast shadow to the
+// gradients only (no noise: at screen resolution it reads as dirty pixels), with a contact shadow under the base and a cast shadow to the
 // right. The steam rises slowly (`.hero-steam` in globals.css) and stands still for people who
 // turned off animations. Everything is scaled to fit inside the circle.
 export default function HeroCoffeeCup() {
@@ -27,11 +27,10 @@ export default function HeroCoffeeCup() {
           <stop offset="0.62" stopColor="#5A3E22" stopOpacity="0.04" />
           <stop offset="1" stopColor="#47301A" stopOpacity="0.5" />
         </linearGradient>
-        <linearGradient id="hcc-foot" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#8F7149" />
-          <stop offset="0.32" stopColor="#DCC7A3" />
-          <stop offset="0.68" stopColor="#BFA37B" />
-          <stop offset="1" stopColor="#856843" />
+        <linearGradient id="hcc-foot" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#3E2812" stopOpacity="0.5" />
+          <stop offset="0.45" stopColor="#3E2812" stopOpacity="0.18" />
+          <stop offset="1" stopColor="#3E2812" stopOpacity="0.22" />
         </linearGradient>
         <radialGradient id="hcc-bounce" cx="0.5" cy="1.05" r="0.5">
           <stop offset="0" stopColor="#FFF3DF" stopOpacity="0.55" />
@@ -48,12 +47,13 @@ export default function HeroCoffeeCup() {
           <stop offset="0.5" stopColor="#DDC8A6" />
           <stop offset="1" stopColor="#EFE2CB" />
         </linearGradient>
-        <radialGradient id="hcc-coffee" cx="0.45" cy="0.46" r="0.58">
-          <stop offset="0" stopColor="#3A1D09" />
-          <stop offset="0.55" stopColor="#2A1406" />
-          <stop offset="0.8" stopColor="#4E2B13" />
-          <stop offset="0.93" stopColor="#8C5A31" />
-          <stop offset="1" stopColor="#B98654" />
+        <radialGradient id="hcc-coffee" cx="0.46" cy="0.42" r="0.58">
+          <stop offset="0" stopColor="#4A2712" />
+          <stop offset="0.45" stopColor="#3A1E0C" />
+          <stop offset="0.74" stopColor="#5A3218" />
+          <stop offset="0.88" stopColor="#9A6537" />
+          <stop offset="0.96" stopColor="#C49060" />
+          <stop offset="1" stopColor="#A87649" />
         </radialGradient>
         {/* handle */}
         <linearGradient id="hcc-handle" x1="0" y1="0" x2="1" y2="1">
@@ -103,16 +103,6 @@ export default function HeroCoffeeCup() {
         <filter id="hcc-blur1" x="-20%" y="-40%" width="140%" height="180%">
           <feGaussianBlur stdDeviation="1" />
         </filter>
-        <filter id="hcc-crema" x="0" y="0" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.55 1.3" numOctaves="2" seed="7" result="n" />
-          <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.86  0 0 0 0 0.62  0 0 0 0 0.38  0 0 0 0.9 -0.25" />
-          <feComposite in2="SourceGraphic" operator="in" />
-        </filter>
-        <filter id="hcc-grain" x="0" y="0" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="1" seed="11" result="g" />
-          <feColorMatrix in="g" type="matrix" values="0 0 0 0 0.35  0 0 0 0 0.25  0 0 0 0 0.15  0 0 0 0.7 -0.2" />
-          <feComposite in2="SourceGraphic" operator="in" />
-        </filter>
         <filter id="hcc-steam" x="-60%" y="-30%" width="220%" height="160%">
           <feTurbulence type="fractalNoise" baseFrequency="0.018 0.045" numOctaves="3" seed="3" result="t" />
           <feDisplacementMap in="SourceGraphic" in2="t" scale="26" xChannelSelector="R" yChannelSelector="G" result="d" />
@@ -139,7 +129,7 @@ export default function HeroCoffeeCup() {
         <path d="M74 272 C 110 255, 220 255, 256 272" fill="none" stroke="#F6ECDB" strokeWidth="1.6" opacity="0.6" filter="url(#hcc-blur1)" />
         {/* cast shadow of the cup, then the dark line where its base meets the saucer */}
         <ellipse cx="182" cy="285" rx="62" ry="10" fill="#3E2812" opacity="0.32" filter="url(#hcc-soft)" />
-        <ellipse cx="166" cy="287" rx="40" ry="4.5" fill="#24150A" opacity="0.7" filter="url(#hcc-blur1)" />
+        <ellipse cx="166" cy="289" rx="44" ry="5" fill="#24150A" opacity="0.5" filter="url(#hcc-blur2)" />
 
         {/* handle, behind the body */}
         <path d="M250 168 C 306 152, 318 226, 236 241" fill="none" stroke="url(#hcc-handle)" strokeWidth="15" strokeLinecap="round" />
@@ -149,15 +139,15 @@ export default function HeroCoffeeCup() {
         <ellipse cx="235" cy="237" rx="7" ry="8" fill="#6F5534" opacity="0.3" filter="url(#hcc-blur2)" />
 
         {/* foot ring standing in the saucer well */}
-        <path d="M132 272 L 128 284 Q 165 292 202 284 L 198 272 Q 165 280 132 272 Z" fill="url(#hcc-foot)" />
-        <path d="M129 283 Q 165 290 201 283" fill="none" stroke="#6F5534" strokeWidth="1" opacity="0.5" />
+        <path d="M134 268 C 136 277, 132 282, 127 286 Q 165 294 203 286 C 198 282, 194 277, 196 268 Z" fill="url(#hcc-body)" />
+        <path d="M134 268 C 136 277, 132 282, 127 286 Q 165 294 203 286 C 198 282, 194 277, 196 268 Z" fill="url(#hcc-foot)" />
+        <path d="M128 285.5 Q 165 293 202 285.5" fill="none" stroke="#F6ECDB" strokeWidth="1.2" opacity="0.55" />
 
         {/* body: a deep bowl with a rounded bottom */}
         <g clipPath="url(#hcc-body-clip)">
           <rect x="60" y="136" width="210" height="150" fill="url(#hcc-body)" />
           <rect x="60" y="136" width="210" height="150" fill="url(#hcc-body-depth)" />
           <rect x="60" y="136" width="210" height="150" fill="url(#hcc-bounce)" />
-          <rect x="60" y="136" width="210" height="150" fill="#000" filter="url(#hcc-grain)" opacity="0.07" />
           {/* the rim's own shadow just under the lip */}
           <ellipse cx="165" cy="162" rx="98" ry="14" fill="#5A3E22" opacity="0.14" filter="url(#hcc-blur2)" />
           {/* glaze: a broad sheen, a sharp window reflection, rim light on the right */}
@@ -175,11 +165,6 @@ export default function HeroCoffeeCup() {
         <ellipse cx="165" cy="173.5" rx="88.5" ry="17.5" fill="url(#hcc-inner)" />
         <path d="M77 172 C 92 158, 238 158, 253 172" fill="none" stroke="#8E7350" strokeWidth="1" opacity="0.45" />
         <ellipse cx="165" cy="178" rx="85" ry="14.5" fill="url(#hcc-coffee)" />
-        <ellipse cx="165" cy="178" rx="85" ry="14.5" fill="#000" filter="url(#hcc-crema)" clipPath="url(#hcc-coffee-clip)" opacity="0.28" />
-        <g clipPath="url(#hcc-coffee-clip)" fill="#D9AE7C" opacity="0.5">
-          <circle cx="96" cy="181" r="1.4" /><circle cx="101" cy="185" r="1" /><circle cx="231" cy="182" r="1.3" />
-          <circle cx="226" cy="186" r="0.9" /><circle cx="188" cy="191" r="1.1" /><circle cx="122" cy="189" r="0.9" />
-        </g>
         <ellipse cx="138" cy="174" rx="30" ry="3.6" fill="#F2D6AE" opacity="0.26" filter="url(#hcc-blur2)" />
         <g mask="url(#hcc-ring)" clipPath="url(#hcc-front)">
           <ellipse cx="165" cy="172" rx="96" ry="21" fill="url(#hcc-lip)" />
