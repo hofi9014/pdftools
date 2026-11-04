@@ -53,9 +53,442 @@
    "ac50f9407d958a31",
    "38c07671640c9471",
    "72c312b427d8b770"
+  ],
+  "split": [
+   "fcd30596fba1dae6",
+   "e837034c511b0a49",
+   "4e1eabc70d03f07c",
+   "290f89a92eb823d3",
+   "50e78ad6a4156104",
+   "b586d1d2a4d415fb",
+   "14a6a3dbbb178d17",
+   "d87127f37cdffe8c",
+   "de527fcefa6f4242",
+   "2e9eecac3afc929c",
+   "67663c2260ec9da8",
+   "bb7d1d95c8d505b7",
+   "8c9d18af9a20b503",
+   "1859d7501b0f8558",
+   "617cfb8e64359f6b",
+   "784878c64a6201dd"
+  ],
+  "rotate": [
+   "d607c4b8074221c5",
+   "306920a68c4a2e6d",
+   "d200f33058a01813",
+   "906a0a01758cc3f7",
+   "3c6df6f52cd95d0a",
+   "f542a70fc5688390",
+   "d9f063a5db1fbc12",
+   "e7f6e3c9269a157e",
+   "453a4375137c62c8",
+   "485f2d93d8744c22",
+   "01f2c92e582719b9",
+   "c1900c24d7599cb9",
+   "2ccf540895417de4",
+   "7a5d3f8d1b098a15",
+   "e7ac821f7744dd9e",
+   "64ee2a6a80febefc"
+  ],
+  "crop": [
+   "530edeffe9063f4c",
+   "95d65d727b808ff1",
+   "9d631aa7c2184e1b",
+   "06f50a1534bf34d0",
+   "cc119bb7ec326275",
+   "0ac0f399491c14c1",
+   "28bf18691c44dfab",
+   "e0f2afb091310651",
+   "db96bc60dbeacb6b",
+   "3f3e34907fc01664",
+   "75b3370c28e5715f",
+   "6ad0529bc61c24c3",
+   "bdce9e2f160b442b",
+   "72b64645b85572a4",
+   "fcd95e7b0ae7fa95",
+   "fe962307e3728413"
+  ],
+  "addpage": [
+   "9fc8ed5ae915f845",
+   "3d72ce40c613088b",
+   "e3152192ae84594c",
+   "c5876f87fef00d5d",
+   "19503974334ef8ba",
+   "48d0135430c33b27",
+   "c257f9292cf5a13c",
+   "0b72be98f9d6e353",
+   "c86f99ad9171c3ed",
+   "8e2022be5697626d",
+   "9876cec8e3a1448f",
+   "af69492b425d6d3f",
+   "b33488f0c5ed4964",
+   "f619b0cf7dd95ac3",
+   "ba51d683f1d1d69c",
+   "31655aebb699edda"
+  ],
+  "edit": [
+   "53b93fe9425c5587",
+   "582e60081f3af7b1",
+   "ce1f3cfbeab5c78b",
+   "00c03b010dab431a",
+   "e5d718b16034a280",
+   "f14ea91b32111f26",
+   "b6f4342dc7906ca1",
+   "61622589c5be8ba8",
+   "7c913cf456433fd4",
+   "cb20272866a93509",
+   "6aa15c1e18f1bf73",
+   "cba03814bbad5137",
+   "75ed971e14747fd3",
+   "9ecf7c041959bcec",
+   "b97d59e5c832aef5",
+   "cb2d5938276502d7"
+  ],
+  "pagenumbers": [
+   "e191c57ef3189637",
+   "9ad2f547e7e19d10",
+   "8658cf19101f554d",
+   "90e584335731f165",
+   "4712d6c43071df21",
+   "d09a02ccbc330217",
+   "e27c105fb4565c16",
+   "7a00777ce9100e1f",
+   "17ed961f07164ca6",
+   "93f9395ca9b18d5e",
+   "34ec31e1c90e927f",
+   "5c2eb0ce91e25714",
+   "350367a4cc89d1f2",
+   "b60e0d22ec6c344a",
+   "35ba642ff8470fb9",
+   "62e69bae4f3dfcf9"
+  ],
+  "watermark": [
+   "ee415b1e5e652f66",
+   "90ad16efdbb3e2dc",
+   "a2c047fcd8c0381b",
+   "0718bf2e12c3aa8e",
+   "085277e3b764895d",
+   "ee2a6928a6d9b698",
+   "ec066b6f78cfdb3c",
+   "da470eecfcb60f90",
+   "f1141b7e44f49ad3",
+   "c39a46412a4c1bb7",
+   "5cc1eabea9b03b5e",
+   "69f79527833bfbe3",
+   "43bd48839c9b9fe2",
+   "e3706c29046ca9c1",
+   "653c921334280164",
+   "981508d462792d87"
+  ],
+  "flatten": [
+   "b138bd58e0378a74",
+   "b875b206af5acb84",
+   "aca60990a5f74780",
+   "23b25f2d36752259",
+   "d5a0da9cab6982ea",
+   "f468db4bd1d6a02f",
+   "b2989720ea806854",
+   "49d40af15e837bba",
+   "e9a2fdaba5d1117b",
+   "e16e68af8527a391",
+   "393ced0c622dd6fe",
+   "6fd32e95153ba2d7",
+   "4562470022eaeceb",
+   "2d6b11613547c099",
+   "82dfebc8cef5ef25",
+   "52fedec0c887efa7"
+  ],
+  "wordtopdf": [
+   "898bef267c136cfb",
+   "5892ee7248fe8eac",
+   "d98c2e3b1a6a1a8e",
+   "f528795e28852377",
+   "87ae366ecb86fc2d",
+   "34bdc849bbcd46e0",
+   "b66238596d587ea6",
+   "ba005d910cd4a96d",
+   "b2ac59d3f7f486d2",
+   "7b6e2ae92d812402",
+   "91c9957ede4f45a1",
+   "d983a391944f6d95",
+   "38d889e893613ec9",
+   "a9fac3ad8207e34d",
+   "e1601284a767084a",
+   "64a457c846d7a4b1"
+  ],
+  "jpgTopdf": [
+   "1f6651799aa149d6",
+   "82581fbb9437d2ca",
+   "1abc0523b602d1ee",
+   "15eed83460ae9517",
+   "61357e1ad6540b51",
+   "5a3255eb4c1da4ac",
+   "4b9732c8d52f91d7",
+   "e6c6a7f53c821eb6",
+   "d9eef695ba640827",
+   "6d8fa7a05030d988",
+   "a257a1d671d2fa0b",
+   "2a8e4a5f88a1b02b",
+   "b41c245bed3f6106",
+   "a8c4c3dceab1b922",
+   "9670727d2395bc1b",
+   "6ccc7c2bdbcbb66e"
+  ],
+  "svg": [
+   "cb36eebfea8876cd",
+   "a7fb500aabf9bfe5",
+   "c3f17e33ce2ddebc",
+   "fd2f60b20dc7dc9b",
+   "2ce6f6a11c7ee481",
+   "d6884d556f2401f0",
+   "89bc2f01fd14ab79",
+   "329d97ba10405aad",
+   "d1370b496630e88c",
+   "9992051cc2f5ce7b",
+   "068edd9c249048c0",
+   "ab4c47d9e3a0f369",
+   "5dd76afeb79e46bc",
+   "3d6ba6fda03647f0",
+   "984154d39ed15555",
+   "d7d0863085f8cdc8"
+  ],
+  "html": [
+   "ab68c0b87f284f06",
+   "a0b0e1cc0ed91beb",
+   "c234c4f0f268c0b3",
+   "2907546390aa7a44",
+   "84d3e8482b1f1d7b",
+   "b9d35fefe01e3159",
+   "d17a9e244e6a29a6",
+   "b3d5b6cbd08d00a9",
+   "e476eb9a1b9e688e",
+   "2962eea3d13db853",
+   "3231cfd750477556",
+   "6bbe677c437ec2f9",
+   "b3283359fa1648a3",
+   "30e58ea4423e365e",
+   "301d4d523f964a84",
+   "59596d340471b9f8"
+  ],
+  "url": [
+   "77369c36889e2fae",
+   "d5018de8bddc7b4c",
+   "98327cef5cf6baeb",
+   "d24742e0b159f038",
+   "6448a2fd975ec642",
+   "e9b8e151204887e6",
+   "8e5905c6dccdf83c",
+   "dc34d28b3ce4b1f1",
+   "962e428db2b9187a",
+   "4f4089adf47c1ebf",
+   "bada007b90ee59f9",
+   "5063404457e58c65",
+   "634427f0d4a37bce",
+   "4e6e6a0359a02f35",
+   "0d5750010e3fed14",
+   "9b37c8e4e059b0c9"
+  ],
+  "openoffice": [
+   "b145cdb6c328406a",
+   "33d0369491ec4e6e",
+   "8d70ea306b89bf28",
+   "521db7848d3a4af6",
+   "b4f6976b7534ac7c",
+   "c8d2dc1cc18bc707",
+   "5f47dba2299d990d",
+   "d18de127ebfa2db0",
+   "77115c187f765e59",
+   "31d881ac82158e82",
+   "6e00342c1e6db505",
+   "e05b8d51b20879e5",
+   "d88ed980bcc1985f",
+   "980a907d2b33d7f1",
+   "4e71309726f34120",
+   "d90c332f750fccc5"
+  ],
+  "protect": [
+   "f75ea07d2207e3c8",
+   "7fd67634a58999c3",
+   "fcb2f42d01d76ec4",
+   "e7750eb4951d8398",
+   "de5337de56b5f1ea",
+   "57d805c5ed719e80",
+   "f633ff15f44ea386",
+   "1b6b4c3a30e1083a",
+   "f2466b694d86a591",
+   "31ec3990ca4ca5c2",
+   "e6741abe990dfedb",
+   "4212724ac19a1475",
+   "56fd1faed53e6fc7",
+   "89c8ee0bd5f9003b",
+   "37065f13b7084eb0",
+   "a49c05107689a511"
+  ],
+  "sign": [
+   "3550dcc86d4b54fd",
+   "3b93e011b0cd7c91",
+   "c9cec5579bb9a2c2",
+   "d806331f8d345fa8",
+   "8570fad7fcac4bef",
+   "3ced31fb4e662d4e",
+   "ad95489961c957b5",
+   "755461b863a72b96",
+   "4ec50541f1dff4dc",
+   "b0f67bef3de07990",
+   "a2b2fa1279cdbf1b",
+   "71be5d94928b6002",
+   "0090a5db03d340ef",
+   "68059fdc874ef8f0",
+   "f2708303a9c0e1d9",
+   "40c585ceda7d1db0"
   ]
  },
- "help": {},
+ "help": {
+  "split-wrong": [
+   "1b894102025e1158",
+   "adba49c638c062fa",
+   "4ca4cd4742e811e1",
+   "7ca14e34c51c2028",
+   "e3d1c283d8e59c27",
+   "19c018a1c92dbbc7",
+   "c17c44d505348709",
+   "33e38fa8daf4ca7d",
+   "aa94c957c3b4d5f8",
+   "6707042a6e0b4563",
+   "72063290093c9296",
+   "cfd784a84b12da48",
+   "84cb87c1ca27bff0",
+   "8b21a57775ab0856",
+   "8255c52c4c70f4d2",
+   "4aa3adec12f1875a"
+  ],
+  "crop-wrong": [
+   "c070e243152f00c1",
+   "99da7419067fdc9d",
+   "4bc67d1bcb836e51",
+   "2de63d75889a937b",
+   "88cc514d8542fdf3",
+   "8f7d5b66dc98ba11",
+   "23244c162d9111dc",
+   "d3e397b752af59b8",
+   "b48117111d7a7d26",
+   "73f81f075f6360b9",
+   "d4716ae26428b025",
+   "23262f6cbe069176",
+   "befe11bef5e89843",
+   "fbc750eeffa9da63",
+   "7e90cb3ce4b90ce3",
+   "f95c7c5b54a88256"
+  ],
+  "watermark-notvisible": [
+   "ad58430a40c3e354",
+   "028a6af1b83384a0",
+   "ce1c780f149be3f4",
+   "3dfc0682bb887a5d",
+   "539901ed897afff9",
+   "3723a17f366335ae",
+   "cf5c0823c6175a65",
+   "329d9828be937ee3",
+   "a94a719d10a438c9",
+   "d42ea69a877f1f63",
+   "1af355ebf481fe83",
+   "69649fb9a46ef700",
+   "f529abb514318ca9",
+   "ecf70e301da08286",
+   "626563f5cac796b7",
+   "2c3e450ecced82b7"
+  ],
+  "edit-addtext": [
+   "cf979c730b6be278",
+   "33f280325cbaa01b",
+   "44a2e8c45528a7b2",
+   "036f7571444b9e49",
+   "857a5476693708dd",
+   "451e8f1789862314",
+   "970ec1e02df7cd09",
+   "1894fdab744a4800",
+   "d675bfba0e7f3157",
+   "1ea529ca5f998d88",
+   "ce3cd82ee9c29731",
+   "8a75036314a3b640",
+   "25527c0a9619da07",
+   "2508ca304c6e6813",
+   "614020fad1a53a53",
+   "307bdcba9bc200f7"
+  ],
+  "images-quality": [
+   "d0a25d38cd03758d",
+   "77686c8ea4751cff",
+   "6430449c69f3783b",
+   "32873e554b76968f",
+   "5f3e8f3386a3ba74",
+   "c3ef16ed260a96dc",
+   "860d0638892f6b2d",
+   "b64e5644c4899996",
+   "9f45efefc8bf8e5a",
+   "476cf6fbb74cbcd3",
+   "27c65bc38a3f9e64",
+   "6a6256a6927af548",
+   "be796ce340964c48",
+   "b71ac378ed4d3782",
+   "aa09d2797be3f299",
+   "4d254b3c15a8b819"
+  ],
+  "ocr-notext": [
+   "e003b1cf206f872e",
+   "cd672c836ba27cba",
+   "01f935ddd0ae3162",
+   "c31a39187b165919",
+   "661229110f4d6111",
+   "1961df24a6788bde",
+   "ee51fbcbcac7341f",
+   "e0776bfdbf782938",
+   "748c459bdf34e859",
+   "a24115e707bcc58a",
+   "49d4a927f36f8092",
+   "23ac923ddce046e9",
+   "25f1136a23fa01b6",
+   "e4c0012924a442b5",
+   "b4d4f390c6cb7da4",
+   "7cd54a04143b6048"
+  ],
+  "html-noresponse": [
+   "4a8270debcdc9509",
+   "c581adfbb091959b",
+   "7d20c9ae5a43a16a",
+   "ff7c7ca5ab57487c",
+   "ec73abf0498a93b9",
+   "a2c034ca3de80947",
+   "cdca13951d849380",
+   "5f7b9d2f09cf28ea",
+   "8f2a364ef94c5012",
+   "0ad11f3e0939eafc",
+   "4abd41944a1ed79f",
+   "0c2a02b2231d7c3f",
+   "7301899d1b54dce5",
+   "d11478d8ceb7ba45",
+   "c7dd7bdfa546fff3",
+   "494b68cf2782aa62"
+  ],
+  "sign-nosign": [
+   "17a25951ebfb42eb",
+   "d0acda90c76a8edc",
+   "471ae6ee13f1d0fe",
+   "dbd29ffc5f9b0520",
+   "8250c22460711e57",
+   "79d86d8f5de03cd0",
+   "e02f7f475f1cdff5",
+   "6d351a7506a8bc7f",
+   "6a80f03938b852ae",
+   "59a3666958630d5a",
+   "a14909a7cfe13331",
+   "5bf815730d7926d2",
+   "51f002ae8997f947",
+   "bae8eac6c2608f28",
+   "fe89d18db31742d1",
+   "4d605601cfe756e0"
+  ]
+ },
  "keys": {
   "local.desc": [
    "55c1a3e50eaf1684",
@@ -146,7 +579,224 @@
    "efa0888aa1123783",
    "97aa2fdcfa7fc434",
    "db8dc3768db0b3eb"
-  ]
+  ],
+  "page.svg.desc": [
+   "ef0c39a64f614397",
+   "1825ff24681c7f16",
+   "849bd40e4901fbd1",
+   "02732839ee16e934",
+   "8f78aefef8bb2d22",
+   "ae726ae2dfb3b483",
+   "8bfe10f080b0bafa",
+   "f1263773842176f9",
+   "4c961abb2d47d220",
+   "6de8f1b548411e15",
+   "0317055d8dbf7e8c",
+   "ba73ac69ef4f7496",
+   "bec97389ead610df",
+   "82b6d14c5d29477b",
+   "4b533e1daaf77bd4",
+   "9b3e7f1d39086abd"
+  ],
+  "page.compress.desc": [
+   "0929af9965bc9600",
+   "e9691b54ba3e6171",
+   "0fa5040eb4cae69e",
+   "27593295b6dd0f02",
+   "f97c007ad566408e",
+   "be76b25eeab1ea92",
+   "1f2a9c0260f607d1",
+   "bb5f07a3f2a5f830",
+   "254fd82ba97bde59",
+   "240df6322c214a7a",
+   "e8adc2f888f52e7b",
+   "484769044a443ea8",
+   "735c2d620998b4c1",
+   "fba4f472f4f636c9",
+   "c3f0c686fb31d1b4",
+   "8b496130f27e34dc"
+  ],
+  "edit.local_saved": [
+   "cb721c76d2a9986b",
+   "1ca313be0f3b32f3",
+   "b79f0abbc7f0f81f",
+   "7ff078533dc387c2",
+   "d3548fdc476b5d35",
+   "0a9c48be4d4221ae",
+   "ded98eb3eedbadb7",
+   "ccde09d969a528f6",
+   "cdb421571fb0dd62",
+   "8c12f0557d990b5d",
+   "2efff9501fe7135e",
+   "bf6ffc53691e58d8",
+   "7bfbafeca8b70ae9",
+   "6418372ce2b65ce0",
+   "6aa0b607b65a0b31",
+   "2bf1ac1afaf72aae"
+  ],
+  "page.edit.desc": [
+   "02e36956b058b4db",
+   "427b9ddab9fb7d0e",
+   "865ef31c15a73975",
+   "c02a04377d65c8a4",
+   "a3968729d41109a2",
+   "17a9b6fb5bdc0399",
+   "12692d385a09b9ab",
+   "b3ef869f5d1b1516",
+   "7ceac06a22d5ed84",
+   "0254c530c1772f66",
+   "31cd4aabab45579b",
+   "9bfc5d7a72f2ce1c",
+   "8c3fd93770720ab4",
+   "f5f78332e06fe1f3",
+   "ecb1c3b3ec1b6b9c",
+   "507e2630913874e2"
+  ],
+  "desc.edit": [
+   "3c284c469ce9ea2c",
+   "d70f878224c4342b",
+   "48b1483f14c21e2d",
+   "d5c2f0ae1d74b4b5",
+   "caaab38a80681bf3",
+   "b76ea2bbc94f6249",
+   "d2f71f2a645e1303",
+   "7ec6f147ffcc51bb",
+   "e6f62c0724ac7cdb",
+   "453508eaa275fb4e",
+   "aa737384bb70a5b2",
+   "10cb8fd110d45e33",
+   "0444a1f432aefee2",
+   "dbb9594e9c9061a3",
+   "48b1483f14c21e2d",
+   "11b7990491137fee"
+  ],
+  "page.watermark.opacity_label": {
+   "pl": [
+    "ab926791f6d59291"
+   ],
+   "ar": [
+    "7c849be6b6206706"
+   ],
+   "fa": [
+    "48c26bc3f29b2d8c"
+   ],
+   "is": [
+    "501b34a1a19994b5"
+   ]
+  },
+  "page.split.mode_ranges": {
+   "es": [
+    "29e66e766a7874cf"
+   ],
+   "fr": [
+    "810e0a6ecb1835bc"
+   ],
+   "no": [
+    "dd218bf8f481b691"
+   ]
+  },
+  "tool.epub": {
+   "tr": [
+    "69fdfcb2fb775761"
+   ]
+  },
+  "tool.html": {
+   "tr": [
+    "e03b0e6dda956bf5"
+   ]
+  },
+  "tool.html2pdf": {
+   "tr": [
+    "bfcc725376acd40a"
+   ]
+  },
+  "tool.jpg": {
+   "tr": [
+    "f84d053c33440801"
+   ]
+  },
+  "tool.openoffice": {
+   "tr": [
+    "764f4fd59bee05bb"
+   ]
+  },
+  "tool.pdf2openoffice": {
+   "tr": [
+    "1c1dc17d2c304704"
+   ]
+  },
+  "tool.ppt": {
+   "tr": [
+    "ac9a1fd58fd36927"
+   ]
+  },
+  "tool.svg": {
+   "tr": [
+    "912d60b0961daad7"
+   ]
+  },
+  "tool.txt": {
+   "tr": [
+    "6b8ec9b13266caf8"
+   ]
+  },
+  "tool.url": {
+   "tr": [
+    "5b8c94581ea6941b"
+   ]
+  },
+  "tool.word": {
+   "tr": [
+    "283553b063ad6ec5"
+   ]
+  },
+  "edit.label_opacity": {
+   "pl": [
+    "e29ee2f5c984c16c"
+   ],
+   "ar": [
+    "7b8949925b356484"
+   ],
+   "fa": [
+    "0cb6dc6881861ace"
+   ]
+  },
+  "edit.label_highlight_opacity": {
+   "pl": [
+    "e29ee2f5c984c16c"
+   ],
+   "ar": [
+    "d74f95775df38131"
+   ],
+   "fa": [
+    "be8f006a534b97ad"
+   ],
+   "is": [
+    "ee801d58065ab373"
+   ]
+  },
+  "edit.label_opacity_abbr": {
+   "pl": [
+    "122010ceb8d13180"
+   ],
+   "ar": [
+    "c670c7ca223bd845"
+   ],
+   "fa": [
+    "7e39bfea2ad6fa25"
+   ]
+  },
+  "page.edit.howto_adjust": {
+   "pl": [
+    "38af777a020ec0f6"
+   ],
+   "ar": [
+    "5df38cc2bd3422c4"
+   ],
+   "fa": [
+    "8735bbf968d3a816"
+   ]
+  }
  },
  "legal": [
   "5f19cfd07f2c1aa4",

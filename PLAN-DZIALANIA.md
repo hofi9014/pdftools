@@ -58,11 +58,20 @@ narzędzia; potem języki. Rzeczy wymagające decyzji albo kont właściciela s�
       - FAQ OpenOffice: „ODT, ODS, ODP” — strona `/openoffice-to-pdf` przyjmuje tylko ODT (reszta w zakładce
         na Word do PDF, tekstowo);
       - Wsparcie: „odznaka Supporter” i „lista supporterów na stronie” — na stronie nie ma takiej listy;
-      - Wypełnij formularz: „spłaszczenie wyniku” — strona zapisuje formularz, nie spłaszcza;
+      - ~~Wypełnij formularz: „spłaszczenie wyniku” — strona zapisuje formularz, nie spłaszcza~~ — BŁĄD
+        planu: `fillFormFields` woła `form.flatten()`, więc FAQ mówi prawdę (sprawdzone 2026-11-03);
       - Przytnij: „podgląd efektu” — miniatury służą do wyboru stron, podglądu efektu nie ma;
       - Podpis: „dodać datę” — do sprawdzenia w kodzie, opcji daty nie ma wśród stanów strony;
       - Obrazy do PDF: formularz przyjmuje `.tiff`, a `createImageBitmap` nie dekoduje TIFF w Chrome ani Edge
         — prawdopodobnie gwarantowany błąd, do zmierzenia w przeglądarce (GIF i BMP też).
+      **Partia 1 ZROBIONA** (2026-11-02, `15e9d61`, produkcja sprawdzona 2026-11-03): FAQ i polityka
+      chmury, offline i limity, opis znaku wodnego, `desc.addpage`, TIFF, odznaka Supporter.
+      **Partia 2 ZROBIONA** (2026-11-03): 16 odpowiedzi FAQ i 8 Pomocy z listy wyżej, opisy SVG,
+      kompresji i edytora, „zmiany zapisywane lokalnie” (edytor niczego nie zapisuje), etykiety
+      „przezroczystość” przy suwakach krycia (pl/ar/fa/is), „Gamas/Gammes/serier” w nazwie trybu
+      dzielenia (es/fr/no), 11 tureckich nazw narzędzi po angielsku.
+      **Do partii 3 (karty):** opisy kart narzędzi `desc.*` są po angielsku w wersji francuskiej
+      (ok. 15) i tureckiej (ok. 20) — brak tłumaczenia, wykryte 2026-11-03.
       Prawdziwe: Zmiana kolejności (miniatury są `draggable`), Pliki chmury w `localStorage`/`sessionStorage`
       — do doczytania przy poprawianiu FAQ. Do przejrzenia: `/guide` (instrukcje wszystkich narzędzi), Nasze
       zasady, `page.*.howto_*`, karty, teksty `local.*` i `install.*`.
@@ -138,9 +147,9 @@ miejsca na wdrożenia (limit Hobby 10 GB).
 
 - **ZROBIONE 2026-11-02 (właściciel):** przechowywanie wdrożeń: Preview, Canceled i Errored 1 dzień,
   Production 7 dni (Settings → Build and Deployment). Deployment Storage było 17,6 GB przy limicie 10 GB;
-  do sprawdzenia, czy spadło poniżej limitu.
-- **[DECYZJA]** Wsparcie obiecuje „odznakę Supporter” i „listę supporterów na stronie”, której nie ma:
-  dodać listę czy usunąć obietnicę? (Dziś i tak nikt nie może wpłacić, bo link Stripe jest testowy.)
+  2026-11-03 panel pokazuje 0 B — poniżej limitu.
+- **ZROBIONE 2026-11-02 (decyzja właściciela: usunąć):** obietnica „odznaki Supporter” i listy
+  wspierających zniknęła ze strony Wsparcia w 16 językach (`15e9d61`, sprawdzone na produkcji).
 - **[DECYZJA]** Faktury KSeF (XML → czytelny PDF) — duży projekt, najpierw sprawdzenie
   przepisów i schematu FA(3).
 - **[DECYZJA]** Filiżanka kawy w kole na stronie głównej — dwa warianty do wyboru.
