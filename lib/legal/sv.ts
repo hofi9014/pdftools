@@ -257,7 +257,7 @@ const sv: LegalTexts = {
 
   principles: {
     security: 'Vi använder en krypterad HTTPS-anslutning, en Content Security Policy, missbruksskydd för API:t och förfrågningsgränser. Viktigast av allt: filverktygen körs i din webbläsare, så dina filer når aldrig vår server.',
-    tracking: 'Webbplatsen visar för närvarande inga annonser. I framtiden kan vi införa diskreta annonser (t.ex. Google AdSense) för att täcka kostnader för drift och utveckling — om det sker uppdaterar vi denna information. Oavsett detta förblir alla PDF-verktyg gratis och obegränsade. Google Analytics använder vi bara med ditt samtycke, som du när som helst kan återkalla med knappen ”Cookie-inställningar”. Vi använder inga remarketingpixlar eller beteendeprofilering.',
+    tracking: 'Webbplatsen visar för närvarande inga annonser. I framtiden kan vi införa diskreta annonser (t.ex. Google AdSense) för att täcka kostnader för drift och utveckling — om det sker uppdaterar vi denna information. Oavsett detta förblir alla PDF-verktyg gratis. Google Analytics använder vi bara med ditt samtycke, som du när som helst kan återkalla med knappen ”Cookie-inställningar”. Vi använder inga remarketingpixlar eller beteendeprofilering.',
   },
 };
 

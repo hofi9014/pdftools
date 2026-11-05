@@ -204,6 +204,7 @@
     "test:i18n-per-page": "npx --yes tsx tests/i18n-per-page.mts",
     "test:e2e-i18n-page-bundle": "npx --yes tsx e2e/i18n-page-bundle.mts",
     "test:localize-page-data": "npx --yes tsx tests/localize-page-data.mts",
+    "test:guide-page": "npx --yes tsx tests/guide-page.mts",
     "test:home-local-footnote": "npx tsx tests/home-local-footnote.mts",
     "test:hero-coffee-cup": "npx tsx tests/hero-coffee-cup.mts",
     "test:tool-page-seo": "npx tsx tests/tool-page-seo.mts",

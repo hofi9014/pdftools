@@ -20,7 +20,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Dlaczego istnieje limit AI (15 zapytań dziennie)?',
-        p: 'Funkcje AI (Chat AI, Streszczenie AI, Tłumacz AI) są darmowe i nie wymagają własnego klucza API — każdy użytkownik otrzymuje 15 zapytań dziennie bez żadnych opłat. Limit istnieje, ponieważ każde zapytanie AI kosztuje nas pieniądze (opłaty za API OpenRouter). W przeciwieństwie do narzędzi PDF, które działają w 100% lokalnie w Twojej przeglądarce, AI wymaga komunikacji z zewnętrznym serwerem, co generuje rzeczywiste koszty operacyjne. Limit 15 zapytań dziennie pozwala nam oferować tę funkcję za darmo wszystkim użytkownikom, bez konieczności wprowadzania subskrypcji czy opłat.',
+        p: 'Funkcje AI (Chat AI, Streszczenie AI, Tłumacz AI) są darmowe i nie wymagają własnego klucza API — każdy użytkownik otrzymuje 15 zapytań dziennie bez żadnych opłat. Limit istnieje, ponieważ każde zapytanie AI kosztuje nas pieniądze (opłaty za API OpenRouter). W przeciwieństwie do narzędzi, które przetwarzają plik w Twojej przeglądarce, AI wymaga komunikacji z zewnętrznym serwerem, co generuje rzeczywiste koszty operacyjne. Limit 15 zapytań dziennie pozwala nam oferować tę funkcję za darmo wszystkim użytkownikom, bez konieczności wprowadzania subskrypcji czy opłat.',
       },
       {
         h: '3. Twoja prywatność jest najważniejsza',
@@ -36,7 +36,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. Reklamy i śledzenie — uczciwie i przejrzyście',
-        p: 'Obecnie strona nie wyświetla żadnych reklam. W przyszłości możemy wprowadzić dyskretne reklamy (np. Google AdSense), żeby pokryć koszty utrzymania i rozwoju — jeśli to nastąpi, zaktualizujemy tę informację. Niezależnie od tego wszystkie narzędzia PDF pozostaną darmowe i bez limitu. Google Analytics używamy wyłącznie za Twoją zgodą, którą możesz wycofać w każdej chwili przyciskiem „Ustawienia cookies”. Nie stosujemy pikseli remarketingowych ani profilowania behawioralnego.',
+        p: 'Obecnie strona nie wyświetla żadnych reklam. W przyszłości możemy wprowadzić dyskretne reklamy (np. Google AdSense), żeby pokryć koszty utrzymania i rozwoju — jeśli to nastąpi, zaktualizujemy tę informację. Niezależnie od tego wszystkie narzędzia PDF pozostaną darmowe. Google Analytics używamy wyłącznie za Twoją zgodą, którą możesz wycofać w każdej chwili przyciskiem „Ustawienia cookies”. Nie stosujemy pikseli remarketingowych ani profilowania behawioralnego.',
       },
       {
         h: 'Dobrowolne wsparcie',
@@ -60,7 +60,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Why is there an AI limit (15 queries per day)?',
-        p: 'AI features (AI Chat, AI Summary, AI Translate) are free and do not require your own API key — every user gets 15 queries per day at no charge. The limit exists because each AI query costs us money (OpenRouter API fees). Unlike PDF tools which work 100% locally in your browser, AI requires communication with an external server, generating real operational costs. The 15 queries per day limit allows us to offer this feature for free to all users without introducing subscriptions or fees.',
+        p: 'AI features (AI Chat, AI Summary, AI Translate) are free and do not require your own API key — every user gets 15 queries per day at no charge. The limit exists because each AI query costs us money (OpenRouter API fees). Unlike the tools that process your file in your browser, AI requires communication with an external server, generating real operational costs. The 15 queries per day limit allows us to offer this feature for free to all users without introducing subscriptions or fees.',
       },
       {
         h: '3. Your privacy comes first',
@@ -76,7 +76,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. Ads and tracking — fairly and transparently',
-        p: 'The site currently shows no ads. In the future we may introduce discreet ads (e.g. Google AdSense) to cover hosting and development costs — if that happens, we will update this information. Either way, all PDF tools will stay free and unlimited. We use Google Analytics only with your consent, which you can withdraw at any time with the "Cookie settings" button. We use no remarketing pixels or behavioural profiling.',
+        p: 'The site currently shows no ads. In the future we may introduce discreet ads (e.g. Google AdSense) to cover hosting and development costs — if that happens, we will update this information. Either way, all PDF tools will stay free. We use Google Analytics only with your consent, which you can withdraw at any time with the "Cookie settings" button. We use no remarketing pixels or behavioural profiling.',
       },
       {
         h: 'Voluntary support',
@@ -100,7 +100,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Warum gibt es ein KI-Limit (15 Anfragen pro Tag)?',
-        p: 'KI-Funktionen (KI-Chat, KI-Zusammenfassung, KI-Übersetzer) sind kostenlos und erfordern keinen eigenen API-Schlüssel — jeder Nutzer erhält 15 Anfragen pro Tag kostenlos. Das Limit besteht, weil jede KI-Anfrage uns Geld kostet (OpenRouter-API-Gebühren). Im Gegensatz zu PDF-Werkzeugen, die zu 100 % lokal in Ihrem Browser arbeiten, benötigt KI die Kommunikation mit einem externen Server, was echte Betriebskosten verursacht. Das Limit von 15 Anfragen pro Tag ermöglicht es uns, diese Funktion allen Nutzern kostenlos anzubieten, ohne Abonnements oder Gebühren einführen zu müssen.',
+        p: 'KI-Funktionen (KI-Chat, KI-Zusammenfassung, KI-Übersetzer) sind kostenlos und erfordern keinen eigenen API-Schlüssel — jeder Nutzer erhält 15 Anfragen pro Tag kostenlos. Das Limit besteht, weil jede KI-Anfrage uns Geld kostet (OpenRouter-API-Gebühren). Im Gegensatz zu den Werkzeugen, die Ihre Datei in Ihrem Browser verarbeiten, benötigt KI die Kommunikation mit einem externen Server, was echte Betriebskosten verursacht. Das Limit von 15 Anfragen pro Tag ermöglicht es uns, diese Funktion allen Nutzern kostenlos anzubieten, ohne Abonnements oder Gebühren einführen zu müssen.',
       },
       {
         h: '3. Ihre Privatsphäre steht an erster Stelle',
@@ -116,7 +116,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. Werbung und Tracking — fair und transparent',
-        p: 'Die Website zeigt derzeit keine Werbung. Künftig könnten wir dezente Werbung (z. B. Google AdSense) einführen, um Hosting- und Entwicklungskosten zu decken — falls das geschieht, aktualisieren wir diese Information. In jedem Fall bleiben alle PDF-Werkzeuge kostenlos und unbegrenzt. Google Analytics verwenden wir nur mit Ihrer Einwilligung, die Sie jederzeit über die Schaltfläche „Cookie-Einstellungen“ widerrufen können. Wir verwenden keine Remarketing-Pixel und keine verhaltensbasierte Profilbildung.',
+        p: 'Die Website zeigt derzeit keine Werbung. Künftig könnten wir dezente Werbung (z. B. Google AdSense) einführen, um Hosting- und Entwicklungskosten zu decken — falls das geschieht, aktualisieren wir diese Information. In jedem Fall bleiben alle PDF-Werkzeuge kostenlos. Google Analytics verwenden wir nur mit Ihrer Einwilligung, die Sie jederzeit über die Schaltfläche „Cookie-Einstellungen“ widerrufen können. Wir verwenden keine Remarketing-Pixel und keine verhaltensbasierte Profilbildung.',
       },
       {
         h: 'Freiwillige Unterstützung',
@@ -140,7 +140,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. ¿Por qué existe un límite de IA (15 consultas al día)?',
-        p: 'Las funciones de IA (Chat IA, Resumen IA, Traductor IA) son gratuitas y no requieren su propia clave API — cada usuario recibe 15 consultas al día sin costo. El límite existe porque cada consulta de IA nos cuesta dinero (tarifas de API de OpenRouter). A diferencia de las herramientas PDF, que funcionan 100 % localmente en su navegador, la IA requiere comunicación con un servidor externo, generando costos operativos reales. El límite de 15 consultas al día nos permite ofrecer esta función de forma gratuita a todos los usuarios sin introducir suscripciones ni tarifas.',
+        p: 'Las funciones de IA (Chat IA, Resumen IA, Traductor IA) son gratuitas y no requieren su propia clave API — cada usuario recibe 15 consultas al día sin costo. El límite existe porque cada consulta de IA nos cuesta dinero (tarifas de API de OpenRouter). A diferencia de las herramientas que procesan el archivo en su navegador, la IA requiere comunicación con un servidor externo, generando costos operativos reales. El límite de 15 consultas al día nos permite ofrecer esta función de forma gratuita a todos los usuarios sin introducir suscripciones ni tarifas.',
       },
       {
         h: '3. Su privacidad es lo primero',
@@ -156,7 +156,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. Anuncios y rastreo — justa y transparentemente',
-        p: 'Actualmente el sitio no muestra anuncios. En el futuro podríamos introducir anuncios discretos (p. ej., Google AdSense) para cubrir los costes de alojamiento y desarrollo; si ocurre, actualizaremos esta información. En cualquier caso, todas las herramientas PDF seguirán siendo gratuitas y sin límite. Usamos Google Analytics solo con tu consentimiento, que puedes retirar en cualquier momento con el botón «Configuración de cookies». No usamos píxeles de remarketing ni perfiles de comportamiento.',
+        p: 'Actualmente el sitio no muestra anuncios. En el futuro podríamos introducir anuncios discretos (p. ej., Google AdSense) para cubrir los costes de alojamiento y desarrollo; si ocurre, actualizaremos esta información. En cualquier caso, todas las herramientas PDF seguirán siendo gratuitas. Usamos Google Analytics solo con tu consentimiento, que puedes retirar en cualquier momento con el botón «Configuración de cookies». No usamos píxeles de remarketing ni perfiles de comportamiento.',
       },
       {
         h: 'Apoyo voluntario',
@@ -180,7 +180,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Pourquoi y a-t-il une limite IA (15 requêtes par jour) ?',
-        p: 'Les fonctionnalités IA (Chat IA, Résumé IA, Traduction IA) sont gratuites et ne nécessitent pas votre propre clé API — chaque utilisateur reçoit 15 requêtes par jour sans frais. La limite existe car chaque requête IA nous coûte de l\'argent (frais API OpenRouter). Contrairement aux outils PDF qui fonctionnent 100 % localement dans votre navigateur, l\'IA nécessite une communication avec un serveur externe, générant des coûts opérationnels réels. La limite de 15 requêtes par jour nous permet d\'offrir cette fonctionnalité gratuitement à tous les utilisateurs sans introduire d\'abonnements ni de frais.',
+        p: 'Les fonctionnalités IA (Chat IA, Résumé IA, Traduction IA) sont gratuites et ne nécessitent pas votre propre clé API — chaque utilisateur reçoit 15 requêtes par jour sans frais. La limite existe car chaque requête IA nous coûte de l\'argent (frais API OpenRouter). Contrairement aux outils qui traitent votre fichier dans votre navigateur, l\'IA nécessite une communication avec un serveur externe, générant des coûts opérationnels réels. La limite de 15 requêtes par jour nous permet d\'offrir cette fonctionnalité gratuitement à tous les utilisateurs sans introduire d\'abonnements ni de frais.',
       },
       {
         h: '3. Votre vie privée est primordiale',
@@ -196,7 +196,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. Publicités et suivi — de manière juste et transparente',
-        p: 'Le site n’affiche actuellement aucune publicité. À l’avenir, nous pourrions introduire des publicités discrètes (p. ex. Google AdSense) pour couvrir les frais d’hébergement et de développement ; le cas échéant, nous mettrons cette information à jour. Dans tous les cas, tous les outils PDF resteront gratuits et illimités. Nous utilisons Google Analytics uniquement avec votre consentement, que vous pouvez retirer à tout moment avec le bouton « Paramètres des cookies ». Nous n’utilisons ni pixels de remarketing ni profilage comportemental.',
+        p: 'Le site n’affiche actuellement aucune publicité. À l’avenir, nous pourrions introduire des publicités discrètes (p. ex. Google AdSense) pour couvrir les frais d’hébergement et de développement ; le cas échéant, nous mettrons cette information à jour. Dans tous les cas, tous les outils PDF resteront gratuits. Nous utilisons Google Analytics uniquement avec votre consentement, que vous pouvez retirer à tout moment avec le bouton « Paramètres des cookies ». Nous n’utilisons ni pixels de remarketing ni profilage comportemental.',
       },
       {
         h: 'Soutien volontaire',
@@ -220,7 +220,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Perché esiste un limite AI (15 richieste al giorno)?',
-        p: 'Le funzionalità AI (Chat AI, Riepilogo AI, Traduttore AI) sono gratuite e non richiedono una propria chiave API — ogni utente riceve 15 richieste al giorno senza alcun costo. Il limite esiste perché ogni richiesta AI ci costa denaro (commissioni API OpenRouter). A differenza degli strumenti PDF, che funzionano al 100 % localmente nel tuo browser, l\'AI richiede comunicazione con un server esterno, generando costi operativi reali. Il limite di 15 richieste al giorno ci permette di offrire questa funzionalità gratuitamente a tutti gli utenti senza introdurre abbonamenti o costi.',
+        p: 'Le funzionalità AI (Chat AI, Riepilogo AI, Traduttore AI) sono gratuite e non richiedono una propria chiave API — ogni utente riceve 15 richieste al giorno senza alcun costo. Il limite esiste perché ogni richiesta AI ci costa denaro (commissioni API OpenRouter). A differenza degli strumenti che elaborano il file nel tuo browser, l\'AI richiede comunicazione con un server esterno, generando costi operativi reali. Il limite di 15 richieste al giorno ci permette di offrire questa funzionalità gratuitamente a tutti gli utenti senza introdurre abbonamenti o costi.',
       },
       {
         h: '3. La tua privacy è al primo posto',
@@ -236,7 +236,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. Pubblicità e tracciamento — in modo equo e trasparente',
-        p: 'Al momento il sito non mostra pubblicità. In futuro potremmo introdurre annunci discreti (ad es. Google AdSense) per coprire i costi di hosting e sviluppo; se accadrà, aggiorneremo questa informazione. In ogni caso tutti gli strumenti PDF resteranno gratuiti e senza limiti. Usiamo Google Analytics solo con il tuo consenso, che puoi revocare in qualsiasi momento con il pulsante «Impostazioni cookie». Non usiamo pixel di remarketing né profilazione comportamentale.',
+        p: 'Al momento il sito non mostra pubblicità. In futuro potremmo introdurre annunci discreti (ad es. Google AdSense) per coprire i costi di hosting e sviluppo; se accadrà, aggiorneremo questa informazione. In ogni caso tutti gli strumenti PDF resteranno gratuiti. Usiamo Google Analytics solo con il tuo consenso, che puoi revocare in qualsiasi momento con il pulsante «Impostazioni cookie». Non usiamo pixel di remarketing né profilazione comportamentale.',
       },
       {
         h: 'Supporto volontario',
@@ -260,7 +260,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Por que existe um limite de IA (15 consultas por dia)?',
-        p: 'As funcionalidades de IA (Chat IA, Resumo IA, Tradutor IA) são gratuitas e não exigem sua própria chave de API — cada usuário recebe 15 consultas por dia sem custo. O limite existe porque cada consulta de IA nos custa dinheiro (taxas de API do OpenRouter). Ao contrário das ferramentas PDF, que funcionam 100 % localmente no seu navegador, a IA requer comunicação com um servidor externo, gerando custos operacionais reais. O limite de 15 consultas por dia nos permite oferecer este recurso gratuitamente a todos os usuários sem introduzir assinaturas ou taxas.',
+        p: 'As funcionalidades de IA (Chat IA, Resumo IA, Tradutor IA) são gratuitas e não exigem sua própria chave de API — cada usuário recebe 15 consultas por dia sem custo. O limite existe porque cada consulta de IA nos custa dinheiro (taxas de API do OpenRouter). Ao contrário das ferramentas que processam o ficheiro no seu navegador, a IA requer comunicação com um servidor externo, gerando custos operacionais reais. O limite de 15 consultas por dia nos permite oferecer este recurso gratuitamente a todos os usuários sem introduzir assinaturas ou taxas.',
       },
       {
         h: '3. Sua privacidade vem primeiro',
@@ -276,7 +276,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. Anúncios e rastreamento — de forma justa e transparente',
-        p: 'Atualmente o site não mostra anúncios. No futuro poderemos introduzir anúncios discretos (p. ex. Google AdSense) para cobrir os custos de alojamento e desenvolvimento — se isso acontecer, atualizaremos esta informação. Em qualquer caso, todas as ferramentas PDF continuarão gratuitas e sem limites. Usamos o Google Analytics só com o seu consentimento, que pode retirar a qualquer momento com o botão «Definições de cookies». Não usamos píxeis de remarketing nem criação de perfis comportamentais.',
+        p: 'Atualmente o site não mostra anúncios. No futuro poderemos introduzir anúncios discretos (p. ex. Google AdSense) para cobrir os custos de alojamento e desenvolvimento — se isso acontecer, atualizaremos esta informação. Em qualquer caso, todas as ferramentas PDF continuarão gratuitas. Usamos o Google Analytics só com o seu consentimento, que pode retirar a qualquer momento com o botão «Definições de cookies». Não usamos píxeis de remarketing nem criação de perfis comportamentais.',
       },
       {
         h: 'Apoio voluntário',
@@ -300,7 +300,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Varför finns det en AI-gräns (15 förfrågningar per dag)?',
-        p: 'AI-funktioner (AI-chatt, AI-sammanfattning, AI-översättning) är gratis och kräver ingen egen API-nyckel — varje användare får 15 förfrågningar per dag utan kostnad. Gränsen finns eftersom varje AI-förfrågan kostar oss pengar (OpenRouter API-avgifter). Till skillnad från PDF-verktyg som fungerar 100 % lokalt i din webbläsare, kräver AI kommunikation med en extern server, vilket genererar verkliga driftskostnader. Gränsen på 15 förfrågningar per dag gör att vi kan erbjuda denna funktion gratis till alla användare utan att införa prenumerationer eller avgifter.',
+        p: 'AI-funktioner (AI-chatt, AI-sammanfattning, AI-översättning) är gratis och kräver ingen egen API-nyckel — varje användare får 15 förfrågningar per dag utan kostnad. Gränsen finns eftersom varje AI-förfrågan kostar oss pengar (OpenRouter API-avgifter). Till skillnad från verktygen som bearbetar filen i din webbläsare, kräver AI kommunikation med en extern server, vilket genererar verkliga driftskostnader. Gränsen på 15 förfrågningar per dag gör att vi kan erbjuda denna funktion gratis till alla användare utan att införa prenumerationer eller avgifter.',
       },
       {
         h: '3. Din integritet kommer först',
@@ -316,7 +316,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. Annonser och spårning — rättvist och transparent',
-        p: 'Webbplatsen visar för närvarande inga annonser. I framtiden kan vi införa diskreta annonser (t.ex. Google AdSense) för att täcka kostnader för drift och utveckling — om det sker uppdaterar vi denna information. Oavsett detta förblir alla PDF-verktyg gratis och obegränsade. Google Analytics använder vi bara med ditt samtycke, som du när som helst kan återkalla med knappen ”Cookie-inställningar”. Vi använder inga remarketingpixlar eller beteendeprofilering.',
+        p: 'Webbplatsen visar för närvarande inga annonser. I framtiden kan vi införa diskreta annonser (t.ex. Google AdSense) för att täcka kostnader för drift och utveckling — om det sker uppdaterar vi denna information. Oavsett detta förblir alla PDF-verktyg gratis. Google Analytics använder vi bara med ditt samtycke, som du när som helst kan återkalla med knappen ”Cookie-inställningar”. Vi använder inga remarketingpixlar eller beteendeprofilering.',
       },
       {
         h: 'Frivilligt stöd',
@@ -340,7 +340,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Hvorfor finnes det en AI-grense (15 forespørsler per dag)?',
-        p: 'AI-funksjoner (AI-chat, AI-sammendrag, AI-oversetter) er gratis og krever ingen egen API-nøkkel — hver bruker får 15 forespørsler per dag uten kostnad. Grensen finnes fordi hver AI-forespørsel koster oss penger (OpenRouter API-gebyrer). I motsetning til PDF-verktøy som fungerer 100 % lokalt i nettleseren din, krever AI kommunikasjon med en ekstern server, noe som genererer reelle driftskostnader. Grensen på 15 forespørsler per dag gjør at vi kan tilby denne funksjonen gratis til alle brukere uten å innføre abonnementer eller avgifter.',
+        p: 'AI-funksjoner (AI-chat, AI-sammendrag, AI-oversetter) er gratis og krever ingen egen API-nøkkel — hver bruker får 15 forespørsler per dag uten kostnad. Grensen finnes fordi hver AI-forespørsel koster oss penger (OpenRouter API-gebyrer). I motsetning til verktøyene som behandler filen i nettleseren din, krever AI kommunikasjon med en ekstern server, noe som genererer reelle driftskostnader. Grensen på 15 forespørsler per dag gjør at vi kan tilby denne funksjonen gratis til alle brukere uten å innføre abonnementer eller avgifter.',
       },
       {
         h: '3. Ditt personvern kommer først',
@@ -356,7 +356,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. Annonser og sporing — rettferdig og transparent',
-        p: 'Nettstedet viser for tiden ingen annonser. I fremtiden kan vi innføre diskrete annonser (f.eks. Google AdSense) for å dekke kostnader til drift og utvikling — skjer det, oppdaterer vi denne informasjonen. Uansett forblir alle PDF-verktøy gratis og ubegrensede. Google Analytics bruker vi bare med ditt samtykke, som du når som helst kan trekke tilbake med knappen «Innstillinger for informasjonskapsler». Vi bruker ingen remarketingpiksler eller atferdsprofilering.',
+        p: 'Nettstedet viser for tiden ingen annonser. I fremtiden kan vi innføre diskrete annonser (f.eks. Google AdSense) for å dekke kostnader til drift og utvikling — skjer det, oppdaterer vi denne informasjonen. Uansett forblir alle PDF-verktøy gratis. Google Analytics bruker vi bare med ditt samtykke, som du når som helst kan trekke tilbake med knappen «Innstillinger for informasjonskapsler». Vi bruker ingen remarketingpiksler eller atferdsprofilering.',
       },
       {
         h: 'Frivillig støtte',
@@ -381,7 +381,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. لماذا يوجد حد للذكاء الاصطناعي (15 استعلامًا يوميًا)؟',
-        p: 'وظائف الذكاء الاصطناعي (الدردشة الذكية، الملخص الذكي، الترجمة الذكية) مجانية ولا تتطلب مفتاح API خاص بك — كل مستخدم يحصل على 15 استعلامًا يوميًا بدون أي رسوم. الحد موجود لأن كل استعلام ذكاء اصطناعي يكلفنا مالًا (رسوم API الخاصة بـ OpenRouter). على عكس أدوات PDF التي تعمل 100٪ محليًا في متصفحك، يتطلب الذكاء الاصطناعي اتصالًا بخادم خارجي، مما يولد تكاليف تشغيلية حقيقية. حد 15 استعلامًا يوميًا يسمح لنا بتقديم هذه الوظيفة مجانًا لجميع المستخدمين دون إدخال اشتراكات أو رسوم.',
+        p: 'وظائف الذكاء الاصطناعي (الدردشة الذكية، الملخص الذكي، الترجمة الذكية) مجانية ولا تتطلب مفتاح API خاص بك — كل مستخدم يحصل على 15 استعلامًا يوميًا بدون أي رسوم. الحد موجود لأن كل استعلام ذكاء اصطناعي يكلفنا مالًا (رسوم API الخاصة بـ OpenRouter). على عكس الأدوات التي تعالج ملفك في متصفحك، يتطلب الذكاء الاصطناعي اتصالًا بخادم خارجي، مما يولد تكاليف تشغيلية حقيقية. حد 15 استعلامًا يوميًا يسمح لنا بتقديم هذه الوظيفة مجانًا لجميع المستخدمين دون إدخال اشتراكات أو رسوم.',
       },
       {
         h: '3. خصوصيتك هي الأولوية',
@@ -397,7 +397,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. الإعلانات والتتبع — بإنصاف وشفافية',
-        p: 'لا يعرض الموقع حاليًا أي إعلانات. قد نُدخل في المستقبل إعلانات غير مزعجة (مثل Google AdSense) لتغطية تكاليف الاستضافة والتطوير — وإن حدث ذلك فسنحدّث هذه المعلومات. وفي جميع الأحوال ستبقى كل أدوات PDF مجانية وبلا حدود. نستخدم Google Analytics فقط بموافقتك، ويمكنك سحبها في أي وقت عبر زر «إعدادات ملفات تعريف الارتباط». لا نستخدم بكسلات إعادة الاستهداف ولا التنميط السلوكي.',
+        p: 'لا يعرض الموقع حاليًا أي إعلانات. قد نُدخل في المستقبل إعلانات غير مزعجة (مثل Google AdSense) لتغطية تكاليف الاستضافة والتطوير — وإن حدث ذلك فسنحدّث هذه المعلومات. وفي جميع الأحوال ستبقى كل أدوات PDF مجانية. نستخدم Google Analytics فقط بموافقتك، ويمكنك سحبها في أي وقت عبر زر «إعدادات ملفات تعريف الارتباط». لا نستخدم بكسلات إعادة الاستهداف ولا التنميط السلوكي.',
       },
       {
         h: 'دعم تطوعي',
@@ -421,7 +421,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. چرا محدودیت هوش مصنوعی (15 پرسش در روز) وجود دارد؟',
-        p: 'ویژگی‌های هوش مصنوعی (چت هوش مصنوعی، خلاصه‌سازی هوش مصنوعی، ترجمه هوش مصنوعی) رایگان هستند و نیاز به کلید API شخصی ندارند — هر کاربر روزانه 15 پرسش بدون هیچ هزینه‌ای دریافت می‌کند. محدودیت وجود دارد زیرا هر پرسش هوش مصنوعی برای ما هزینه دارد (هزینه‌های API OpenRouter). بر خلاف ابزارهای PDF که 100٪ به صورت محلی در مرورگر شما کار می‌کنند، هوش مصنوعی نیاز به ارتباط با سرور خارجی دارد که هزینه‌های عملیاتی واقعی ایجاد می‌کند. محدودیت 15 پرسش در روز به ما امکان می‌دهد این ویژگی را به صورت رایگان به همه کاربران ارائه دهیم بدون اینکه اشتراک‌ها یا هزینه‌هایی معرفی کنیم.',
+        p: 'ویژگی‌های هوش مصنوعی (چت هوش مصنوعی، خلاصه‌سازی هوش مصنوعی، ترجمه هوش مصنوعی) رایگان هستند و نیاز به کلید API شخصی ندارند — هر کاربر روزانه 15 پرسش بدون هیچ هزینه‌ای دریافت می‌کند. محدودیت وجود دارد زیرا هر پرسش هوش مصنوعی برای ما هزینه دارد (هزینه‌های API OpenRouter). بر خلاف ابزارهایی که فایل شما را در مرورگرتان پردازش می‌کنند، هوش مصنوعی نیاز به ارتباط با سرور خارجی دارد که هزینه‌های عملیاتی واقعی ایجاد می‌کند. محدودیت 15 پرسش در روز به ما امکان می‌دهد این ویژگی را به صورت رایگان به همه کاربران ارائه دهیم بدون اینکه اشتراک‌ها یا هزینه‌هایی معرفی کنیم.',
       },
       {
         h: '3. حریم خصوصی شما در اولویت است',
@@ -437,7 +437,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. تبلیغات و ردیابی — منصفانه و شفاف',
-        p: 'سایت در حال حاضر هیچ تبلیغی نشان نمی‌دهد. ممکن است در آینده برای پوشش هزینه‌های میزبانی و توسعه تبلیغات کم‌مزاحمت (مثلاً Google AdSense) اضافه کنیم — اگر چنین شود، این اطلاعات را به‌روز می‌کنیم. در هر حال همهٔ ابزارهای PDF رایگان و بدون محدودیت می‌مانند. از Google Analytics فقط با رضایت شما استفاده می‌کنیم که هر زمان می‌توانید با دکمهٔ «تنظیمات کوکی» آن را پس بگیرید. از پیکسل‌های بازاریابی مجدد یا نمایه‌سازی رفتاری استفاده نمی‌کنیم.',
+        p: 'سایت در حال حاضر هیچ تبلیغی نشان نمی‌دهد. ممکن است در آینده برای پوشش هزینه‌های میزبانی و توسعه تبلیغات کم‌مزاحمت (مثلاً Google AdSense) اضافه کنیم — اگر چنین شود، این اطلاعات را به‌روز می‌کنیم. در هر حال همهٔ ابزارهای PDF رایگان می‌مانند. از Google Analytics فقط با رضایت شما استفاده می‌کنیم که هر زمان می‌توانید با دکمهٔ «تنظیمات کوکی» آن را پس بگیرید. از پیکسل‌های بازاریابی مجدد یا نمایه‌سازی رفتاری استفاده نمی‌کنیم.',
       },
       {
         h: 'حمایت داوطلبانه',
@@ -461,7 +461,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. AI सीमा (प्रतिदिन 15 क्वेरी) क्यों है?',
-        p: 'AI सुविधाएँ (AI चैट, AI सारांश, AI अनुवाद) मुफ्त हैं और आपकी अपनी API कुंजी की आवश्यकता नहीं है — प्रत्येक उपयोगकर्ता को प्रतिदिन 15 क्वेरी बिना किसी शुल्क के मिलती हैं। सीमा इसलिए मौजूद है क्योंकि प्रत्येक AI क्वेरी में हमें पैसा खर्च होता है (OpenRouter API शुल्क)। PDF उपकरणों के विपरीत जो 100% आपके ब्राउज़र में स्थानीय रूप से काम करते हैं, AI को बाहरी सर्वर के साथ संचार की आवश्यकता होती है, जो वास्तविक परिचालन लागत उत्पन्न करता है। प्रतिदिन 15 क्वेरी की सीमा हमें सदस्यता या शुल्क शुरू किए बिना सभी उपयोगकर्ताओं को यह सुविधा मुफ्त प्रदान करने की अनुमति देती है।',
+        p: 'AI सुविधाएँ (AI चैट, AI सारांश, AI अनुवाद) मुफ्त हैं और आपकी अपनी API कुंजी की आवश्यकता नहीं है — प्रत्येक उपयोगकर्ता को प्रतिदिन 15 क्वेरी बिना किसी शुल्क के मिलती हैं। सीमा इसलिए मौजूद है क्योंकि प्रत्येक AI क्वेरी में हमें पैसा खर्च होता है (OpenRouter API शुल्क)। उन उपकरणों के विपरीत जो आपकी फ़ाइल को आपके ब्राउज़र में ही संसाधित करते हैं, AI को बाहरी सर्वर के साथ संचार की आवश्यकता होती है, जो वास्तविक परिचालन लागत उत्पन्न करता है। प्रतिदिन 15 क्वेरी की सीमा हमें सदस्यता या शुल्क शुरू किए बिना सभी उपयोगकर्ताओं को यह सुविधा मुफ्त प्रदान करने की अनुमति देती है।',
       },
       {
         h: '3. आपकी गोपनीयता सर्वोपरि है',
@@ -477,7 +477,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. विज्ञापन और ट्रैकिंग — निष्पक्ष और पारदर्शी रूप से',
-        p: 'साइट अभी कोई विज्ञापन नहीं दिखाती। भविष्य में होस्टिंग और विकास की लागत पूरी करने के लिए हम सीमित विज्ञापन (जैसे Google AdSense) जोड़ सकते हैं — ऐसा हुआ तो हम यह जानकारी अपडेट करेंगे। किसी भी स्थिति में सभी PDF टूल मुफ़्त और असीमित रहेंगे। हम Google Analytics का उपयोग केवल आपकी सहमति से करते हैं, जिसे आप «कुकी सेटिंग्स» बटन से कभी भी वापस ले सकते हैं। हम रीमार्केटिंग पिक्सेल या व्यवहार-आधारित प्रोफ़ाइलिंग का उपयोग नहीं करते।',
+        p: 'साइट अभी कोई विज्ञापन नहीं दिखाती। भविष्य में होस्टिंग और विकास की लागत पूरी करने के लिए हम सीमित विज्ञापन (जैसे Google AdSense) जोड़ सकते हैं — ऐसा हुआ तो हम यह जानकारी अपडेट करेंगे। किसी भी स्थिति में सभी PDF टूल मुफ़्त रहेंगे। हम Google Analytics का उपयोग केवल आपकी सहमति से करते हैं, जिसे आप «कुकी सेटिंग्स» बटन से कभी भी वापस ले सकते हैं। हम रीमार्केटिंग पिक्सेल या व्यवहार-आधारित प्रोफ़ाइलिंग का उपयोग नहीं करते।',
       },
       {
         h: 'स्वैच्छिक समर्थन',
@@ -501,7 +501,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. AI制限（1日15クエリ）がある理由',
-        p: 'AI機能（AIチャット、AI要約、AI翻訳）は無料で、独自のAPIキーは不要です — すべてのユーザーは1日15クエリを無料で受け取れます。制限があるのは、各AIクエリにコストがかかるためです（OpenRouter API料金）。ブラウザで100％ローカルに動作するPDFツールとは異なり、AIは外部サーバーとの通信が必要で、実際の運用コストが発生します。1日15クエリの制限により、サブスクリプションや料金を導入せずに、この機能をすべてのユーザーに無料で提供できます。',
+        p: 'AI機能（AIチャット、AI要約、AI翻訳）は無料で、独自のAPIキーは不要です — すべてのユーザーは1日15クエリを無料で受け取れます。制限があるのは、各AIクエリにコストがかかるためです（OpenRouter API料金）。ファイルをブラウザ内で処理するツールとは異なり、AIは外部サーバーとの通信が必要で、実際の運用コストが発生します。1日15クエリの制限により、サブスクリプションや料金を導入せずに、この機能をすべてのユーザーに無料で提供できます。',
       },
       {
         h: '3. プライバシーを最優先',
@@ -517,7 +517,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. 広告とトラッキング — 公正かつ透明に',
-        p: '現在、サイトに広告は表示していません。今後、ホスティングと開発の費用をまかなうため控えめな広告（例：Google AdSense）を導入する可能性があります。その場合はこの情報を更新します。いずれにしても、すべての PDF ツールは無料・無制限のままです。Google Analytics はご同意いただいた場合にのみ使用し、その同意は「Cookie 設定」ボタンでいつでも撤回できます。リマーケティングピクセルや行動プロファイリングは使用しません。',
+        p: '現在、サイトに広告は表示していません。今後、ホスティングと開発の費用をまかなうため控えめな広告（例：Google AdSense）を導入する可能性があります。その場合はこの情報を更新します。いずれにしても、すべての PDF ツールは無料のままです。Google Analytics はご同意いただいた場合にのみ使用し、その同意は「Cookie 設定」ボタンでいつでも撤回できます。リマーケティングピクセルや行動プロファイリングは使用しません。',
       },
       {
         h: '任意のサポート',
@@ -541,7 +541,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. 为什么有AI限额（每天15次查询）？',
-        p: 'AI功能（AI聊天、AI摘要、AI翻译）是免费的，不需要您自己的API密钥 — 每位用户每天可免费获得15次查询。存在限额是因为每次AI查询都会产生费用（OpenRouter API费用）。与100%在浏览器本地运行的PDF工具不同，AI需要与外部服务器通信，产生实际运营成本。每天15次查询的限额使我们能够在无需引入订阅或费用的情况下，向所有用户免费提供此功能。',
+        p: 'AI功能（AI聊天、AI摘要、AI翻译）是免费的，不需要您自己的API密钥 — 每位用户每天可免费获得15次查询。存在限额是因为每次AI查询都会产生费用（OpenRouter API费用）。与在浏览器中处理文件的工具不同，AI需要与外部服务器通信，产生实际运营成本。每天15次查询的限额使我们能够在无需引入订阅或费用的情况下，向所有用户免费提供此功能。',
       },
       {
         h: '3. 您的隐私至上',
@@ -557,7 +557,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. 广告和跟踪 — 公正透明',
-        p: '网站目前不展示任何广告。将来我们可能会引入不打扰的广告（例如 Google AdSense）以支付托管和开发费用——如果发生，我们会更新这些信息。无论如何，所有 PDF 工具都将保持免费且不限次数。我们仅在您同意后使用 Google Analytics，您可以随时通过“Cookie 设置”按钮撤回同意。我们不使用再营销像素或行为画像。',
+        p: '网站目前不展示任何广告。将来我们可能会引入不打扰的广告（例如 Google AdSense）以支付托管和开发费用——如果发生，我们会更新这些信息。无论如何，所有 PDF 工具都将保持免费。我们仅在您同意后使用 Google Analytics，您可以随时通过“Cookie 设置”按钮撤回同意。我们不使用再营销像素或行为画像。',
       },
       {
         h: '自愿支持',
@@ -581,7 +581,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Neden AI limiti (günde 15 sorgu) var?',
-        p: 'AI özellikleri (AI Sohbet, AI Özet, AI Çeviri) ücretsizdir ve kendi API anahtarınızı gerektirmez — her kullanıcı günde 15 sorguyu ücretsiz alır. Limit, her AI sorgusunun bize maliyeti olduğu için vardır (OpenRouter API ücretleri). %100 tarayıcınızda yerel olarak çalışan PDF araçlarının aksine, AI harici bir sunucuyla iletişim gerektirir ve gerçek işletme maliyetleri oluşturur. Günde 15 sorgu limiti, bu özelliği abonelik veya ücret getirmeden tüm kullanıcılara ücretsiz sunmamızı sağlar.',
+        p: 'AI özellikleri (AI Sohbet, AI Özet, AI Çeviri) ücretsizdir ve kendi API anahtarınızı gerektirmez — her kullanıcı günde 15 sorguyu ücretsiz alır. Limit, her AI sorgusunun bize maliyeti olduğu için vardır (OpenRouter API ücretleri). Dosyanızı tarayıcınızda işleyen araçların aksine, AI harici bir sunucuyla iletişim gerektirir ve gerçek işletme maliyetleri oluşturur. Günde 15 sorgu limiti, bu özelliği abonelik veya ücret getirmeden tüm kullanıcılara ücretsiz sunmamızı sağlar.',
       },
       {
         h: '3. Gizliliğiniz en önemlisi',
@@ -597,7 +597,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. Reklamlar ve izleme — adil ve şeffaf bir şekilde',
-        p: 'Site şu anda reklam göstermiyor. Gelecekte barındırma ve geliştirme maliyetlerini karşılamak için ölçülü reklamlar (ör. Google AdSense) ekleyebiliriz — bu olursa bu bilgiyi güncelleyeceğiz. Her durumda tüm PDF araçları ücretsiz ve sınırsız kalacak. Google Analytics\'i yalnızca izninizle kullanırız; izninizi istediğiniz zaman «Çerez ayarları» düğmesiyle geri çekebilirsiniz. Yeniden pazarlama pikselleri veya davranışsal profilleme kullanmayız.',
+        p: 'Site şu anda reklam göstermiyor. Gelecekte barındırma ve geliştirme maliyetlerini karşılamak için ölçülü reklamlar (ör. Google AdSense) ekleyebiliriz — bu olursa bu bilgiyi güncelleyeceğiz. Her durumda tüm PDF araçları ücretsiz kalacak. Google Analytics\'i yalnızca izninizle kullanırız; izninizi istediğiniz zaman «Çerez ayarları» düğmesiyle geri çekebilirsiniz. Yeniden pazarlama pikselleri veya davranışsal profilleme kullanmayız.',
       },
       {
         h: 'Gönüllü destek',
@@ -621,7 +621,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '2. Af hverju er AI mark (15 fyrirspurnir á dag)?',
-        p: 'AI aðgerðir (AI spjall, AI samantekt, AI þýðandi) eru ókeypis og þurfa ekki þinn eigin API lykil — hver notandi fær 15 fyrirspurnir á dag án nokkurs kostnaðar. Markið er til vegna þess að hver AI fyrirspurn kostar okkur peninga (OpenRouter API gjöld). Ólíkt PDF tækjum sem vinna 100% staðbundið í vafranum þínum, þarf AI samskipti við utanaðkomandi miðlara, sem myndar raunverulegan rekstrarkostnað. 15 fyrirspurnir á dag markið gerir okkur kleift að bjóða þennan eiginleika ókeypis öllum notendum án þess að taka upp áskriftir eða gjöld.',
+        p: 'AI aðgerðir (AI spjall, AI samantekt, AI þýðandi) eru ókeypis og þurfa ekki þinn eigin API lykil — hver notandi fær 15 fyrirspurnir á dag án nokkurs kostnaðar. Markið er til vegna þess að hver AI fyrirspurn kostar okkur peninga (OpenRouter API gjöld). Ólíkt verkfærunum sem vinna úr skránni í vafranum þínum, þarf AI samskipti við utanaðkomandi miðlara, sem myndar raunverulegan rekstrarkostnað. 15 fyrirspurnir á dag markið gerir okkur kleift að bjóða þennan eiginleika ókeypis öllum notendum án þess að taka upp áskriftir eða gjöld.',
       },
       {
         h: '3. Næði þitt kemur fyrst',
@@ -637,7 +637,7 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
       {
         h: '6. Auglýsingar og rakning — réttlátt og gagnsætt',
-        p: 'Vefurinn birtir sem stendur engar auglýsingar. Í framtíðinni gætum við tekið upp hógværar auglýsingar (t.d. Google AdSense) til að standa undir kostnaði við rekstur og þróun — gerist það uppfærum við þessar upplýsingar. Hvað sem því líður verða öll PDF-verkfæri áfram ókeypis og án takmarkana. Google Analytics notum við aðeins með samþykki þínu, sem þú getur dregið til baka hvenær sem er með hnappinum „Stillingar vafrakaka“. Við notum engar endurmarkaðssetningarpixla eða hegðunarsnið.',
+        p: 'Vefurinn birtir sem stendur engar auglýsingar. Í framtíðinni gætum við tekið upp hógværar auglýsingar (t.d. Google AdSense) til að standa undir kostnaði við rekstur og þróun — gerist það uppfærum við þessar upplýsingar. Hvað sem því líður verða öll PDF-verkfæri áfram ókeypis. Google Analytics notum við aðeins með samþykki þínu, sem þú getur dregið til baka hvenær sem er með hnappinum „Stillingar vafrakaka“. Við notum engar endurmarkaðssetningarpixla eða hegðunarsnið.',
       },
       {
         h: 'Sjálfboðaliðastuðningur',

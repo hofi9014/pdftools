@@ -257,7 +257,7 @@ const zh: LegalTexts = {
 
   principles: {
     security: '我们使用加密的 HTTPS 连接、Content Security Policy、API 防滥用保护和请求上限。最重要的是，文件工具在您的浏览器中运行，因此您的文件根本不会到达我们的服务器。',
-    tracking: '网站目前不展示任何广告。将来我们可能会引入不打扰的广告（例如 Google AdSense）以支付托管和开发费用——如果发生，我们会更新这些信息。无论如何，所有 PDF 工具都将保持免费且不限次数。我们仅在您同意后使用 Google Analytics，您可以随时通过“Cookie 设置”按钮撤回同意。我们不使用再营销像素或行为画像。',
+    tracking: '网站目前不展示任何广告。将来我们可能会引入不打扰的广告（例如 Google AdSense）以支付托管和开发费用——如果发生，我们会更新这些信息。无论如何，所有 PDF 工具都将保持免费。我们仅在您同意后使用 Google Analytics，您可以随时通过“Cookie 设置”按钮撤回同意。我们不使用再营销像素或行为画像。',
   },
 };
 
