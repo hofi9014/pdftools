@@ -74,7 +74,9 @@ export default function CookieConsent() {
         <div
           role="region"
           aria-label={t('cookie.settings', locale)}
-          className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--coffee-border)] bg-[var(--coffee-surface-solid)]/95 backdrop-blur-xl p-4 shadow-2xl"
+          // pr-24 keeps the bottom-right corner free for the floating magnifier (Magnifier.tsx:
+          // right-6, 56 px wide), which used to cover the "Accept" button up to ~1300 px wide.
+          className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--coffee-border)] bg-[var(--coffee-surface-solid)]/95 backdrop-blur-xl p-4 pr-24 shadow-2xl"
         >
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm leading-relaxed" style={{ color: "var(--coffee-text-secondary)" }}>

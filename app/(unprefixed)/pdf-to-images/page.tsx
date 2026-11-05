@@ -175,8 +175,8 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('page.images.format_label', locale)}</label>
-          <select value={format} onChange={e => setFormat(e.target.value as 'png' | 'jpeg' | 'webp')}
+          <label htmlFor="img-format" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('page.images.format_label', locale)}</label>
+          <select id="img-format" value={format} onChange={e => setFormat(e.target.value as 'png' | 'jpeg' | 'webp')}
             className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 tool-heading">
             <option value="png">{t('page.images.png_label', locale)}</option>
             <option value="jpeg">{t('page.images.jpeg_label', locale)}</option>
@@ -184,14 +184,14 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('page.images.scale_label', locale)}</label>
-          <input type="number" min="0.5" max="4" step="0.25" value={scale} onChange={e => setScale(e.target.value)}
+          <label htmlFor="img-scale" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('page.images.scale_label', locale)}</label>
+          <input id="img-scale" type="number" min="0.5" max="4" step="0.25" value={scale} onChange={e => setScale(e.target.value)}
             className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 tool-heading" />
         </div>
         {(format === 'jpeg' || format === 'webp') && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('page.images.quality_label', locale)} <span className="text-blue-600 dark:text-blue-400 font-bold">{quality}%</span></label>
-            <input type="range" min="10" max="100" step="10"
+            <label htmlFor="img-quality" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('page.images.quality_label', locale)} <span className="text-blue-600 dark:text-blue-400 font-bold">{quality}%</span></label>
+            <input id="img-quality" type="range" min="10" max="100" step="10"
               value={quality} onChange={e => setQuality(e.target.value)}
               className="w-full accent-blue-600 dark:accent-blue-400" />
           </div>

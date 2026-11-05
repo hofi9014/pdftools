@@ -78,11 +78,21 @@ narzędzia; potem języki. Rzeczy wymagające decyzji albo kont właściciela s�
       działają w 100% lokalnie” i „bez limitu”; ramka instalacji bez obietnicy offline dla wszystkich
       narzędzi. `page.*.howto_*` i `local.*` zgodne z kodem.
       Prawdziwe: Zmiana kolejności (miniatury są `draggable`), Pliki chmury w `localStorage`/`sessionStorage`.
-- [ ] 1.1c Dostępność stanów PO użyciu narzędzia (`e2e/a11y-axe.mts` ogląda tylko świeżo załadowane
+- [x] 1.1c (2026-11-05) Dostępność stanów PO użyciu narzędzia (`e2e/a11y-axe.mts` ogląda tylko świeżo załadowane
       strony): lupa zasłania środek przycisku „Akceptuję” w banerze zgody przy 1024 px (zmierzone
       `elementFromPoint`); komunikaty błędów `text-red-500` (25 miejsc, 3,76:1 na białym) i inne kolory
       stanów (`text-green-500`, `text-yellow-500`) są poniżej AA w jasnym motywie. Do zrobienia: axe na
       stanach błędu i wyniku wszystkich narzędzi, naprawa jedną regułą w `globals.css`.
+      **ZROBIONE:** `e2e/a11y-states.mts` prowadzi 37 narzędzi przez prawdziwe UI (zły plik → błąd,
+      dobry plik → wynik) i mierzy axe w obu motywach; przed poprawkami 35 z 146 pomiarów nie
+      przechodziło (kolory stanów, przyciski edytora, pola bez powiązanych etykiet, `h3` pod `h1`,
+      niewidoczny podgląd HTML w ciemnym motywie); baner zgody zostawia miejsce na lupę.
+- [ ] 1.1d Polski tekst wpisany na sztywno, widoczny w każdym języku (znalezione 2026-11-05 przy
+      1.1c): panel wyboru obszarów przy redakcji (`components/redact-pdf/RegionSelector.tsx`: „Zaznacz
+      regiony do redakcji”, „Poprzednia/Następna”, „Wczytywanie podglądu…”, instrukcja), okno SharePoint
+      (`components/SharePointPickerDialog.tsx`, kilkanaście komunikatów), tekst alternatywny obrazu
+      różnic w porównaniu („Różnice strona N”), przykładowy HTML („Witaj świecie”), polskie końcówki
+      nazw pobieranych plików („_wypełniony”, „-spłaszczony”). Do tego test, który znajdzie taki tekst.
 - [ ] 1.2 Strona „O projekcie” (16 języków): kto prowadzi (dane jak w polityce prywatności),
       co robi strona, jak przetwarzane są pliki i jak to sprawdzić samemu, z czego strona
       żyje (bez reklam, dobrowolne wsparcie), znane ograniczenia, kontakt. Link w stopce,

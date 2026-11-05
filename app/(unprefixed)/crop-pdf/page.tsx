@@ -119,7 +119,7 @@ export default function CropPDF({ locale: forcedLocale }: { locale?: Locale } = 
         <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.crop.margins', locale)}</h2>
         <div className="flex gap-2 mb-4">
           {['pt', 'mm', 'in'].map(u => (
-            <button key={u} onClick={() => setUnit(u)}
+            <button key={u} type="button" aria-pressed={unit === u} onClick={() => setUnit(u)}
               className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition ${unit === u ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 text-gray-700 dark:text-gray-300'}`}>
               {u === 'pt' ? t('page.crop.unit_pt', locale) : u === 'mm' ? t('page.crop.unit_mm', locale) : t('page.crop.unit_in', locale)}
             </button>
@@ -127,14 +127,14 @@ export default function CropPDF({ locale: forcedLocale }: { locale?: Locale } = 
         </div>
         <div className="grid grid-cols-2 gap-4">
           {[
-            { label: t('page.crop.top', locale), value: top, set: setTop },
-            { label: t('page.crop.right', locale), value: right, set: setRight },
-            { label: t('page.crop.bottom', locale), value: bottom, set: setBottom },
-            { label: t('page.crop.left', locale), value: left, set: setLeft },
+            { id: 'crop-top', label: t('page.crop.top', locale), value: top, set: setTop },
+            { id: 'crop-right', label: t('page.crop.right', locale), value: right, set: setRight },
+            { id: 'crop-bottom', label: t('page.crop.bottom', locale), value: bottom, set: setBottom },
+            { id: 'crop-left', label: t('page.crop.left', locale), value: left, set: setLeft },
           ].map((m) => (
-            <div key={m.label}>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{m.label}</label>
-              <input type="number" min="0" step="0.1" value={m.value} onChange={e => m.set(e.target.value)}
+            <div key={m.id}>
+              <label htmlFor={m.id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{m.label}</label>
+              <input id={m.id} type="number" min="0" step="0.1" value={m.value} onChange={e => m.set(e.target.value)}
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 dark:border-blue-400 dark:focus:border-blue-400" />
             </div>
           ))}

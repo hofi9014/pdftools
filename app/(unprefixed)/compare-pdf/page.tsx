@@ -176,7 +176,7 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
           {diffs.map((diff, i) => (
             <div key={i} className={`p-4 border-b border-gray-50 dark:border-gray-700 ${diff.type === 'added' ? 'bg-green-50 dark:bg-green-900/10' : 'bg-red-50 dark:bg-red-900/10'}`}>
               <div className="flex items-center gap-2 mb-1">
-                <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold text-white ${diff.type === 'added' ? 'bg-green-500' : 'bg-red-500'}`}>
+                <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold text-white ${diff.type === 'added' ? 'bg-green-700' : 'bg-red-700'}`}>
                   {diff.type === 'added' ? t('page.compare.label_added', locale) : t('page.compare.label_removed', locale)}
                 </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">{t('page.compare.page_label', locale).replace('{page}', String(diff.page))}</span>

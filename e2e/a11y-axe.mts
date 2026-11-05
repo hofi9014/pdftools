@@ -68,6 +68,33 @@ for (const theme of ['light', 'dark'] as const) {
   await ctx.close();
 }
 
+console.log('\n=== nothing covers the cookie banner buttons ===');
+// The floating magnifier sits in the bottom-right corner over the banner; at 1024 px it covered
+// the middle of "Accept" (plan 1.1c). The centre and the middle of each edge of both buttons must
+// hit the button itself, at phone, tablet and desktop widths, in a left-to-right and a right-to-left page.
+for (const [path, width] of [['pl', 375], ['pl', 768], ['pl', 1024], ['pl', 1280], ['pl', 1920], ['ar', 375], ['ar', 1024]] as const) {
+  const ctx = await browser.newContext({ locale: 'pl-PL', viewport: { width, height: 800 }, serviceWorkers: 'block' });
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/${path}`, { waitUntil: 'networkidle' });
+  const covered = await page.evaluate(() => {
+    const buttons = [...document.querySelectorAll<HTMLButtonElement>('[role="region"] button')];
+    const out: string[] = [];
+    for (const b of buttons) {
+      const r = b.getBoundingClientRect();
+      // Middles of the four edges (just inside) and the centre: the corners are rounded, and
+      // hit-testing follows the rounding, so a point near a corner is outside the button.
+      const cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2;
+      for (const [x, y] of [[r.left + 3, cy], [r.right - 3, cy], [cx, r.top + 3], [cx, r.bottom - 3], [cx, cy]]) {
+        const hit = document.elementFromPoint(x!, y!);
+        if (!hit || !b.contains(hit)) out.push(`${b.textContent?.trim()} at ${Math.round(x!)},${Math.round(y!)} → ${hit?.getAttribute('aria-label') ?? hit?.tagName ?? 'nothing'}`);
+      }
+    }
+    return buttons.length === 2 ? out : [`${buttons.length} banner buttons`];
+  });
+  check(covered.length === 0, `/${path} at ${width} px: both banner buttons fully reachable (${covered.slice(0, 2).join('; ') || 'yes'})`);
+  await ctx.close();
+}
+
 console.log('\n=== skip link ===');
 {
   const ctx = await browser.newContext({ locale: 'pl-PL', serviceWorkers: 'block' });
