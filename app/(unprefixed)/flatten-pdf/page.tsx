@@ -102,7 +102,7 @@ export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale }
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
           ✅ {t('page.flatten.success', locale)}
-          {noopFlatten && <div className="text-sm mt-1 opacity-90">{t('page.flatten.success_nochange', locale)}</div>}
+          {noopFlatten && <div className="text-sm mt-1">{t('page.flatten.success_nochange', locale)}</div>}
         </div>
       )}
       {success && file && processedBlobRef.current && (

@@ -106,7 +106,7 @@ export default function PagePreview({ file, mode, selectedPages, onSelectionChan
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 mb-6">
-      <h3 className="font-bold text-gray-800 dark:text-gray-200 mb-3">
+      <h2 className="font-bold text-gray-800 dark:text-gray-200 mb-3">
         {mode === 'delete' ? t('preview.heading.delete', locale) :
          mode === 'extract' ? t('preview.heading.extract', locale) :
          mode === 'select' ? t('preview.heading.select', locale) :
@@ -114,7 +114,7 @@ export default function PagePreview({ file, mode, selectedPages, onSelectionChan
         <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ms-2">
           ({mode === 'reorder' ? `${totalPages} ${t('preview.pages', locale)}` : `${selectedPages.length}/${totalPages} ${t('preview.selected', locale)}`})
         </span>
-      </h3>
+      </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {displayPages.map((pageIdx, displayPos) => {
           const thumb = thumbnails[pageIdx];
@@ -141,7 +141,7 @@ export default function PagePreview({ file, mode, selectedPages, onSelectionChan
               </div>
               {mode !== 'reorder' && (
                 <div className={`absolute top-1 end-1 w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition
-                  ${isSelected ? (mode === 'select' ? 'bg-blue-500 border-blue-500 text-white' : 'bg-red-500 border-red-500 text-white') : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500'}`}>
+                  ${isSelected ? (mode === 'select' ? 'bg-blue-500 border-blue-500 text-white' : 'bg-red-700 border-red-700 text-white') : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500'}`}>
                   {isSelected ? (mode === 'select' ? '✓' : '✕') : ''}
                 </div>
               )}

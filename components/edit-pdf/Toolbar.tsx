@@ -52,7 +52,7 @@ export default function Toolbar({
             <button key={td.id} onClick={onAddImage}
               className={`px-2.5 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1
                 ${activeTool === td.id
-                  ? 'bg-[var(--coffee-accent)] text-white shadow-sm'
+                  ? 'bg-[var(--coffee-accent-ink)] text-[var(--coffee-on-accent)] shadow-sm'
                   : 'text-[var(--coffee-text-secondary)] hover:bg-[var(--coffee-surface-hover)]'}`}
               title={`${td.label} (${td.shortcut || ''})`}>
               <span className="text-base">{td.icon}</span>
@@ -65,7 +65,7 @@ export default function Toolbar({
             <button key={td.id} onClick={onAddSignature}
               className={`px-2.5 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1
                 ${activeTool === td.id
-                  ? 'bg-[var(--coffee-accent)] text-white shadow-sm'
+                  ? 'bg-[var(--coffee-accent-ink)] text-[var(--coffee-on-accent)] shadow-sm'
                   : 'text-[var(--coffee-text-secondary)] hover:bg-[var(--coffee-surface-hover)]'}`}
               title={`${td.label} (${td.shortcut || ''})`}>
               <span className="text-base">{td.icon}</span>
@@ -77,7 +77,7 @@ export default function Toolbar({
           <button key={td.id} onClick={() => onToolChange(td.id)}
             className={`px-2.5 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1
               ${activeTool === td.id
-                ? 'bg-[var(--coffee-accent)] text-white shadow-sm'
+                ? 'bg-[var(--coffee-accent-ink)] text-[var(--coffee-on-accent)] shadow-sm'
                 : 'text-[var(--coffee-text-secondary)] hover:bg-[var(--coffee-surface-hover)]'}`}
             title={`${td.label} (${td.shortcut || ''})`}>
             {td.id === 'text' ? (

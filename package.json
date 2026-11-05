@@ -196,6 +196,7 @@
     "test:legal-texts-accuracy": "npx --yes tsx tests/legal-texts-accuracy.mts",
     "test:e2e-cookie-consent": "npx --yes tsx e2e/cookie-consent.mts",
     "test:e2e-a11y-axe": "npx --yes tsx e2e/a11y-axe.mts",
+    "test:e2e-a11y-states": "npx --yes tsx e2e/a11y-states.mts",
     "test:e2e-narrow-screen-overflow": "npx --yes tsx e2e/narrow-screen-overflow.mts",
     "test:e2e-server-lang": "npx --yes tsx e2e/server-lang.mts",
     "test:e2e-link-preview-headers": "npx --yes tsx e2e/link-preview-headers.mts",

@@ -81,7 +81,7 @@ export default function TextEditPopup({ block, onSave, onCancel, position }: Pro
         {FONT_OPTIONS.map(f => (
           <button key={f.family} onClick={() => setFontFamily(f.family)}
             className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition
-              ${fontFamily === f.family ? 'bg-[var(--coffee-accent)] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+              ${fontFamily === f.family ? 'bg-[var(--coffee-accent-ink)] text-[var(--coffee-on-accent)]' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
             style={{ fontFamily: getFontFamily(f.family) }}>
             {f.label}
           </button>
@@ -101,9 +101,9 @@ export default function TextEditPopup({ block, onSave, onCancel, position }: Pro
             className="w-5 h-5 rounded cursor-pointer p-0 border-0" />
         </div>
         <button onClick={() => setBold(!bold)}
-          className={`px-2 py-0.5 rounded text-xs font-bold ${bold ? 'bg-[var(--coffee-accent)] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>B</button>
+          className={`px-2 py-0.5 rounded text-xs font-bold ${bold ? 'bg-[var(--coffee-accent-ink)] text-[var(--coffee-on-accent)]' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>B</button>
         <button onClick={() => setItalic(!italic)}
-          className={`px-2 py-0.5 rounded text-xs italic ${italic ? 'bg-[var(--coffee-accent)] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>I</button>
+          className={`px-2 py-0.5 rounded text-xs italic ${italic ? 'bg-[var(--coffee-accent-ink)] text-[var(--coffee-on-accent)]' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>I</button>
       </div>
 
       <textarea value={text} onChange={e => setText(e.target.value)}
@@ -118,7 +118,7 @@ export default function TextEditPopup({ block, onSave, onCancel, position }: Pro
           {t('edit.btn_cancel', locale)}
         </button>
         <button onClick={handleSave}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--coffee-accent)] text-white hover:bg-[var(--coffee-accent-hover)] transition">
+          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--coffee-accent-ink)] text-[var(--coffee-on-accent)] hover:bg-[var(--coffee-accent-ink-hover)] transition">
           {t('edit.btn_save', locale)}
         </button>
       </div>

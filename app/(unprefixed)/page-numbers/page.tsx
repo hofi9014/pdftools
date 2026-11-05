@@ -108,10 +108,10 @@ export default function PageNumbers({ locale: forcedLocale }: { locale?: Locale 
 
           {/* Pozycja */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('page.pagenumbers.position_label', locale)}</label>
-            <div className="grid grid-cols-3 gap-2">
+            <span id="pn-position" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('page.pagenumbers.position_label', locale)}</span>
+            <div role="group" aria-labelledby="pn-position" className="grid grid-cols-3 gap-2">
               {positions.map(pos => (
-                <button key={pos.value} onClick={() => setPosition(pos.value)}
+                <button key={pos.value} type="button" aria-pressed={position === pos.value} onClick={() => setPosition(pos.value)}
                   className={`p-3 rounded-xl border-2 text-center text-xs font-medium transition
                     ${position === pos.value ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 text-gray-700 dark:text-gray-300'}`}>
                   {pos.label}
@@ -122,8 +122,9 @@ export default function PageNumbers({ locale: forcedLocale }: { locale?: Locale 
 
           {/* Numer startowy */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('page.pagenumbers.start_label', locale)}</label>
+            <label htmlFor="pn-start" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('page.pagenumbers.start_label', locale)}</label>
             <input
+              id="pn-start"
               type="number" min="1" max="9999"
               value={startNumber}
               onChange={e => setStartNumber(e.target.value)}
@@ -134,10 +135,10 @@ export default function PageNumbers({ locale: forcedLocale }: { locale?: Locale 
 
           {/* Rozmiar czcionki */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="pn-size" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('page.pagenumbers.font_size_label', locale)}: <span className="!text-[var(--coffee-accent-ink)] font-bold">{fontSize}pt</span>
             </label>
-            <input type="range" min="8" max="24" step="2"
+            <input id="pn-size" type="range" min="8" max="24" step="2"
               value={fontSize} onChange={e => setFontSize(e.target.value)}
               className="w-full accent-blue-600 dark:accent-blue-400" />
             <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mt-1">

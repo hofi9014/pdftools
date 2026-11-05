@@ -248,7 +248,7 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
     clearBtn.textContent = t('edit.sig_clear', locale);
     const saveBtn = document.createElement('button');
     saveBtn.id = 'sig-save';
-    saveBtn.className = 'px-4 py-2 rounded-lg text-sm bg-[var(--coffee-accent)] text-white';
+    saveBtn.className = 'px-4 py-2 rounded-lg text-sm bg-[var(--coffee-accent-ink)] text-[var(--coffee-on-accent)]';
     saveBtn.textContent = t('edit.sig_save', locale);
     const cancelBtn = document.createElement('button');
     cancelBtn.id = 'sig-cancel';
@@ -472,9 +472,9 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => setToolBold(!toolBold)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold ${toolBold ? 'bg-[var(--coffee-accent)] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>B</button>
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold ${toolBold ? 'bg-[var(--coffee-accent-ink)] text-[var(--coffee-on-accent)]' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>B</button>
                   <button onClick={() => setToolItalic(!toolItalic)}
-                    className={`px-3 py-1.5 rounded-lg text-xs italic ${toolItalic ? 'bg-[var(--coffee-accent)] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>I</button>
+                    className={`px-3 py-1.5 rounded-lg text-xs italic ${toolItalic ? 'bg-[var(--coffee-accent-ink)] text-[var(--coffee-on-accent)]' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>I</button>
                   <div className="flex-1" />
                   <label className="text-[10px] text-[var(--coffee-text-tertiary)] self-center">{t('edit.label_opacity_abbr', locale, { n: toolOpacity })}</label>
                   <input type="range" min={0} max={100} value={toolOpacity} onChange={e => setToolOpacity(Number(e.target.value))} className="w-14 h-1.5 accent-[var(--coffee-accent)] mt-0.5" />
@@ -580,9 +580,9 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
                   </div>
                   <div className="flex gap-2 items-center">
                     <button onClick={() => updateSelected({ bold: !selectedEl.bold })}
-                      className={`px-2.5 py-1 rounded text-xs font-bold ${selectedEl.bold ? 'bg-[var(--coffee-accent)] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>B</button>
+                      className={`px-2.5 py-1 rounded text-xs font-bold ${selectedEl.bold ? 'bg-[var(--coffee-accent-ink)] text-[var(--coffee-on-accent)]' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>B</button>
                     <button onClick={() => updateSelected({ italic: !selectedEl.italic })}
-                      className={`px-2.5 py-1 rounded text-xs italic ${selectedEl.italic ? 'bg-[var(--coffee-accent)] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>I</button>
+                      className={`px-2.5 py-1 rounded text-xs italic ${selectedEl.italic ? 'bg-[var(--coffee-accent-ink)] text-[var(--coffee-on-accent)]' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>I</button>
                     <div className="flex gap-1 flex-1 justify-end">
                       {COLORS.map(c => <button key={c} onClick={() => updateSelected({ color: c })}
                         className={`w-4 h-4 rounded-full border ${(selectedEl.color || '#000') === c ? 'border-[var(--coffee-accent)]' : 'border-transparent'}`} style={{ backgroundColor: c }} />)}
@@ -621,7 +621,7 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
               )}
               <div className="flex gap-2 pt-1">
                 <button onClick={() => { undoRedo.set(elements.filter(el => el.id !== selectedId)); setSelectedId(null); }}
-                  className="flex-1 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-medium transition">
+                  className="flex-1 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded-lg text-xs font-medium transition">
                    🗑️ {t('edit.btn_delete', locale)}
                 </button>
                 <button onClick={() => updateSelected({ ...selectedEl })}
@@ -651,7 +651,7 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
           {/* Export */}
           <button onClick={handleExport} disabled={exporting}
             className={`w-full py-3 rounded-xl font-bold text-sm transition shadow-sm flex items-center justify-center gap-2
-              ${exporting ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-[var(--coffee-accent)] hover:bg-[var(--coffee-accent-hover)] text-white'}`}>
+              ${exporting ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-[var(--coffee-accent-ink)] hover:bg-[var(--coffee-accent-ink-hover)] text-[var(--coffee-on-accent)]'}`}>
             {exporting ? `⏳ ${t('edit.btn_saving', locale)}` : `💾 ${t('edit.btn_download', locale)}`}
           </button>
           <button onClick={onReset}

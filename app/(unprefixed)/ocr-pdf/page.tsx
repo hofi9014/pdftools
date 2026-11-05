@@ -289,8 +289,8 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
 
       {ocrDone && recognizedText && (
         <div className="tool-card rounded-2xl border p-6 mb-6">
-          <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-3">{t('page.ocr.preview_label', locale)}</h2>
-          <textarea id="ocr-result" readOnly value={recognizedText}
+          <h2 id="ocr-result-label" className="font-bold text-gray-700 dark:text-gray-300 mb-3">{t('page.ocr.preview_label', locale)}</h2>
+          <textarea id="ocr-result" aria-labelledby="ocr-result-label" readOnly value={recognizedText}
             className="w-full h-64 border border-gray-200 dark:border-gray-600 rounded-xl p-4 text-sm font-mono bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 resize-y"
           />
           <div className="flex flex-wrap gap-3 mt-4">
@@ -300,7 +300,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
             <button onClick={downloadTXT} className="flex-1 min-w-[140px] py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-xl transition text-sm">
               📝 {t('page.ocr.download_txt', locale)}
             </button>
-            <button onClick={downloadDOCX} className="flex-1 min-w-[140px] py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition text-sm">
+            <button onClick={downloadDOCX} className="flex-1 min-w-[140px] py-3 bg-green-700 hover:bg-green-800 text-white font-medium rounded-xl transition text-sm">
               📃 {t('page.ocr.download_docx', locale)}
             </button>
           </div>

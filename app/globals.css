@@ -307,6 +307,25 @@ body {
   color: var(--color-gray-400);
 }
 
+/* ===== State text: errors, success, warnings (plan 1.1c, 2026-11-05) ===== */
+/* Error messages, "clear list" links, the password-strength meter and savings figures appear
+   only after a tool is used, so e2e/a11y-axe.mts never saw them; e2e/a11y-states.mts does.
+   In the light theme red-400/500 (3.8:1 on white), green-500/600 (2.2–3.2:1) and yellow-500/600
+   (1.9:1) are below WCAG AA; they show as the 700/800 shade (≥ 4.9:1 on white and on the red,
+   green and amber tinted panels). The dark theme already uses lighter shades and passes. */
+:where(:root:not(.dark)) .text-red-400,
+:where(:root:not(.dark)) .text-red-500 {
+  color: var(--color-red-700);
+}
+:where(:root:not(.dark)) .text-green-500,
+:where(:root:not(.dark)) .text-green-600 {
+  color: var(--color-green-700);
+}
+:where(:root:not(.dark)) .text-yellow-500,
+:where(:root:not(.dark)) .text-yellow-600 {
+  color: var(--color-yellow-800);
+}
+
 /* ===== Tool page overrides ===== */
 
 /* Cards */
