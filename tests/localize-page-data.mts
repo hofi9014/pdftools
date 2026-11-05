@@ -26,6 +26,7 @@ const views: Array<{ name: string; view: ComponentType<Props>; prop: string; dat
   { name: 'nasze-zasady', view: (await import('../components/pages/RulesView.tsx')).default as ComponentType<Props>, prop: 'content', data: (await import('../content/pages/nasze-zasady.ts')).content },
   { name: 'wsparcie', view: (await import('../components/pages/SupportView.tsx')).default as ComponentType<Props>, prop: 'content', data: (await import('../content/pages/wsparcie.ts')).content },
   { name: 'terms', view: (await import('../components/pages/TermsView.tsx')).default as ComponentType<Props>, prop: 'content', data: (await import('../content/pages/terms.ts')).content },
+  { name: 'guide', view: (await import('../components/pages/GuideView.tsx')).default as ComponentType<Props>, prop: 'guideData', data: (await import('../content/pages/guide.ts')).guideData },
   { name: 'home', view: (await import('../components/pages/HomeView.tsx')).default as ComponentType<Props>, prop: 'guides', data: (await import('../lib/guide-cards.ts')).homeGuideCards() },
 ];
 

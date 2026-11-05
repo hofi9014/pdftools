@@ -257,7 +257,7 @@ const is: LegalTexts = {
 
   principles: {
     security: 'Við notum dulkóðaða HTTPS-tengingu, Content Security Policy, varnir API gegn misnotkun og hámörk beiðna. Mikilvægast er að skráaverkfærin keyra í vafranum þínum, svo skrárnar þínar berast aldrei á netþjóninn okkar.',
-    tracking: 'Vefurinn birtir sem stendur engar auglýsingar. Í framtíðinni gætum við tekið upp hógværar auglýsingar (t.d. Google AdSense) til að standa undir kostnaði við rekstur og þróun — gerist það uppfærum við þessar upplýsingar. Hvað sem því líður verða öll PDF-verkfæri áfram ókeypis og án takmarkana. Google Analytics notum við aðeins með samþykki þínu, sem þú getur dregið til baka hvenær sem er með hnappinum „Stillingar vafrakaka“. Við notum engar endurmarkaðssetningarpixla eða hegðunarsnið.',
+    tracking: 'Vefurinn birtir sem stendur engar auglýsingar. Í framtíðinni gætum við tekið upp hógværar auglýsingar (t.d. Google AdSense) til að standa undir kostnaði við rekstur og þróun — gerist það uppfærum við þessar upplýsingar. Hvað sem því líður verða öll PDF-verkfæri áfram ókeypis. Google Analytics notum við aðeins með samþykki þínu, sem þú getur dregið til baka hvenær sem er með hnappinum „Stillingar vafrakaka“. Við notum engar endurmarkaðssetningarpixla eða hegðunarsnið.',
   },
 };
 

@@ -25,7 +25,7 @@ narzędzia; potem języki. Rzeczy wymagające decyzji albo kont właściciela s�
       - AI Streszczenie odpowiadało po polsku na każdej stronie (zmierzone na produkcji);
       - wynik z części dokumentu nie był oznaczany (wejście ucinane, wyjście modelu do 16 384 tokenów);
       - tłumacz twierdził „16 języków” (jest 11), poradnik obiecywał pobieranie, którego nie ma.
-- [ ] 1.1b Sprawdzenie WSZYSTKICH tekstów o działaniu strony względem kodu: FAQ, Pomoc, Nasze
+- [x] 1.1b (2026-11-05, trzy partie) Sprawdzenie WSZYSTKICH tekstów o działaniu strony względem kodu: FAQ, Pomoc, Nasze
       zasady, Wsparcie, listy „jak to działa” i karty na każdej z 40 stron narzędzi. Każde zdanie
       albo prawdziwe, albo poprawione w 16 językach. Już potwierdzone w kodzie jako nieprawdziwe:
       - PDF do SVG: „wektorowy, powiększanie bez utraty jakości, edycja w Illustratorze” — plik SVG
@@ -70,11 +70,14 @@ narzędzia; potem języki. Rzeczy wymagające decyzji albo kont właściciela s�
       kompresji i edytora, „zmiany zapisywane lokalnie” (edytor niczego nie zapisuje), etykiety
       „przezroczystość” przy suwakach krycia (pl/ar/fa/is), „Gamas/Gammes/serier” w nazwie trybu
       dzielenia (es/fr/no), 11 tureckich nazw narzędzi po angielsku.
-      **Do partii 3 (karty):** opisy kart narzędzi `desc.*` są po angielsku w wersji francuskiej
-      (ok. 15) i tureckiej (ok. 20) — brak tłumaczenia, wykryte 2026-11-03.
-      Prawdziwe: Zmiana kolejności (miniatury są `draggable`), Pliki chmury w `localStorage`/`sessionStorage`
-      — do doczytania przy poprawianiu FAQ. Do przejrzenia: `/guide` (instrukcje wszystkich narzędzi), Nasze
-      zasady, `page.*.howto_*`, karty, teksty `local.*` i `install.*`.
+      **Partia 3 ZROBIONA** (2026-11-05): angielskie zdania zostawione jako tłumaczenie (fr 15, tr 21,
+      it 2, pt 1, sv 1, przykłady HTML pl/ja) — test pilnuje teraz wszystkich języków; `/guide` składany
+      z tych samych źródeł co strony narzędzi (kroki z `content/tool-howto.ts`, odpowiedzi o chmurze z
+      FAQ) zamiast własnej kopii z kluczem OpenRouter, trybem „co N stron”, przeciąganiem, `.xls`, CORS
+      i „wektorowym” SVG — przy okazji 12 kB zamiast 328 kB na stronę; Nasze zasady bez „narzędzia PDF
+      działają w 100% lokalnie” i „bez limitu”; ramka instalacji bez obietnicy offline dla wszystkich
+      narzędzi. `page.*.howto_*` i `local.*` zgodne z kodem.
+      Prawdziwe: Zmiana kolejności (miniatury są `draggable`), Pliki chmury w `localStorage`/`sessionStorage`.
 - [ ] 1.1c Dostępność stanów PO użyciu narzędzia (`e2e/a11y-axe.mts` ogląda tylko świeżo załadowane
       strony): lupa zasłania środek przycisku „Akceptuję” w banerze zgody przy 1024 px (zmierzone
       `elementFromPoint`); komunikaty błędów `text-red-500` (25 miejsc, 3,76:1 na białym) i inne kolory

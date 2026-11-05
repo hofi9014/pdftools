@@ -257,7 +257,7 @@ const tr: LegalTexts = {
 
   principles: {
     security: 'Şifreli HTTPS bağlantısı, Content Security Policy, API\'yi kötüye kullanıma karşı koruma ve istek sınırları kullanırız. En önemlisi, dosya araçları tarayıcınızda çalışır; yani dosyalarınız sunucumuza hiç ulaşmaz.',
-    tracking: 'Site şu anda reklam göstermiyor. Gelecekte barındırma ve geliştirme maliyetlerini karşılamak için ölçülü reklamlar (ör. Google AdSense) ekleyebiliriz — bu olursa bu bilgiyi güncelleyeceğiz. Her durumda tüm PDF araçları ücretsiz ve sınırsız kalacak. Google Analytics\'i yalnızca izninizle kullanırız; izninizi istediğiniz zaman «Çerez ayarları» düğmesiyle geri çekebilirsiniz. Yeniden pazarlama pikselleri veya davranışsal profilleme kullanmayız.',
+    tracking: 'Site şu anda reklam göstermiyor. Gelecekte barındırma ve geliştirme maliyetlerini karşılamak için ölçülü reklamlar (ör. Google AdSense) ekleyebiliriz — bu olursa bu bilgiyi güncelleyeceğiz. Her durumda tüm PDF araçları ücretsiz kalacak. Google Analytics\'i yalnızca izninizle kullanırız; izninizi istediğiniz zaman «Çerez ayarları» düğmesiyle geri çekebilirsiniz. Yeniden pazarlama pikselleri veya davranışsal profilleme kullanmayız.',
   },
 };
 

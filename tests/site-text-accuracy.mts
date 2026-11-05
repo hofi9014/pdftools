@@ -13,9 +13,12 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { faqData } from '../content/pages/faq';
 import { helpData } from '../content/pages/help';
+import { content as rules } from '../content/pages/nasze-zasady';
+import { DAILY_LIMIT } from '../lib/ai-limit';
 import { locales, t } from '../lib/i18n';
 import { legalFor } from '../lib/legal';
 import { FONT_OPTIONS } from '../lib/pdf/fonts';
+import { all } from '../lib/translations/all';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f: string) => readFileSync(join(ROOT, f), 'utf8');
@@ -147,6 +150,55 @@ console.log('\n=== none of the false sentences is left ===');
   const strings = (v: unknown): string[] => (typeof v === 'string' ? [v] : v && typeof v === 'object' ? Object.values(v).flatMap(strings) : []);
   const cloudParagraphs = locales.flatMap((l) => strings(legalFor(l)).filter((s) => s.includes('OneDrive') && s.includes('SharePoint')));
   check(cloudParagraphs.length === locales.length && leftovers(fixture.legal, cloudParagraphs) === 0, 'privacy policy: the vague OneDrive/SharePoint paragraph is gone in all languages');
+}
+
+console.log('\n=== Our rules page ===');
+{
+  // Section 2 explains the AI limit: its number is the one the server enforces. It used to set
+  // AI against "PDF tools, which work 100% locally in your browser" (URL to PDF has our server
+  // fetch the page), and section 6 promised the PDF tools stay "free and unlimited" (URL to PDF
+  // allows 30 requests per 10 minutes, the editor takes files up to 100 MB).
+  const wrong: string[] = [];
+  for (const l of locales) {
+    const page = rules[l]!;
+    const ai = page.sections[1]!;
+    if (!ai.h.includes(String(DAILY_LIMIT)) || !ai.p!.includes(String(DAILY_LIMIT))) wrong.push(`${l}: limit ≠ ${DAILY_LIMIT}`);
+    const text = page.sections.map((s) => [s.h, s.p, s.pStart, s.pEnd].join(' ')).join(' ');
+    if (/100\s?[%٪％]|%100/.test(ai.p!)) wrong.push(`${l}: “100%”`);
+    if (/unlimited|bez limitu|unbegrenzt|sin límite|illimités|senza limiti|sem limites|obegränsade|ubegrensede|بلا حدود|بدون محدودیت|असीमित|無制限|不限次数|sınırsız|án takmarkana/.test(text)) wrong.push(`${l}: “unlimited”`);
+  }
+  check(wrong.length === 0, `the AI limit is ${DAILY_LIMIT}, no “100% local” and no “unlimited” in any language (${wrong.join(', ') || 'ok'})`);
+}
+
+console.log('\n=== Install section ===');
+{
+  // The home page's install box said "works offline — use the tools without internet"; the
+  // service worker keeps only what was opened. It now says what the corrected hero line says.
+  const wrong: string[] = [];
+  for (const l of locales) {
+    const dict = all[l] as Record<string, string>;
+    const pitch = dict['hero.offline_pitch']!.split(/\s?[:：]\s?/).slice(1).join(': ').trim().toLowerCase();
+    if (dict['installSection.point1']!.toLowerCase() !== pitch) wrong.push(l);
+    if (dict['install.desc'] !== undefined) wrong.push(`${l}: unused install.desc`);
+  }
+  check(wrong.length === 0, `the install box says tools work offline once opened, like the hero line (${wrong.join(', ') || 'ok'})`);
+}
+
+console.log('\n=== no English left in other languages ===');
+{
+  // A key missing in a language falls back to English, and a key copied from English without
+  // translation looks the same: both show English text on a translated page. Names that are the
+  // same in every language are listed here.
+  const SAME_EVERYWHERE = new Set(['tool.ocr']);
+  const en = all.en as Record<string, string>;
+  for (const l of locales) {
+    if (l === 'en') continue;
+    const dict = all[l] as Record<string, string>;
+    const missing = Object.keys(en).filter((k) => dict[k] === undefined);
+    const copied = Object.keys(en).filter((k) => !SAME_EVERYWHERE.has(k) && dict[k] === en[k] && /[a-z]{3,}\s+[a-z]{3,}/i.test(en[k]!));
+    check(missing.length === 0, `${l}: every key translated${missing.length ? ` (missing: ${missing.join(', ')})` : ''}`);
+    check(copied.length === 0, `${l}: no English sentence copied as the translation${copied.length ? ` (${copied.join(', ')})` : ''}`);
+  }
 }
 
 console.log(fails ? `\n${fails} FAIL` : '\nALL PASS');

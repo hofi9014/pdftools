@@ -257,7 +257,7 @@ const es: LegalTexts = {
 
   principles: {
     security: 'Usamos una conexión HTTPS cifrada, una Content Security Policy, protección de la API contra abusos y límites de solicitudes. Lo más importante: las herramientas de archivos funcionan en tu navegador, así que tus archivos ni siquiera llegan a nuestro servidor.',
-    tracking: 'Actualmente el sitio no muestra anuncios. En el futuro podríamos introducir anuncios discretos (p. ej., Google AdSense) para cubrir los costes de alojamiento y desarrollo; si ocurre, actualizaremos esta información. En cualquier caso, todas las herramientas PDF seguirán siendo gratuitas y sin límite. Usamos Google Analytics solo con tu consentimiento, que puedes retirar en cualquier momento con el botón «Configuración de cookies». No usamos píxeles de remarketing ni perfiles de comportamiento.',
+    tracking: 'Actualmente el sitio no muestra anuncios. En el futuro podríamos introducir anuncios discretos (p. ej., Google AdSense) para cubrir los costes de alojamiento y desarrollo; si ocurre, actualizaremos esta información. En cualquier caso, todas las herramientas PDF seguirán siendo gratuitas. Usamos Google Analytics solo con tu consentimiento, que puedes retirar en cualquier momento con el botón «Configuración de cookies». No usamos píxeles de remarketing ni perfiles de comportamiento.',
   },
 };
 
