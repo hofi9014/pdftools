@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
-import { getToolIcon } from '@/lib/icons';
+import { getToolIcon, getCategoryIcon } from '@/lib/icons';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import type { GuideCard } from '@/lib/guide-cards';
 import InstallSection from '@/components/InstallSection';
@@ -44,7 +44,7 @@ function ToolCatalog({ groups, locale }: { groups: { cat: CategoryInfo; filtered
       {groups.map(({ cat, filtered }) => (
         <div key={cat.key} className="mb-12 last:mb-0">
           <h3 className="font-display text-xl font-extrabold mb-5 flex items-center gap-3" style={{ color: 'var(--coffee-text)' }}>
-            <span aria-hidden="true" className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: catBg(cat.key) }}>{cat.icon}</span>
+            <span aria-hidden="true" className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: catBg(cat.key) }}>{getCategoryIcon(cat.key)}</span>
             <span>{t(`nav.category.${cat.key === 'more' ? 'more' : cat.key}`, locale)}</span>
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">

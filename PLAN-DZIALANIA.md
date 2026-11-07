@@ -105,10 +105,11 @@ narzędzia; potem języki. Rzeczy wymagające decyzji albo kont właściciela s�
 - [ ] 1.4 Lżejsze pierwsze wczytanie stron narzędzi: zmierzyć, które biblioteki ładują się
       przed wyborem pliku (pdf-lib, pdf.js, jszip…), przenieść je do importu dynamicznego;
       cel liczbowy po pomiarze. Bez pogorszenia pracy offline (service worker).
-- [ ] 1.5 **[DECYZJA]** Emoji w ikonach narzędzi (`lib/icons.tsx`: 🗜️ 🔄 ✂️ 🔒 …) wyglądają inaczej
+- [x] 1.5 (2026-11-07, zatwierdzone przez właściciela z podglądu) Emoji w ikonach narzędzi (`lib/icons.tsx`: 🗜️ 🔄 ✂️ 🔒 …) wyglądają inaczej
       na Windows, Androidzie i iPhonie. Ikony są na liście „nie zmieniać” z przeprojektowania,
       więc przygotuję podgląd wersji z rysunkami SVG w stylu PdfBadge obok obecnych — zmiana
-      tylko po akceptacji.
+      tylko po akceptacji. **ZROBIONE:** 28 z 40 ikon narzędzi i 4 ikony kategorii mają rysunki
+      (`components/ToolGlyph.tsx`), plakietki i układ bez zmian; `test:tool-icons`.
 
 ## Etap 2 — nowe narzędzia działające lokalnie (sam, po kolei)
 
@@ -167,7 +168,7 @@ miejsca na wdrożenia (limit Hobby 10 GB).
   przepisów i schematu FA(3).
 - **ZROBIONE 2026-11-04 (wygląd zatwierdzony przez właściciela):** filiżanka kawy z parą w kole na
   stronie głównej, za ikonami, w całości w kole (`components/HeroCoffeeCup.tsx`, `test:hero-coffee-cup`).
-- **[DECYZJA]** Ikony (1.5).
+- **ZROBIONE 2026-11-07 (właściciel zatwierdził podgląd):** ikony narzędzi i kategorii rysowane zamiast emoji (1.5).
 - **[DECYZJA]** „Nasze zasady” zapowiadają płatny plan dla firm i możliwe reklamy AdSense. To Twoje
   plany, więc ich nie zmieniam, ale oba wymagają planu Vercel Pro — czy zostawić te zdania?
 - **[WŁAŚCICIEL]** Link do wsparcia na `/wsparcie` to nadal testowy Stripe (prawdziwa karta nie

@@ -208,6 +208,7 @@
     "test:guide-page": "npx --yes tsx tests/guide-page.mts",
     "test:home-local-footnote": "npx tsx tests/home-local-footnote.mts",
     "test:hero-coffee-cup": "npx tsx tests/hero-coffee-cup.mts",
+    "test:tool-icons": "npx --yes tsx tests/tool-icons.mts",
     "test:tool-page-seo": "npx tsx tests/tool-page-seo.mts",
     "test:e2e-tool-page-seo": "npx --yes tsx e2e/tool-page-seo.mts",
     "test:indexnow-key": "npx tsx tests/indexnow-key.mts",
