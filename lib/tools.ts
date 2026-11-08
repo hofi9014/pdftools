@@ -100,14 +100,13 @@ export const RELATED_TOOLS: Record<string, [string, string, string]> = {
 
 export interface CategoryDef {
   key: string;
-  icon: string;
 }
 
 export const categories: CategoryDef[] = [
-  { key: 'edit',    icon: '✏️' },
-  { key: 'convert', icon: '🔄' },
-  { key: 'secure',  icon: '🔒' },
-  { key: 'more',    icon: '🧩' },
+  { key: 'edit' },
+  { key: 'convert' },
+  { key: 'secure' },
+  { key: 'more' },
 ];
 
 export function toolsByCategory(categoryKey: string): ToolDef[] {

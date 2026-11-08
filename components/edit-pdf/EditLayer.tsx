@@ -4,6 +4,7 @@ import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getFontFamily } from '@/lib/pdf/fonts';
 import { dragElement, type DragStart } from './dragMath';
+import ToolGlyph from '@/components/ToolGlyph';
 
 export interface EditorElement {
   id: number
@@ -303,7 +304,7 @@ export default function EditLayer({
           >
             {isHovered && (
               <div className="w-full h-full border-2 border-dashed border-[var(--coffee-accent)] bg-[var(--coffee-accent-subtle)] rounded flex items-center justify-center">
-                <span className="text-[10px] font-medium text-[var(--coffee-accent)] bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded shadow-sm">✏️ {t('edit.btn_edit', locale)}</span>
+                <span className="text-[10px] font-medium text-[var(--coffee-accent)] bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded shadow-sm"><ToolGlyph name="pencil" /> {t('edit.btn_edit', locale)}</span>
               </div>
             )}
           </div>

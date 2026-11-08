@@ -7,6 +7,8 @@ import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
+import ToolGlyph from '@/components/ToolGlyph';
+import PdfBadge from '@/components/PdfBadge';
 
 export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const { locale: detectedLocale } = useLocale();
@@ -90,14 +92,14 @@ export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } =
         >
           {file ? (
             <div>
-              <div className="text-5xl mb-3">📄</div>
+              <div className="text-5xl mb-3"><PdfBadge /></div>
               <p className="font-medium tool-heading">{file.name}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{t('drag.change', locale)}</p>
             </div>
           ) : (
             <div>
-              <div className="text-5xl mb-3">📂</div>
+              <div className="text-5xl mb-3"><ToolGlyph name="folderOpen" /></div>
               <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
               <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.subtitle', locale)}</p>
             </div>
@@ -115,14 +117,14 @@ export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } =
           <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.split.mode_title', locale)}</h2>
           <div className="grid grid-cols-3 gap-3 mb-4">
             {[
-              { value: 'fixed', label: t('page.split.mode_fixed', locale), desc: t('page.split.mode_fixed_desc', locale), icon: '📄' },
-              { value: 'select', label: t('page.split.mode_select', locale), desc: t('page.split.mode_select_desc', locale), icon: '👆' },
-              { value: 'ranges', label: t('page.split.mode_ranges', locale), desc: t('page.split.mode_ranges_desc', locale), icon: '🎯' },
+              { value: 'fixed', label: t('page.split.mode_fixed', locale), desc: t('page.split.mode_fixed_desc', locale), icon: 'pagesEach' as const },
+              { value: 'select', label: t('page.split.mode_select', locale), desc: t('page.split.mode_select_desc', locale), icon: 'pointer' as const },
+              { value: 'ranges', label: t('page.split.mode_ranges', locale), desc: t('page.split.mode_ranges_desc', locale), icon: 'ranges' as const },
             ].map(opt => (
               <button key={opt.value} onClick={() => setSplitMode(opt.value)}
                 className={`p-4 rounded-xl border-2 text-left transition
                   ${splitMode === opt.value ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'}`}>
-                <div className="text-2xl mb-2">{opt.icon}</div>
+                <div className="text-2xl mb-2"><ToolGlyph name={opt.icon} /></div>
                 <div className="font-medium text-sm tool-heading">{opt.label}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{opt.desc}</div>
               </button>
@@ -165,12 +167,12 @@ export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } =
         </div>
 
         <div className="tool-info-box rounded-2xl p-5 mb-6">
-          <h2 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h2>
+          <h2 className="font-bold tool-heading mb-2"><ToolGlyph name="shield" /> {t('local.title', locale)}</h2>
           <p className="text-sm text-blue-700 dark:text-blue-300">{t('local.desc', locale)}</p>
         </div>
 
-        {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
-        {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">✅ {t('result.zip', locale)}{notice ? ` — ${notice}` : ''}</div>}
+        {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6"><ToolGlyph name="warning" /> {error}</div>}
+        {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6"><ToolGlyph name="success" /> {t('result.zip', locale)}{notice ? ` — ${notice}` : ''}</div>}
         {success && processedBlobRef.current && (
           <div className="flex justify-center mb-6">
             <CloudFileSaver blob={processedBlobRef.current} fileName={downloadFileNameRef.current} />
@@ -180,17 +182,17 @@ export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } =
         <button onClick={handleSplit} disabled={loading || !file}
           className={`w-full py-4 rounded-2xl font-bold text-lg transition
             ${loading || !file ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
-          {loading ? `⏳ ${t('page.split.loading', locale)}` : `✂️ ${t('page.split.button', locale)}`}
+          {loading ? <><ToolGlyph name="hourglass" /> {`${t('page.split.loading', locale)}`}</> : `${t('page.split.button', locale)}`}
         </button>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
           {[
-            { icon: '🔒', text: t('local.badge', locale) },
-            { icon: '⚡', text: t('local.nolimits', locale) },
-            { icon: '🆓', text: t('local.free', locale) },
+            { icon: 'shield' as const, text: t('local.badge', locale) },
+            { icon: 'bolt' as const, text: t('local.nolimits', locale) },
+            { icon: 'gift' as const, text: t('local.free', locale) },
           ].map((item, i) => (
             <div key={i} className="tool-feature-card rounded-xl p-4 border">
-              <div className="text-2xl mb-1">{item.icon}</div>
+              <div className="text-2xl mb-1"><ToolGlyph name={item.icon} /></div>
               <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
             </div>
           ))}

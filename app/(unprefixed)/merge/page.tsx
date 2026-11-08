@@ -6,6 +6,8 @@ import CloudFileSaver from '@/components/CloudFileSaver';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import ToolGlyph from '@/components/ToolGlyph';
+import PdfBadge from '@/components/PdfBadge';
 
 export default function MergePDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const { locale: detectedLocale } = useLocale();
@@ -89,7 +91,7 @@ export default function MergePDF({ locale: forcedLocale }: { locale?: Locale } =
           className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition mb-6
             ${dragOver ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
         >
-          <div className="text-5xl mb-3">📂</div>
+          <div className="text-5xl mb-3"><ToolGlyph name="folderOpen" /></div>
           <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
           <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.multiple', locale)}</p>
           <input id="fileInput" type="file" accept=".pdf" multiple className="hidden"
@@ -109,7 +111,7 @@ export default function MergePDF({ locale: forcedLocale }: { locale?: Locale } =
               <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <span className="text-gray-400 dark:text-gray-500 font-mono text-sm w-6 shrink-0">{i + 1}.</span>
-                  <span className="text-2xl shrink-0">📄</span>
+                  <span className="text-2xl shrink-0"><PdfBadge /></span>
                   <div className="min-w-0">
                     <p className="text-sm font-medium tool-heading truncate">{file.name}</p>
                     <p className="text-xs text-gray-400 dark:text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
@@ -126,12 +128,12 @@ export default function MergePDF({ locale: forcedLocale }: { locale?: Locale } =
         )}
 
         <div className="tool-info-box rounded-2xl p-5 mb-6">
-          <h2 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h2>
+          <h2 className="font-bold tool-heading mb-2"><ToolGlyph name="shield" /> {t('local.title', locale)}</h2>
           <p className="text-sm text-blue-700 dark:text-blue-300">{t('local.desc', locale)}</p>
         </div>
 
-        {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
-        {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">✅ {t('result.success', locale)}</div>}
+        {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6"><ToolGlyph name="warning" /> {error}</div>}
+        {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6"><ToolGlyph name="success" /> {t('result.success', locale)}</div>}
         {success && processedBlobRef.current && (
           <div className="flex justify-center mb-6">
             <CloudFileSaver blob={processedBlobRef.current} fileName="polaczony.pdf" />
@@ -141,17 +143,17 @@ export default function MergePDF({ locale: forcedLocale }: { locale?: Locale } =
         <button onClick={handleMerge} disabled={loading || files.length < 2}
           className={`w-full py-4 rounded-2xl font-bold text-lg transition
             ${loading || files.length < 2 ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg hover:shadow-xl'}`}>
-          {loading ? `⏳ ${t('page.merge.loading', locale)}` : `🔗 ${t('page.merge.button', locale)} ${files.length} ${t('files.count', locale)} PDF`}
+          {loading ? <><ToolGlyph name="hourglass" /> {`${t('page.merge.loading', locale)}`}</> : `${t('page.merge.button', locale)} ${files.length} ${t('files.count', locale)} PDF`}
         </button>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
           {[
-            { icon: '🔒', text: t('local.badge', locale) },
-            { icon: '⚡', text: t('local.nolimits', locale) },
-            { icon: '🆓', text: t('local.free', locale) },
+            { icon: 'shield' as const, text: t('local.badge', locale) },
+            { icon: 'bolt' as const, text: t('local.nolimits', locale) },
+            { icon: 'gift' as const, text: t('local.free', locale) },
           ].map((item, i) => (
             <div key={i} className="tool-feature-card rounded-xl p-4 border">
-              <div className="text-2xl mb-1">{item.icon}</div>
+              <div className="text-2xl mb-1"><ToolGlyph name={item.icon} /></div>
               <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
             </div>
           ))}

@@ -8,5 +8,5 @@ import { legalFor } from '@/lib/legal';
 export default function SecurityPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const { locale: detectedLocale } = useLocale();
   const locale = forcedLocale || detectedLocale;
-  return <LegalDocument doc={legalFor(locale).security} icon="🔐" locale={locale} />;
+  return <LegalDocument doc={legalFor(locale).security} icon="key" locale={locale} />;
 }

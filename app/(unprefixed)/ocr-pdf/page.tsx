@@ -8,6 +8,8 @@ import BatchFailures from '@/components/BatchFailures';
 import { downloadZip } from '@/lib/client-pdf';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
+import ToolGlyph from '@/components/ToolGlyph';
+import PdfBadge from '@/components/PdfBadge';
 
 const LANGUAGES = [
   { value: 'pol', labelKey: 'page.ocr.lang_polish' },
@@ -208,7 +210,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
         className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition mb-6
           ${dragOver ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
       >
-        <div className="text-5xl mb-3">📂</div>
+        <div className="text-5xl mb-3"><ToolGlyph name="folderOpen" /></div>
         <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
         <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.multiple', locale)}</p>
         <input id="fileInput" type="file" accept=".pdf" multiple className="hidden"
@@ -228,7 +230,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
           {files.map((file, i) => (
             <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <span className="text-2xl flex-shrink-0">📄</span>
+                <span className="text-2xl flex-shrink-0"><PdfBadge /></span>
                 <div className="min-w-0">
                   <p className="text-sm font-medium tool-heading truncate">{file.name}</p>
                   <p className="text-xs text-gray-400 dark:text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
@@ -261,23 +263,23 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
       </div>
 
       <div className="tool-success-box rounded-2xl p-5 mb-6">
-        <h2 className="font-bold text-green-800 dark:text-green-200 mb-2">{t('local.title', locale)}</h2>
+        <h2 className="font-bold text-green-800 dark:text-green-200 mb-2"><ToolGlyph name="shield" /> {t('local.title', locale)}</h2>
         <p className="text-sm text-green-800 dark:text-green-300">{t('page.ocr.local_desc', locale)}</p>
       </div>
 
-      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6"><ToolGlyph name="warning" /> {error}</div>}
 
       {!loading && !ocrDone && (
         <button onClick={handleOCR} disabled={loading || files.length === 0}
           className={`w-full py-4 rounded-2xl font-bold text-lg transition mb-6
             ${loading || files.length === 0 ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
-          {loading ? `⏳ ${t('page.ocr.loading', locale)} ${progressLabel || `${progress}/${files.length}`}` : `🔍 ${t('page.ocr.button', locale)}`}
+          {loading ? <><ToolGlyph name="hourglass" /> {`${t('page.ocr.loading', locale)} ${progressLabel || `${progress}/${files.length}`}`}</> : `${t('page.ocr.button', locale)}`}
         </button>
       )}
 
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
-          ✅ {pdfResults.length > 1 ? t('page.ocr.success_zip', locale) : t('page.ocr.success_single', locale)}
+          <ToolGlyph name="success" /> {pdfResults.length > 1 ? t('page.ocr.success_zip', locale) : t('page.ocr.success_single', locale)}
         </div>
       )}
       {!loading && <BatchFailures failed={failed} total={files.length} locale={locale} />}
@@ -295,13 +297,13 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
           />
           <div className="flex flex-wrap gap-3 mt-4">
             <button onClick={downloadPDF} className="flex-1 min-w-[140px] py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition text-sm">
-              📄 {t('page.ocr.download_pdf', locale)}
+              <PdfBadge /> {t('page.ocr.download_pdf', locale)}
             </button>
             <button onClick={downloadTXT} className="flex-1 min-w-[140px] py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-xl transition text-sm">
-              📝 {t('page.ocr.download_txt', locale)}
+              <PdfBadge type="TXT" /> {t('page.ocr.download_txt', locale)}
             </button>
             <button onClick={downloadDOCX} className="flex-1 min-w-[140px] py-3 bg-green-700 hover:bg-green-800 text-white font-medium rounded-xl transition text-sm">
-              📃 {t('page.ocr.download_docx', locale)}
+              <PdfBadge type="DOC" /> {t('page.ocr.download_docx', locale)}
             </button>
           </div>
         </div>
@@ -309,18 +311,18 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
 
       {ocrDone && !recognizedText && (
         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 rounded-xl p-4 mb-6">
-          ⚠️ {t('page.ocr.no_text_found', locale)}
+          <ToolGlyph name="warning" /> {t('page.ocr.no_text_found', locale)}
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
         {[
-          { icon: '🔒', text: t('local.badge', locale) },
-          { icon: '⚡', text: t('local.nolimits', locale) },
-          { icon: '🆓', text: t('feature.free_simple', locale) },
+          { icon: 'shield' as const, text: t('local.badge', locale) },
+          { icon: 'bolt' as const, text: t('local.nolimits', locale) },
+          { icon: 'gift' as const, text: t('feature.free_simple', locale) },
         ].map((item, i) => (
           <div key={i} className="tool-feature-card rounded-xl p-4 border">
-            <div className="text-2xl mb-1">{item.icon}</div>
+            <div className="text-2xl mb-1"><ToolGlyph name={item.icon} /></div>
             <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
           </div>
         ))}

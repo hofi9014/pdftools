@@ -9,6 +9,8 @@ import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import AiNotice from '@/components/AiNotice';
 import { MAX_CHAT_TEXT_LENGTH } from '@/lib/ai-limit';
+import ToolGlyph from '@/components/ToolGlyph';
+import PdfBadge from '@/components/PdfBadge';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -44,7 +46,7 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
       setExtractedText(text);
       const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
       const preview = text.trim().substring(0, 300);
-      const mode = '🤖 AI';
+      const mode = 'AI';
       const hint = t('page.aichat.ai_hint', locale);
       setMessages([{
         role: 'assistant',
@@ -90,14 +92,14 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
               ${file ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}>
             {file ? (
               <div>
-                <div className="text-5xl mb-3">📄</div>
+                <div className="text-5xl mb-3"><PdfBadge /></div>
                 <p className="font-medium tool-heading">{file.name}</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{t('drag.change', locale)}</p>
               </div>
             ) : (
               <div>
-                <div className="text-5xl mb-3">📂</div>
+                <div className="text-5xl mb-3"><ToolGlyph name="folderOpen" /></div>
                 <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
                 <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.subtitle', locale)}</p>
               </div>
@@ -109,14 +111,14 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
             <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} label={t('cloud.add', locale)} />
           </div>
 
-          {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+          {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6"><ToolGlyph name="warning" /> {error}</div>}
 
           <AiNotice locale={locale} />
 
           <button onClick={handleExtract} disabled={loading || !file}
             className={`w-full py-4 rounded-2xl font-bold text-lg transition
               ${loading || !file ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
-            {loading ? `⏳ ${t('page.aichat.extract_loading', locale)}` : `📄 ${t('page.aichat.extract_btn', locale)}`}
+            {loading ? <><ToolGlyph name="hourglass" /> {`${t('page.aichat.extract_loading', locale)}`}</> : `${t('page.aichat.extract_btn', locale)}`}
           </button>
         </>
       ) : (
@@ -144,7 +146,7 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
             {asking && (
                 <div className="flex justify-start">
                   <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-bl-md px-4 py-3 text-sm text-gray-500">
-                    ⏳ {t('page.aichat.ai_analyzing', locale)}
+                    <ToolGlyph name="hourglass" /> {t('page.aichat.ai_analyzing', locale)}
                   </div>
                 </div>
               )}
@@ -152,13 +154,13 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
           </div>
 
           <button onClick={() => setShowText(!showText)} className="w-full text-left px-4 py-2 text-xs text-gray-500 dark:text-gray-400 hover:bg-[var(--coffee-surface-hover)] border-t border-gray-200 dark:border-gray-600 font-mono">
-            {showText ? `▲ ${t('page.aichat.hide_text', locale)}` : `▼ ${t('page.aichat.show_text', locale)} (${t('page.aichat.words', locale, { count: extractedText.trim().split(/\s+/).length })})`}
+            {showText ? `${t('page.aichat.hide_text', locale)}` : `${t('page.aichat.show_text', locale)} (${t('page.aichat.words', locale, { count: extractedText.trim().split(/\s+/).length })})`}
           </button>
           {showText && (
             <pre className="max-h-60 overflow-y-auto p-4 text-xs leading-relaxed text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/50 whitespace-pre-wrap font-sans">{extractedText}</pre>
           )}
 
-          {error && <div className="bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-2 text-sm">⚠️ {error}</div>}
+          {error && <div className="bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-2 text-sm"><ToolGlyph name="warning" /> {error}</div>}
 
           <div className="border-t border-gray-200 dark:border-gray-600 p-4 flex gap-2">
             <input type="text" value={question} onChange={e => setQuestion(e.target.value)}
@@ -168,7 +170,7 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
               className="flex-1 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 bg-transparent" />
             <button onClick={handleAsk} disabled={asking || !question.trim()}
               className="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm transition disabled:opacity-50">
-              {asking ? '⏳' : t('page.aichat.ask_btn', locale)}
+              {asking ? <ToolGlyph name="hourglass" /> : t('page.aichat.ask_btn', locale)}
             </button>
           </div>
         </div>
@@ -176,11 +178,11 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 text-center">
         {[
-          { icon: '🔒', text: t('feature.ai_file_local', locale) },
-          { icon: '🤖', text: t('feature.ai_analysis', locale) },
+          { icon: 'shield' as const, text: t('feature.ai_file_local', locale) },
+          { icon: 'sparkle' as const, text: t('feature.ai_analysis', locale) },
         ].map((item, i) => (
           <div key={i} className="tool-feature-card rounded-xl p-4 border">
-            <div className="text-2xl mb-1">{item.icon}</div>
+            <div className="text-2xl mb-1"><ToolGlyph name={item.icon} /></div>
             <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
           </div>
         ))}

@@ -6,6 +6,8 @@ import { officeDocumentToPdf } from '@/lib/office-document-to-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import ToolGlyph from '@/components/ToolGlyph';
+import PdfBadge from '@/components/PdfBadge';
 
 // FINDING (2026-09-21) — .doc/.xls/.ppt are the legacy OLE Compound File Binary Format, not a
 // ZIP archive at all (unlike their modern .docx/.xlsx/.pptx successors), so officeToPdf's
@@ -19,10 +21,10 @@ import { getToolIcon } from '@/lib/icons';
 // OpenDocument XML (verified against hand-built fixtures) and are now genuinely supported by
 // officeToPdf, so they stay.
 const FORMATS = [
-  { id: 'word', icon: '📝', label: 'Word', formats: 'DOCX', exts: ['.docx'], mimes: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'] },
-  { id: 'excel', icon: '📊', label: 'Excel', formats: 'XLSX', exts: ['.xlsx'], mimes: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] },
-  { id: 'powerpoint', icon: '🎯', label: 'PowerPoint', formats: 'PPTX', exts: ['.pptx'], mimes: ['application/vnd.openxmlformats-officedocument.presentationml.presentation'] },
-  { id: 'openoffice', icon: '📄', label: 'OpenOffice', formats: 'ODT, ODS, ODP', exts: ['.odt', '.ods', '.odp'], mimes: [] },
+  { id: 'word', badge: 'DOC' as const, label: 'Word', formats: 'DOCX', exts: ['.docx'], mimes: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'] },
+  { id: 'excel', badge: 'XLS' as const, label: 'Excel', formats: 'XLSX', exts: ['.xlsx'], mimes: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] },
+  { id: 'powerpoint', badge: 'PPT' as const, label: 'PowerPoint', formats: 'PPTX', exts: ['.pptx'], mimes: ['application/vnd.openxmlformats-officedocument.presentationml.presentation'] },
+  { id: 'openoffice', badge: 'ODT' as const, label: 'OpenOffice', formats: 'ODT, ODS, ODP', exts: ['.odt', '.ods', '.odp'], mimes: [] },
 ];
 
 export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
@@ -55,10 +57,10 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
 
   const getFileIcon = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase();
-    if (['doc', 'docx'].includes(ext || '')) return '📝';
-    if (['xls', 'xlsx'].includes(ext || '')) return '📊';
-    if (['ppt', 'pptx'].includes(ext || '')) return '🎯';
-    return '📄';
+    if (['doc', 'docx'].includes(ext || '')) return <PdfBadge type="DOC" />;
+    if (['xls', 'xlsx'].includes(ext || '')) return <PdfBadge type="XLS" />;
+    if (['ppt', 'pptx'].includes(ext || '')) return <PdfBadge type="PPT" />;
+    return <PdfBadge type="ODT" />;
   };
 
   const handleConvert = async () => {
@@ -100,7 +102,7 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
           <button key={item.id} onClick={() => { setFormat(item.id); setFile(null); setError(''); setSuccess(false); setFallbackUsed(false); }}
             className={`rounded-xl p-4 border-2 text-center transition cursor-pointer
               ${format === item.id ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-600'}`}>
-            <div className="text-3xl mb-2">{item.icon}</div>
+            <div className="text-3xl mb-2"><PdfBadge type={item.badge} /></div>
             <div className="font-medium text-sm tool-heading">{item.label}</div>
             <div className="text-xs text-gray-500 dark:text-gray-400">{item.formats}</div>
           </button>
@@ -127,7 +129,7 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
           </div>
         ) : (
           <div>
-            <div className="text-5xl mb-3">📂</div>
+            <div className="text-5xl mb-3"><ToolGlyph name="folderOpen" /></div>
             <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
             <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('page.wordtopdf.supported', locale)} {currentFormat.formats}</p>
           </div>
@@ -140,15 +142,15 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
         <CloudFilePicker onFilesPicked={(f) => handleFile(f[0] || null)} accept={acceptedExtensions.join(',')} label={t('cloud.add', locale)} />
       </div>
 
-      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6"><ToolGlyph name="warning" /> {error}</div>}
       {fallbackUsed && !error && (
         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 rounded-xl p-4 mb-6">
-          ⚠️ {t('page.word.fallback', locale)}
+          <ToolGlyph name="warning" /> {t('page.word.fallback', locale)}
         </div>
       )}
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
-          ✅ {t('result.success', locale)}
+          <ToolGlyph name="success" /> {t('result.success', locale)}
         </div>
       )}
       {success && file && processedBlobRef.current && (
@@ -160,7 +162,7 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
       <button onClick={handleConvert} disabled={loading || !file}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition
           ${loading || !file ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
-        {loading ? `⏳ ${t('page.wordtopdf.loading', locale)}` : `${t('page.wordtopdf.btn', locale)}`}
+        {loading ? <><ToolGlyph name="hourglass" /> {`${t('page.wordtopdf.loading', locale)}`}</> : `${t('page.wordtopdf.btn', locale)}`}
       </button>
     </div>
   );

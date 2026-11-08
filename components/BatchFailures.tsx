@@ -1,5 +1,6 @@
 import { t, isRtlLocale, type Locale } from '@/lib/i18n';
 import type { BatchFailure } from '@/lib/batch';
+import ToolGlyph from '@/components/ToolGlyph';
 
 // Lists the files a batch tool could not process, with each file's own reason. When some files
 // succeeded it is a warning next to the result; when every file of a multi-file batch failed it
@@ -16,14 +17,14 @@ export default function BatchFailures({ failed, total, locale }: { failed: Batch
   if (allFailed) {
     return (
       <div data-testid="batch-all-failed" className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">
-        <p className="font-medium">⚠️ {t('batch.all_failed', locale)}</p>
+        <p className="font-medium"><ToolGlyph name="warning" /> {t('batch.all_failed', locale)}</p>
         {list}
       </div>
     );
   }
   return (
     <div data-testid="batch-failed" className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300 rounded-xl p-4 mb-6">
-      <p className="font-medium">⚠️ {t('batch.partial_failed', locale, { failed: String(failed.length), total: String(total) })}</p>
+      <p className="font-medium"><ToolGlyph name="warning" /> {t('batch.partial_failed', locale, { failed: String(failed.length), total: String(total) })}</p>
       {list}
     </div>
   );

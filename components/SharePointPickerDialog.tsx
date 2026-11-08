@@ -1,6 +1,7 @@
 'use client';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
+import ToolGlyph from '@/components/ToolGlyph';
 
 interface GraphSite {
   id: string;
@@ -619,7 +620,7 @@ export default function SharePointPickerDialog({
                         className="flex items-center gap-1 truncate max-w-[220px]"
                         title={site.url}
                       >
-                        <span>🏢</span>
+                        <span><ToolGlyph name="building" /></span>
                         <span className="truncate">{site.displayName}</span>
                       </button>
                       <button
@@ -664,7 +665,7 @@ export default function SharePointPickerDialog({
                         onClick={() => handleSelectSite(site)}
                         className="w-full text-start px-4 py-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4 transition shadow-sm hover:shadow"
                       >
-                        <span className="text-2xl flex-shrink-0">🏢</span>
+                        <span className="text-2xl flex-shrink-0"><ToolGlyph name="building" /></span>
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold truncate">{site.displayName}</div>
                           {site.webUrl && <div className="text-xs text-gray-400 truncate mt-0.5">{site.webUrl}</div>}
@@ -777,7 +778,7 @@ export default function SharePointPickerDialog({
                       onClick={() => handleSelectLibrary(drive)}
                       className="w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-700 flex items-center gap-3 transition"
                     >
-                      <span className="text-lg">📂</span>
+                      <span className="text-lg"><ToolGlyph name="folderOpen" /></span>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium truncate">{drive.name}</div>
                         <div className="text-xs text-gray-400">{drive.driveType}</div>
@@ -825,7 +826,7 @@ export default function SharePointPickerDialog({
                         className="flex items-center gap-3 px-4 py-2.5 text-sm rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition cursor-pointer"
                         onClick={() => isFolder ? navigateFolder(item) : toggleFile(item)}
                       >
-                        <span className="text-lg flex-shrink-0">{isFolder ? '📁' : '📄'}</span>
+                        <span className="text-lg flex-shrink-0"><ToolGlyph name={isFolder ? 'folder' : 'file'} /></span>
                         <div className="flex-1 min-w-0">
                           <div className="font-medium truncate text-gray-700 dark:text-gray-300">{item.name}</div>
                           {!isFolder && (
@@ -863,7 +864,7 @@ export default function SharePointPickerDialog({
 
           {step === 'done' && (
             <div className="flex flex-col items-center justify-center py-8">
-              <span className="text-3xl">✅</span>
+              <span className="text-3xl"><ToolGlyph name="success" /></span>
               <span className="mt-2 text-sm text-green-600 dark:text-green-400 font-medium">
                 {mode === 'picker' ? 'Files downloaded successfully!' : 'File saved successfully!'}
               </span>

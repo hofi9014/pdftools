@@ -4,6 +4,7 @@ import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import { getCategoryIcon } from '@/lib/icons';
+import ToolGlyph, { type GlyphName } from '@/components/ToolGlyph';
 import { toolsByCategory, toolPath, homePath } from '@/lib/tools';
 import ThemeToggle from './ThemeToggle';
 import LanguageSelector from './LanguageSelector';
@@ -13,7 +14,7 @@ interface CatTool {
   key: string;
   href: string;
   navKey?: string;
-  icon?: string;
+  icon?: GlyphName;
 }
 
 interface Category {
@@ -25,8 +26,8 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
   const locale = forcedLocale ?? useHydrationSafeLocale();
 
   const infoMore: CatTool[] = [
-    { key: 'rules', href: locale ? `/${locale}/nasze-zasady` : '/nasze-zasady', navKey: 'nav.rules', icon: '📜' },
-    { key: 'support', href: locale ? `/${locale}/wsparcie` : '/wsparcie', navKey: 'nav.support', icon: '💬' },
+    { key: 'rules', href: locale ? `/${locale}/nasze-zasady` : '/nasze-zasady', navKey: 'nav.rules', icon: 'scroll' },
+    { key: 'support', href: locale ? `/${locale}/wsparcie` : '/wsparcie', navKey: 'nav.support', icon: 'coffee' },
   ];
 
   const categories: Category[] = [
@@ -85,7 +86,7 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
                         <Link href={tool.href}
                           className="block px-3 py-2 rounded-lg text-sm transition hover:bg-[var(--coffee-surface-hover)]"
                           style={{ color: 'var(--coffee-text-secondary)' }}>
-                          {tool.icon && <span className="me-1.5">{tool.icon}</span>}{t(tool.navKey ?? `tool.${tool.key}`, locale)}
+                          {tool.icon && <span className="me-1.5"><ToolGlyph name={tool.icon} /></span>}{t(tool.navKey ?? `tool.${tool.key}`, locale)}
                         </Link>
                       </div>
                     ))}
@@ -94,8 +95,8 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
               </div>
             </div>
           ))}
-          <Link href={toolPath('guide', locale)} className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition" style={{ color: 'var(--coffee-text-secondary)' }}>📖 {t('nav.guide', locale)}</Link>
-          <Link href={`/guides/${localeGuidesSlug[locale]}`} className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition" style={{ color: 'var(--coffee-text-secondary)' }}>📚 {t('nav.guides', locale)}</Link>
+          <Link href={toolPath('guide', locale)} className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition" style={{ color: 'var(--coffee-text-secondary)' }}><ToolGlyph name="book" /> {t('nav.guide', locale)}</Link>
+          <Link href={`/guides/${localeGuidesSlug[locale]}`} className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition" style={{ color: 'var(--coffee-text-secondary)' }}><ToolGlyph name="books" /> {t('nav.guides', locale)}</Link>
         </nav>
 
         <div className="flex items-center gap-1.5">

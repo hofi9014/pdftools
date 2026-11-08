@@ -9,6 +9,7 @@ import { useLocale } from '@/lib/locale-context';
 import { t, isRtlLocale, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import PadesSignForm from '@/components/sign-pdf/PadesSignForm';
+import ToolGlyph from '@/components/ToolGlyph';
 
 
 
@@ -130,11 +131,11 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
       <div className="flex justify-center gap-2 mb-8">
         <button type="button" onClick={() => setMode('visual')}
           className={`px-5 py-2 rounded-full font-medium text-sm transition ${mode === 'visual' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
-          ✍️ {t('page.sign.mode_visual', locale)}
+          <ToolGlyph name="signature" /> {t('page.sign.mode_visual', locale)}
         </button>
         <button type="button" onClick={() => setMode('digital')}
           className={`px-5 py-2 rounded-full font-medium text-sm transition ${mode === 'digital' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
-          🔐 {t('page.sign.mode_digital', locale)}
+          <ToolGlyph name="certificate" /> {t('page.sign.mode_digital', locale)}
         </button>
       </div>
 
@@ -235,7 +236,7 @@ export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = 
 
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
-          ✅ {t('result.success', locale)}
+          <ToolGlyph name="success" /> {t('result.success', locale)}
         </div>
       )}
       {success && file && processedBlobRef.current && (

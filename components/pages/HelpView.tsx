@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import type { LocaleContent, helpData as helpDataType } from '@/content/pages/help';
+import ToolGlyph from '@/components/ToolGlyph';
+import { getToolIcon } from '@/lib/icons';
+import { keyBySlug } from '@/lib/tools';
 
 function lc(locale: string, obj: LocaleContent): string {
   return obj[locale] || obj['en'] || '';
@@ -38,7 +41,7 @@ export default function HelpView({ locale: forcedLocale, helpData }: { locale?: 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="text-center mb-12">
-        <div className="text-5xl mb-4">🆘</div>
+        <div className="text-5xl mb-4"><ToolGlyph name="lifebuoy" /></div>
         <h1 className="text-3xl sm:text-4xl font-bold tool-heading mb-3">
           {t('help.title', locale)}
         </h1>
@@ -57,7 +60,7 @@ export default function HelpView({ locale: forcedLocale, helpData }: { locale?: 
               className="w-full flex items-center justify-between px-6 py-4 text-left transition hover:bg-[var(--coffee-surface-hover)]"
             >
               <span className="font-bold text-base" style={{ color: 'var(--coffee-text)' }}>
-                {cat.icon} {lc(locale, cat.label)}
+                <ToolGlyph name={cat.icon} /> {lc(locale, cat.label)}
               </span>
               <svg
                 className={`w-5 h-5 transition-transform duration-200 ${openSections.has(cat.key) ? 'rotate-180' : ''}`}
@@ -77,7 +80,7 @@ export default function HelpView({ locale: forcedLocale, helpData }: { locale?: 
                       className="w-full flex items-center justify-between px-6 py-3.5 text-left transition hover:bg-[var(--coffee-surface-hover)] gap-3"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <span className="text-lg shrink-0">{item.icon}</span>
+                        <span className="text-lg shrink-0">{item.icon ? <ToolGlyph name={item.icon} /> : getToolIcon(keyBySlug[item.href.slice(1)] ?? '')}</span>
                         <span className="text-sm font-medium" style={{ color: 'var(--coffee-text-secondary)' }}>
                           {lc(locale, item.q)}
                         </span>

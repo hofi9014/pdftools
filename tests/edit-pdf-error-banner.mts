@@ -1,7 +1,7 @@
 // Audit finding (Medium, ui area) — app/edit-pdf/page.tsx used the native alert() for file
 // validation errors (wrong file type, file over 100MB) — a blocking, unstyled browser dialog,
 // while every sibling tool page uses the same styled `{error && <div className="bg-red-50...">
-// ⚠️ {error}</div>}` banner pattern instead.
+// <ToolGlyph name="warning" /> {error}</div>}` banner pattern instead (an emoji until 2026-11-08).
 //
 // Fixed by adding `error` state and the same banner markup already used elsewhere (verified
 // byte-identical to app/merge/page.tsx's own banner), replacing both alert() calls with
@@ -44,7 +44,7 @@ if (handleFileMatch) {
   check(/setError\(''\)/.test(fn), 'a subsequent valid file clears any previous error');
 }
 
-const bannerRe = /\{error && <div className="([^"]+)">⚠️ \{error\}<\/div>\}/;
+const bannerRe = /\{error && <div className="([^"]+)"><ToolGlyph name="warning" \/> \{error\}<\/div>\}/;
 const editBannerMatch = src.match(bannerRe);
 const mergeBannerMatch = mergeSrc.match(bannerRe);
 check(!!editBannerMatch, 'the error banner JSX is present in edit-pdf/page.tsx');

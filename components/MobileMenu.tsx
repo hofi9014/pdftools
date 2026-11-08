@@ -6,13 +6,14 @@ import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import { getCategoryIcon } from '@/lib/icons';
+import ToolGlyph, { type GlyphName } from '@/components/ToolGlyph';
 import { toolsByCategory, toolPath, homePath } from '@/lib/tools';
 
 interface CatTool {
   key: string;
   href: string;
   navKey?: string;
-  icon?: string;
+  icon?: GlyphName;
 }
 
 interface Category {
@@ -36,8 +37,8 @@ export default function MobileMenu({ locale: forcedLocale }: { locale?: Locale }
   const locale = forcedLocale ?? useHydrationSafeLocale();
 
   const infoMore: CatTool[] = [
-    { key: 'rules', href: locale ? `/${locale}/nasze-zasady` : '/nasze-zasady', navKey: 'nav.rules', icon: '📜' },
-    { key: 'support', href: locale ? `/${locale}/wsparcie` : '/wsparcie', navKey: 'nav.support', icon: '💬' },
+    { key: 'rules', href: locale ? `/${locale}/nasze-zasady` : '/nasze-zasady', navKey: 'nav.rules', icon: 'scroll' },
+    { key: 'support', href: locale ? `/${locale}/wsparcie` : '/wsparcie', navKey: 'nav.support', icon: 'coffee' },
   ];
 
   const categories: Category[] = [
@@ -95,8 +96,8 @@ export default function MobileMenu({ locale: forcedLocale }: { locale?: Locale }
             <div className="flex-1 overflow-y-auto overscroll-contain">
               <div className="px-4 py-3 space-y-1">
                 <Link href={homePath(locale)} className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>{t('nav.home', locale)}</Link>
-                <Link href={toolPath('guide', locale)} className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📖 {t('nav.guide', locale)}</Link>
-                <Link href={`/guides/${localeGuidesSlug[locale]}`} className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>📚 {t('nav.guides', locale)}</Link>
+                <Link href={toolPath('guide', locale)} className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}><ToolGlyph name="book" /> {t('nav.guide', locale)}</Link>
+                <Link href={`/guides/${localeGuidesSlug[locale]}`} className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}><ToolGlyph name="books" /> {t('nav.guides', locale)}</Link>
               </div>
               <div className="px-4 pb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider px-3" style={{ color: 'var(--coffee-text-tertiary)' }}>{t('nav.tools', locale)}</span>
@@ -129,7 +130,7 @@ export default function MobileMenu({ locale: forcedLocale }: { locale?: Locale }
                             className="flex items-center gap-2 px-7 py-4 text-sm border-b border-[var(--coffee-border)] last:border-0 min-h-[44px] hover:bg-[var(--coffee-surface-hover)]"
                             style={{ color: 'var(--coffee-text-secondary)' }}
                             onClick={() => setOpen(false)}>
-                            {tool.icon && <span>{tool.icon}</span>}{t(tool.navKey ?? `tool.${tool.key}`, locale)}
+                            {tool.icon && <span><ToolGlyph name={tool.icon} /></span>}{t(tool.navKey ?? `tool.${tool.key}`, locale)}
                           </Link>
                         </div>
                       ))}

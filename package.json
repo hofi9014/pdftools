@@ -211,6 +211,7 @@
     "test:tool-icons": "npx --yes tsx tests/tool-icons.mts",
     "test:tool-page-seo": "npx tsx tests/tool-page-seo.mts",
     "test:e2e-tool-page-seo": "npx --yes tsx e2e/tool-page-seo.mts",
+    "test:e2e-no-emoji": "npx --yes tsx e2e/no-emoji.mts",
     "test:indexnow-key": "npx tsx tests/indexnow-key.mts",
     "test:favicon-links": "npx tsx tests/favicon-links.mts",
     "test:office-document-to-pdf": "npx tsx tests/office-document-to-pdf.mts",
