@@ -5,6 +5,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import PdfEditor from '@/components/edit-pdf/PdfEditor';
+import ToolGlyph from '@/components/ToolGlyph';
 
 export default function EditPdfPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -53,7 +54,7 @@ export default function EditPdfPage({ locale: forcedLocale }: { locale?: Locale 
         <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">{t('page.edit.desc', locale)}</p>
       </div>
 
-      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6"><ToolGlyph name="warning" /> {error}</div>}
 
       <div
         onDrop={handleDrop}
@@ -68,7 +69,7 @@ export default function EditPdfPage({ locale: forcedLocale }: { locale?: Locale 
             ? 'border-[var(--coffee-accent)] bg-[var(--coffee-accent-subtle)]'
             : 'border-gray-300 dark:border-gray-600 hover:border-[var(--coffee-accent)] hover:bg-gray-50 dark:hover:bg-gray-700'}`}
       >
-        <div className="text-6xl mb-4">📄</div>
+        <div className="text-6xl mb-4"><ToolGlyph name="folderOpen" /></div>
         <p className="text-gray-600 dark:text-gray-300 font-medium text-lg">{t('drag.title', locale)}</p>
         <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.subtitle', locale)}</p>
         <input id="fileInput" type="file" accept=".pdf" className="hidden"
@@ -81,19 +82,19 @@ export default function EditPdfPage({ locale: forcedLocale }: { locale?: Locale 
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {[
-          { icon: '✏️', key: 'edit.feature_text' },
-          { icon: '🎨', key: 'edit.feature_highlight' },
-          { icon: '📝', key: 'edit.feature_edit_text' },
+          { icon: 'letters' as const, key: 'edit.feature_text' },
+          { icon: 'highlighter' as const, key: 'edit.feature_highlight' },
+          { icon: 'pencil' as const, key: 'edit.feature_edit_text' },
         ].map((item, i) => (
           <div key={i} className="tool-feature-card rounded-xl p-4 border text-center">
-            <div className="text-2xl mb-1">{item.icon}</div>
+            <div className="text-2xl mb-1"><ToolGlyph name={item.icon} /></div>
             <p className="text-xs text-gray-500 dark:text-gray-400">{t(item.key, locale)}</p>
           </div>
         ))}
       </div>
 
       <div className="tool-info-box rounded-2xl p-5 mb-6">
-        <h2 className="font-bold tool-heading mb-2">{t('local.title', locale)}</h2>
+        <h2 className="font-bold tool-heading mb-2"><ToolGlyph name="shield" /> {t('local.title', locale)}</h2>
         <p className="text-sm text-blue-700 dark:text-blue-300">
           {t('local.desc', locale)} {t('edit.local_saved', locale)}{locale === 'pl' ? ' ' + t('page.edit.supports_polish', locale) : ''}
         </p>
@@ -101,12 +102,12 @@ export default function EditPdfPage({ locale: forcedLocale }: { locale?: Locale 
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
         {[
-          { icon: '🔒', text: t('local.badge', locale) },
-          { icon: '⚡', text: t('local.nolimits', locale) },
-          { icon: '🆓', text: t('local.free', locale) },
+          { icon: 'shield' as const, text: t('local.badge', locale) },
+          { icon: 'bolt' as const, text: t('local.nolimits', locale) },
+          { icon: 'gift' as const, text: t('local.free', locale) },
         ].map((item, i) => (
           <div key={i} className="tool-feature-card rounded-xl p-4 border">
-            <div className="text-2xl mb-1">{item.icon}</div>
+            <div className="text-2xl mb-1"><ToolGlyph name={item.icon} /></div>
             <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
           </div>
         ))}

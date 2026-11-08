@@ -4,6 +4,7 @@ import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { buildDropboxAuthUrl, buildDropboxUploadArgHeader } from '@/lib/dropbox-upload';
 import SharePointPickerDialog from './SharePointPickerDialog';
+import ToolGlyph from '@/components/ToolGlyph';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID || '';
 const DROPBOX_KEY = process.env.NEXT_PUBLIC_DROPBOX_APP_KEY || '';
@@ -265,7 +266,7 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
           {saving === 'google' ? (
             <span className="inline-block w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           ) : (
-            <span>📁</span>
+            <span><ToolGlyph name="cloud" /></span>
           )}
           Google Drive
         </button>
@@ -281,7 +282,7 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
           {saving === 'dropbox' ? (
             <span className="inline-block w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           ) : (
-            <span>📦</span>
+            <span><ToolGlyph name="cloud" /></span>
           )}
           Dropbox
         </button>
@@ -297,7 +298,7 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
           {saving === 'onedrive' ? (
             <span className="inline-block w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           ) : (
-            <span>☁️</span>
+            <span><ToolGlyph name="cloud" /></span>
           )}
           OneDrive
         </button>
@@ -310,11 +311,11 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
           className="text-xs px-3 py-1.5 rounded-lg border transition disabled:opacity-50 flex items-center gap-1.5"
           style={{ color: 'var(--coffee-text-secondary)', borderColor: 'var(--coffee-border)' }}
         >
-          <span>🏢</span> SharePoint
+          <span><ToolGlyph name="building" /></span> SharePoint
         </button>
       )}
 
-      {error && <p className="text-xs text-red-500 ms-2">⚠️ {error === '__offline__' ? t('cloud.offline', locale) : error}</p>}
+      {error && <p className="text-xs text-red-500 ms-2"><ToolGlyph name="warning" /> {error === '__offline__' ? t('cloud.offline', locale) : error}</p>}
 
       <SharePointPickerDialog
         mode="saver"

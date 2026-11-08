@@ -7,6 +7,7 @@ import { keyBySlug, toolPath, toolProcessing, RELATED_TOOLS } from '@/lib/tools'
 import { toolSearchMetadata } from '@/lib/metadata';
 import { DAILY_LIMIT } from '@/lib/ai-limit';
 import { safeJsonLd } from '@/lib/safe-json-ld';
+import ToolGlyph from '@/components/ToolGlyph';
 
 const SITE = 'https://optimapdf.com';
 
@@ -122,7 +123,7 @@ export default function ToolGuide({ slug, locale }: { slug: string; locale: Loca
             href={`/guides/${getLocaleSegment(locale)}/${guide.category}/${guide.slug}`}
             className="link-accent font-medium hover:underline"
           >
-            📖 {t('toolpage.guide_link', locale, { title: guide.title[locale] || guide.title.en })}
+            <ToolGlyph name="book" /> {t('toolpage.guide_link', locale, { title: guide.title[locale] || guide.title.en })}
           </Link>
         </p>
       )}

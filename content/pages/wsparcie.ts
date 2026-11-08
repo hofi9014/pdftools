@@ -6,26 +6,26 @@ export const content = {
     title: 'Wesprzyj Projekt',
     subtitle: 'Jak możesz pomóc w rozwoju OptimaPDF.',
     donateSection: {
-      h: '☕️ Postaw nam kawę',
+      h: 'Postaw nam kawę',
       p: 'OptimaPDF jest darmowy i pozostanie darmowy. Jeśli nasze narzędzia są dla Ciebie przydatne, możesz wesprzeć rozwój serwisu dobrowolną wpłatą. Każda, nawet najmniejsza kwota, pomaga pokryć koszty utrzymania serwerów, API i domeny. Nie ma żadnych zobowiązań — to czysto dobrowolne wsparcie.',
-      button: '☕️ Postaw kawę',
+      button: 'Postaw kawę',
       note: 'Płatności obsługiwane bezpiecznie przez Stripe. Konto nie jest wymagane.',
     },
     sections: [
       {
-        h: '📧 Kontakt e-mail',
+        h: 'Kontakt e-mail',
         p: 'Napisz do nas na adres:',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ Najczęściej zadawane pytania',
+        h: 'Najczęściej zadawane pytania',
         p: 'Zanim napiszesz, sprawdź naszą stronę FAQ — znajdziesz tam odpowiedzi na najczęściej zadawane pytania dotyczące narzędzi, prywatności i działania serwisu.',
         link: '/faq',
         linkText: 'Przejdź do FAQ →',
       },
       {
-        h: '🐛 Zgłoszenie błędu',
+        h: 'Zgłoszenie błędu',
         p: 'Jeśli znalazłeś błąd w działaniu któregokolwiek z narzędzi, opisz go jak najdokładniej:',
         items: [
           'Które narzędzie i jaka operacja powoduje błąd?',
@@ -35,11 +35,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 Sugestia nowej funkcji',
+        h: 'Sugestia nowej funkcji',
         p: 'Masz pomysł na nowe narzędzie lub ulepszenie istniejącego? Chętnie go poznamy! Opisz krótko, czego dotyczy sugestia i dlaczego Twoim zdaniem byłaby przydatna.',
       },
       {
-        h: '🔗 Linki',
+        h: 'Linki',
         items: [
           'Polityka prywatności — /privacy',
           'Regulamin — /terms',
@@ -53,26 +53,26 @@ export const content = {
     title: 'Support the Project',
     subtitle: 'How you can help OptimaPDF grow.',
     donateSection: {
-      h: '☕️ Buy us a coffee',
+      h: 'Buy us a coffee',
       p: 'OptimaPDF is free and will remain free. If you find our tools useful, you can support the development of the site with a voluntary donation. Every amount, no matter how small, helps cover server, API, and domain costs. There are no obligations — this is purely voluntary support.',
-      button: '☕️ Buy us a coffee',
+      button: 'Buy us a coffee',
       note: 'Payments processed securely by Stripe. No account required.',
     },
     sections: [
       {
-        h: '📧 Email contact',
+        h: 'Email contact',
         p: 'Write to us at:',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ Frequently asked questions',
+        h: 'Frequently asked questions',
         p: 'Before reaching out, check our FAQ page — you will find answers to common questions about tools, privacy, and how the site works.',
         link: '/faq',
         linkText: 'Go to FAQ →',
       },
       {
-        h: '🐛 Bug report',
+        h: 'Bug report',
         p: 'If you found a bug in any of the tools, please describe it as accurately as possible:',
         items: [
           'Which tool and which operation causes the error?',
@@ -82,11 +82,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 Feature suggestion',
+        h: 'Feature suggestion',
         p: 'Have an idea for a new tool or an improvement to an existing one? We would love to hear it! Briefly describe your suggestion and why you think it would be useful.',
       },
       {
-        h: '🔗 Links',
+        h: 'Links',
         items: [
           'Privacy Policy — /privacy',
           'Terms of Service — /terms',
@@ -100,26 +100,26 @@ export const content = {
     title: 'Unterstütze das Projekt',
     subtitle: 'Wie Sie OptimaPDF beim Wachsen helfen können.',
     donateSection: {
-      h: '☕️ Spendieren Sie uns einen Kaffee',
+      h: 'Spendieren Sie uns einen Kaffee',
       p: 'OptimaPDF ist kostenlos und wird kostenlos bleiben. Wenn Sie unsere Werkzeuge nützlich finden, können Sie die Entwicklung der Seite mit einer freiwilligen Spende unterstützen. Jeder Betrag, egal wie klein, hilft, die Kosten für Server, API und Domain zu decken. Es gibt keine Verpflichtungen — dies ist rein freiwillige Unterstützung.',
-      button: '☕️ Spendieren Sie uns einen Kaffee',
+      button: 'Spendieren Sie uns einen Kaffee',
       note: 'Zahlungen werden sicher über Stripe abgewickelt. Kein Konto erforderlich.',
     },
     sections: [
       {
-        h: '📧 E-Mail-Kontakt',
+        h: 'E-Mail-Kontakt',
         p: 'Schreiben Sie uns an:',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ Häufig gestellte Fragen',
+        h: 'Häufig gestellte Fragen',
         p: 'Bevor Sie uns kontaktieren, werfen Sie einen Blick auf unsere FAQ-Seite — dort finden Sie Antworten auf häufige Fragen zu den Werkzeugen, zum Datenschutz und zur Funktionsweise der Seite.',
         link: '/faq',
         linkText: 'Zum FAQ →',
       },
       {
-        h: '🐛 Fehler melden',
+        h: 'Fehler melden',
         p: 'Wenn Sie einen Fehler in einem der Werkzeuge gefunden haben, beschreiben Sie ihn bitte so genau wie möglich:',
         items: [
           'Welches Werkzeug und welcher Vorgang verursacht den Fehler?',
@@ -129,11 +129,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 Funktionsvorschlag',
+        h: 'Funktionsvorschlag',
         p: 'Haben Sie eine Idee für ein neues Werkzeug oder eine Verbesserung eines bestehenden? Wir würden uns freuen, davon zu hören! Beschreiben Sie kurz Ihren Vorschlag und warum Sie denken, dass er nützlich wäre.',
       },
       {
-        h: '🔗 Links',
+        h: 'Links',
         items: [
           'Datenschutzerklärung — /privacy',
           'Nutzungsbedingungen — /terms',
@@ -147,26 +147,26 @@ export const content = {
     title: 'Apoya el Proyecto',
     subtitle: 'Cómo puede ayudar a que OptimaPDF crezca.',
     donateSection: {
-      h: '☕️ Invítenos a un café',
+      h: 'Invítenos a un café',
       p: 'OptimaPDF es gratuito y seguirá siéndolo. Si encuentra útiles nuestras herramientas, puede apoyar el desarrollo del sitio con una donación voluntaria. Cualquier cantidad, por pequeña que sea, ayuda a cubrir los costos del servidor, la API y el dominio. No hay obligaciones — esto es apoyo puramente voluntario.',
-      button: '☕️ Invítenos a un café',
+      button: 'Invítenos a un café',
       note: 'Pagos procesados de forma segura por Stripe. No se requiere cuenta.',
     },
     sections: [
       {
-        h: '📧 Contacto por correo electrónico',
+        h: 'Contacto por correo electrónico',
         p: 'Escríbanos a:',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ Preguntas frecuentes',
+        h: 'Preguntas frecuentes',
         p: 'Antes de contactarnos, consulte nuestra página de preguntas frecuentes — allí encontrará respuestas a las preguntas más comunes sobre las herramientas, la privacidad y el funcionamiento del sitio.',
         link: '/faq',
         linkText: 'Ir a preguntas frecuentes →',
       },
       {
-        h: '🐛 Informar de un error',
+        h: 'Informar de un error',
         p: 'Si ha encontrado un error en alguna de las herramientas, descríbalo con la mayor precisión posible:',
         items: [
           '¿Qué herramienta y qué operación causa el error?',
@@ -176,11 +176,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 Sugerencia de función',
+        h: 'Sugerencia de función',
         p: '¿Tiene una idea para una nueva herramienta o una mejora de una existente? ¡Nos encantaría conocerla! Describa brevemente su sugerencia y por qué cree que sería útil.',
       },
       {
-        h: '🔗 Enlaces',
+        h: 'Enlaces',
         items: [
           'Política de privacidad — /privacy',
           'Términos de servicio — /terms',
@@ -194,26 +194,26 @@ export const content = {
     title: 'Apoie o Projeto',
     subtitle: 'Como pode ajudar o OptimaPDF a crescer.',
     donateSection: {
-      h: '☕️ Ofereça-nos um café',
+      h: 'Ofereça-nos um café',
       p: 'O OptimaPDF é gratuito e continuará a ser gratuito. Se achar as nossas ferramentas úteis, pode apoiar o desenvolvimento do site com um donativo voluntário. Qualquer montante, por mais pequeno que seja, ajuda a cobrir os custos do servidor, da API e do domínio. Não há obrigações — isto é um apoio puramente voluntário.',
-      button: '☕️ Ofereça-nos um café',
+      button: 'Ofereça-nos um café',
       note: 'Pagamentos processados de forma segura pela Stripe. Não é necessária conta.',
     },
     sections: [
       {
-        h: '📧 Contacto por e-mail',
+        h: 'Contacto por e-mail',
         p: 'Escreva-nos para:',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ Perguntas frequentes',
+        h: 'Perguntas frequentes',
         p: 'Antes de nos contactar, consulte a nossa página de perguntas frequentes — encontrará respostas a perguntas comuns sobre as ferramentas, a privacidade e o funcionamento do site.',
         link: '/faq',
         linkText: 'Ir para perguntas frequentes →',
       },
       {
-        h: '🐛 Reportar um erro',
+        h: 'Reportar um erro',
         p: 'Se encontrou um erro numa das ferramentas, por favor descreva-o com a maior precisão possível:',
         items: [
           'Qual ferramenta e qual operação causa o erro?',
@@ -223,11 +223,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 Sugestão de funcionalidade',
+        h: 'Sugestão de funcionalidade',
         p: 'Tem uma ideia para uma nova ferramenta ou uma melhoria de uma existente? Gostaríamos muito de a conhecer! Descreva brevemente a sua sugestão e por que pensa que seria útil.',
       },
       {
-        h: '🔗 Ligações',
+        h: 'Ligações',
         items: [
           'Política de privacidade — /privacy',
           'Termos de serviço — /terms',
@@ -241,26 +241,26 @@ export const content = {
     title: 'Støtt Prosjektet',
     subtitle: 'Hvordan du kan hjelpe OptimaPDF med å vokse.',
     donateSection: {
-      h: '☕️ Kjøp oss en kaffe',
+      h: 'Kjøp oss en kaffe',
       p: 'OptimaPDF er gratis og vil forbli gratis. Hvis du finner verktøyene våre nyttige, kan du støtte utviklingen av nettstedet med en frivillig donasjon. Ethvert beløp, uansett hvor lite, hjelper til med å dekke kostnader til server, API og domene. Det er ingen forpliktelser — dette er rent frivillig støtte.',
-      button: '☕️ Kjøp oss en kaffe',
+      button: 'Kjøp oss en kaffe',
       note: 'Betalinger behandles sikkert via Stripe. Ingen konto nødvendig.',
     },
     sections: [
       {
-        h: '📧 E-postkontakt',
+        h: 'E-postkontakt',
         p: 'Skriv til oss på:',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ Ofte stilte spørsmål',
+        h: 'Ofte stilte spørsmål',
         p: 'Før du kontakter oss, sjekk vår FAQ-side — du finner svar på vanlige spørsmål om verktøyene, personvern og hvordan nettstedet fungerer.',
         link: '/faq',
         linkText: 'Gå til FAQ →',
       },
       {
-        h: '🐛 Rapporter en feil',
+        h: 'Rapporter en feil',
         p: 'Hvis du har funnet en feil i noen av verktøyene, vennligst beskriv den så nøyaktig som mulig:',
         items: [
           'Hvilket verktøy og hvilken operasjon forårsaker feilen?',
@@ -270,11 +270,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 Funksjonsforslag',
+        h: 'Funksjonsforslag',
         p: 'Har du en idé til et nytt verktøy eller en forbedring av et eksisterende? Vi vil gjerne høre om det! Beskriv kort forslaget ditt og hvorfor du tror det ville være nyttig.',
       },
       {
-        h: '🔗 Lenker',
+        h: 'Lenker',
         items: [
           'Personvernerklæring — /privacy',
           'Bruksvilkår — /terms',
@@ -288,26 +288,26 @@ export const content = {
     title: 'Stöd Projektet',
     subtitle: 'Hur du kan hjälpa OptimaPDF att växa.',
     donateSection: {
-      h: '☕️ Bjud oss på en kaffe',
+      h: 'Bjud oss på en kaffe',
       p: 'OptimaPDF är gratis och kommer att förbli gratis. Om du tycker att våra verktyg är användbara kan du stödja utvecklingen av webbplatsen med en frivillig donation. Varje belopp, oavsett hur litet, hjälper till att täcka kostnader för server, API och domän. Det finns inga förpliktelser — detta är rent frivilligt stöd.',
-      button: '☕️ Bjud oss på en kaffe',
+      button: 'Bjud oss på en kaffe',
       note: 'Betalningar behandlas säkert via Stripe. Inget konto krävs.',
     },
     sections: [
       {
-        h: '📧 E-postkontakt',
+        h: 'E-postkontakt',
         p: 'Skriv till oss på:',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ Vanliga frågor',
+        h: 'Vanliga frågor',
         p: 'Innan du kontaktar oss, kolla vår FAQ-sida — du hittar svar på vanliga frågor om verktygen, integritet och hur webbplatsen fungerar.',
         link: '/faq',
         linkText: 'Gå till FAQ →',
       },
       {
-        h: '🐛 Rapportera ett fel',
+        h: 'Rapportera ett fel',
         p: 'Om du har hittat ett fel i något av verktygen, vänligen beskriv det så noggrant som möjligt:',
         items: [
           'Vilket verktyg och vilken operation orsakar felet?',
@@ -317,11 +317,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 Funktionsförslag',
+        h: 'Funktionsförslag',
         p: 'Har du en idé för ett nytt verktyg eller en förbättring av ett befintligt? Vi vill gärna höra om det! Beskriv kort ditt förslag och varför du tror att det skulle vara användbart.',
       },
       {
-        h: '🔗 Länkar',
+        h: 'Länkar',
         items: [
           'Integritetspolicy — /privacy',
           'Användarvillkor — /terms',
@@ -335,26 +335,26 @@ export const content = {
     title: 'Soutenez le Projet',
     subtitle: 'Comment vous pouvez aider OptimaPDF à se développer.',
     donateSection: {
-      h: '☕️ Offrez-nous un café',
+      h: 'Offrez-nous un café',
       p: 'OptimaPDF est gratuit et le restera. Si vous trouvez nos outils utiles, vous pouvez soutenir le développement du site par un don volontaire. Chaque montant, aussi petit soit-il, aide à couvrir les coûts du serveur, de l’API et du domaine. Il n’y a aucune obligation — il s’agit d’un soutien purement volontaire.',
-      button: '☕️ Offrez-nous un café',
+      button: 'Offrez-nous un café',
       note: 'Paiements traités en toute sécurité par Stripe. Aucun compte requis.',
     },
     sections: [
       {
-        h: '📧 Contact par e-mail',
+        h: 'Contact par e-mail',
         p: 'Écrivez-nous à :',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ Questions fréquentes',
+        h: 'Questions fréquentes',
         p: 'Avant de nous contacter, consultez notre page FAQ — vous y trouverez des réponses aux questions courantes sur les outils, la confidentialité et le fonctionnement du site.',
         link: '/faq',
         linkText: 'Aller à la FAQ →',
       },
       {
-        h: '🐛 Signaler un bug',
+        h: 'Signaler un bug',
         p: 'Si vous avez trouvé un bug dans l’un des outils, veuillez le décrire aussi précisément que possible :',
         items: [
           'Quel outil et quelle opération provoque l’erreur ?',
@@ -364,11 +364,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 Suggestion de fonctionnalité',
+        h: 'Suggestion de fonctionnalité',
         p: 'Vous avez une idée pour un nouvel outil ou une amélioration d’un outil existant ? Nous aimerions beaucoup la connaître ! Décrivez brièvement votre suggestion et pourquoi vous pensez qu’elle serait utile.',
       },
       {
-        h: '🔗 Liens',
+        h: 'Liens',
         items: [
           'Politique de confidentialité — /privacy',
           'Conditions d’utilisation — /terms',
@@ -382,26 +382,26 @@ export const content = {
     title: 'ادعم المشروع',
     subtitle: 'كيف يمكنك المساعدة في تطوير OptimaPDF.',
     donateSection: {
-      h: '☕️ اشتر لنا قهوة',
+      h: 'اشتر لنا قهوة',
       p: 'OptimaPDF مجاني وسيظل مجانياً. إذا وجدت أدواتنا مفيدة، يمكنك دعم تطوير الموقع من خلال تبرع اختياري. أي مبلغ، مهما كان صغيراً، يساعد في تغطية تكاليف الخادم وواجهة API والنطاق. لا يوجد أي التزام — هذا دعم تطوعي بحت.',
-      button: '☕️ اشتر لنا قهوة',
+      button: 'اشتر لنا قهوة',
       note: 'تتم معالجة المدفوعات بشكل آمن عبر Stripe. لا حاجة لحساب.',
     },
     sections: [
       {
-        h: '📧 الاتصال عبر البريد الإلكتروني',
+        h: 'الاتصال عبر البريد الإلكتروني',
         p: 'اكتب لنا على:',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ الأسئلة الشائعة',
+        h: 'الأسئلة الشائعة',
         p: 'قبل الاتصال بنا، تفضل بزيارة صفحة الأسئلة الشائعة — ستجد إجابات للأسئلة الشائعة حول الأدوات والخصوصية وكيفية عمل الموقع.',
         link: '/faq',
         linkText: 'انتقل إلى الأسئلة الشائعة ←',
       },
       {
-        h: '🐛 الإبلاغ عن خطأ',
+        h: 'الإبلاغ عن خطأ',
         p: 'إذا وجدت خطأ في إحدى الأدوات، يرجى وصفه بأكبر قدر ممكن من الدقة:',
         items: [
           'ما الأداة وأي عملية تسبب الخطأ؟',
@@ -411,11 +411,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 اقتراح ميزة',
+        h: 'اقتراح ميزة',
         p: 'هل لديك فكرة لأداة جديدة أو تحسين لأداة موجودة؟ يسعدنا جداً سماعها! صف باقتضاب اقتراحك ولماذا تعتقد أنه سيكون مفيداً.',
       },
       {
-        h: '🔗 روابط',
+        h: 'روابط',
         items: [
           'سياسة الخصوصية — /privacy',
           'شروط الخدمة — /terms',
@@ -429,26 +429,26 @@ export const content = {
     title: 'از پروژه حمایت کنید',
     subtitle: 'چگونه می‌توانید به رشد OptimaPDF کمک کنید.',
     donateSection: {
-      h: '☕️ برای ما قهوه بخرید',
+      h: 'برای ما قهوه بخرید',
       p: 'OptimaPDF رایگان است و رایگان خواهد ماند. اگر ابزارهای ما را مفید می‌یابید، می‌توانید با یک کمک داوطلبانه از توسعه سایت پشتیبانی کنید. هر مبلغی، هر چقدر هم کوچک، به پوشش هزینه‌های سرور، API و دامنه کمک می‌کند. هیچ اجباری وجود ندارد — این یک حمایت کاملاً داوطلبانه است.',
-      button: '☕️ برای ما قهوه بخرید',
+      button: 'برای ما قهوه بخرید',
       note: 'پرداخت‌ها به صورت امن توسط Stripe پردازش می‌شوند. نیازی به حساب کاربری نیست.',
     },
     sections: [
       {
-        h: '📧 تماس از طریق ایمیل',
+        h: 'تماس از طریق ایمیل',
         p: 'برای ما بنویسید:',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ سوالات متداول',
+        h: 'سوالات متداول',
         p: 'قبل از تماس با ما، به صفحه سوالات متداول مراجعه کنید — پاسخ سوالات رایج درباره ابزارها، حریم خصوصی و نحوه کار سایت را خواهید یافت.',
         link: '/faq',
         linkText: 'برو به سوالات متداول ←',
       },
       {
-        h: '🐛 گزارش خطا',
+        h: 'گزارش خطا',
         p: 'اگر در یکی از ابزارها خطایی یافته‌اید، لطفاً آن را تا حد امکان دقیق توضیح دهید:',
         items: [
           'کدام ابزار و کدام عملیات باعث خطا می‌شود؟',
@@ -458,11 +458,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 پیشنهاد ویژگی',
+        h: 'پیشنهاد ویژگی',
         p: 'آیا ایده‌ای برای یک ابزار جدید یا بهبود یک ابزار موجود دارید؟ ما بسیار خوشحال می‌شویم که آن را بشنویم! پیشنهاد خود را به طور خلاصه توضیح دهید و اینکه چرا فکر می‌کنید مفید خواهد بود.',
       },
       {
-        h: '🔗 پیوندها',
+        h: 'پیوندها',
         items: [
           'سیاست حفظ حریم خصوصی — /privacy',
           'شرایط استفاده — /terms',
@@ -476,26 +476,26 @@ export const content = {
     title: 'प्रोजेक्ट को समर्थन दें',
     subtitle: 'आप OptimaPDF को बढ़ने में कैसे मदद कर सकते हैं।',
     donateSection: {
-      h: '☕️ हमें कॉफ़ी पिलाएँ',
+      h: 'हमें कॉफ़ी पिलाएँ',
       p: 'OptimaPDF मुफ़्त है और मुफ़्त ही रहेगा। यदि आप हमारे टूल्स को उपयोगी पाते हैं, तो आप स्वैच्छिक दान के साथ साइट के विकास में सहायता कर सकते हैं। हर राशि, चाहे कितनी भी छोटी हो, सर्वर, API और डोमेन की लागतों को कवर करने में मदद करती है। कोई बाध्यता नहीं है — यह पूरी तरह से स्वैच्छिक सहायता है।',
-      button: '☕️ हमें कॉफ़ी पिलाएँ',
+      button: 'हमें कॉफ़ी पिलाएँ',
       note: 'भुगतान Stripe द्वारा सुरक्षित रूप से संसाधित किए जाते हैं। किसी खाते की आवश्यकता नहीं है।',
     },
     sections: [
       {
-        h: '📧 ईमेल द्वारा संपर्क करें',
+        h: 'ईमेल द्वारा संपर्क करें',
         p: 'हमें यहाँ लिखें:',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ अक्सर पूछे जाने वाले प्रश्न',
+        h: 'अक्सर पूछे जाने वाले प्रश्न',
         p: 'हमसे संपर्क करने से पहले, हमारा FAQ पृष्ठ देखें — आपको टूल्स, गोपनीयता और साइट के काम करने के तरीके के बारे में सामान्य प्रश्नों के उत्तर मिलेंगे।',
         link: '/faq',
         linkText: 'FAQ पर जाएँ →',
       },
       {
-        h: '🐛 बग रिपोर्ट करें',
+        h: 'बग रिपोर्ट करें',
         p: 'यदि आपको किसी एक टूल में बग मिला है, तो कृपया इसे यथासंभव सटीक रूप से बताएँ:',
         items: [
           'कौन सा टूल और कौन सा ऑपरेशन त्रुटि का कारण बनता है?',
@@ -505,11 +505,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 सुविधा सुझाव',
+        h: 'सुविधा सुझाव',
         p: 'क्या आपके पास किसी नए टूल या मौजूदा टूल में सुधार के लिए कोई विचार है? हमें यह सुनकर बहुत खुशी होगी! अपने सुझाव का संक्षेप में वर्णन करें और यह क्यों उपयोगी होगा।',
       },
       {
-        h: '🔗 लिंक',
+        h: 'लिंक',
         items: [
           'गोपनीयता नीति — /privacy',
           'सेवा की शर्तें — /terms',
@@ -523,26 +523,26 @@ export const content = {
     title: 'Styrktu Verkefnið',
     subtitle: 'Hvernig þú getur hjálpað OptimaPDF að vaxa.',
     donateSection: {
-      h: '☕️ Bjóddu okkur kaffi',
+      h: 'Bjóddu okkur kaffi',
       p: 'OptimaPDF er ókeypis og verður áfram ókeypis. Ef þér finnast tækin okkar gagnleg geturðu stutt þróun síðunnar með frjálsum framlagi. Sérhver upphæð, sama hversu lítil, hjálpar til við að standa straum af kostnaði við netþjón, API og lén. Engin skylda er — þetta er algjörlega frjáls stuðningur.',
-      button: '☕️ Bjóddu okkur kaffi',
+      button: 'Bjóddu okkur kaffi',
       note: 'Greiðslur eru unnar á öruggan hátt af Stripe. Einskis reiknings er krafist.',
     },
     sections: [
       {
-        h: '📧 Hafðu samband í tölvupósti',
+        h: 'Hafðu samband í tölvupósti',
         p: 'Skrifaðu okkur á:',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ Algengar spurningar',
+        h: 'Algengar spurningar',
         p: 'Áður en þú hefur samband við okkur skaltu skoða FAQ síðuna okkar — þú munt finna svör við algengum spurningum um tækin, persónuvernd og hvernig síðan virkar.',
         link: '/faq',
         linkText: 'Fara á FAQ síðu →',
       },
       {
-        h: '🐛 Tilgreindu villu',
+        h: 'Tilgreindu villu',
         p: 'Ef þú fannst villu í einu af tækunum skaltu lýsa henni eins nákvæmlega og mögulegt er:',
         items: [
           'Hvaða tæki og hvaða aðgerð veldur villunni?',
@@ -552,11 +552,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 Tillaga að nýrri virkni',
+        h: 'Tillaga að nýrri virkni',
         p: 'Ertu með hugmynd að nýju tæki eða endurbótum á núverandi tæki? Við myndum mjög gjarnan vilja heyra um það! Lýstu tillögu þinni stuttlega og hvers vegna þú heldur að hún væri gagnleg.',
       },
       {
-        h: '🔗 Tenglar',
+        h: 'Tenglar',
         items: [
           'Persónuverndarstefna — /privacy',
           'Þjónustuskilmálar — /terms',
@@ -570,26 +570,26 @@ export const content = {
     title: 'Sostieni il Progetto',
     subtitle: 'Come può aiutare OptimaPDF a crescere.',
     donateSection: {
-      h: '☕️ Ci offra un caffè',
+      h: 'Ci offra un caffè',
       p: 'OptimaPDF è gratuito e rimarrà gratuito. Se trova utili i nostri strumenti, può sostenere lo sviluppo del sito con una donazione volontaria. Ogni importo, per quanto piccolo, aiuta a coprire i costi del server, delle API e del dominio. Non c’è alcun obbligo — si tratta di un supporto puramente volontario.',
-      button: '☕️ Ci offra un caffè',
+      button: 'Ci offra un caffè',
       note: 'I pagamenti vengono elaborati in modo sicuro da Stripe. Non è richiesto alcun account.',
     },
     sections: [
       {
-        h: '📧 Contatti via email',
+        h: 'Contatti via email',
         p: 'Ci scriva a:',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ Domande frequenti',
+        h: 'Domande frequenti',
         p: 'Prima di contattarci, consulti la nostra pagina FAQ — troverà le risposte alle domande comuni sugli strumenti, la privacy e il funzionamento del sito.',
         link: '/faq',
         linkText: 'Vai alle FAQ →',
       },
       {
-        h: '🐛 Segnali un bug',
+        h: 'Segnali un bug',
         p: 'Se ha trovato un bug in uno degli strumenti, lo descriva nel modo più preciso possibile:',
         items: [
           'Quale strumento e quale operazione causa l’errore?',
@@ -599,11 +599,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 Suggerimento di funzionalità',
+        h: 'Suggerimento di funzionalità',
         p: 'Ha un’idea per un nuovo strumento o un miglioramento di uno strumento esistente? Ci farebbe molto piacere saperlo! Descriva brevemente il suo suggerimento e perché pensa che potrebbe essere utile.',
       },
       {
-        h: '🔗 Link',
+        h: 'Link',
         items: [
           'Informativa sulla privacy — /privacy',
           'Termini di servizio — /terms',
@@ -617,26 +617,26 @@ export const content = {
     title: 'プロジェクトを支援する',
     subtitle: 'OptimaPDFの成長にご協力いただく方法。',
     donateSection: {
-      h: '☕️ コーヒーをご馳走ください',
+      h: 'コーヒーをご馳走ください',
       p: 'OptimaPDFは無料で、今後も無料のままです。ツールが便利だと感じていただけたなら、任意の寄付でサイトの開発をサポートしていただけます。どんなに少額でも、サーバー、API、ドメインの費用を賄う助けになります。義務は一切ありません — これは純粋に任意のサポートです。',
-      button: '☕️ コーヒーをご馳走ください',
+      button: 'コーヒーをご馳走ください',
       note: 'お支払いはStripeによって安全に処理されます。アカウントは必要ありません。',
     },
     sections: [
       {
-        h: '📧 メールでのお問い合わせ',
+        h: 'メールでのお問い合わせ',
         p: '以下のアドレスまでご連絡ください：',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ よくある質問',
+        h: 'よくある質問',
         p: 'お問い合わせの前に、FAQページをご確認ください — ツール、プライバシー、サイトの仕組みについてのよくある質問の回答をご覧いただけます。',
         link: '/faq',
         linkText: 'FAQを見る →',
       },
       {
-        h: '🐛 バグの報告',
+        h: 'バグの報告',
         p: 'ツールのいずれかでバグを見つけられた場合は、できるだけ正確にご説明ください：',
         items: [
           'どのツールのどの操作でエラーが発生しますか？',
@@ -646,11 +646,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 機能提案',
+        h: '機能提案',
         p: '新しいツールや既存ツールの改善についてアイデアはありますか？ぜひお聞かせください！ご提案を簡単に、そしてそれがなぜ役立つと思うかをご説明ください。',
       },
       {
-        h: '🔗 リンク',
+        h: 'リンク',
         items: [
           'プライバシーポリシー — /privacy',
           '利用規約 — /terms',
@@ -664,26 +664,26 @@ export const content = {
     title: 'Projeyi Destekleyin',
     subtitle: 'OptimaPDF\'nin büyümesine nasıl yardımcı olabilirsiniz.',
     donateSection: {
-      h: '☕️ Bize bir kahve ısmarlayın',
+      h: 'Bize bir kahve ısmarlayın',
       p: 'OptimaPDF ücretsizdir ve ücretsiz kalacaktır. Araçlarımızı kullanışlı buluyorsanız, gönüllü bir bağışla sitenin gelişimini destekleyebilirsiniz. Ne kadar küçük olursa olsun, her tutar sunucu, API ve alan adı maliyetlerini karşılamaya yardımcı olur. Hiçbir zorunluluk yoktur — bu tamamen gönüllü bir destektir.',
-      button: '☕️ Bize bir kahve ısmarlayın',
+      button: 'Bize bir kahve ısmarlayın',
       note: 'Ödemeler Stripe tarafından güvenli bir şekilde işlenir. Hesap gerekmez.',
     },
     sections: [
       {
-        h: '📧 E-posta ile iletişim',
+        h: 'E-posta ile iletişim',
         p: 'Bize şu adrese yazın:',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ Sıkça Sorulan Sorular',
+        h: 'Sıkça Sorulan Sorular',
         p: 'Bizimle iletişime geçmeden önce, SSS sayfamızı kontrol edin — araçlar, gizlilik ve sitenin nasıl çalıştığı hakkında sık sorulan soruların yanıtlarını bulacaksınız.',
         link: '/faq',
         linkText: 'SSS sayfasına git →',
       },
       {
-        h: '🐛 Hata bildir',
+        h: 'Hata bildir',
         p: 'Araçlardan birinde bir hata bulduysanız, lütfen mümkün olduğunca kesin bir şekilde açıklayın:',
         items: [
           'Hangi araç ve hangi işlem hataya neden oluyor?',
@@ -693,11 +693,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 Özellik önerisi',
+        h: 'Özellik önerisi',
         p: 'Yeni bir araç veya mevcut bir araçta iyileştirme için bir fikriniz mi var? Bunu duymayı çok isteriz! Önerinizi kısaca ve neden yararlı olacağını düşündüğünüzü açıklayın.',
       },
       {
-        h: '🔗 Bağlantılar',
+        h: 'Bağlantılar',
         items: [
           'Gizlilik Politikası — /privacy',
           'Hizmet Şartları — /terms',
@@ -711,26 +711,26 @@ export const content = {
     title: '支持本项目',
     subtitle: '您如何帮助OptimaPDF成长。',
     donateSection: {
-      h: '☕️ 请我们喝杯咖啡',
+      h: '请我们喝杯咖啡',
       p: 'OptimaPDF是免费的，并将保持免费。如果您觉得我们的工具有用，您可以通过自愿捐款来支持网站的开发。无论金额多小，都有助于支付服务器、API和域名的费用。没有任何义务——这纯粹是自愿支持。',
-      button: '☕️ 请我们喝杯咖啡',
+      button: '请我们喝杯咖啡',
       note: '付款由Stripe安全处理。无需账户。',
     },
     sections: [
       {
-        h: '📧 通过电子邮件联系',
+        h: '通过电子邮件联系',
         p: '请写信至：',
         link: 'mailto:kontakt@optimapdf.com',
         linkText: 'kontakt@optimapdf.com',
       },
       {
-        h: '❓ 常见问题',
+        h: '常见问题',
         p: '在联系我们之前，请查看我们的FAQ页面——您会找到关于工具、隐私以及网站运作方式的常见问题解答。',
         link: '/faq',
         linkText: '前往FAQ →',
       },
       {
-        h: '🐛 报告错误',
+        h: '报告错误',
         p: '如果您在某个工具中发现了错误，请尽可能精确地描述它：',
         items: [
           '哪个工具和哪个操作导致了错误？',
@@ -740,11 +740,11 @@ export const content = {
         ],
       },
       {
-        h: '💡 功能建议',
+        h: '功能建议',
         p: '您对新工具或改进现有工具有什么想法吗？我们非常乐意倾听！请简要描述您的建议以及您认为它会有什么用处。',
       },
       {
-        h: '🔗 链接',
+        h: '链接',
         items: [
           '隐私政策 — /privacy',
           '服务条款 — /terms',

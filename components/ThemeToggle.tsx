@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import ToolGlyph, { type GlyphName } from '@/components/ToolGlyph';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 
@@ -26,11 +27,11 @@ export default function ThemeToggle({ locale: forcedLocale }: { locale?: Locale 
   };
 
   // Both themes stay visible as a two-button switch, so the current theme is shown, not implied.
-  const option = (isDark: boolean, icon: string, label: string) => (
+  const option = (isDark: boolean, icon: GlyphName, label: string) => (
     <button type="button" onClick={() => choose(isDark)} aria-pressed={dark === isDark} title={label} aria-label={label}
       className="w-9 h-9 rounded-[10px] flex items-center justify-center text-base transition cursor-pointer"
       style={{ backgroundColor: dark === isDark ? 'var(--coffee-accent-soft)' : 'transparent' }}>
-      <span aria-hidden="true">{icon}</span>
+      <ToolGlyph name={icon} />
     </button>
   );
 
@@ -38,8 +39,8 @@ export default function ThemeToggle({ locale: forcedLocale }: { locale?: Locale 
     <div role="group" aria-label={t('theme.dark', locale) + ' / ' + t('theme.light', locale)}
       className="flex items-center p-[3px] rounded-[13px] border"
       style={{ borderColor: 'var(--coffee-border-strong)', backgroundColor: 'var(--coffee-surface-solid)' }}>
-      {option(false, '☀️', t('theme.light', locale))}
-      {option(true, '🌙', t('theme.dark', locale))}
+      {option(false, 'sun', t('theme.light', locale))}
+      {option(true, 'moon', t('theme.dark', locale))}
     </div>
   );
 }

@@ -101,9 +101,9 @@ const tools: Record<string, React.ReactNode> = {
 };
 
 const categoryIcons: Record<string, React.ReactNode> = {
-  edit:    <span style={s}><ToolGlyph name="pencil" /></span>,
-  convert: <span style={s}><ToolGlyph name="rotate" /></span>,
-  secure:  <span style={s}><ToolGlyph name="lock" /></span>,
+  edit:    <span style={s}><ToolGlyph name="sliders" /></span>,
+  convert: <span style={s}><ToolGlyph name="swap" /></span>,
+  secure:  <span style={s}><ToolGlyph name="key" /></span>,
   more:    <span style={s}><ToolGlyph name="puzzle" /></span>,
   cloud:   <span style={s}><ToolGlyph name="cloud" /></span>,
 };

@@ -7,6 +7,7 @@ import { localeGuidesSlug } from '@/lib/guides-slugs';
 import type { GuideCard } from '@/lib/guide-cards';
 import InstallSection from '@/components/InstallSection';
 import PdfBadge from '@/components/PdfBadge';
+import ToolGlyph from '@/components/ToolGlyph';
 import HeroCoffeeCup from '@/components/HeroCoffeeCup';
 import { tools, toolPath, categories } from '@/lib/tools';
 
@@ -31,7 +32,7 @@ function ToolCard({ tool, locale }: { tool: ToolInfo; locale: Locale }) {
       {aiTools.has(tool.key) && (
         <span className="self-start text-[11px] font-semibold px-2 py-0.5 rounded-full"
           style={{ backgroundColor: 'var(--coffee-badge-bg)', color: 'var(--coffee-badge-text)' }}>
-          {t('hero.ai_badge', locale)}
+          <ToolGlyph name="sparkle" /> {t('hero.ai_badge', locale)}
         </span>
       )}
     </a>
@@ -113,7 +114,7 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
           <div className="flex flex-col gap-5 min-w-0">
             <span className="self-start inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-bold"
               style={{ backgroundColor: 'var(--coffee-badge-bg)', color: 'var(--coffee-badge-text)' }}>
-              <span aria-hidden="true">🔒</span>{t('hero.badge', locale)}
+              <ToolGlyph name="shield" />{t('hero.badge', locale)}
             </span>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] [text-wrap:balance]" style={{ color: 'var(--coffee-text)' }}>
               {t('home.title', locale)}
@@ -169,9 +170,9 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
             <span className="absolute right-[6%] top-[26%] text-[88px] rotate-12"><PdfBadge type="XLS" /></span>
             <span className="absolute left-[14%] bottom-[10%] text-[66px] rotate-[8deg]"><PdfBadge type="PPT" /></span>
             <span className="absolute right-[16%] bottom-[8%] text-[60px] -rotate-[9deg]"><PdfBadge type="ODT" /></span>
-            <span dir="ltr" className="hero-chip absolute left-0 top-[6%] z-[3]">🗜️ 1155 kB → 416 kB</span>
-            <span className="hero-chip absolute right-0 top-[64%] z-[3]">✍️ {t('tool.sign', locale)}</span>
-            <span className="hero-chip absolute left-[18%] bottom-0 z-[3]">🔒 {t('feature.local_short', locale)}*</span>
+            <span dir="ltr" className="hero-chip absolute left-0 top-[6%] z-[3]">{getToolIcon('compress')} 1155 kB → 416 kB</span>
+            <span className="hero-chip absolute right-0 top-[64%] z-[3]">{getToolIcon('sign')} {t('tool.sign', locale)}</span>
+            <span className="hero-chip absolute left-[18%] bottom-0 z-[3]"><ToolGlyph name="shield" /> {t('feature.local_short', locale)}*</span>
           </div>
         </div>
       </section>
@@ -195,7 +196,7 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
       <section id="popular" className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
           <div>
-            <h2 className="text-3xl font-extrabold" style={{ color: 'var(--coffee-text)' }}>{t('home.popular_title', locale)}</h2>
+            <h2 className="text-3xl font-extrabold" style={{ color: 'var(--coffee-text)' }}><ToolGlyph name="star" /> {t('home.popular_title', locale)}</h2>
             <p className="mt-1" style={{ color: 'var(--coffee-text-secondary)' }}>{t('home.popular_subtitle', locale)}</p>
           </div>
           <a href="#tools" className="font-bold link-accent no-underline">{t('home.cta', locale)}</a>
@@ -219,7 +220,7 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
         <div className="rounded-[26px] p-6 sm:p-9 grid gap-6 lg:grid-cols-[1.1fr_1fr_1fr_1fr] lg:items-center" style={{ backgroundColor: 'var(--coffee-bg-alt)' }}>
           <div>
             <h2 className="text-2xl sm:text-[28px] font-extrabold leading-tight" style={{ color: 'var(--coffee-text)' }}>{t('home.howto_title', locale)}</h2>
-            <a href={toolPath('guide', locale)} className="inline-block mt-2 text-sm font-semibold link-accent no-underline">{t('home.howto_guide', locale)}</a>
+            <a href={toolPath('guide', locale)} className="inline-block mt-2 text-sm font-semibold link-accent no-underline"><ToolGlyph name="book" /> {t('home.howto_guide', locale)}</a>
           </div>
           {[
             { num: '1', title: t('home.howto_step1', locale), desc: t('home.howto_desc1', locale) },
@@ -268,6 +269,7 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {['compress', 'edit', 'merge', 'sign', 'protect', 'word'].map(key => (
             <a key={key} href={toolPath(key, locale)} className="coffee-card flex items-start gap-3 p-5 no-underline">
+              <span aria-hidden="true" className="text-xl shrink-0 leading-none">{getToolIcon(key)}</span>
               <span className="text-sm sm:text-base leading-relaxed" style={{ color: 'var(--coffee-text)' }}>
                 {t(`home.scenarios_${key}`, locale)}
               </span>
@@ -281,16 +283,16 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
       {/* Cloud import and offline use */}
       <section className="max-w-7xl mx-auto px-4 py-4 grid gap-4 md:grid-cols-2">
         <p className="rounded-2xl p-5 text-sm leading-relaxed" style={{ ...cardStyle, color: 'var(--coffee-text-secondary)' }}>
-          {t('cloud.feature', locale)}
+          <ToolGlyph name="cloud" /> {t('cloud.feature', locale)}
         </p>
         <p className="rounded-2xl p-5 text-sm leading-relaxed" style={{ ...cardStyle, color: 'var(--coffee-text-secondary)' }}>
-          {t('hero.offline_pitch', locale)}
+          <ToolGlyph name="install" /> {t('hero.offline_pitch', locale)}
         </p>
       </section>
 
       {/* Guides */}
       <section className="max-w-7xl mx-auto px-4 py-8">
-        <h2 className="text-3xl font-extrabold mb-2" style={{ color: 'var(--coffee-text)' }}>📚 {t('nav.guides', locale)}</h2>
+        <h2 className="text-3xl font-extrabold mb-2" style={{ color: 'var(--coffee-text)' }}><ToolGlyph name="books" /> {t('nav.guides', locale)}</h2>
         <p className="mb-6" style={{ color: 'var(--coffee-text-secondary)' }}>{t('desc.guide', locale)}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           {guides.slice(0, 4).map(article => {
@@ -317,7 +319,7 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
             <h2 className="text-3xl sm:text-4xl font-extrabold mb-2" style={{ color: 'var(--coffee-text)' }}>{t('home.pdfTools', locale)}</h2>
             <p className="mb-3" style={{ color: 'var(--coffee-text-secondary)' }}>{t('home.subtitle2', locale)}</p>
             <p className="mb-10 text-xs leading-relaxed max-w-3xl" style={{ color: 'var(--coffee-text-secondary)' }}>
-              {t('home.ai_note', locale)} {t('home.limit_note', locale)}
+              <ToolGlyph name="info" /> {t('home.ai_note', locale)} {t('home.limit_note', locale)}
             </p>
             <ToolCatalog groups={filteredTools} locale={locale} />
           </>

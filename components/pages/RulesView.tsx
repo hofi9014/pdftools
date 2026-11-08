@@ -4,6 +4,7 @@ import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { homePath } from '@/lib/tools';
 import type { content as contentType } from '@/content/pages/nasze-zasady';
+import ToolGlyph from '@/components/ToolGlyph';
 
 // The page text arrives as a prop: one language on /{locale}/nasze-zasady, all of them on /nasze-zasady.
 export default function RulesView({ locale: forcedLocale, content }: { locale?: Locale; content: typeof contentType }) {
@@ -15,7 +16,7 @@ export default function RulesView({ locale: forcedLocale, content }: { locale?: 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <div className="text-center mb-10">
-        <div className="text-5xl mb-4">📋</div>
+        <div className="text-5xl mb-4"><ToolGlyph name="scroll" /></div>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tool-heading mb-3">{lang.title}</h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">{lang.subtitle}</p>
       </div>

@@ -8,6 +8,8 @@ import { apiErrorText } from '@/lib/api-error';
 import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import AiNotice from '@/components/AiNotice';
+import ToolGlyph from '@/components/ToolGlyph';
+import PdfBadge from '@/components/PdfBadge';
 
 const LANG_KEYS = [
   { value: 'angielski', key: 'lang.english' },
@@ -70,14 +72,14 @@ export default function AiTranslate({ locale: forcedLocale }: { locale?: Locale 
           ${file ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}>
         {file ? (
           <div>
-            <div className="text-5xl mb-3">📄</div>
+            <div className="text-5xl mb-3"><PdfBadge /></div>
             <p className="font-medium tool-heading">{file.name}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{t('drag.change', locale)}</p>
           </div>
         ) : (
           <div>
-            <div className="text-5xl mb-3">📂</div>
+            <div className="text-5xl mb-3"><ToolGlyph name="folderOpen" /></div>
             <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
             <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.subtitle', locale)}</p>
           </div>
@@ -112,14 +114,14 @@ export default function AiTranslate({ locale: forcedLocale }: { locale?: Locale 
         </ol>
       </div>
 
-      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6"><ToolGlyph name="warning" /> {error}</div>}
 
       <AiNotice locale={locale} />
 
       <button onClick={handleTranslate} disabled={loading || !file}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition mb-6
           ${loading || !file ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-purple-600 dark:bg-purple-500 hover:bg-purple-700 dark:hover:bg-purple-600 text-white shadow-lg'}`}>
-        {loading ? <span>⏳ {t('page.translate.loading', locale)}</span> : <span>🌐 {t('page.translate.btn', locale)}</span>}
+        {loading ? <span><ToolGlyph name="hourglass" /> {t('page.translate.loading', locale)}</span> : <span>{t('page.translate.btn', locale)}</span>}
       </button>
 
       {result && (
@@ -134,12 +136,12 @@ export default function AiTranslate({ locale: forcedLocale }: { locale?: Locale 
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
         {[
-          { icon: '🤖', text: t('page.translate.feature_1', locale) },
-          { icon: '🌍', text: t('feature.eleven_langs', locale) },
-          { icon: '🔒', text: t('feature.ai_file_local', locale) },
+          { icon: 'sparkle' as const, text: t('page.translate.feature_1', locale) },
+          { icon: 'globe' as const, text: t('feature.eleven_langs', locale) },
+          { icon: 'shield' as const, text: t('feature.ai_file_local', locale) },
         ].map((item, i) => (
           <div key={i} className="tool-feature-card rounded-xl p-4 border">
-            <div className="text-2xl mb-1">{item.icon}</div>
+            <div className="text-2xl mb-1"><ToolGlyph name={item.icon} /></div>
             <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
           </div>
         ))}

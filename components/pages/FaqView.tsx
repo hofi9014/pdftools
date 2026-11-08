@@ -7,6 +7,7 @@ import { getToolIcon, getCategoryIcon } from '@/lib/icons';
 import { toolPath } from '@/lib/tools';
 import { safeJsonLd } from '@/lib/safe-json-ld';
 import type { LocaleContent, faqData as faqDataType } from '@/content/pages/faq';
+import ToolGlyph from '@/components/ToolGlyph';
 
 function lc(locale: string, obj: LocaleContent): string {
   return obj[locale] || obj['en'] || '';
@@ -61,7 +62,7 @@ export default function FaqView({ locale: forcedLocale, faqData }: { locale?: Lo
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }} />
 
       <div className="text-center mb-12">
-        <div className="text-5xl mb-4">❓</div>
+        <div className="text-5xl mb-4"><ToolGlyph name="question" /></div>
         <h1 className="text-3xl sm:text-4xl font-bold tool-heading mb-3">
           {t('faq.title', locale)}
         </h1>

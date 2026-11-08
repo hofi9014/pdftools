@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
+import ToolGlyph from '@/components/ToolGlyph';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => void;
@@ -21,9 +22,9 @@ if (typeof window !== 'undefined') {
 }
 
 const points = [
-  { icon: '📶', key: 'point1' },
-  { icon: '⚡', key: 'point2' },
-  { icon: '📌', key: 'point3' },
+  { icon: 'wifiOff' as const, key: 'point1' },
+  { icon: 'bolt' as const, key: 'point2' },
+  { icon: 'pin' as const, key: 'point3' },
 ];
 
 export default function InstallSection() {
@@ -71,7 +72,7 @@ export default function InstallSection() {
         border: '1px solid color-mix(in srgb, var(--coffee-accent) 20%, transparent)',
       }}>
         <h3 className="text-2xl font-bold mb-8 text-center" style={{ color: 'var(--coffee-text)' }}>
-          {t('installSection.title', locale)}
+          <ToolGlyph name="install" /> {t('installSection.title', locale)}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -80,7 +81,7 @@ export default function InstallSection() {
               backgroundColor: 'var(--coffee-surface-solid)',
               border: '1px solid var(--coffee-border)',
             }}>
-              <span className="text-2xl shrink-0">{p.icon}</span>
+              <span className="text-2xl shrink-0"><ToolGlyph name={p.icon} /></span>
               <p className="text-sm leading-relaxed" style={{ color: 'var(--coffee-text-secondary)' }}>
                 {t(`installSection.${p.key}`, locale)}
               </p>

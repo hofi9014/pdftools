@@ -10,6 +10,8 @@ import { getToolIcon } from '@/lib/icons';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import BatchFailures from '@/components/BatchFailures';
+import ToolGlyph from '@/components/ToolGlyph';
+import PdfBadge from '@/components/PdfBadge';
 
 export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -125,7 +127,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
         className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition mb-6
           ${dragOver ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
       >
-        <div className="text-5xl mb-3">📂</div>
+        <div className="text-5xl mb-3"><ToolGlyph name="folderOpen" /></div>
         <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
           <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.subtitle', locale)}</p>
         <input id="fileInput" type="file" accept=".pdf" multiple className="hidden"
@@ -145,7 +147,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
           {files.map((file, i) => (
             <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <span className="text-2xl flex-shrink-0">📄</span>
+                <span className="text-2xl flex-shrink-0"><PdfBadge /></span>
                 <div className="min-w-0">
                   <p className="text-sm font-medium tool-heading truncate">{file.name}</p>
                   <p className="text-xs text-gray-400 dark:text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
@@ -179,18 +181,18 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
 
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">
-          ⚠️ {error}
+          <ToolGlyph name="warning" /> {error}
         </div>
       )}
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
-          ✅ {t('result.success', locale)} {zipped ? t('page.excel.success_zip', locale) : t('page.excel.success_single', locale)}
+          <ToolGlyph name="success" /> {t('result.success', locale)} {zipped ? t('page.excel.success_zip', locale) : t('page.excel.success_single', locale)}
         </div>
       )}
       {!loading && <BatchFailures failed={failed} total={files.length} locale={locale} />}
       {success && warnings > 0 && (
         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 rounded-xl p-4 mb-6">
-          ⚠️ {t('page.excel.warn_formatting', locale)}
+          <ToolGlyph name="warning" /> {t('page.excel.warn_formatting', locale)}
         </div>
       )}
       {success && processedBlobRef.current && (
@@ -202,17 +204,17 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
       <button onClick={handleSubmit} disabled={loading || files.length === 0}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition
           ${loading || files.length === 0 ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
-        {loading ? <span>⏳ {t('btn.loading', locale)} {progress}/{files.length}</span> : <span>📊 {t('page.excel.btn', locale)}</span>}
+        {loading ? <span><ToolGlyph name="hourglass" /> {t('btn.loading', locale)} {progress}/{files.length}</span> : <span>{t('page.excel.btn', locale)}</span>}
       </button>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
         {[
-            { icon: '🔒', text: t('feature.files_deleted', locale) },
-            { icon: '📦', text: t('feature.zip_output', locale) },
-            { icon: '🆓', text: t('feature.free_simple', locale) },
+            { icon: 'shield' as const, text: t('feature.files_deleted', locale) },
+            { icon: 'zip' as const, text: t('feature.zip_output', locale) },
+            { icon: 'gift' as const, text: t('feature.free_simple', locale) },
         ].map((item, i) => (
           <div key={i} className="tool-feature-card rounded-xl p-4 border">
-            <div className="text-2xl mb-1">{item.icon}</div>
+            <div className="text-2xl mb-1"><ToolGlyph name={item.icon} /></div>
             <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
           </div>
         ))}

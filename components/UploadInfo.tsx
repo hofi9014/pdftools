@@ -1,6 +1,7 @@
 'use client';
 import { t } from '@/lib/i18n';
 import { useLocale } from '@/lib/locale-context';
+import ToolGlyph from '@/components/ToolGlyph';
 
 export function RecommendedSize({ locale }: { locale: string }) {
   return (
@@ -13,7 +14,7 @@ export function RecommendedSize({ locale }: { locale: string }) {
 export function LargeFileWarning({ size, locale }: { size: string; locale: string }) {
   return (
     <p className="text-xs mt-2 text-center" style={{ color: 'var(--coffee-accent-ink)' }}>
-      {t('upload.large_file_warning', locale).replace('{size}', size)}
+      <ToolGlyph name="warning" /> {t('upload.large_file_warning', locale).replace('{size}', size)}
     </p>
   );
 }

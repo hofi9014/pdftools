@@ -2,6 +2,7 @@
 import { useState, useCallback, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import { t, type Locale } from '@/lib/i18n';
+import ToolGlyph from '@/components/ToolGlyph';
 
 export default function PadesSignForm({ locale }: { locale: Locale }) {
   const [file, setFile] = useState<File | null>(null);
@@ -53,7 +54,7 @@ export default function PadesSignForm({ locale }: { locale: Locale }) {
     <div>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center max-w-2xl mx-auto">{t('page.sign.pades_desc', locale)}</p>
       <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 rounded-xl p-3 mb-6 text-xs leading-relaxed">
-        ⚠️ {t('page.sign.pades_disclaimer', locale)}
+        <ToolGlyph name="warning" /> {t('page.sign.pades_disclaimer', locale)}
       </div>
 
       <form onSubmit={handleSubmit} className="tool-card rounded-2xl border p-8 space-y-6">
@@ -116,7 +117,7 @@ export default function PadesSignForm({ locale }: { locale: Locale }) {
 
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mt-6">
-          ✅ {t('result.success', locale)}
+          <ToolGlyph name="success" /> {t('result.success', locale)}
         </div>
       )}
       {success && file && processedBlobRef.current && (

@@ -6,6 +6,8 @@ import CloudFilePicker from '@/components/CloudFilePicker';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import ToolGlyph from '@/components/ToolGlyph';
+import PdfBadge from '@/components/PdfBadge';
 
 export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -69,14 +71,14 @@ export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale }
           ${file ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}>
         {file ? (
           <div>
-            <div className="text-5xl mb-3">📄</div>
+            <div className="text-5xl mb-3"><PdfBadge /></div>
             <p className="font-medium tool-heading">{file.name}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{t('drag.change', locale)}</p>
           </div>
         ) : (
           <div>
-            <div className="text-5xl mb-3">📂</div>
+            <div className="text-5xl mb-3"><ToolGlyph name="folderOpen" /></div>
               <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
               <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.subtitle', locale)}</p>
           </div>
@@ -98,10 +100,10 @@ export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale }
           </ul>
         </div>
 
-      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6"><ToolGlyph name="warning" /> {error}</div>}
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6">
-          ✅ {t('page.flatten.success', locale)}
+          <ToolGlyph name="success" /> {t('page.flatten.success', locale)}
           {noopFlatten && <div className="text-sm mt-1">{t('page.flatten.success_nochange', locale)}</div>}
         </div>
       )}
@@ -114,17 +116,17 @@ export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale }
       <button onClick={handleFlatten} disabled={loading || !file}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition
           ${loading || !file ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
-          {loading ? <span>⏳ {t('page.flatten.loading', locale)}</span> : <span>📋 {t('page.flatten.btn', locale)}</span>}
+          {loading ? <span><ToolGlyph name="hourglass" /> {t('page.flatten.loading', locale)}</span> : <span>{t('page.flatten.btn', locale)}</span>}
       </button>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
         {[
-            { icon: '🔒', text: t('feature.local_short', locale) },
-            { icon: '⚡', text: t('feature.instant_result', locale) },
-            { icon: '🆓', text: t('feature.free_simple', locale) },
+            { icon: 'shield' as const, text: t('feature.local_short', locale) },
+            { icon: 'bolt' as const, text: t('feature.instant_result', locale) },
+            { icon: 'gift' as const, text: t('feature.free_simple', locale) },
         ].map((item, i) => (
           <div key={i} className="tool-feature-card rounded-xl p-4 border">
-            <div className="text-2xl mb-1">{item.icon}</div>
+            <div className="text-2xl mb-1"><ToolGlyph name={item.icon} /></div>
             <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
           </div>
         ))}

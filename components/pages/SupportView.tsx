@@ -3,6 +3,10 @@ import Link from 'next/link';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import type { content as contentType } from '@/content/pages/wsparcie';
+import ToolGlyph, { type GlyphName } from '@/components/ToolGlyph';
+
+// The sections are in the same order in every language: e-mail, FAQ, bug report, idea, links.
+const SECTION_GLYPHS: GlyphName[] = ['mail', 'question', 'bug', 'bulb', 'externalLink'];
 
 /* ------------------------------------------------------------------ */
 /*  Skonfiguruj poniższe stałe przed wdrożeniem                       */
@@ -33,7 +37,7 @@ export default function SupportView({ locale: forcedLocale, content }: { locale?
         `}</style>
       )}
       <div className="text-center mb-10">
-        <div className="text-5xl mb-4">💬</div>
+        <div className="text-5xl mb-4"><ToolGlyph name="coffee" /></div>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tool-heading mb-3">{lang.title}</h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">{lang.subtitle}</p>
       </div>
@@ -41,7 +45,7 @@ export default function SupportView({ locale: forcedLocale, content }: { locale?
       <div className={`tool-card rounded-2xl border p-8 space-y-8 text-sm leading-relaxed ${isRtl ? 'wsparcie-rtl' : ''}`} style={{ color: 'var(--coffee-text-secondary)' }}>
         {/* Donation section — prominent, at the top */}
         <section className="text-center pb-6 border-b" style={{ borderColor: 'var(--coffee-border)' }}>
-          <h2 className="text-xl font-bold tool-heading mb-3">{lang.donateSection.h}</h2>
+          <h2 className="text-xl font-bold tool-heading mb-3"><ToolGlyph name="coffee" /> {lang.donateSection.h}</h2>
           <p className="mb-4 max-w-lg mx-auto">{lang.donateSection.p}</p>
           <a
             href={STRIPE_DONATE_URL}
@@ -56,7 +60,7 @@ export default function SupportView({ locale: forcedLocale, content }: { locale?
           {IS_TEST_MODE && (
             <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide"
               style={{ backgroundColor: '#fef08a', color: '#854d0e', border: '1px solid #facc15' }}>
-              ⚠️ TRYB TESTOWY (Stripe Sandbox)
+              <ToolGlyph name="warning" /> TRYB TESTOWY (Stripe Sandbox)
             </div>
           )}
         </section>
@@ -64,7 +68,7 @@ export default function SupportView({ locale: forcedLocale, content }: { locale?
         {/* Other sections */}
         {lang.sections.map((sec, i) => (
           <section key={i} className="pt-2">
-            <h2 className="text-lg sm:text-xl font-bold tool-heading mb-3">{sec.h}</h2>
+            <h2 className="text-lg sm:text-xl font-bold tool-heading mb-3">{SECTION_GLYPHS[i] && <ToolGlyph name={SECTION_GLYPHS[i]} />} {sec.h}</h2>
             <p className="mb-2">{sec.p}</p>
             {sec.link && (
               <p>

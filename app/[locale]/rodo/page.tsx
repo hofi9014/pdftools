@@ -11,6 +11,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function LocaleRodo({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  return <LegalDocument doc={legalFor(locale).rodo} icon="🛡️" locale={locale as Locale} />;
+  return <LegalDocument doc={legalFor(locale).rodo} icon="euStars" locale={locale as Locale} />;
 }
 

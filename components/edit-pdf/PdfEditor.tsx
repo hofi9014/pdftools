@@ -13,6 +13,7 @@ import EditLayer, { type EditorElement } from './EditLayer';
 import Toolbar from './Toolbar';
 import { shortcutAction } from './dragMath';
 import TextEditPopup from './TextEditPopup';
+import ToolGlyph from '@/components/ToolGlyph';
 
 interface TextBlockData {
   id: string; page: number; x: number; y: number;
@@ -622,11 +623,11 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
               <div className="flex gap-2 pt-1">
                 <button onClick={() => { undoRedo.set(elements.filter(el => el.id !== selectedId)); setSelectedId(null); }}
                   className="flex-1 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded-lg text-xs font-medium transition">
-                   🗑️ {t('edit.btn_delete', locale)}
+                   {t('edit.btn_delete', locale)}
                 </button>
                 <button onClick={() => updateSelected({ ...selectedEl })}
                   className="flex-1 py-1.5 bg-gray-100 dark:bg-gray-700 text-[var(--coffee-text-secondary)] rounded-lg text-xs font-medium transition">
-                   🔄 {t('edit.btn_apply', locale)}
+                   {t('edit.btn_apply', locale)}
                 </button>
               </div>
             </div>
@@ -652,19 +653,19 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
           <button onClick={handleExport} disabled={exporting}
             className={`w-full py-3 rounded-xl font-bold text-sm transition shadow-sm flex items-center justify-center gap-2
               ${exporting ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-[var(--coffee-accent-ink)] hover:bg-[var(--coffee-accent-ink-hover)] text-[var(--coffee-on-accent)]'}`}>
-            {exporting ? `⏳ ${t('edit.btn_saving', locale)}` : `💾 ${t('edit.btn_download', locale)}`}
+            {exporting ? <><ToolGlyph name="hourglass" /> {t('edit.btn_saving', locale)}</> : t('edit.btn_download', locale)}
           </button>
           <button onClick={onReset}
             className="w-full py-2 rounded-xl text-sm font-medium text-[var(--coffee-text-secondary)] hover:bg-[var(--coffee-surface-hover)] transition border border-[var(--coffee-border)]">
-            📂 {t('edit.btn_other_file', locale)}
+            {t('edit.btn_other_file', locale)}
           </button>
         </div>
       </div>
 
       {editingBlock && <TextEditPopup block={editingBlock} onSave={handleTextEditSave} onCancel={() => setEditingBlock(null)} position={editPopupPos} />}
 
-      {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4">✅ {exportMsg}</div>}
-      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4">⚠️ {error}</div>}
+      {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4"><ToolGlyph name="success" /> {exportMsg}</div>}
+      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4"><ToolGlyph name="warning" /> {error}</div>}
     </div>
   );
 }

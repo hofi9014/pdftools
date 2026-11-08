@@ -11,6 +11,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function LocalePrivacy({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  return <LegalDocument doc={legalFor(locale).privacy} icon="🔒" locale={locale as Locale} />;
+  return <LegalDocument doc={legalFor(locale).privacy} icon="shield" locale={locale as Locale} />;
 }
 

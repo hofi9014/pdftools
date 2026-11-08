@@ -3,6 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import SharePointPickerDialog from './SharePointPickerDialog';
+import ToolGlyph from '@/components/ToolGlyph';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID || '';
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_API_KEY || '';
@@ -411,44 +412,44 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
             {loading === 'google' ? 'Google Drive...' : loading === 'dropbox' ? 'Dropbox...' : loading === 'onedrive' ? 'OneDrive...' : 'SharePoint...'}
           </span>
         ) : (
-          <span>☁️ {label}</span>
+          <span><ToolGlyph name="cloud" /> {label}</span>
         )}
       </button>
       {open && (
         <div className="absolute top-full start-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 min-w-[200px] overflow-hidden">
           {hasGoogle && (
             <button onClick={handleGoogleDrive} className="w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
-              <span className="text-lg">📁</span> Google Drive
+              <span className="text-lg"><ToolGlyph name="cloud" /></span> Google Drive
             </button>
           )}
           {hasDropbox && (
             <button onClick={handleDropbox} className="w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
-              <span className="text-lg">📦</span> Dropbox
+              <span className="text-lg"><ToolGlyph name="cloud" /></span> Dropbox
             </button>
           )}
           {hasOneDrive && (
             <button onClick={handleOneDrive} className="w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
-              <span className="text-lg">☁️</span> OneDrive
+              <span className="text-lg"><ToolGlyph name="cloud" /></span> OneDrive
             </button>
           )}
           {hasSharePoint && (
             <button onClick={handleSharePoint} className="w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
-              <span className="text-lg">🏢</span> SharePoint
+              <span className="text-lg"><ToolGlyph name="building" /></span> SharePoint
             </button>
           )}
           <button onClick={handleLocal} className="w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3">
-            <span className="text-lg">💻</span> {locale === 'pl' ? 'To urządzenie' : 'This device'}
+            <span className="text-lg"><ToolGlyph name="laptop" /></span> {locale === 'pl' ? 'To urządzenie' : 'This device'}
           </button>
         </div>
       )}
       {offlineMsg && (
         <div className="absolute top-full start-0 mt-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2 shadow-lg z-50 whitespace-nowrap">
-          ⚠️ {t('cloud.offline', locale)}
+          <ToolGlyph name="warning" /> {t('cloud.offline', locale)}
         </div>
       )}
       {errorMsg && (
         <div className="absolute top-full start-0 mt-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs rounded-lg px-3 py-2 shadow-lg z-50 max-w-xs">
-          ⚠️ {errorMsg}
+          <ToolGlyph name="warning" /> {errorMsg}
         </div>
       )}
 

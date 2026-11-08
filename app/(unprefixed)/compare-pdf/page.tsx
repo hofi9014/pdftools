@@ -5,6 +5,8 @@ import { getToolIcon } from '@/lib/icons';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import CloudFilePicker from '@/components/CloudFilePicker';
+import ToolGlyph from '@/components/ToolGlyph';
+import PdfBadge from '@/components/PdfBadge';
 
 type Mode = 'text' | 'visual';
 
@@ -76,11 +78,11 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
       <div className="flex justify-center gap-2 mb-8">
         <button onClick={() => { setMode('text'); setDiffs(null); setVDiffs(null); }}
           className={`px-6 py-2 rounded-full font-medium text-sm transition ${mode === 'text' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
-          📝 {t('page.compare.mode_text', locale)}
+          <ToolGlyph name="letters" /> {t('page.compare.mode_text', locale)}
         </button>
         <button onClick={() => { setMode('visual'); setDiffs(null); setVDiffs(null); }}
           className={`px-6 py-2 rounded-full font-medium text-sm transition ${mode === 'visual' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
-          🎨 {t('page.compare.mode_visual', locale)}
+          <ToolGlyph name="eye" /> {t('page.compare.mode_visual', locale)}
         </button>
       </div>
 
@@ -98,13 +100,13 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
             ${fileA ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}>
           {fileA ? (
             <div>
-              <div className="text-4xl mb-2">📄</div>
+              <div className="text-4xl mb-2"><PdfBadge /></div>
               <p className="font-medium tool-heading text-sm">{fileA.name}</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{t('page.compare.click_to_change', locale)}</p>
             </div>
           ) : (
             <div>
-              <div className="text-4xl mb-2">📄</div>
+              <div className="text-4xl mb-2"><ToolGlyph name="folderOpen" /></div>
               <p className="text-gray-600 dark:text-gray-300 font-medium">{t('page.compare.file_a_label', locale)}</p>
               <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">{t('page.compare.drag_or_click', locale)}</p>
             </div>
@@ -126,13 +128,13 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
             ${fileB ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}>
           {fileB ? (
             <div>
-              <div className="text-4xl mb-2">📄</div>
+              <div className="text-4xl mb-2"><PdfBadge /></div>
               <p className="font-medium tool-heading text-sm">{fileB.name}</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{t('page.compare.click_to_change', locale)}</p>
             </div>
           ) : (
             <div>
-              <div className="text-4xl mb-2">📄</div>
+              <div className="text-4xl mb-2"><ToolGlyph name="folderOpen" /></div>
               <p className="text-gray-600 dark:text-gray-300 font-medium">{t('page.compare.file_b_label', locale)}</p>
               <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">{t('page.compare.drag_or_click', locale)}</p>
             </div>
@@ -147,17 +149,17 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
         <CloudFilePicker onFilesPicked={(f) => handleFile('B')(f[0] || null)} label={t('cloud.add', locale)} />
       </div>
 
-      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6"><ToolGlyph name="warning" /> {error}</div>}
 
       <button onClick={handleCompare} disabled={loading || !fileA || !fileB}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition mb-6
           ${loading || !fileA || !fileB ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
-        {loading ? '⏳ ' + t('page.compare.comparing', locale) : mode === 'text' ? '🔍 ' + t('page.compare.btn_compare_text', locale) : '🎨 ' + t('page.compare.btn_compare_visual', locale)}
+        {loading ? <><ToolGlyph name="hourglass" /> {t('page.compare.comparing', locale)}</> : mode === 'text' ? t('page.compare.btn_compare_text', locale) : t('page.compare.btn_compare_visual', locale)}
       </button>
 
       {(diffs !== null || vDiffs !== null) && similarity !== null && similarity < UNRELATED_DOCUMENTS_THRESHOLD && (
         <div data-testid="unrelated-notice" className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 rounded-xl p-4 mb-6">
-          ⚠️ {t('page.compare.unrelated_notice', locale, { percent: String(Math.round(similarity * 100)) })}
+          <ToolGlyph name="warning" /> {t('page.compare.unrelated_notice', locale, { percent: String(Math.round(similarity * 100)) })}
         </div>
       )}
 
@@ -170,7 +172,7 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
           </div>
           {diffs.length === 0 && (
             <div className="p-4 text-center">
-              <p className="text-gray-500 dark:text-gray-400">✅ {t('page.compare.text_identical_msg', locale)}</p>
+              <p className="text-gray-500 dark:text-gray-400"><ToolGlyph name="success" /> {t('page.compare.text_identical_msg', locale)}</p>
             </div>
           )}
           {diffs.map((diff, i) => (
@@ -205,7 +207,7 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
                   <span className="text-sm text-red-600 dark:text-red-400 font-medium">{d.diffPercent}% {t('page.compare.diff_percent', locale)}</span>
                 )}
                 {d.diffPercent === 0 && d.pageAExists && d.pageBExists && (
-                  <span className="text-sm text-green-600 dark:text-green-400 font-medium">✅ {t('page.compare.identical_badge', locale)}</span>
+                  <span className="text-sm text-green-600 dark:text-green-400 font-medium"><ToolGlyph name="success" /> {t('page.compare.identical_badge', locale)}</span>
                 )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
@@ -235,12 +237,12 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
         {[
-          { icon: '🔒', text: t('page.compare.feature_no_storage', locale) },
-          { icon: '⚡', text: t('page.compare.feature_instant', locale) },
-          { icon: '🆓', text: t('page.compare.feature_free', locale) },
+          { icon: 'shield' as const, text: t('page.compare.feature_no_storage', locale) },
+          { icon: 'bolt' as const, text: t('page.compare.feature_instant', locale) },
+          { icon: 'gift' as const, text: t('page.compare.feature_free', locale) },
         ].map((item, i) => (
           <div key={i} className="tool-feature-card rounded-xl p-4 border">
-            <div className="text-2xl mb-1">{item.icon}</div>
+            <div className="text-2xl mb-1"><ToolGlyph name={item.icon} /></div>
             <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
           </div>
         ))}

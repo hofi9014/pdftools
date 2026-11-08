@@ -10,6 +10,8 @@ import { getToolIcon } from '@/lib/icons';
 import { RecommendedSize } from '@/components/UploadInfo';
 import { runBatch, batchFailures, type BatchFailure } from '@/lib/batch';
 import BatchFailures from '@/components/BatchFailures';
+import ToolGlyph from '@/components/ToolGlyph';
+import PdfBadge from '@/components/PdfBadge';
 
 export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -122,7 +124,7 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
         className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition mb-6
           ${dragOver ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
       >
-        <div className="text-5xl mb-3">📂</div>
+        <div className="text-5xl mb-3"><ToolGlyph name="folderOpen" /></div>
         <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
         <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.multiple', locale)}</p>
         <input id="fileInput" type="file" accept=".pdf" multiple className="hidden"
@@ -151,7 +153,7 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
             return (
               <div key={i} className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <span className="text-2xl flex-shrink-0">📄</span>
+                  <span className="text-2xl flex-shrink-0"><PdfBadge /></span>
                   <div className="min-w-0">
                     <p className="text-sm font-medium tool-heading truncate">{file.name}</p>
                     <p className="text-xs text-gray-400 dark:text-gray-500">{formatSize(file.size)}</p>
@@ -185,7 +187,7 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
 
       {results.length > 1 && (
         <div className="tool-success-box rounded-2xl p-5 mb-6 text-center">
-          <p className="font-bold text-green-700 dark:text-green-400">✅ {t('page.compress.all_done', locale)}</p>
+          <p className="font-bold text-green-700 dark:text-green-400"><ToolGlyph name="success" /> {t('page.compress.all_done', locale)}</p>
           {totalSavings < 1 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('page.compress.already_optimized', locale)}</p>
           ) : (
@@ -209,14 +211,14 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
         <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.compress.level_title', locale)}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { value: 'recommended', label: t('page.compress.level_recommended', locale), desc: t('page.compress.level_recommended_desc', locale), icon: '⭐' },
-            { value: 'low', label: t('page.compress.level_low', locale), desc: t('page.compress.level_low_desc', locale), icon: '📄' },
-            { value: 'extreme', label: t('page.compress.level_extreme', locale), desc: t('page.compress.level_extreme_desc', locale), icon: '🔥' },
+            { value: 'recommended', label: t('page.compress.level_recommended', locale), desc: t('page.compress.level_recommended_desc', locale), icon: 'level2' as const },
+            { value: 'low', label: t('page.compress.level_low', locale), desc: t('page.compress.level_low_desc', locale), icon: 'level1' as const },
+            { value: 'extreme', label: t('page.compress.level_extreme', locale), desc: t('page.compress.level_extreme_desc', locale), icon: 'level3' as const },
           ].map(opt => (
             <button key={opt.value} onClick={() => setLevel(opt.value)}
               className={`p-4 rounded-xl border-2 text-center transition
                 ${level === opt.value ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'}`}>
-              <div className="text-xl mb-1">{opt.icon}</div>
+              <div className="text-xl mb-1"><ToolGlyph name={opt.icon} /></div>
               <div className="font-medium text-sm tool-heading">{opt.label}</div>
               <div className="text-xs text-gray-500 dark:text-gray-400">{opt.desc}</div>
             </button>
@@ -224,22 +226,22 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
         </div>
       </div>
 
-      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6"><ToolGlyph name="warning" /> {error}</div>}
 
       <button onClick={handleCompressAll} disabled={loading || files.length === 0}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition
           ${loading || files.length === 0 ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
-        {loading ? `⏳ ${t('page.compress.loading', locale)} ${progress}/${files.length}` : `🗜️ ${t('page.compress.button', locale)}`}
+        {loading ? <><ToolGlyph name="hourglass" /> {`${t('page.compress.loading', locale)} ${progress}/${files.length}`}</> : `${t('page.compress.button', locale)}`}
       </button>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
         {[
-          { icon: '🔒', text: t('feature.files_deleted', locale) },
-          { icon: '📦', text: t('feature.zip_output', locale) },
-          { icon: '🆓', text: t('feature.free_simple', locale) },
+          { icon: 'shield' as const, text: t('feature.files_deleted', locale) },
+          { icon: 'zip' as const, text: t('feature.zip_output', locale) },
+          { icon: 'gift' as const, text: t('feature.free_simple', locale) },
         ].map((item, i) => (
           <div key={i} className="tool-feature-card rounded-xl p-4 border">
-            <div className="text-2xl mb-1">{item.icon}</div>
+            <div className="text-2xl mb-1"><ToolGlyph name={item.icon} /></div>
             <p className="text-xs text-gray-500 dark:text-gray-400">{item.text}</p>
           </div>
         ))}

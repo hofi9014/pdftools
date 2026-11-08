@@ -110,6 +110,10 @@ narzędzia; potem języki. Rzeczy wymagające decyzji albo kont właściciela s�
       więc przygotuję podgląd wersji z rysunkami SVG w stylu PdfBadge obok obecnych — zmiana
       tylko po akceptacji. **ZROBIONE:** 28 z 40 ikon narzędzi i 4 ikony kategorii mają rysunki
       (`components/ToolGlyph.tsx`), plakietki i układ bez zmian; `test:tool-icons`.
+      **Krok 2 (2026-11-08, zatwierdzone przez właściciela z podglądu):** pozostałe emoji całej strony
+      (ok. 880 miejsc: komunikaty, pola wyboru pliku, cechy, opcje, menu, Pomoc, Wsparcie, 16 języków)
+      zastąpione rysunkami według zasady „jedno narzędzie — jedna ikona, jedno znaczenie — jeden rysunek”;
+      kategorie dostały własne rysunki (suwaki, dwie strzałki, klucz); `test:tool-icons`, `test:e2e-no-emoji`.
 
 ## Etap 2 — nowe narzędzia działające lokalnie (sam, po kolei)
 
@@ -169,6 +173,7 @@ miejsca na wdrożenia (limit Hobby 10 GB).
 - **ZROBIONE 2026-11-04 (wygląd zatwierdzony przez właściciela):** filiżanka kawy z parą w kole na
   stronie głównej, za ikonami, w całości w kole (`components/HeroCoffeeCup.tsx`, `test:hero-coffee-cup`).
 - **ZROBIONE 2026-11-07 (właściciel zatwierdził podgląd):** ikony narzędzi i kategorii rysowane zamiast emoji (1.5).
+- **ZROBIONE 2026-11-08 (właściciel zatwierdził podgląd):** wszystkie pozostałe emoji na stronie zastąpione rysunkami (1.5, krok 2).
 - **[DECYZJA]** „Nasze zasady” zapowiadają płatny plan dla firm i możliwe reklamy AdSense. To Twoje
   plany, więc ich nie zmieniam, ale oba wymagają planu Vercel Pro — czy zostawić te zdania?
 - **[WŁAŚCICIEL]** Link do wsparcia na `/wsparcie` to nadal testowy Stripe (prawdziwa karta nie

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { t } from '@/lib/i18n';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
+import ToolGlyph from '@/components/ToolGlyph';
 
 const levels = [100, 125, 150, 175, 200];
 const STORAGE_KEY = 'pdftools-zoom';
@@ -77,7 +78,7 @@ export default function Magnifier() {
         aria-label={t('magnifier.zoom', locale)}
         aria-expanded={open}
       >
-        🔍
+        <ToolGlyph name="zoom" />
       </button>
     </div>
   );

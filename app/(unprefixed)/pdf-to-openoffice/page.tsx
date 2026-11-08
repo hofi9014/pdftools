@@ -8,6 +8,8 @@ import LayoutModeSelect from '@/components/LayoutModeSelect';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
+import ToolGlyph from '@/components/ToolGlyph';
+import PdfBadge from '@/components/PdfBadge';
 
 export default function PDFToOpenOffice({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -90,14 +92,14 @@ export default function PDFToOpenOffice({ locale: forcedLocale }: { locale?: Loc
       >
         {file ? (
           <div>
-            <div className="text-5xl mb-3">📄</div>
+            <div className="text-5xl mb-3"><PdfBadge /></div>
             <p className="font-medium tool-heading">{file.name}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{t('drag.change', locale)}</p>
           </div>
         ) : (
           <div>
-            <div className="text-5xl mb-3">📂</div>
+            <div className="text-5xl mb-3"><ToolGlyph name="folderOpen" /></div>
             <p className="text-gray-600 dark:text-gray-300 font-medium">{t('drag.title', locale)}</p>
             <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">{t('drag.subtitle', locale)}</p>
           </div>
@@ -121,10 +123,10 @@ export default function PDFToOpenOffice({ locale: forcedLocale }: { locale?: Loc
         </ul>
       </div>
 
-      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6">⚠️ {error}</div>}
+      {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6"><ToolGlyph name="warning" /> {error}</div>}
       {fallbackUsed && !error && (
         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 rounded-xl p-4 mb-6">
-          ⚠️ {t('page.openoffice.fallback', locale)}
+          <ToolGlyph name="warning" /> {t('page.openoffice.fallback', locale)}
         </div>
       )}
       {success && (
@@ -142,7 +144,7 @@ export default function PDFToOpenOffice({ locale: forcedLocale }: { locale?: Loc
       <button onClick={handleConvert} disabled={loading || !file}
         className={`w-full py-4 rounded-2xl font-bold text-lg transition
           ${loading || !file ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white shadow-lg'}`}>
-        {loading ? `⏳ ${t('btn.loading', locale)}` : `📄 ${t('page.pdf2openoffice.btn', locale)}`}
+        {loading ? <><ToolGlyph name="hourglass" /> {`${t('btn.loading', locale)}`}</> : `${t('page.pdf2openoffice.btn', locale)}`}
       </button>
     </div>
   );
