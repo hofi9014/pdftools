@@ -13,7 +13,7 @@
 // same localeFromSegment() the article page itself already uses.
 
 import { extractLocaleFromPath } from '../components/LayoutShell';
-import { localeGuidesSlug } from '../lib/guides-slugs';
+import { localeGuidesSlug, isGuidesSegment } from '../lib/guides-slugs';
 
 let fails = 0;
 function check(cond: boolean, msg: string): void {
@@ -41,6 +41,14 @@ check(extractLocaleFromPath('/guides/anleitungen') === 'de', '/guides/anleitunge
 check(extractLocaleFromPath('/guides') === undefined, '/guides with no further segment -> undefined (no locale slug to resolve)');
 check(extractLocaleFromPath('/guide') === undefined, '/guide (singular, the unrelated legacy tool-list page) is NOT mistaken for /guides');
 check(extractLocaleFromPath('/guides/totally-unknown-slug/x/y') === 'en', 'an unrecognized guide locale slug falls back to en (matching localeFromSegment\'s own documented default), not undefined');
+
+// Search Console listed /guides/undefined as a page: an unknown segment must be a 404, which the
+// guides pages decide with isGuidesSegment (the header still falls back to en, above).
+console.log('\n=== which segments are guides pages ===');
+const known = Object.values(localeGuidesSlug);
+check(known.length === 16 && known.every((s) => isGuidesSegment(s)), 'all 16 guides segments are recognized');
+check(known.every((s) => isGuidesSegment(encodeURIComponent(s))), 'also percent-encoded, as the page receives the non-Latin ones');
+check(!['undefined', 'xyz', 'guides-x', '', 'en', 'pl'].some((s) => isGuidesSegment(s)), 'undefined, xyz, a language code or an empty segment are not');
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);

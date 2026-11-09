@@ -143,6 +143,8 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
 ## Etap 3 — widoczność
 
 - [ ] 3.1 **[WŁAŚCICIEL]** Search Console + Bing Webmaster: dane po tygodniu → korekta tytułów.
+      2026-11-09: raport „Strony” otrzymany (745 zindeksowanych, 217 nie); z niego naprawione
+      `/guides/<cokolwiek>` → 404 (było 200). Czekam na raport „Skuteczność” (zapytania, strony) i Bing.
 - [ ] 3.2 Teksty i zrzuty do zgłoszeń: AlternativeTo, SaaSHub, Product Hunt (ja przygotowuję,
       **[WŁAŚCICIEL]** zakłada konta i wysyła).
 - [ ] 3.3 **[DECYZJA]** Porównanie „które narzędzia PDF wysyłają plik na serwer”: pomiar metodą
