@@ -89,8 +89,15 @@ console.log('\n=== Cloud menu ===');
   const page = await ctx.newPage();
   await page.goto(`${BASE}/it/merge`, { waitUntil: 'networkidle' });
   await page.locator('main button', { hasText: /cloud/i }).first().click();
-  const device = await page.locator('main button', { hasText: 'Questo dispositivo' }).count();
-  check(device === 1, 'the cloud menu offers "Questo dispositivo" on /it');
+  // A build without cloud keys (CI) has no menu: the button opens the file picker directly.
+  await page.waitForTimeout(300);
+  const providers = await page.locator('main button', { hasText: /Google Drive|Dropbox|OneDrive|SharePoint/ }).count();
+  if (providers === 0) {
+    console.log('  SKIP no cloud service is configured in this build, so there is no menu to check');
+  } else {
+    const device = await page.locator('main button', { hasText: 'Questo dispositivo' }).count();
+    check(device === 1, 'the cloud menu offers "Questo dispositivo" on /it');
+  }
   await page.close();
 }
 
