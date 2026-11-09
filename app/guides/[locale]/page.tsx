@@ -1,9 +1,10 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { locales, t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { getCategoryLabel } from '@/lib/guide-categories';
-import { localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
+import { localeFromSegment, getLocaleSegment, isGuidesSegment } from '@/lib/guides-slugs';
 import { getAllArticles, getAllCategories } from '@/lib/guides';
 import type { GuideArticle } from '@/types/guide';
 import { socialMetadata, fullTitle } from '@/lib/metadata';
@@ -12,6 +13,7 @@ import { socialMetadata, fullTitle } from '@/lib/metadata';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale: localeSegment } = await params;
+  if (!isGuidesSegment(localeSegment)) notFound();
   const locale = localeFromSegment(localeSegment) as Locale;
   const title = t('guides.hub_title', locale);
   const description = t('guides.hub_subtitle', locale);
@@ -35,6 +37,7 @@ export async function generateStaticParams() {
 
 export default async function GuidesHubPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: localeSegment } = await params;
+  if (!isGuidesSegment(localeSegment)) notFound();
   const locale = localeFromSegment(localeSegment) as Locale;
   const categories = getAllCategories();
   const articles = getAllArticles();

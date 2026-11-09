@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { locales, t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { getCategoryLabel, categoryTool } from '@/lib/guide-categories';
-import { localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
+import { localeFromSegment, getLocaleSegment, isGuidesSegment } from '@/lib/guides-slugs';
 import { getArticlesByCategory, getAllCategories } from '@/lib/guides';
 import CTATool from '@/components/guides/CTATool';
 import { socialMetadata, fullTitle } from '@/lib/metadata';
@@ -14,6 +14,9 @@ import { socialMetadata, fullTitle } from '@/lib/metadata';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; category: string }> }): Promise<Metadata> {
   const { locale: localeSegment, category } = await params;
+  if (!isGuidesSegment(localeSegment)) notFound();
+  // notFound() here too, so the 404 gets the not-found page's noindex instead of the layout's index.
+  if (!getAllCategories().includes(category)) notFound();
   const locale = localeFromSegment(localeSegment) as Locale;
   const label = getCategoryLabel(category, locale);
   const description = t('guides.hub_subtitle', locale);
@@ -47,6 +50,7 @@ export default async function CategoryPage({
   params: Promise<{ locale: string; category: string }>;
 }) {
   const { locale: localeSegment, category } = await params;
+  if (!isGuidesSegment(localeSegment)) notFound();
   const locale = localeFromSegment(localeSegment) as Locale;
   // FINDING (2026-09-23) — same class of bug as the sibling [slug] article page: an unrecognized
   // category previously rendered a normal 200 "no articles" page (getCategoryLabel() even falls

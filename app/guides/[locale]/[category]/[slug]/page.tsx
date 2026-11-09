@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { locales, t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
-import { localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
+import { localeFromSegment, getLocaleSegment, isGuidesSegment } from '@/lib/guides-slugs';
 import { getArticle, getAllArticles } from '@/lib/guides';
 import { buildCanonicalUrl } from '@/lib/guides-canonical';
 import ContentBlockRenderer from '@/components/guides/ContentBlockRenderer';
@@ -36,9 +36,11 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; category: string; slug: string }> }): Promise<Metadata> {
   const { locale: localeSegment, category, slug } = await params;
+  if (!isGuidesSegment(localeSegment)) notFound();
   const locale = localeFromSegment(localeSegment) as Locale;
   const article = getArticle(category, slug);
-  if (!article) return {};
+  // notFound() here too, so the 404 gets the not-found page's noindex instead of the layout's index.
+  if (!article) notFound();
 
   const title = (article.title as Record<string, string>)[locale] || article.title.en;
   const description = (article.excerpt as Record<string, string>)[locale] || article.excerpt.en;
@@ -63,6 +65,7 @@ export default async function ArticlePage({
   params: Promise<{ locale: string; category: string; slug: string }>;
 }) {
   const { locale: localeSegment, category, slug } = await params;
+  if (!isGuidesSegment(localeSegment)) notFound();
   const locale = localeFromSegment(localeSegment) as Locale;
   const article = getArticle(category, slug);
 
