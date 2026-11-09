@@ -1,6 +1,7 @@
 'use client';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
+import { t } from '@/lib/i18n';
 import ToolGlyph from '@/components/ToolGlyph';
 
 interface GraphSite {
@@ -67,6 +68,11 @@ interface SharePointPickerDialogProps {
 }
 
 type Step = 'auth' | 'sites' | 'libraries' | 'files' | 'uploading' | 'done';
+
+/** A localized message, with the technical detail (e.g. "Graph API error: 403") kept for support. */
+function withDetail(text: string, e: unknown): string {
+  return e instanceof Error && e.message ? `${text} (${e.message})` : text;
+}
 
 async function graphFetch<T>(url: string, token: string): Promise<T> {
   const res = await fetch(url, {
@@ -254,7 +260,7 @@ export default function SharePointPickerDialog({
     closePopup();
 
     const popup = window.open(authUrl, 'sharepoint-login', 'width=600,height=700');
-    if (!popup) { setError('Popup blocked. Please allow popups for this site.'); return; }
+    if (!popup) { setError(t('cloud.err_popup_blocked', locale)); return; }
     popupRef.current = popup;
 
     const handler = (e: MessageEvent) => {
@@ -274,7 +280,7 @@ export default function SharePointPickerDialog({
       if (popup.closed) {
         closePopup();
         if (mountedRef.current && step === 'auth') {
-          setError('Login cancelled or window closed');
+          setError(t('cloud.err_login_cancelled', locale));
         }
       }
     }, 500);
@@ -286,10 +292,10 @@ export default function SharePointPickerDialog({
     watchdogRef.current = setTimeout(() => {
       closePopup();
       if (mountedRef.current) {
-        setError('Login timeout');
+        setError(t('cloud.err_timeout', locale, { service: 'Microsoft' }));
       }
     }, 120000);
-  }, [clientId, mode, closePopup, step]);
+  }, [clientId, mode, closePopup, step, locale]);
 
   // Auto-start OAuth when dialog opens and step is auth
   useEffect(() => {
@@ -302,11 +308,9 @@ export default function SharePointPickerDialog({
   // dedicated explanation instead of the raw Graph error JSON.
   const searchErrorMessage = useCallback((e: unknown) => {
     if (e instanceof MSAAccountError) {
-      return locale === 'pl'
-        ? 'SharePoint jest dostępny tylko dla firmowych kont Microsoft 365. Konta osobiste (outlook.com, hotmail.com, live.com) nie mają witryn SharePoint.'
-        : "SharePoint is only available for Microsoft 365 work accounts. Personal accounts (outlook.com, hotmail.com, live.com) don't have SharePoint sites.";
+      return t('sp.err_msa', locale);
     }
-    return e instanceof Error ? e.message : 'Failed to search sites';
+    return withDetail(t('sp.search_failed', locale), e);
   }, [locale]);
 
   // Search sites — POST Search API for wildcard, GET for typed queries
@@ -374,11 +378,11 @@ export default function SharePointPickerDialog({
         setStep('libraries');
       }
     } catch (e) {
-      if (mountedRef.current) setError(e instanceof Error ? e.message : 'Failed to load libraries');
+      if (mountedRef.current) setError(withDetail(t('sp.err_libraries', locale), e));
     } finally {
       if (mountedRef.current) setLoadingLibraries(false);
     }
-  }, [token]);
+  }, [token, locale]);
 
   // Connect via direct URL — bypasses the Search Platform entirely
   const handleConnectViaUrl = useCallback(async () => {
@@ -397,12 +401,12 @@ export default function SharePointPickerDialog({
       }
     } catch (e) {
       if (mountedRef.current) {
-        setError(e instanceof Error ? e.message : 'Failed to connect to site');
+        setError(withDetail(t('sp.err_connect', locale), e));
       }
     } finally {
       if (mountedRef.current) setConnectingViaUrl(false);
     }
-  }, [token, siteUrl, handleSelectSite]);
+  }, [token, siteUrl, handleSelectSite, locale]);
 
   const handleConnectViaUrlWithUrl = useCallback(async (url: string) => {
     if (!token) return;
@@ -420,13 +424,13 @@ export default function SharePointPickerDialog({
       }
     } catch (e) {
       if (mountedRef.current) {
-        setError(e instanceof Error ? e.message : 'Failed to connect to site');
+        setError(withDetail(t('sp.err_connect', locale), e));
         setSiteUrl(url);
       }
     } finally {
       if (mountedRef.current) setConnectingViaUrl(false);
     }
-  }, [token, handleSelectSite]);
+  }, [token, handleSelectSite, locale]);
 
   // Select library → load files (picker mode) or upload (saver mode)
   const handleSelectLibrary = useCallback(async (drive: GraphDrive) => {
@@ -448,7 +452,7 @@ export default function SharePointPickerDialog({
         onDone?.();
       } catch (e) {
         if (mountedRef.current) {
-          setError(e instanceof Error ? e.message : 'Upload failed');
+          setError(withDetail(t('cloud.err_save', locale, { service: 'SharePoint' }), e));
           setStep('libraries');
         }
       }
@@ -466,11 +470,11 @@ export default function SharePointPickerDialog({
         setStep('files');
       }
     } catch (e) {
-      if (mountedRef.current) setError(e instanceof Error ? e.message : 'Failed to load files');
+      if (mountedRef.current) setError(withDetail(t('sp.err_files', locale), e));
     } finally {
       if (mountedRef.current) setLoadingFiles(false);
     }
-  }, [token, mode, fileName, blob, onDone]);
+  }, [token, mode, fileName, blob, onDone, locale]);
 
   // Navigate into folder
   const navigateFolder = useCallback(async (item: GraphItem) => {
@@ -487,11 +491,11 @@ export default function SharePointPickerDialog({
         setCurrentPath(folderPath);
       }
     } catch (e) {
-      if (mountedRef.current) setError(e instanceof Error ? e.message : 'Failed to open folder');
+      if (mountedRef.current) setError(withDetail(t('sp.err_files', locale), e));
     } finally {
       if (mountedRef.current) setLoadingFiles(false);
     }
-  }, [token, selectedLibrary, currentPath]);
+  }, [token, selectedLibrary, currentPath, locale]);
 
   // Navigate up
   const navigateUp = useCallback(async () => {
@@ -513,11 +517,11 @@ export default function SharePointPickerDialog({
         setCurrentPath(parentPath);
       }
     } catch (e) {
-      if (mountedRef.current) setError(e instanceof Error ? e.message : 'Failed to navigate');
+      if (mountedRef.current) setError(withDetail(t('sp.err_files', locale), e));
     } finally {
       if (mountedRef.current) setLoadingFiles(false);
     }
-  }, [token, selectedLibrary, currentPath]);
+  }, [token, selectedLibrary, currentPath, locale]);
 
   // Toggle file selection
   const toggleFile = useCallback((item: GraphItem) => {
@@ -551,11 +555,11 @@ export default function SharePointPickerDialog({
       }
     } catch (e) {
       if (mountedRef.current) {
-        setError(e instanceof Error ? e.message : 'Download failed');
+        setError(withDetail(t('cloud.err_download', locale, { service: 'SharePoint' }), e));
         setStep('files');
       }
     }
-  }, [token, selectedFiles, selectedLibrary, onFilesPicked]);
+  }, [token, selectedFiles, selectedLibrary, onFilesPicked, locale]);
 
   const formatSize = (bytes?: number) => {
     if (!bytes) return '';
@@ -580,9 +584,9 @@ export default function SharePointPickerDialog({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-            {mode === 'picker' ? 'SharePoint — Pick files' : 'SharePoint — Save file'}
+            {mode === 'picker' ? t('sp.title_pick', locale) : t('sp.title_save', locale)}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none">&times;</button>
+          <button onClick={onClose} aria-label={t('sp.close', locale)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none">&times;</button>
         </div>
 
         {/* Body */}
@@ -590,8 +594,8 @@ export default function SharePointPickerDialog({
           {error && (
             <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm rounded-lg px-4 py-3">
               {error}
-              {(error.includes('blocked') || error.includes('cancelled')) && (
-                <button onClick={startOAuth} className="ms-2 underline font-medium">Try again</button>
+              {(error === t('cloud.err_popup_blocked', locale) || error === t('cloud.err_login_cancelled', locale)) && (
+                <button onClick={startOAuth} className="ms-2 underline font-medium">{t('sp.try_again', locale)}</button>
               )}
             </div>
           )}
@@ -600,7 +604,7 @@ export default function SharePointPickerDialog({
           {step === 'auth' && !error && (
             <div className="flex items-center justify-center py-8">
               <span className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-              <span className="ms-3 text-sm text-gray-600 dark:text-gray-400">Signing in to Microsoft...</span>
+              <span className="ms-3 text-sm text-gray-600 dark:text-gray-400">{t('sp.signing_in', locale)}</span>
             </div>
           )}
 
@@ -626,7 +630,8 @@ export default function SharePointPickerDialog({
                       <button
                         onClick={(e) => { e.stopPropagation(); removeRecentSite(site.url); setRecentSites(loadRecentSites()); }}
                         className="text-blue-400 hover:text-red-500 transition flex-shrink-0 ms-1 opacity-0 group-hover:opacity-100"
-                        title="Usuń"
+                        title={t('sp.remove', locale)}
+                        aria-label={t('sp.remove', locale)}
                       >
                         &times;
                       </button>
@@ -639,16 +644,15 @@ export default function SharePointPickerDialog({
               {searching && sites.length === 0 && (
                 <div className="flex items-center justify-center py-8 text-sm text-gray-500">
                   <span className="inline-block w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin me-2" />
-                  Wyszukiwanie dostępnych witryn...
+                  {t('sp.searching', locale)}
                 </div>
               )}
 
               {/* Site list (auto-populated) */}
               {!searching && error && sites.length === 0 && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-                  Wyszukiwanie nie powiodło się.{' '}
                   <button onClick={() => setShowManualOptions(true)} className="text-blue-600 dark:text-blue-400 hover:underline">
-                    Wklej link ręcznie
+                    {t('sp.paste_manual', locale)}
                   </button>
                 </p>
               )}
@@ -656,7 +660,7 @@ export default function SharePointPickerDialog({
               {sites.length > 0 && (
                 <>
                   <div className="text-xs text-gray-400 dark:text-gray-500">
-                    Wybierz witrynę SharePoint:
+                    {t('sp.choose_site', locale)}
                   </div>
                   <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
                     {sites.map((site) => (
@@ -680,7 +684,7 @@ export default function SharePointPickerDialog({
               {/* Empty results after search completed */}
               {!searching && sites.length === 0 && !error && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-                  Nie znaleziono żadnych witryn.
+                  {t('sp.no_sites', locale)}
                 </p>
               )}
 
@@ -690,7 +694,7 @@ export default function SharePointPickerDialog({
                   onClick={() => setShowManualOptions(!showManualOptions)}
                   className="text-xs text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition"
                 >
-                  {showManualOptions ? '▲ Schowaj opcje ręczne' : '▼ Nie widzisz swojej witryny? Wklej link ręcznie'}
+                  {showManualOptions ? `▲ ${t('sp.hide_manual', locale)}` : `▼ ${t('sp.show_manual', locale)}`}
                 </button>
               </div>
 
@@ -699,16 +703,17 @@ export default function SharePointPickerDialog({
                 <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
                   {/* URL connect */}
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                      Wklej adres URL witryny SharePoint
+                    <label htmlFor="sp-site-url" className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      {t('sp.url_label', locale)}
                     </label>
                     <div className="flex gap-2">
                       <input
+                        id="sp-site-url"
                         type="text"
                         value={siteUrl}
                         onChange={(e) => setSiteUrl(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter' && !connectingViaUrl) handleConnectViaUrl(); }}
-                        placeholder="https://tenant.sharepoint.com/sites/nazwa"
+                        placeholder="https://contoso.sharepoint.com/sites/…"
                         className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <button
@@ -718,7 +723,7 @@ export default function SharePointPickerDialog({
                       >
                         {connectingViaUrl ? (
                           <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ) : 'Connect'}
+                        ) : t('sp.connect', locale)}
                       </button>
                     </div>
                   </div>
@@ -730,7 +735,8 @@ export default function SharePointPickerDialog({
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') searchSites(); }}
-                      placeholder="Search SharePoint sites by name..."
+                      placeholder={t('sp.search_placeholder', locale)}
+                      aria-label={t('sp.search_placeholder', locale)}
                       className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <button
@@ -740,11 +746,11 @@ export default function SharePointPickerDialog({
                     >
                       {searching ? (
                         <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : 'Search'}
+                      ) : t('sp.search', locale)}
                     </button>
                   </div>
                   <p className="text-xs text-gray-400 dark:text-gray-500">
-                    Możesz też wyszukać witrynę po nazwie.
+                    {t('sp.search_hint', locale)}
                   </p>
                 </div>
               )}
@@ -756,7 +762,7 @@ export default function SharePointPickerDialog({
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
                 <button onClick={() => { setSelectedSite(null); setStep('sites'); }} className="text-blue-600 dark:text-blue-400 hover:underline">
-                  &larr; Back
+                  {t('sp.back', locale)}
                 </button>
                 <span>/</span>
                 <span className="truncate">{selectedSite?.displayName}</span>
@@ -764,11 +770,11 @@ export default function SharePointPickerDialog({
               {loadingLibraries ? (
                 <div className="flex items-center justify-center py-8 text-sm text-gray-500">
                   <span className="inline-block w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin me-2" />
-                  Loading libraries...
+                  {t('sp.loading_libraries', locale)}
                 </div>
               ) : libraries.length === 0 ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">
-                  No document libraries found.
+                  {t('sp.no_libraries', locale)}
                 </p>
               ) : (
                 <div className="space-y-1 max-h-64 overflow-y-auto">
@@ -795,7 +801,7 @@ export default function SharePointPickerDialog({
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
                 <button onClick={() => { setSelectedLibrary(null); setStep('libraries'); }} className="text-blue-600 dark:text-blue-400 hover:underline">
-                  &larr; Back
+                  {t('sp.back', locale)}
                 </button>
                 <span>/</span>
                 <span className="truncate">{selectedSite?.displayName}</span>
@@ -811,10 +817,10 @@ export default function SharePointPickerDialog({
               {loadingFiles ? (
                 <div className="flex items-center justify-center py-8 text-sm text-gray-500">
                   <span className="inline-block w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin me-2" />
-                  Loading files...
+                  {t('sp.loading_files', locale)}
                 </div>
               ) : files.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">This library is empty.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">{t('sp.empty_library', locale)}</p>
               ) : (
                 <div className="space-y-1 max-h-64 overflow-y-auto">
                   {files.map((item) => {
@@ -857,7 +863,7 @@ export default function SharePointPickerDialog({
             <div className="flex flex-col items-center justify-center py-8">
               <span className="inline-block w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
               <span className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-                {mode === 'picker' ? 'Downloading files...' : 'Uploading file...'}
+                {mode === 'picker' ? t('sp.downloading', locale) : t('sp.uploading', locale)}
               </span>
             </div>
           )}
@@ -866,7 +872,7 @@ export default function SharePointPickerDialog({
             <div className="flex flex-col items-center justify-center py-8">
               <span className="text-3xl"><ToolGlyph name="success" /></span>
               <span className="mt-2 text-sm text-green-600 dark:text-green-400 font-medium">
-                {mode === 'picker' ? 'Files downloaded successfully!' : 'File saved successfully!'}
+                {mode === 'picker' ? t('sp.downloaded', locale) : t('sp.saved', locale)}
               </span>
             </div>
           )}
@@ -880,14 +886,14 @@ export default function SharePointPickerDialog({
               disabled={selectedFiles.size === 0}
               className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition disabled:cursor-not-allowed"
             >
-              Download {selectedFiles.size > 0 ? `(${selectedFiles.size})` : ''}
+              {t('btn.download', locale)} {selectedFiles.size > 0 ? `(${selectedFiles.size})` : ''}
             </button>
           )}
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition"
           >
-            {step === 'done' ? 'Close' : 'Cancel'}
+            {step === 'done' ? t('sp.close', locale) : t('sp.cancel', locale)}
           </button>
         </div>
       </div>

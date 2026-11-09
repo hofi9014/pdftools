@@ -83,7 +83,8 @@ check(!!intervalMatch && intervalMatch[0].includes('closePopup()'), 'the "popup 
 
 const watchdogMatch = startOAuthFnBody.match(/watchdogRef\.current = setTimeout\(\(\) => \{[\s\S]*?\n {4}\}, 120000\);/);
 check(!!watchdogMatch && watchdogMatch[0].includes('closePopup()'), 'the watchdog timeout path itself calls closePopup()');
-check(!!watchdogMatch && /setError\(['"]Login timeout['"]\)/.test(watchdogMatch[0]), 'the watchdog surfaces a clear "Login timeout" error to the user, not a silent hang');
+// Translated since 2026-11-08 (it was the English "Login timeout" on every language version).
+check(!!watchdogMatch && /setError\(t\('cloud\.err_timeout', locale/.test(watchdogMatch[0]), 'the watchdog surfaces a clear sign-in timeout error to the user, not a silent hang');
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);

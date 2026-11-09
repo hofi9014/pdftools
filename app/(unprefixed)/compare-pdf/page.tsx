@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { comparePdfTextClient, comparePdfVisual, comparePdfSimilarity, UNRELATED_DOCUMENTS_THRESHOLD, type PageDiff } from '@/lib/client-pdf';
 import { getToolIcon } from '@/lib/icons';
 import { useLocale } from '@/lib/locale-context';
+import { errorText } from '@/lib/error-text';
 import { t, type Locale } from '@/lib/i18n';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import ToolGlyph from '@/components/ToolGlyph';
@@ -61,7 +62,7 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
         setVDiffs(visualDiffs);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('page.compare.error_generic', locale));
+      setError(err instanceof Error ? errorText(err, locale) : t('page.compare.error_generic', locale));
     } finally {
       setLoading(false);
     }
@@ -226,7 +227,7 @@ export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale }
                 {d.diffOverlay && (
                   <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">{t('page.compare.diff_label', locale)}</p>
-                    <img src={d.diffOverlay} alt={`Różnice strona ${d.page}`} className="w-full border border-red-200 dark:border-red-800 rounded-lg" />
+                    <img src={d.diffOverlay} alt={t('page.compare.diff_alt', locale, { page: d.page })} className="w-full border border-red-200 dark:border-red-800 rounded-lg" />
                   </div>
                 )}
               </div>

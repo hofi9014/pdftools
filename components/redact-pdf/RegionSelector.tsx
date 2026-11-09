@@ -3,14 +3,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getPageCount } from '@/lib/client-pdf';
 import type { RedactRegion } from '@/lib/pdf-raster';
 import RedactCanvas from './RedactCanvas';
+import { t } from '@/lib/i18n';
 
 interface RegionSelectorProps {
   file: File;
   regions: RedactRegion[];
   onRegionsChange: (regions: RedactRegion[]) => void;
+  locale: string;
 }
 
-export default function RegionSelector({ file, regions, onRegionsChange }: RegionSelectorProps) {
+export default function RegionSelector({ file, regions, onRegionsChange, locale }: RegionSelectorProps) {
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -35,7 +37,7 @@ export default function RegionSelector({ file, regions, onRegionsChange }: Regio
   }, [regions, currentPage, onRegionsChange]);
 
   if (pageCount === 0) {
-    return <div className="text-gray-500 dark:text-gray-400 text-sm">Wczytywanie podglądu…</div>;
+    return <div className="text-gray-500 dark:text-gray-400 text-sm">{t('redact.loading_preview', locale)}</div>;
   }
 
   const totalRegions = regions.length;
@@ -45,9 +47,9 @@ export default function RegionSelector({ file, regions, onRegionsChange }: Regio
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 mb-6">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <h2 className="font-bold text-gray-800 dark:text-gray-200">
-          Zaznacz regiony do redakcji
+          {t('redact.regions_title', locale)}
           <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ms-2">
-            ({totalRegions} łącznie · {pageRegionsCount} na tej stronie)
+            {t('redact.regions_count', locale, { total: totalRegions, page: pageRegionsCount })}
           </span>
         </h2>
         <div className="flex items-center gap-1">
@@ -56,7 +58,7 @@ export default function RegionSelector({ file, regions, onRegionsChange }: Regio
             onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
             disabled={currentPage === 0}
             className="px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700"
-          >← Poprzednia</button>
+          >{t('redact.prev', locale)}</button>
           {Array.from({ length: pageCount }, (_, i) => (
             <button
               key={i}
@@ -74,7 +76,7 @@ export default function RegionSelector({ file, regions, onRegionsChange }: Regio
             onClick={() => setCurrentPage((p) => Math.min(pageCount - 1, p + 1))}
             disabled={currentPage === pageCount - 1}
             className="px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700"
-          >Następna →</button>
+          >{t('redact.next', locale)}</button>
         </div>
       </div>
 
@@ -88,7 +90,7 @@ export default function RegionSelector({ file, regions, onRegionsChange }: Regio
       </div>
 
       <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
-        Narysuj prostokąt myszą, aby zaznaczyć fragment do zaczernienia. Zaznaczony region możesz przesuwać lub usunąć klawiszem Delete.
+        {t('redact.instructions', locale)}
       </p>
     </div>
   );

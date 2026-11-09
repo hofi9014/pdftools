@@ -48,7 +48,8 @@ for (const [slug, convertCall] of PAGES) {
   check(convertCall.test(page), `${slug}: still calls its converter`);
   check(/setFailed\(batchFailures\(batch\)\)/.test(page) && /<BatchFailures failed=\{failed\} total=\{files\.length\}/.test(page),
     `${slug}: records the failures and renders them with BatchFailures`);
-  check(/if \(files\.length === 1\) setError\(batch\.failed\[0\]!\.message\)/.test(page), `${slug}: a single failed file shows its own message`);
+  // Shown through errorText since 2026-11-08, so the engine's Polish message reads in the page language.
+  check(/if \(files\.length === 1\) setError\(errorText\(batch\.failed\[0\]!\.message, locale\)\)/.test(page), `${slug}: a single failed file shows its own message`);
   const resets = (page.match(/setFailed\(\[\]\)/g) ?? []).length;
   check(resets >= 4, `${slug}: the failure list is cleared on add/remove/clear/re-run (${resets} resets)`);
 }

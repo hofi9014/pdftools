@@ -12,6 +12,7 @@ import { runBatch, batchFailures, type BatchFailure } from '@/lib/batch';
 import BatchFailures from '@/components/BatchFailures';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -66,12 +67,12 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
       const batch = await runBatch(files, async (file) => {
         const result = await compressPDFClient(file, level as 'low' | 'recommended' | 'extreme');
         const blob = new Blob([result as BlobPart], { type: 'application/pdf' });
-        return { fileIdx: files.indexOf(file), name: file.name.replace('.pdf', '_skompresowany.pdf'), originalSize: file.size, compressedSize: blob.size, data: blob };
+        return { fileIdx: files.indexOf(file), name: file.name.replace('.pdf', `${t('file.compressed_suffix', locale)}.pdf`), originalSize: file.size, compressedSize: blob.size, data: blob };
       }, setProgress);
       setFailed(batchFailures(batch));
       const batchResults = batch.ok.map((r) => r.result);
       if (batchResults.length === 0) {
-        if (files.length === 1) setError(batch.failed[0]!.message);
+        if (files.length === 1) setError(errorText(batch.failed[0]!.message, locale));
         return;
       }
 
@@ -94,12 +95,12 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'skompresowane.zip';
+        a.download = `${t('file.compressed', locale)}.zip`;
         a.click();
         URL.revokeObjectURL(url);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }
@@ -195,7 +196,7 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
           )}
           {processedBlobRef.current && (
             <div className="flex justify-center mt-3">
-              <CloudFileSaver blob={processedBlobRef.current} fileName="skompresowane.zip" />
+              <CloudFileSaver blob={processedBlobRef.current} fileName={`${t('file.compressed', locale)}.zip`} />
             </div>
           )}
         </div>

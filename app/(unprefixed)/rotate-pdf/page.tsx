@@ -11,6 +11,7 @@ import { runBatch, batchFailures, type BatchFailure } from '@/lib/batch';
 import BatchFailures from '@/components/BatchFailures';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -52,11 +53,11 @@ export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } 
       const angle = Number(rotation) as 90 | 180 | 270;
       // One file that cannot be rotated (e.g. password-protected) no longer aborts the batch.
       const batch = await runBatch(files, async (file) =>
-        ({ data: await rotatePDF(file, angle), name: file.name.replace('.pdf', '_obrócony.pdf') }));
+        ({ data: await rotatePDF(file, angle), name: file.name.replace('.pdf', `${t('file.rotated_suffix', locale)}.pdf`) }));
       setFailed(batchFailures(batch));
       const results = batch.ok.map((r) => r.result);
       if (results.length === 0) {
-        if (files.length === 1) setError(batch.failed[0]!.message);
+        if (files.length === 1) setError(errorText(batch.failed[0]!.message, locale));
         return;
       }
 
@@ -69,17 +70,17 @@ export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } 
         results.forEach(r => zip.file(r.name, r.data));
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         processedBlobRef.current = zipBlob;
-        downloadFileNameRef.current = 'obrócone.zip';
+        downloadFileNameRef.current = `${t('file.rotated', locale)}.zip`;
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'obrócone.zip';
+        a.download = `${t('file.rotated', locale)}.zip`;
         a.click();
         URL.revokeObjectURL(url);
       }
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }

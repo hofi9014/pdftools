@@ -8,6 +8,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 // Grey (the previous fixed colour, now the default), red, blue, green, black, white (for dark pages).
 const WATERMARK_COLORS = ['#808080', '#E53935', '#1E63D6', '#2E7D32', '#000000', '#FFFFFF'];
@@ -17,7 +18,7 @@ const WATERMARK_ROTATION = 45;
 export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
   const [file, setFile] = useState<File | null>(null);
-  const [text, setText] = useState('POUFNE');
+  const [text, setText] = useState(() => t('page.watermark.preset_confidential', locale));
   const [opacity, setOpacity] = useState('50');
   const [position, setPosition] = useState('center');
   const [fontSize, setFontSize] = useState('40');
@@ -51,11 +52,11 @@ export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale
         rotation: WATERMARK_ROTATION,
         color,
       });
-      const blob = await downloadPdf(result, file.name.replace('.pdf', '_znak_wodny.pdf'));
+      const blob = await downloadPdf(result, file.name.replace('.pdf', `${t('file.watermarked_suffix', locale)}.pdf`));
       processedBlobRef.current = blob;
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }
@@ -146,8 +147,8 @@ export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale
             <input type="text" value={text} onChange={e => setText(e.target.value)}
               placeholder={t('page.watermark.text_placeholder', locale)}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 dark:border-blue-400 dark:focus:border-blue-400" />
-            <div className="flex gap-2 mt-2">
-              {['POUFNE', 'KOPIA', 'DRAFT', 'PRÓBKA'].map(preset => (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {(['confidential', 'copy', 'draft', 'sample'] as const).map(k => t(`page.watermark.preset_${k}`, locale)).map(preset => (
                 <button key={preset} onClick={() => setText(preset)}
                   className="text-xs bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:!text-[var(--coffee-accent-ink)] px-3 py-1 rounded-full transition">
                   {preset}
@@ -226,7 +227,7 @@ export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale
         {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6"><ToolGlyph name="success" /> {t('result.success', locale)}</div>}
         {success && file && processedBlobRef.current && (
           <div className="flex justify-center mb-6">
-            <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', '_znak_wodny.pdf')} />
+            <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', `${t('file.watermarked_suffix', locale)}.pdf`)} />
           </div>
         )}
 

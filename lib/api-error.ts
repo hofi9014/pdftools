@@ -24,7 +24,7 @@ export class ApiError extends Error {
  * Build the error for a non-OK response. The body is read defensively: a gateway timeout or a
  * platform error page is HTML, and `res.json()` on it used to surface "Unexpected token '<'".
  */
-export async function apiErrorFromResponse(res: Response, fallbackMessage: string): Promise<ApiError> {
+export async function apiErrorFromResponse(res: Response, fallbackMessage: string, fallbackCode?: string): Promise<ApiError> {
   let data: { error?: unknown; code?: unknown; params?: unknown } = {};
   try {
     data = (await res.json()) as typeof data;
@@ -33,7 +33,7 @@ export async function apiErrorFromResponse(res: Response, fallbackMessage: strin
   }
   const message = typeof data.error === 'string' && data.error ? data.error : fallbackMessage;
   const code = typeof data.code === 'string' ? data.code
-    : res.status === 429 ? 'rate_limited' : res.status === 413 ? 'too_large' : undefined;
+    : res.status === 429 ? 'rate_limited' : res.status === 413 ? 'too_large' : fallbackCode;
   const params = data.params && typeof data.params === 'object' ? (data.params as ApiErrorParams) : undefined;
   return new ApiError(message, res.status, code, params);
 }

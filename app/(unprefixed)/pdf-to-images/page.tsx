@@ -11,6 +11,7 @@ import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -79,7 +80,7 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
       const batch = await runBatch(files, (file) => extractImagesFromPdf(file, { format, scale: s, quality: qualityVal }), setProgress);
       setFailed(batchFailures(batch));
       if (batch.ok.length === 0) {
-        if (files.length === 1) setError(batch.failed[0]!.message);
+        if (files.length === 1) setError(errorText(batch.failed[0]!.message, locale));
         return;
       }
       const allResults: { fileIdx: number; page: number; blob: Blob; url: string }[] = [];
@@ -95,11 +96,11 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
       allResults.forEach(img => {
         // Safe: fileIdx is always the loop index i from the files array above.
         const baseName = files[img.fileIdx]!.name.replace(/\.pdf$/i, '');
-        zip.file(`${baseName}_strona${img.page}.${format}`, img.blob);
+        zip.file(`${baseName}-${img.page}.${format}`, img.blob);
       });
       const zipBlob = await zip.generateAsync({ type: 'blob' });
       processedBlobRef.current = zipBlob;
-      downloadFileNameRef.current = files.length === 1 ? files[0]!.name.replace('.pdf', '_obrazy.zip') : 'obrazy.zip';
+      downloadFileNameRef.current = files.length === 1 ? files[0]!.name.replace('.pdf', `_${t('file.images', locale)}.zip`) : `${t('file.images', locale)}.zip`;
       const url = URL.createObjectURL(zipBlob);
       const a = document.createElement('a');
       a.href = url;
@@ -108,7 +109,7 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
       URL.revokeObjectURL(url);
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }

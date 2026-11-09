@@ -13,6 +13,7 @@ import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -78,7 +79,7 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
       setFailed(batchFailures(batch));
       const batchResults = batch.ok.map((r) => r.result);
       if (batchResults.length === 0) {
-        if (files.length === 1) setError(batch.failed[0]!.message);
+        if (files.length === 1) setError(errorText(batch.failed[0]!.message, locale));
         return;
       }
       setZipped(batchResults.length > 1);
@@ -100,18 +101,18 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
         batchResults.forEach(r => zip.file(r.name, r.data));
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         processedBlobRef.current = zipBlob;
-        downloadFileNameRef.current = 'dokumenty-word.zip';
+        downloadFileNameRef.current = `${t('file.word_docs', locale)}.zip`;
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'dokumenty-word.zip';
+        a.download = `${t('file.word_docs', locale)}.zip`;
         a.click();
         URL.revokeObjectURL(url);
       }
 
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }

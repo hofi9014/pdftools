@@ -1,5 +1,6 @@
 import { t, isRtlLocale, type Locale } from '@/lib/i18n';
 import type { BatchFailure } from '@/lib/batch';
+import { errorText } from '@/lib/error-text';
 import ToolGlyph from '@/components/ToolGlyph';
 
 // Lists the files a batch tool could not process, with each file's own reason. When some files
@@ -11,7 +12,7 @@ export default function BatchFailures({ failed, total, locale }: { failed: Batch
   if (allFailed && total <= 1) return null;
   const list = (
     <ul className={`text-sm list-disc space-y-1 mt-1 ${isRtlLocale(locale) ? 'pr-5' : 'pl-5'}`}>
-      {failed.map((f, i) => <li key={i}><span className="font-medium">{f.name}</span>: {f.message}</li>)}
+      {failed.map((f, i) => <li key={i}><span className="font-medium">{f.name}</span>: {errorText(f.message, locale)}</li>)}
     </ul>
   );
   if (allFailed) {

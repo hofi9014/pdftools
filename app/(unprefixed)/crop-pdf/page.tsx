@@ -9,6 +9,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 export default function CropPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -57,11 +58,11 @@ export default function CropPDF({ locale: forcedLocale }: { locale?: Locale } = 
       };
       const pages = selectedPages.length > 0 ? selectedPages : undefined;
       const result = await cropPages(file, margins, pages);
-      const blob = await downloadPdf(result, 'przyciete.pdf');
+      const blob = await downloadPdf(result, `${t('file.cropped', locale)}.pdf`);
       processedBlobRef.current = blob;
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }
@@ -152,7 +153,7 @@ export default function CropPDF({ locale: forcedLocale }: { locale?: Locale } = 
       {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6"><ToolGlyph name="success" /> {t('result.success', locale)}</div>}
       {success && processedBlobRef.current && (
         <div className="flex justify-center mb-6">
-          <CloudFileSaver blob={processedBlobRef.current} fileName="przyciete.pdf" />
+          <CloudFileSaver blob={processedBlobRef.current} fileName={`${t('file.cropped', locale)}.pdf`} />
         </div>
       )}
 

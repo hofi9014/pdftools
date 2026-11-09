@@ -8,6 +8,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 export default function ProtectPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -43,12 +44,12 @@ export default function ProtectPDF({ locale: forcedLocale }: { locale?: Locale }
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = file.name.replace('.pdf', '_chroniony.pdf');
+      a.download = file.name.replace('.pdf', `${t('file.protected_suffix', locale)}.pdf`);
       a.click();
       URL.revokeObjectURL(url);
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }
@@ -170,7 +171,7 @@ export default function ProtectPDF({ locale: forcedLocale }: { locale?: Locale }
         )}
         {success && file && processedBlobRef.current && (
           <div className="flex justify-center mb-6">
-            <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', '_chroniony.pdf')} />
+            <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', `${t('file.protected_suffix', locale)}.pdf`)} />
           </div>
         )}
 
