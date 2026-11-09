@@ -8,6 +8,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 export default function AddPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -53,11 +54,11 @@ export default function AddPage({ locale: forcedLocale }: { locale?: Locale } = 
         pos = parsed - 1;
       }
       const result = await addBlankPage(file, pos);
-      const blob = await downloadPdf(result, 'z-dodana-strona.pdf');
+      const blob = await downloadPdf(result, `${t('file.with_page', locale)}.pdf`);
       processedBlobRef.current = blob;
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }
@@ -136,7 +137,7 @@ export default function AddPage({ locale: forcedLocale }: { locale?: Locale } = 
       {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6"><ToolGlyph name="success" /> {t('result.success', locale)}</div>}
       {success && processedBlobRef.current && (
         <div className="flex justify-center mb-6">
-          <CloudFileSaver blob={processedBlobRef.current} fileName="z-dodana-strona.pdf" />
+          <CloudFileSaver blob={processedBlobRef.current} fileName={`${t('file.with_page', locale)}.pdf`} />
         </div>
       )}
 

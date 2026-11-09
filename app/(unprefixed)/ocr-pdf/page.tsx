@@ -10,6 +10,7 @@ import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 const LANGUAGES = [
   { value: 'pol', labelKey: 'page.ocr.lang_polish' },
@@ -134,7 +135,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
       });
       setFailed(batchFailures(batch));
       if (batch.ok.length === 0) {
-        if (files.length === 1) setError(batch.failed[0]!.message);
+        if (files.length === 1) setError(errorText(batch.failed[0]!.message, locale));
         return;
       }
       const allText = batch.ok.map((r) => r.result.text);
@@ -147,7 +148,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
       setSuccess(true);
     } catch (err: unknown) {
       console.error('[OCR] Błąd w UI:', err);
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }
@@ -164,14 +165,14 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
     }
     const blob = await downloadZip(pdfResults);
     processedBlobRef.current = blob;
-    downloadFileNameRef.current = 'archive.zip';
+    downloadFileNameRef.current = `${t('file.archive', locale)}.zip`;
   };
 
   const downloadTXT = () => {
     if (!recognizedText) return;
     const blob = new Blob([recognizedText], { type: 'text/plain;charset=utf-8' });
     processedBlobRef.current = blob;
-    downloadFileNameRef.current = files.length === 1 ? files[0]!.name.replace('.pdf', '_ocr.txt') : 'ocr-wyniki.txt';
+    downloadFileNameRef.current = files.length === 1 ? files[0]!.name.replace('.pdf', '_ocr.txt') : `${t('file.ocr_results', locale)}.txt`;
     downloadBlob(blob, downloadFileNameRef.current);
   };
 
@@ -187,7 +188,7 @@ export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {
     });
     const blob = await Packer.toBlob(doc);
     processedBlobRef.current = blob;
-    downloadFileNameRef.current = files.length === 1 ? files[0]!.name.replace('.pdf', '_ocr.docx') : 'ocr-wyniki.docx';
+    downloadFileNameRef.current = files.length === 1 ? files[0]!.name.replace('.pdf', '_ocr.docx') : `${t('file.ocr_results', locale)}.docx`;
     downloadBlob(blob, downloadFileNameRef.current);
   };
 

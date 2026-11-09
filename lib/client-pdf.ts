@@ -716,7 +716,9 @@ export async function splitByRanges(file: File, rangeString: string): Promise<{ 
     const newPdf = await PDFDocument.create();
     const pages = await newPdf.copyPages(pdf, indices);
     pages.forEach(p => newPdf.addPage(p));
-    const label = indices.length === 1 ? `strona_${start + 1}` : `strony_${start + 1}-${end + 1}`;
+    // File name + page numbers, in no language (the names were Polish on every language version).
+    const base = file.name.replace(/\.pdf$/i, '');
+    const label = indices.length === 1 ? `${base}-${start + 1}` : `${base}-${start + 1}-${indices[indices.length - 1]! + 1}`;
     results.push({ data: await newPdf.save(), name: `${label}.pdf` });
   }
   return results;
@@ -742,7 +744,7 @@ export async function pdfToSvgPages(file: File): Promise<{ svg: string; name: st
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${viewport.width}" height="${viewport.height}" viewBox="0 0 ${viewport.width} ${viewport.height}">
   <image width="${viewport.width}" height="${viewport.height}" xlink:href="${imgData}" />
 </svg>`;
-    results.push({ svg, name: `strona_${i}.svg` });
+    results.push({ svg, name: `${file.name.replace(/\.pdf$/i, '')}-${i}.svg` });
   }
 
   await doc.cleanup();
@@ -5508,7 +5510,7 @@ export async function pdfToJpgClient(file: File, quality = 80): Promise<{ name: 
     const blob = await new Promise<Blob>((resolve, reject) => {
       canvas.toBlob(b => { if (b) resolve(b); else reject(new Error('Failed to encode JPEG')); }, 'image/jpeg', quality / 100);
     });
-    results.push({ name: `${baseName}_strona_${i}.jpg`, data: blob });
+    results.push({ name: `${baseName}-${i}.jpg`, data: blob });
   }
 
   await doc.cleanup();

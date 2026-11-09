@@ -93,7 +93,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
           }
           try {
             if (resp.error) {
-              showError(locale === 'pl' ? 'Nie udało się zalogować do Google Drive.' : 'Google Drive sign-in failed.');
+              showError(t('cloud.err_signin', locale, { service: 'Google Drive' }));
               setLoading(null);
               return;
             }
@@ -113,7 +113,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
                     onFilesPicked(files);
                   })
                   .catch(() => {
-                    showError(locale === 'pl' ? 'Nie udało się pobrać pliku z Google Drive.' : 'Failed to download file from Google Drive.');
+                    showError(t('cloud.err_download', locale, { service: 'Google Drive' }));
                   })
                   .finally(() => setLoading(null));
               } else if (data.action === 'cancel') {
@@ -123,13 +123,13 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
             pb.build().setVisible(true);
           } catch (err) {
             console.error('Google Drive error:', err);
-            showError(locale === 'pl' ? 'Nie udało się uruchomić Google Drive.' : 'Could not start Google Drive.');
+            showError(t('cloud.err_start', locale, { service: 'Google Drive' }));
             setLoading(null);
           }
         },
       });
       googleWatchdogRef.current = setTimeout(() => {
-        showError(locale === 'pl' ? 'Logowanie do Google Drive przekroczyło limit czasu.' : 'Google Drive sign-in timed out.');
+        showError(t('cloud.err_timeout', locale, { service: 'Google Drive' }));
         setLoading(null);
       }, 120000);
       tokenClient.requestAccessToken();
@@ -139,7 +139,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
         clearTimeout(googleWatchdogRef.current);
         googleWatchdogRef.current = undefined;
       }
-      showError(locale === 'pl' ? 'Nie udało się uruchomić Google Drive.' : 'Could not start Google Drive.');
+      showError(t('cloud.err_start', locale, { service: 'Google Drive' }));
       setLoading(null);
     }
   }, [onFilesPicked, locale, showError, showOffline]);
@@ -161,7 +161,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
             );
             onFilesPicked(result);
           } catch {
-            showError(locale === 'pl' ? 'Nie udało się pobrać pliku z Dropbox.' : 'Failed to download from Dropbox.');
+            showError(t('cloud.err_download', locale, { service: 'Dropbox' }));
           }
           setLoading(null);
         },
@@ -172,7 +172,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
       });
     } catch (e) {
       console.error('Dropbox error:', e);
-      showError(locale === 'pl' ? 'Nie udało się uruchomić Dropbox.' : 'Could not start Dropbox.');
+      showError(t('cloud.err_start', locale, { service: 'Dropbox' }));
       setLoading(null);
     }
   }, [onFilesPicked, accept, locale, showError, showOffline]);
@@ -438,7 +438,7 @@ export default function CloudFilePicker({ onFilesPicked, accept = '.pdf', ...pro
             </button>
           )}
           <button onClick={handleLocal} className="w-full text-start px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3">
-            <span className="text-lg"><ToolGlyph name="laptop" /></span> {locale === 'pl' ? 'To urządzenie' : 'This device'}
+            <span className="text-lg"><ToolGlyph name="laptop" /></span> {t('cloud.this_device', locale)}
           </button>
         </div>
       )}

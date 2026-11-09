@@ -190,12 +190,16 @@ console.log('\n=== no English left in other languages ===');
   // translation looks the same: both show English text on a translated page. Names that are the
   // same in every language are listed here.
   const SAME_EVERYWHERE = new Set(['tool.ocr']);
+  // The HTML sample becomes PDF text in Liberation Sans, which has no Arabic, Persian, Devanagari
+  // or CJK letters: those languages keep the English sample rather than a PDF of empty boxes.
+  const LATIN_PDF_TEXT = new Set(['page.html.sample_title', 'page.html.sample_text']);
+  const NON_LATIN = new Set(['ar', 'fa', 'hi', 'ja', 'zh']);
   const en = all.en as Record<string, string>;
   for (const l of locales) {
     if (l === 'en') continue;
     const dict = all[l] as Record<string, string>;
     const missing = Object.keys(en).filter((k) => dict[k] === undefined);
-    const copied = Object.keys(en).filter((k) => !SAME_EVERYWHERE.has(k) && dict[k] === en[k] && /[a-z]{3,}\s+[a-z]{3,}/i.test(en[k]!));
+    const copied = Object.keys(en).filter((k) => !SAME_EVERYWHERE.has(k) && !(NON_LATIN.has(l) && LATIN_PDF_TEXT.has(k)) && dict[k] === en[k] && /[a-z]{3,}\s+[a-z]{3,}/i.test(en[k]!));
     check(missing.length === 0, `${l}: every key translated${missing.length ? ` (missing: ${missing.join(', ')})` : ''}`);
     check(copied.length === 0, `${l}: no English sentence copied as the translation${copied.length ? ` (${copied.join(', ')})` : ''}`);
   }

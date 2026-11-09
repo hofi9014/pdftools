@@ -3,6 +3,7 @@ import { useState, useCallback, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import { t, type Locale } from '@/lib/i18n';
 import ToolGlyph from '@/components/ToolGlyph';
+import { errorText } from '@/lib/error-text';
 
 export default function PadesSignForm({ locale }: { locale: Locale }) {
   const [file, setFile] = useState<File | null>(null);
@@ -38,13 +39,13 @@ export default function PadesSignForm({ locale }: { locale: Locale }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `podpisany-${file.name}`;
+      a.download = `${t('file.signed_prefix', locale)}${file.name}`;
       a.click();
       URL.revokeObjectURL(url);
       setSuccess(true);
       setPassword('');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('page.edit.unknown_error', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }
@@ -122,7 +123,7 @@ export default function PadesSignForm({ locale }: { locale: Locale }) {
       )}
       {success && file && processedBlobRef.current && (
         <div className="flex justify-center mt-6">
-          <CloudFileSaver blob={processedBlobRef.current} fileName={`podpisany-${file.name}`} />
+          <CloudFileSaver blob={processedBlobRef.current} fileName={`${t('file.signed_prefix', locale)}${file.name}`} />
         </div>
       )}
     </div>

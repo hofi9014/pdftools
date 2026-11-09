@@ -6,6 +6,15 @@ import { buildDropboxAuthUrl, buildDropboxUploadArgHeader } from '@/lib/dropbox-
 import SharePointPickerDialog from './SharePointPickerDialog';
 import ToolGlyph from '@/components/ToolGlyph';
 
+/** The sign-in helpers above reject with fixed English texts; show them in the page's language. */
+export function saveErrorText(e: unknown, service: string, locale: string): string {
+  const m = e instanceof Error ? e.message : '';
+  if (m === 'Popup blocked') return t('cloud.err_popup_blocked', locale);
+  if (m === 'Login cancelled') return t('cloud.err_login_cancelled', locale);
+  if (m === 'Login timeout') return t('cloud.err_timeout', locale, { service });
+  return t('cloud.err_save', locale, { service });
+}
+
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID || '';
 const DROPBOX_KEY = process.env.NEXT_PUBLIC_DROPBOX_APP_KEY || '';
 const ONEDRIVE_CLIENT_ID = process.env.NEXT_PUBLIC_ONEDRIVE_CLIENT_ID || '';
@@ -189,10 +198,10 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
         sessionStorage.removeItem(GOOGLE_TOKEN_CACHE_KEY);
         sessionStorage.removeItem(GOOGLE_TOKEN_EXPIRY_KEY);
       } catch { /* ignore */ }
-      setError(e instanceof Error ? e.message : 'Google Drive save failed');
+      setError(saveErrorText(e, 'Google Drive', locale));
       setSaving(null);
     }
-  }, [blob, fileName, onDone]);
+  }, [blob, fileName, onDone, locale]);
 
   const saveToOneDrive = useCallback(async () => {
     if (!ONEDRIVE_CLIENT_ID) { setError('OneDrive not configured'); return; }
@@ -210,10 +219,10 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
       setSaving(null);
       onDone?.();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'OneDrive save failed');
+      setError(saveErrorText(e, 'OneDrive', locale));
       setSaving(null);
     }
-  }, [blob, fileName, onDone]);
+  }, [blob, fileName, onDone, locale]);
 
   const handleSharePoint = useCallback(() => {
     if (!SHAREPOINT_CLIENT_ID) { setError('SharePoint not configured'); return; }
@@ -245,15 +254,15 @@ export default function CloudFileSaver({ blob, fileName, onDone }: CloudFileSave
       setSaving(null);
       onDone?.();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Dropbox save failed');
+      setError(saveErrorText(e, 'Dropbox', locale));
       setSaving(null);
     }
-  }, [blob, fileName, onDone]);
+  }, [blob, fileName, onDone, locale]);
 
   return (
     <div className="flex flex-wrap items-center gap-2 mt-3">
       <span className="text-xs text-gray-500 dark:text-gray-400 me-1">
-        {locale === 'pl' ? 'Zapisz do:' : 'Save to:'}
+        {t('cloud.save_to', locale)}
       </span>
 
       {!!GOOGLE_CLIENT_ID && (

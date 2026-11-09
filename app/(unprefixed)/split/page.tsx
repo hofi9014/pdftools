@@ -9,6 +9,7 @@ import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const { locale: detectedLocale } = useLocale();
@@ -48,12 +49,12 @@ export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } =
       let results: { data: Uint8Array; name: string }[];
       if (splitMode === 'fixed') {
         const bufs = await splitPDF(file);
-        results = bufs.map((data, i) => ({ data, name: `strona_${i + 1}.pdf` }));
+        results = bufs.map((data, i) => ({ data, name: `${file.name.replace(/\.pdf$/i, '')}-${i + 1}.pdf` }));
       } else if (splitMode === 'select') {
         const { selected, rest } = await splitBySelection(file, selectedPages);
         results = [];
-        if (selected) results.push({ data: selected, name: 'podzielone_wybrane.pdf' });
-        if (rest) results.push({ data: rest, name: 'podzielone_pozostale.pdf' });
+        if (selected) results.push({ data: selected, name: `${t('file.split_selected', locale)}.pdf` });
+        if (rest) results.push({ data: rest, name: `${t('file.split_rest', locale)}.pdf` });
         if (!rest) setNotice(t('page.split.select_all', locale));
       } else {
         results = await splitByRanges(file, ranges);
@@ -61,10 +62,10 @@ export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } =
       if (results.length === 0) throw new Error(t('page.split.no_pages', locale));
       const blob = await downloadZip(results);
       processedBlobRef.current = blob;
-      downloadFileNameRef.current = 'archive.zip';
+      downloadFileNameRef.current = `${t('file.archive', locale)}.zip`;
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }

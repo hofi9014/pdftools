@@ -8,6 +8,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -36,7 +37,7 @@ export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale }
 
     try {
       const result = await flattenPDF(file);
-      const blob = await downloadPdf(result.bytes, file.name.replace('.pdf', '') + '-spłaszczony.pdf');
+      const blob = await downloadPdf(result.bytes, file.name.replace('.pdf', '') + t('file.flattened_suffix', locale) + '.pdf');
       processedBlobRef.current = blob;
       // A PDF with no form fields and no annotations has nothing to flatten — the output is
       // byte-for-byte the same document, which understandably reads as "did this even run?" to
@@ -44,7 +45,7 @@ export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale }
       setNoopFlatten(result.flattenedFields === 0 && result.removedAnnotations === 0);
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }
@@ -109,7 +110,7 @@ export default function FlattenPdf({ locale: forcedLocale }: { locale?: Locale }
       )}
       {success && file && processedBlobRef.current && (
         <div className="flex justify-center mb-6">
-          <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', '') + '-spłaszczony.pdf'} />
+          <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', '') + t('file.flattened_suffix', locale) + '.pdf'} />
         </div>
       )}
 

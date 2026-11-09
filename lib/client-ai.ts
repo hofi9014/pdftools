@@ -39,7 +39,7 @@ export async function askAI(text: string, question: string): Promise<string> {
     body: JSON.stringify({ task: 'chat', text: truncated, question }),
   });
 
-  if (!res.ok) throw await apiErrorFromResponse(res, 'Usługa AI tymczasowo niedostępna');
+  if (!res.ok) throw await apiErrorFromResponse(res, 'Usługa AI tymczasowo niedostępna', 'ai_unavailable');
   const data = await res.json();
   return data.content;
 }
@@ -51,7 +51,7 @@ async function bulkRequest(task: 'summary' | 'translate', text: string, language
     body: JSON.stringify({ task, text: truncateWithNotice(text, MAX_BULK_TEXT_LENGTH), language }),
   });
 
-  if (!res.ok) throw await apiErrorFromResponse(res, 'Usługa AI tymczasowo niedostępna');
+  if (!res.ok) throw await apiErrorFromResponse(res, 'Usługa AI tymczasowo niedostępna', 'ai_unavailable');
   const data = await res.json();
   return { content: data.content, partial: text.length > MAX_BULK_TEXT_LENGTH || data.partial === true };
 }

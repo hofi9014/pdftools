@@ -87,12 +87,18 @@ narzędzia; potem języki. Rzeczy wymagające decyzji albo kont właściciela s�
       dobry plik → wynik) i mierzy axe w obu motywach; przed poprawkami 35 z 146 pomiarów nie
       przechodziło (kolory stanów, przyciski edytora, pola bez powiązanych etykiet, `h3` pod `h1`,
       niewidoczny podgląd HTML w ciemnym motywie); baner zgody zostawia miejsce na lupę.
-- [ ] 1.1d Polski tekst wpisany na sztywno, widoczny w każdym języku (znalezione 2026-11-05 przy
+- [x] 1.1d (2026-11-08) Polski tekst wpisany na sztywno, widoczny w każdym języku (znalezione 2026-11-05 przy
       1.1c): panel wyboru obszarów przy redakcji (`components/redact-pdf/RegionSelector.tsx`: „Zaznacz
       regiony do redakcji”, „Poprzednia/Następna”, „Wczytywanie podglądu…”, instrukcja), okno SharePoint
       (`components/SharePointPickerDialog.tsx`, kilkanaście komunikatów), tekst alternatywny obrazu
       różnic w porównaniu („Różnice strona N”), przykładowy HTML („Witaj świecie”), polskie końcówki
       nazw pobieranych plików („_wypełniony”, „-spłaszczony”). Do tego test, który znajdzie taki tekst.
+      **ZROBIONE:** wszystko z listy oraz komunikaty błędów silnika PDF (np. „PDF jest zabezpieczony
+      hasłem…” na każdej wersji językowej), błędy chmury, „To urządzenie”, „Zapisz do:”, domyślny znak
+      wodny „POUFNE”, nazwy wszystkich pobieranych plików; przy okazji przycisk „Połącz” źle przetłumaczony
+      w 9 językach („konwertuj”, „działa z…”, „otwiera”); `test:hardcoded-polish`, `test:e2e-page-language-texts`.
+      2026-11-09: także polskie nazwy plików bez polskich liter („_chroniony”, „podpisany-”,
+      „edytowany-”, „_znak_wodny”, „_numerowany”, „_odblokowany”, „strony-pdf.svg.zip”).
 - [ ] 1.2 Strona „O projekcie” (16 języków): kto prowadzi (dane jak w polityce prywatności),
       co robi strona, jak przetwarzane są pliki i jak to sprawdzić samemu, z czego strona
       żyje (bez reklam, dobrowolne wsparcie), znane ograniczenia, kontakt. Link w stopce,

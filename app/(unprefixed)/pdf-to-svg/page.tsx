@@ -8,8 +8,9 @@ import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
-async function downloadZip(items: { svg: string; name: string }[]) {
+async function downloadZip(items: { svg: string; name: string }[], zipName: string) {
   const JSZip = (await import('jszip')).default;
   const zip = new JSZip();
   for (const item of items) {
@@ -19,7 +20,7 @@ async function downloadZip(items: { svg: string; name: string }[]) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'strony-pdf.svg.zip';
+  a.download = zipName;
   a.click();
   URL.revokeObjectURL(url);
   return blob;
@@ -62,13 +63,14 @@ export default function PdfToSvg({ locale: forcedLocale }: { locale?: Locale } =
         a.click();
         URL.revokeObjectURL(url);
       } else {
-        const blob = await downloadZip(svgs);
+        const zipName = `${file.name.replace(/\.pdf$/i, '')}-svg.zip`;
+        const blob = await downloadZip(svgs, zipName);
         processedBlobRef.current = blob;
-        downloadFileNameRef.current = 'strony-pdf.svg.zip';
+        downloadFileNameRef.current = zipName;
       }
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }

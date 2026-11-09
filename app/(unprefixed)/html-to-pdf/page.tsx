@@ -6,6 +6,7 @@ import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
+import { errorText } from '@/lib/error-text';
 
 export default function HtmlToPdf({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -28,12 +29,12 @@ export default function HtmlToPdf({ locale: forcedLocale }: { locale?: Locale } 
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'dokument.pdf';
+      a.download = `${t('file.document', locale)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }
@@ -51,7 +52,7 @@ export default function HtmlToPdf({ locale: forcedLocale }: { locale?: Locale } 
         <div className="flex items-center justify-between">
           <label className="font-medium text-gray-700 dark:text-gray-300">{t('page.html.paste_label', locale)}</label>
           <div className="flex gap-2">
-            <button onClick={() => setHtml('<h1>Witaj świecie</h1>\n<p>To jest przykładowy dokument PDF wygenerowany z HTML.</p>')}
+            <button onClick={() => setHtml(`<h1>${t('page.html.sample_title', locale)}</h1>\n<p>${t('page.html.sample_text', locale)}</p>`)}
               className="text-xs !text-[var(--coffee-accent-ink)] hover:underline">{t('page.html.example_btn', locale)}</button>
             <button onClick={() => setHtml('')}
               className="text-xs text-gray-500 dark:text-gray-400 hover:underline">{t('btn.clear', locale)}</button>
@@ -81,7 +82,7 @@ export default function HtmlToPdf({ locale: forcedLocale }: { locale?: Locale } 
       {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6"><ToolGlyph name="success" /> {t('page.html.success', locale)}</div>}
       {success && processedBlobRef.current && (
         <div className="flex justify-center mb-6">
-          <CloudFileSaver blob={processedBlobRef.current} fileName="dokument.pdf" />
+          <CloudFileSaver blob={processedBlobRef.current} fileName={`${t('file.document', locale)}.pdf`} />
         </div>
       )}
 

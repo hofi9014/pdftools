@@ -4,6 +4,7 @@ import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { unlockPdfClient } from '@/lib/client-pdf';
 import { useLocale } from '@/lib/locale-context';
+import { errorText } from '@/lib/error-text';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
@@ -40,7 +41,7 @@ export default function UnlockPDF({ locale: forcedLocale }: { locale?: Locale } 
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = file.name.replace('.pdf', '_odblokowany.pdf');
+      a.download = file.name.replace('.pdf', `${t('file.unlocked_suffix', locale)}.pdf`);
       a.click();
       URL.revokeObjectURL(url);
       setSuccess(true);
@@ -53,7 +54,7 @@ export default function UnlockPDF({ locale: forcedLocale }: { locale?: Locale } 
         unsupported: 'page.unlock.err_unsupported',
         failed: 'page.unlock.err_failed',
       };
-      setError(code && known[code] ? t(known[code], locale) : err instanceof Error ? err.message : t('error.generic', locale));
+      setError(code && known[code] ? t(known[code], locale) : errorText(err, locale));
     } finally {
       setLoading(false);
     }
@@ -140,7 +141,7 @@ export default function UnlockPDF({ locale: forcedLocale }: { locale?: Locale } 
         )}
         {success && file && processedBlobRef.current && (
           <div className="flex justify-center mb-6">
-            <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', '_odblokowany.pdf')} />
+            <CloudFileSaver blob={processedBlobRef.current} fileName={file.name.replace('.pdf', `${t('file.unlocked_suffix', locale)}.pdf`)} />
           </div>
         )}
 

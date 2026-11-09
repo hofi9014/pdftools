@@ -11,6 +11,7 @@ import AiNotice from '@/components/AiNotice';
 import { MAX_CHAT_TEXT_LENGTH } from '@/lib/ai-limit';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -53,7 +54,7 @@ export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {
         content: `${t('page.aichat.extracted_msg', locale, { wordCount, mode })}`
           + `\n${hint}` + (preview ? `\n\n${t('page.aichat.fragment_label', locale)}:\n${preview}${text.length > 300 ? '...' : ''}` : ''),
       }]);
-    } catch (err: unknown) { setError(err instanceof Error ? err.message : t('error.generic', locale)); }
+    } catch (err: unknown) { setError(errorText(err, locale)); }
     finally { setLoading(false); }
   };
 

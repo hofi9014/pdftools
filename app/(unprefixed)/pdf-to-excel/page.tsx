@@ -12,6 +12,7 @@ import CloudFilePicker from '@/components/CloudFilePicker';
 import BatchFailures from '@/components/BatchFailures';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -70,7 +71,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
       if (batchResults.length === 0) {
         // Nothing converted: a single file's own message is the clearest error; for several
         // files BatchFailures lists every reason.
-        if (files.length === 1) setError(batch.failed[0]!.message);
+        if (files.length === 1) setError(errorText(batch.failed[0]!.message, locale));
         return;
       }
 
@@ -90,19 +91,19 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
         batchResults.forEach(r => zip.file(r.name, r.data));
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         processedBlobRef.current = zipBlob;
-        downloadFileNameRef.current = 'excels.zip';
+        downloadFileNameRef.current = `${t('file.excel_files', locale)}.zip`;
         setZipped(true);
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'excels.zip';
+        a.download = `${t('file.excel_files', locale)}.zip`;
         a.click();
         URL.revokeObjectURL(url);
       }
 
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }

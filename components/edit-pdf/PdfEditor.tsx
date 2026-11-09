@@ -14,6 +14,7 @@ import Toolbar from './Toolbar';
 import { shortcutAction } from './dragMath';
 import TextEditPopup from './TextEditPopup';
 import ToolGlyph from '@/components/ToolGlyph';
+import { errorText } from '@/lib/error-text';
 
 interface TextBlockData {
   id: string; page: number; x: number; y: number;
@@ -108,11 +109,11 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
         setTextBlocks(blocks);
         extractedRef.current = true;
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(errorText(err, locale));
       }
     })();
     return () => { cancel = true; };
-  }, [file]);
+  }, [file, locale]);
 
   const handleRenderComplete = useCallback((w: number, h: number, canvas: HTMLCanvasElement) => {
     setCanvasWidth(w);
@@ -362,12 +363,12 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
         }));
         blob = await editPdfClient(sourceFile, currentPage - 1, data, canvasWidth, canvasHeight);
       }
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob!); a.download = `edytowany-${file.name}`; a.click();
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob!); a.download = `${t('edit.filename_prefix', locale)}${file.name}`; a.click();
       setSuccess(true);
       setExportMsg(elements.length > 0 ? t('edit.success_elements', locale) : t('edit.success_text', locale));
-    } catch (err: unknown) { setError(err instanceof Error ? err.message : String(err)); }
+    } catch (err: unknown) { setError(errorText(err, locale)); }
     finally { setExporting(false); }
-  }, [elements, textEdits, file, currentPage, canvasWidth, canvasHeight, pageCanvas]);
+  }, [elements, textEdits, file, currentPage, canvasWidth, canvasHeight, pageCanvas, locale]);
 
   // Keyboard shortcuts
   useEffect(() => {

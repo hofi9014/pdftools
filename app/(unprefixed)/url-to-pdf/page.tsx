@@ -38,7 +38,7 @@ export default function UrlToPdf({ locale: forcedLocale }: { locale?: Locale } =
       const urlObj = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = urlObj;
-      a.download = 'strona.pdf';
+      a.download = `${t('file.webpage', locale)}.pdf`;
       a.click();
       URL.revokeObjectURL(urlObj);
       setSuccess(true);
@@ -82,7 +82,7 @@ export default function UrlToPdf({ locale: forcedLocale }: { locale?: Locale } =
       {success && <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl p-4 mb-6"><ToolGlyph name="success" /> {t('page.url.success', locale)}</div>}
       {success && processedBlobRef.current && (
         <div className="flex justify-center mb-6">
-          <CloudFileSaver blob={processedBlobRef.current} fileName="strona.pdf" />
+          <CloudFileSaver blob={processedBlobRef.current} fileName={`${t('file.webpage', locale)}.pdf`} />
         </div>
       )}
 

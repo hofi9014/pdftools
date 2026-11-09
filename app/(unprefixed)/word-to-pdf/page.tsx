@@ -8,6 +8,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { errorText } from '@/lib/error-text';
 
 // FINDING (2026-09-21) — .doc/.xls/.ppt are the legacy OLE Compound File Binary Format, not a
 // ZIP archive at all (unlike their modern .docx/.xlsx/.pptx successors), so officeToPdf's
@@ -83,7 +84,7 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
       setFallbackUsed(fallbackUsed);
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('error.generic', locale));
+      setError(errorText(err, locale));
     } finally {
       setLoading(false);
     }
