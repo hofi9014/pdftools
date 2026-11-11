@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import guides from '@/content/guides';
 import { toolHowToSteps } from '@/content/tool-howto';
+import { toolUseCasesFor } from '@/content/tool-usecases';
 import { t, type Locale } from '@/lib/i18n';
 import { getLocaleSegment } from '@/lib/guides-slugs';
 import { keyBySlug, toolPath, toolProcessing, RELATED_TOOLS } from '@/lib/tools';
@@ -36,6 +37,7 @@ export default function ToolGuide({ slug, locale }: { slug: string; locale: Loca
   const tool = t(`tool.${key}`, locale);
   const heading = t('toolpage.howto_heading', locale, { tool });
   const faq = toolFaq(key, locale);
+  const useCases = toolUseCasesFor(key, locale);
   const guide = guides.find((g) => g.relatedTool === key);
   const url = `${SITE}/${locale}/${slug}`;
 
@@ -99,6 +101,33 @@ export default function ToolGuide({ slug, locale }: { slug: string; locale: Loca
           ))}
         </ol>
       </div>
+
+      {useCases && (
+        <div className="mt-10 grid gap-8 sm:grid-cols-2">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold tool-heading mb-4">{t('toolpage.uses_heading', locale)}</h2>
+            <ul role="list" className="space-y-2">
+              {useCases.uses.map((text) => (
+                <li key={text} className="flex items-start gap-2 leading-relaxed" style={{ color: 'var(--coffee-text)' }}>
+                  <span aria-hidden="true" className="mt-2 shrink-0 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--coffee-accent)' }} />
+                  <span>{text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold tool-heading mb-4">{t('toolpage.notes_heading', locale)}</h2>
+            <ul role="list" className="space-y-2">
+              {useCases.notes.map((text) => (
+                <li key={text} className="flex items-start gap-2 text-sm leading-relaxed" style={{ color: 'var(--coffee-text-secondary)' }}>
+                  <span aria-hidden="true" className="mt-1.5 shrink-0"><ToolGlyph name="info" /></span>
+                  <span>{text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
       <h2 className="text-xl sm:text-2xl font-bold tool-heading mt-10 mb-4">{t('toolpage.faq_heading', locale)}</h2>
       <dl className="space-y-5">
