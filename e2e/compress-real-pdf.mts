@@ -47,7 +47,7 @@ for (const [level, label] of [['low', 'Niski'], ['recommended', 'Polecane'], ['e
   await page.locator('button', { hasText: label }).first().click();
   const [download] = await Promise.all([
     page.waitForEvent('download', { timeout: 120000 }),
-    page.locator('button', { hasText: /Kompresja plików PDF/i }).last().click(),
+    page.locator('button', { hasText: /Kompresuj PDF/i }).last().click(),
   ]);
   const path = await download.path();
   const bytes = new Uint8Array(readFileSync(path!));

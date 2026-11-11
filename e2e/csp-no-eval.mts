@@ -186,7 +186,7 @@ console.log('=== the tools work under the strict policy, and nothing needs eval 
   });
   await step('compression', async (p) => {
     await upload(p, 'compress', [{ name: 'report.pdf', mimeType: 'application/pdf', buffer: report }]);
-    const out = await downloadOf(p, button(p, /Kompresja plików PDF/i));
+    const out = await downloadOf(p, button(p, /Kompresuj PDF/i));
     if (!PDF(out)) throw new Error('the download is not a PDF');
     return 'a PDF';
   });

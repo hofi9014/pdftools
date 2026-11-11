@@ -20,7 +20,7 @@ const pdf = readFileSync(join(ROOT, 'test-real-pdfs', 'chrome-report.pdf'));
 const browser = await chromium.launch({ headless: true });
 
 const cases: Array<{ slug: string; files: number; button: RegExp }> = [
-  { slug: 'compress', files: 1, button: /Kompresja plików PDF/i },
+  { slug: 'compress', files: 1, button: /Kompresuj PDF/i },
   { slug: 'merge', files: 2, button: /Połącz PDF/ },
   { slug: 'split', files: 1, button: /Podziel plik PDF/ },
   { slug: 'pdf-to-word', files: 1, button: /Konwertuj do formatu Word/ },
