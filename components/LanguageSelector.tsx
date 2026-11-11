@@ -88,7 +88,9 @@ export default function LanguageSelector({ locale: forcedLocale }: { locale?: Lo
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl text-sm transition"
         style={{ color: 'var(--coffee-text-secondary)', backgroundColor: open ? 'var(--coffee-surface-hover)' : 'transparent' }}
-        aria-label={t('lang.switch', locale)}
+        // The name starts with what the button shows (the language), so a voice command that
+        // says the visible word still finds it (WCAG 2.5.3 Label in Name).
+        aria-label={`${labelMap[locale]}: ${t('lang.switch', locale)}`}
         title={t('lang.switch', locale)}
       >
         <img src={`/flags/${flagMap[locale]}.svg`} alt="" className="inline-block w-auto h-4" />

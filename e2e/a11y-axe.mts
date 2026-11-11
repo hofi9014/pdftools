@@ -18,11 +18,17 @@ const PAGES = [
   'pl', 'en', 'ar', 'pl/merge', 'pl/compress', 'pl/pdf-to-word', 'pl/edit-pdf', 'pl/sign-pdf', 'pl/ocr-pdf',
   'pl/protect-pdf', 'pl/unlock-pdf', 'pl/split', 'pl/ai-chat', 'pl/watermark-pdf', 'pl/privacy', 'pl/rodo',
   'pl/security', 'pl/terms', 'pl/faq', 'pl/help', 'pl/nasze-zasady', 'pl/wsparcie', 'pl/guide', 'de/merge', 'ar/privacy',
+  // Guides: the hub, a category and articles (all 19 share one template — step titles were <h4>
+  // straight under <h2> until 2026-11-11).
+  'guides/przewodnik', 'guides/przewodnik/compress-pdf', 'guides/przewodnik/compress-pdf/how-to-compress-pdf-online',
+  'guides/przewodnik/flatten-pdf/how-to-flatten-pdf', `guides/${encodeURIComponent('دليل')}/pdf-to-svg/how-to-convert-pdf-to-svg`,
+  'guides/guides/pdf-to-openoffice/how-to-convert-pdf-to-odt',
 ];
 const ENFORCED = new Set([
   'color-contrast', 'label', 'select-name', 'landmark-no-duplicate-main', 'landmark-main-is-top-level',
   'page-has-heading-one', 'heading-order', 'target-size', 'image-redundant-alt', 'button-name', 'link-name',
   'html-has-lang', 'document-title', 'aria-allowed-attr', 'aria-valid-attr-value', 'duplicate-id-aria',
+  'label-content-name-mismatch',
 ]);
 
 let fails = 0;

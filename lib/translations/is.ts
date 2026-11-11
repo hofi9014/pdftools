@@ -665,7 +665,7 @@ const is: Record<string, string> = {
   'page.rotate.not_pdf': 'Sumar skrár eru ekki gildar PDF-skrár.',
   'page.rotate.right': 'Snúðu til hægri',
   'page.sign.add_signature_prompt': 'Bættu undirskrift við skjalið',
-  'page.sign.all': 'Öll síður',
+  'page.sign.all': 'Allar síður',
   'page.sign.btn': 'Undirrita PDF',
   'page.sign.choose_pages': 'Veldu síður',
   'page.sign.clear': 'Skýr',

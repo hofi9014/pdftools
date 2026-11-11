@@ -19,4 +19,8 @@ export const categoryTool: Record<string, ToolSlug> = {
   'rotate-pdf': 'rotate',
   'delete-pages': 'delete',
   'pdf-to-excel': 'excel',
+  'reorder-pages': 'reorder',
+  'flatten-pdf': 'flatten',
+  'pdf-to-openoffice': 'pdf2openoffice',
+  'pdf-to-svg': 'svg',
 };

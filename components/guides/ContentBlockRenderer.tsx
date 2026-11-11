@@ -40,7 +40,7 @@ export default function ContentBlockRenderer({
                   {stepNumbers[i]!.toString()}
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-1">{tls(block.title, locale)}</h4>
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-1">{tls(block.title, locale)}</h3>
                   <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{tls(block.text, locale)}</p>
                 </div>
               </div>

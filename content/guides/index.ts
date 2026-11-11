@@ -14,6 +14,10 @@ import editPdfHowTo from './edit-pdf/how-to-edit-pdf-online';
 import rotatePdfHowTo from './rotate-pdf/how-to-rotate-pdf';
 import deletePagesHowTo from './delete-pages/how-to-delete-pages-from-pdf';
 import pdfToExcelHowTo from './pdf-to-excel/how-to-convert-pdf-to-excel';
+import reorderPagesHowTo from './reorder-pages/how-to-reorder-pdf-pages';
+import flattenPdfHowTo from './flatten-pdf/how-to-flatten-pdf';
+import pdfToOdtHowTo from './pdf-to-openoffice/how-to-convert-pdf-to-odt';
+import pdfToSvgHowTo from './pdf-to-svg/how-to-convert-pdf-to-svg';
 
 const guides: GuideArticle[] = [
   compressPdfHowTo,
@@ -31,6 +35,10 @@ const guides: GuideArticle[] = [
   rotatePdfHowTo,
   deletePagesHowTo,
   pdfToExcelHowTo,
+  reorderPagesHowTo,
+  flattenPdfHowTo,
+  pdfToOdtHowTo,
+  pdfToSvgHowTo,
 ];
 
 export default guides;
