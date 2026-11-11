@@ -77,7 +77,7 @@ console.log('\n=== guide content: false claims are gone, in all 16 locales, repl
   const wordGuide = readFileSync(join(ROOT, 'content', 'guides', 'pdf-to-word', 'how-to-convert-pdf-to-word.ts'), 'utf-8');
   check(!wordGuide.includes('starts automatically after adding the file'), 'pdf-to-word guide (en) no longer claims automatic conversion');
   check(!wordGuide.includes('rozpoczyna się automatycznie po dodaniu pliku'), 'pdf-to-word guide (pl) no longer claims automatic conversion');
-  check(wordGuide.includes('click the "Convert" button'), 'pdf-to-word guide (en) now instructs clicking the Convert button');
+  check(wordGuide.includes('click the "Convert to Word" button'), 'pdf-to-word guide (en) now instructs clicking the Convert to Word button (its exact label)');
 
   const mergeGuide = readFileSync(join(ROOT, 'content', 'guides', 'merge-pdf', 'how-to-merge-pdf-online.ts'), 'utf-8');
   check(!mergeGuide.includes('You can drag files to change their order.'), 'merge guide (en) no longer claims drag-to-reorder');
@@ -96,7 +96,7 @@ console.log('\n=== guide content: false claims are gone, in all 16 locales, repl
   for (const old of ['"Every N Pages" Mode', 'creates 4 files of 5 pages each', 'every N pages, custom ranges', 'Selected pages will be saved as a separate PDF file']) {
     check(!splitGuide.includes(old), `split guide no longer contains the false claim "${old}"`);
   }
-  for (const fresh of ['"Page by Page" Mode', 'creates 20 single-page files', '"Split by Selection" Mode', 'one with the selected pages and one with all the remaining pages']) {
+  for (const fresh of ['"Page by page" Mode', 'creates 20 single-page files', '"Split by selection" Mode', 'one with the selected pages and one with all the remaining pages']) {
     check(splitGuide.includes(fresh), `split guide states the real behaviour: "${fresh}"`);
   }
   check((splitGuide.match(/^\s+pl: 'Tryb "Strona po stronie"',/gm) ?? []).length === 1, 'split guide: pl heading for page-by-page mode present once');

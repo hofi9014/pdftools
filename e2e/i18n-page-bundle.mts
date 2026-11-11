@@ -153,7 +153,7 @@ async function open(stored: Locale | null): Promise<{ page: Page; problems: stri
   // Switching language keeps the same root layout: the new page must bring its own dictionary.
   const { page, problems } = await open('pl');
   await page.goto(BASE_URL + '/pl/merge', { waitUntil: 'networkidle' });
-  await page.click(`button[aria-label="${t('lang.switch', 'pl')}"]`);
+  await page.click(`button[aria-label$=": ${t('lang.switch', 'pl')}"]`);
   await page.click('button:has-text("العربية")');
   await page.waitForURL('**/ar/merge', { timeout: 20000 });
   await page.waitForFunction(() => document.documentElement.lang === 'ar', null, { timeout: 20000 });

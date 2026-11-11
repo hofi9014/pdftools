@@ -107,6 +107,38 @@ export const categoryLabels: Record<string, Record<Locale, string>> = {
     is: 'PDF í Excel', tr: "PDF'den Excel'e", ar: 'PDF إلى Excel',
     fa: 'PDF به Excel', hi: 'PDF से Excel', ja: 'PDFからExcelへ', zh: 'PDF转Excel',
   },
+  'reorder-pages': {
+    pl: 'Zmiana kolejności stron', en: 'Reorder Pages', de: 'Seiten neu anordnen',
+    es: 'Reordenar páginas', fr: 'Réorganiser pages', it: 'Riordinare pagine',
+    pt: 'Reordenar páginas', sv: 'Ändra sidordning', no: 'Endre siderekkefølge',
+    is: 'Endurraða síðum', tr: 'Sayfaları Yeniden Sırala', ar: 'إعادة ترتيب الصفحات',
+    fa: 'تغییر ترتیب صفحات', hi: 'पृष्ठ पुनर्क्रमित करें', ja: 'ページ並べ替え',
+    zh: '重新排序页面',
+  },
+  'flatten-pdf': {
+    pl: 'Spłaszcz PDF', en: 'Flatten PDF', de: 'PDF glätten',
+    es: 'Aplanar PDF', fr: 'Aplatir PDF', it: 'Appiattire PDF',
+    pt: 'Aplainar PDF', sv: 'Platta till PDF', no: 'Flat ut PDF',
+    is: 'Fletja PDF', tr: 'PDF Düzleştir', ar: 'تسوية PDF',
+    fa: 'تسطیح PDF', hi: 'PDF समतल करें', ja: 'PDF平坦化',
+    zh: '扁平化PDF',
+  },
+  'pdf-to-openoffice': {
+    pl: 'PDF do OpenOffice', en: 'PDF to OpenOffice', de: 'PDF zu OpenOffice',
+    es: 'PDF a OpenOffice', fr: 'PDF vers OpenOffice', it: 'PDF in OpenOffice',
+    pt: 'PDF para OpenOffice', sv: 'PDF till OpenOffice', no: 'PDF til OpenOffice',
+    is: 'PDF í OpenOffice', tr: "PDF'den OpenOffice'e", ar: 'PDF إلى OpenOffice',
+    fa: 'PDF به OpenOffice', hi: 'PDF को OpenOffice में', ja: 'PDFをOpenOfficeに変換',
+    zh: 'PDF转OpenOffice',
+  },
+  'pdf-to-svg': {
+    pl: 'PDF do SVG', en: 'PDF to SVG', de: 'PDF zu SVG',
+    es: 'PDF a SVG', fr: 'PDF vers SVG', it: 'PDF in SVG',
+    pt: 'PDF para SVG', sv: 'PDF till SVG', no: 'PDF til SVG',
+    is: 'PDF í SVG', tr: "PDF'den SVG'ye", ar: 'PDF إلى SVG',
+    fa: 'PDF به SVG', hi: 'PDF को SVG में', ja: 'PDFをSVGに変換',
+    zh: 'PDF转SVG',
+  },
 };
 
 export { categoryTool } from '@/lib/guide-category-tools';

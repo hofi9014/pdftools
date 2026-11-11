@@ -151,12 +151,17 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
       BreadcrumbList na narzędziach i poprawny w artykułach, kategorie poradników z 1 artykułem
       noindex + poza mapą strony. Dalej: treść „kiedy użyć” dla narzędzi z największym popytem,
       nowe poradniki (kolejność stron, spłaszczanie, OpenOffice). Ponowny raport ok. 2026-12-08.
+      2026-11-11: sekcje „Kiedy to narzędzie pomaga” i „Dobrze wiedzieć” pod 12 narzędziami z popytem
+      (ca01d84), przyciski przetłumaczone dosłownie na coś innego w 12 językach (f908428), cztery nowe
+      poradniki (kolejność stron, spłaszczanie, PDF do OpenOffice, PDF do SVG — razem 19) oraz poprawione
+      cytowane etykiety w 8 starszych poradnikach; test `test:guide-quoted-labels`.
 - [ ] 3.2 Teksty i zrzuty do zgłoszeń: AlternativeTo, SaaSHub, Product Hunt (ja przygotowuję,
       **[WŁAŚCICIEL]** zakłada konta i wysyła).
 - [ ] 3.3 **[DECYZJA]** Porównanie „które narzędzia PDF wysyłają plik na serwer”: pomiar metodą
       z `e2e/no-upload.mts` na syntetycznym pliku, wyłącznie fakty możliwe do powtórzenia;
       publikacja dopiero po akceptacji treści.
 - [ ] 3.4 Kolejne poradniki do narzędzi bez poradnika (po danych z Search Console).
+      2026-11-11: dodane kolejność stron, spłaszczanie, PDF do OpenOffice, PDF do SVG (19 poradników).
 - [x] 3.5 (2026-11-02, właściciel; sprawdzone na produkcji) `www.optimapdf.com` przekierowuje stale (308)
       na `optimapdf.com`; domena główna bez przekierowania, 200.
 - [ ] 3.6 Adresy poradników w języku strony: dziś `/guides/anleitungen/compress-pdf/how-to-compress-pdf-online`

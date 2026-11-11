@@ -66,7 +66,7 @@ async function run() {
     await page.waitForFunction(() => document.documentElement.lang === 'de', { timeout: 5000 });
 
     // Open the language switcher and pick French.
-    await page.locator('button[aria-label="Sprache wechseln"]').click();
+    await page.locator('button[aria-label$=": Sprache wechseln"]').click();
     await page.locator('button:has-text("Français")').click();
     await page.waitForFunction(() => document.documentElement.lang === 'fr', { timeout: 5000 });
     if (!/\/fr(\/|$)/.test(page.url())) throw new Error(`expected URL to move to /fr, got ${page.url()}`);
