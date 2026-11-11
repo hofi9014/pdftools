@@ -7,7 +7,8 @@ import { getCategoryLabel } from '@/lib/guide-categories';
 import { localeFromSegment, getLocaleSegment, isGuidesSegment } from '@/lib/guides-slugs';
 import { getAllArticles, getAllCategories } from '@/lib/guides';
 import type { GuideArticle } from '@/types/guide';
-import { socialMetadata, fullTitle } from '@/lib/metadata';
+import { socialMetadata, fullTitle, fitList } from '@/lib/metadata';
+import { categoryTool } from '@/lib/guide-category-tools';
 
 
 
@@ -16,7 +17,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   if (!isGuidesSegment(localeSegment)) notFound();
   const locale = localeFromSegment(localeSegment) as Locale;
   const title = t('guides.hub_title', locale);
-  const description = t('guides.hub_subtitle', locale);
+  // What the guides cover, by tool name (before: the bare subtitle, about 40 characters).
+  const description = fitList(locale, t('guides.hub_subtitle', locale), getAllCategories().map((c) => (categoryTool[c] ? t(`tool.${categoryTool[c]}`, locale) : getCategoryLabel(c, locale))));
   const url = (l: Locale) => `https://optimapdf.com/guides/${getLocaleSegment(l)}`;
   const languages: Record<string, string> = {};
   for (const l of locales) languages[l] = url(l);

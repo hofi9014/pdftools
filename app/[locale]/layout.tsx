@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { locales, t, type Locale } from '@/lib/i18n';
 import RootDocument from '@/app/_root/RootDocument';
 import { rootMetadata } from '@/lib/root-metadata';
-import { socialMetadata } from '@/lib/metadata';
+import { socialMetadata, homeDescription } from '@/lib/metadata';
 
 const baseUrl = 'https://optimapdf.com';
 
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   // in the language of the address (before, /pl, /de, … all said "Free online PDF tools").
   const known = (locales as readonly string[]).includes(locale) ? (locale as Locale) : 'en';
   const title = t('meta.title', known);
-  const description = t('meta.description', known);
+  const description = homeDescription(known);
   return {
     ...rootMetadata,
     title: { default: title, template: '%s | OptimaPDF' },

@@ -4,6 +4,7 @@ import type { Locale } from '@/lib/i18n';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import guides from '@/content/guides';
 import { buildCanonicalUrl } from '@/lib/guides-canonical';
+import { isCategoryIndexable, getArticlesByCategory, guidesLastModified } from '@/lib/guides';
 import { tools, toolPath } from '@/lib/tools';
 
 // Every info page that exists under app/[locale]/ (the unprefixed /privacy etc. only 307-redirect
@@ -48,16 +49,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }
     pages.push({
       url: `${base}/guides/${segment}`,
-      lastModified: new Date(),
+      lastModified: new Date(guidesLastModified()),
       changeFrequency: 'weekly',
       priority: 0.7,
       alternates: { languages: hreflang },
     });
   }
 
-  // category pages: /guides/{localeSegment}/{category}
+  // category pages: /guides/{localeSegment}/{category} — only those with enough articles to be
+  // a real list; a one-article category is noindex (lib/guides.ts isCategoryIndexable).
   for (const locale of locales) {
     for (const article of guides) {
+      if (!isCategoryIndexable(article.category)) continue;
       const segment = localeGuidesSlug[locale];
       const url = `${base}/guides/${segment}/${article.category}`;
       const hreflang: Record<string, string> = {};
@@ -67,7 +70,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       if (!pages.some(p => p.url === url)) {
         pages.push({
           url,
-          lastModified: new Date(),
+          lastModified: new Date(getArticlesByCategory(article.category).map((a) => a.updatedAt).sort().at(-1)!),
           changeFrequency: 'weekly',
           priority: 0.7,
           alternates: { languages: hreflang },

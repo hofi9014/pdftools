@@ -101,5 +101,27 @@ for (const p of ['/pl', '/de', '/ar', '/pl/merge', '/pl/faq', '/guides/przewodni
   }
 }
 
+// Search-result fit (2026-11-10): the tool's own search title, a description that fits a result,
+// breadcrumb data matching the visible trail, and one-article guide categories kept out of search.
+{
+  const { html } = await get('/en/reorder-pages');
+  check(/<title>Reorder PDF Pages[^<]*\| OptimaPDF<\/title>/.test(html), `/en/reorder-pages: own search title (${html.match(/<title>([^<]*)/)?.[1]})`);
+  check(meta(html, 'description').length <= 160, `/en/reorder-pages: description ${meta(html, 'description').length} <= 160`);
+  const crumbs = jsonLd(html).find((n) => n['@type'] === 'BreadcrumbList');
+  check(crumbs?.itemListElement?.[0]?.item === 'https://optimapdf.com/en' && crumbs.itemListElement.length === 2, '/en/reorder-pages: BreadcrumbList Home › tool');
+  const article = await get('/guides/guides/merge-pdf/how-to-merge-pdf-online');
+  const trail = jsonLd(article.html).find((n) => n['@type'] === 'BreadcrumbList')?.itemListElement as { item: string }[] | undefined;
+  check(trail?.length === 4 && trail[0]!.item === 'https://optimapdf.com/en', `guide article: BreadcrumbList Home › Guides › category › article (${trail?.map((c) => c.item).join(' › ')})`);
+  const category = await get('/guides/guides/merge-pdf');
+  check(category.status === 200 && /<meta name="robots" content="noindex, ?follow"/.test(category.html), 'one-article guide category: 200, noindex, follow');
+  const sitemap = await (await fetch(`${BASE}/sitemap.xml`)).text();
+  check(!/\/guides\/[^/<]+\/merge-pdf<\/loc>/.test(sitemap), 'one-article guide category is not in the sitemap');
+  const hub = await get('/guides/guides');
+  check(meta(hub.html, 'description').length > 100 && meta(hub.html, 'description').length <= 160, `guides hub: description lists the guides (${meta(hub.html, 'description').length} chars)`);
+  const home = await get('/de');
+  check(/<title>Kostenlose PDF-Tools/.test(home.html), '/de: home title leads with the search words, not the brand');
+  check(meta(home.html, 'description').length <= 160 && /36 von 40/.test(meta(home.html, 'description')), `/de: home description ${meta(home.html, 'description').length} chars with the local-tool count`);
+}
+
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);

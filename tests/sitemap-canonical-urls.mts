@@ -70,5 +70,23 @@ console.log('\n=== hygiene ===');
 check(new Set(urls).size === urls.length, 'no duplicate URLs');
 check(entries.filter((e) => !e.url.includes('/guides/') && e.lastModified).length === 0, 'no fake build-time lastModified on pages without a real modification date');
 
+// Guide category pages: listed only when the category has enough articles to be a real list
+// (one-article categories are noindex, follow — 2026-11-10), and no build-time dates on the hubs.
+console.log('\n=== guide categories ===');
+const { getAllCategories, isCategoryIndexable, guidesLastModified } = await import('../lib/guides.ts');
+const categoryUrls = urls.filter((u) => /\/guides\/[^/]+\/[^/]+$/.test(u));
+for (const c of getAllCategories()) {
+  const listed = categoryUrls.filter((u) => u.endsWith(`/${c}`)).length;
+  check(listed === (isCategoryIndexable(c) ? locales.length : 0), `category ${c}: listed ${listed} times (indexable: ${isCategoryIndexable(c)})`);
+}
+const hubs = entries.filter((e) => /\/guides\/[^/]+$/.test(e.url));
+check(hubs.length === locales.length && hubs.every((e) => new Date(e.lastModified as string | Date).toISOString().slice(0, 10) === guidesLastModified()), 'guide hubs carry the newest article date, not the build time');
+const { generateMetadata: categoryMeta } = await import('../app/guides/[locale]/[category]/page.tsx');
+for (const c of getAllCategories()) {
+  const m = await categoryMeta({ params: Promise.resolve({ locale: 'guides', category: c }) });
+  const robots = m.robots as { index?: boolean; follow?: boolean } | undefined;
+  check(isCategoryIndexable(c) ? !robots || robots.index !== false : robots?.index === false && robots.follow === true, `category ${c}: robots ${JSON.stringify(robots)}`);
+}
+
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);

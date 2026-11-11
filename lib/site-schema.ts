@@ -1,4 +1,5 @@
-import { t, type Locale } from '@/lib/i18n';
+import { type Locale } from '@/lib/i18n';
+import { homeDescription } from '@/lib/metadata';
 
 const SITE = 'https://optimapdf.com';
 
@@ -24,7 +25,7 @@ export function siteJsonLd(locale: Locale) {
         '@id': `${SITE}/${locale}#website`,
         name: 'OptimaPDF',
         url: `${SITE}/${locale}`,
-        description: t('meta.description', locale),
+        description: homeDescription(locale),
         inLanguage: locale,
         publisher: { '@id': `${SITE}/#organization` },
       },

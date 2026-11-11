@@ -76,7 +76,8 @@ for (const l of locales) {
   for (const tl of tools) {
     const { title, description } = toolSearchMetadata(tl.key, l);
     const tool = t(`tool.${tl.key}`, l);
-    check(title.includes(tool) && title !== tool && !title.includes('{'), `${l}/${tl.key}: title names the tool and adds search words ("${title}")`);
+    // The title says what people search for, which is not always the menu name (3b below).
+    check(title !== tool && title.length > tool.length && !title.includes('{'), `${l}/${tl.key}: title adds search words to the tool's name ("${title}")`);
     check(description.includes(t(`desc.${tl.key}`, l)) && !description.includes('{'), `${l}/${tl.key}: description starts from the tool's purpose`);
     const [min, max] = CJK.has(l) ? [35, 120] : [90, 230];
     check(description.length >= min && description.length <= max, `${l}/${tl.key}: description length ${description.length} in [${min}, ${max}]`);
@@ -92,6 +93,47 @@ for (const key of Object.keys(NON_LOCAL_TOOLS)) {
   check(!toolSearchMetadata(key, 'pl').description.includes(localClaim.slice(2)), `${key}: description does not claim the file never leaves the browser`);
 }
 pass('titles and descriptions for every tool and language');
+// --- 3b. Search-result fit (2026-11-10, from the Search Console data) --------------------------------
+// The title was "{tool} online for free" — the menu name, which often is not what people type
+// ("Reorder pages" vs "rearrange PDF pages", "ODT to PDF" vs "OpenOffice to PDF"). Each tool now has
+// its own title in every language, with the words people search for, and every description fits
+// in a search result (Google cuts at about 160 characters; ja/zh characters are twice as wide).
+const { all } = await import('../lib/translations/all.ts');
+const { fullTitle, homeDescription } = await import('../lib/metadata.ts');
+const localCount = tools.length - Object.keys(NON_LOCAL_TOOLS).length;
+// How wide a title looks in a result: CJK characters take about two Latin ones.
+const width = (s: string) => [...s].reduce((w, c) => w + (/[ᄀ-ᅟ⺀-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦]/.test(c) ? 2 : 1), 0);
+for (const l of locales) {
+  const own = all[l]!;
+  const titles = new Set<string>();
+  const dMax = CJK.has(l) ? 100 : 160;
+  for (const tl of tools) {
+    const { title, description } = toolSearchMetadata(tl.key, l);
+    check(typeof own[`seo.tool_title.${tl.key}`] === 'string', `${l}/${tl.key}: own search title (not the English fallback)`);
+    check(title === own[`seo.tool_title.${tl.key}`], `${l}/${tl.key}: the page uses it ("${title}")`);
+    check(/PDF/.test(title), `${l}/${tl.key}: title says PDF`);
+    check(width(title) >= 20 && width(title) <= 60, `${l}/${tl.key}: title width ${width(title)} in [20, 60]`);
+    check(width(fullTitle(title)) <= 72, `${l}/${tl.key}: title with brand width ${width(fullTitle(title))} <= 72`);
+    check(!titles.has(title), `${l}/${tl.key}: title is unique`);
+    titles.add(title);
+    check(description.length <= dMax, `${l}/${tl.key}: description ${description.length} <= ${dMax} ("${description}")`);
+  }
+  // Info pages and the home page: each its own description, none borrowed from another page.
+  const homeTitle = t('meta.title', l);
+  check(!homeTitle.startsWith('OptimaPDF') && /PDF/.test(homeTitle) && homeTitle.endsWith('| OptimaPDF') && width(homeTitle) <= 72, `${l}: home title leads with what people search for ("${homeTitle}")`);
+  const home = homeDescription(l);
+  check(home.includes(String(localCount)) && home.includes(String(tools.length)), `${l}: home description states ${localCount} of ${tools.length} local tools`);
+  check(home.length <= dMax, `${l}: home description ${home.length} <= ${dMax}`);
+  const descs = new Map<string, string>([['home', home]]);
+  for (const slug of ['privacy', 'rodo', 'security', 'terms', 'faq', 'help', 'guide', 'nasze-zasady', 'wsparcie']) {
+    const d = String(pageMetadata(l, `/${slug}`).description);
+    check(d.length >= (CJK.has(l) ? 12 : 40) && d.length <= dMax + 1, `${l}/${slug}: description length ${d.length}`);
+    const dup = [...descs].find(([, v]) => v === d);
+    check(!dup, `${l}/${slug}: description differs from ${dup?.[0]} ("${d.slice(0, 60)}")`);
+    descs.set(slug, d);
+  }
+}
+pass('own search titles, descriptions that fit, no borrowed descriptions');
 
 // --- 4. The section under each tool -----------------------------------------------------------------
 for (const tl of tools) {
@@ -107,6 +149,9 @@ for (const tl of tools) {
     const app = ld['@graph'].find((n: { '@type': string }) => n['@type'] === 'WebApplication');
     check(JSON.stringify(howto.step.map((s: { text: string }) => s.text)) === JSON.stringify(steps), `${tl.slug}/${l}: HowTo data = the visible steps`);
     check(app.name === t(`tool.${tl.key}`, l) && app.url === `https://optimapdf.com/${l}/${tl.slug}` && app.isAccessibleForFree === true, `${tl.slug}/${l}: WebApplication data`);
+    // The breadcrumb data says the same as the trail the page shows above the tool: Home › tool.
+    const crumbs = ld['@graph'].find((n: { '@type': string }) => n['@type'] === 'BreadcrumbList')?.itemListElement as { position: number; name: string; item: string }[] | undefined;
+    check(JSON.stringify(crumbs?.map((c) => [c.position, c.name, c.item])) === JSON.stringify([[1, t('breadcrumb.home', l), `https://optimapdf.com/${l}`], [2, t(`tool.${tl.key}`, l), `https://optimapdf.com/${l}/${tl.slug}`]]), `${tl.slug}/${l}: BreadcrumbList = Home › tool`);
     if (guide) check(text.includes(`/guides/`) && text.includes(guide.title[l]), `${tl.slug}/${l}: links its guide`);
     else check(!html.includes('/guides/'), `${tl.slug}/${l}: no guide link without a guide`);
     const related = RELATED_TOOLS[tl.key] ?? [];
