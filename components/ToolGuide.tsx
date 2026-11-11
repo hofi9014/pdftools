@@ -57,6 +57,15 @@ export default function ToolGuide({ slug, locale }: { slug: string; locale: Loca
         publisher: { '@id': `${SITE}/#organization` },
       },
       {
+        // The same trail the page shows above the tool (components/Breadcrumbs.tsx): Home › tool.
+        '@type': 'BreadcrumbList',
+        '@id': `${url}#breadcrumbs`,
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: t('breadcrumb.home', locale), item: `${SITE}/${locale}` },
+          { '@type': 'ListItem', position: 2, name: tool, item: url },
+        ],
+      },
+      {
         '@type': 'HowTo',
         '@id': `${url}#howto`,
         name: heading,

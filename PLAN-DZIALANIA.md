@@ -145,6 +145,12 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
 - [ ] 3.1 **[WŁAŚCICIEL]** Search Console + Bing Webmaster: dane po tygodniu → korekta tytułów.
       2026-11-09: raport „Strony” otrzymany (745 zindeksowanych, 217 nie); z niego naprawione
       `/guides/<cokolwiek>` → 404 (było 200). Czekam na raport „Skuteczność” (zapytania, strony) i Bing.
+      2026-11-10: raport „Skuteczność” otrzymany (3 mies.: 2 kliknięcia, ~1255 wyświetleń, śr. pozycja
+      ~72). Zrobione: własne tytuły 40 narzędzi × 16 języków ze słowami z zapytań, opisy ≤160 znaków,
+      tytuł strony głównej od słów kluczowych, unikalne opisy stron informacyjnych i huba poradników,
+      BreadcrumbList na narzędziach i poprawny w artykułach, kategorie poradników z 1 artykułem
+      noindex + poza mapą strony. Dalej: treść „kiedy użyć” dla narzędzi z największym popytem,
+      nowe poradniki (kolejność stron, spłaszczanie, OpenOffice). Ponowny raport ok. 2026-12-08.
 - [ ] 3.2 Teksty i zrzuty do zgłoszeń: AlternativeTo, SaaSHub, Product Hunt (ja przygotowuję,
       **[WŁAŚCICIEL]** zakłada konta i wysyła).
 - [ ] 3.3 **[DECYZJA]** Porównanie „które narzędzia PDF wysyłają plik na serwer”: pomiar metodą

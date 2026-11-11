@@ -5,7 +5,7 @@ import { locales, t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { getCategoryLabel, categoryTool } from '@/lib/guide-categories';
 import { localeFromSegment, getLocaleSegment, isGuidesSegment } from '@/lib/guides-slugs';
-import { getArticlesByCategory, getAllCategories } from '@/lib/guides';
+import { getArticlesByCategory, getAllCategories, isCategoryIndexable } from '@/lib/guides';
 import CTATool from '@/components/guides/CTATool';
 import { socialMetadata, fullTitle } from '@/lib/metadata';
 
@@ -28,6 +28,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: label,
     description,
     alternates: { canonical: url(locale), languages },
+    // One article = a thin copy of it; links are still followed (lib/guides.ts).
+    ...(isCategoryIndexable(category) ? {} : { robots: { index: false, follow: true } }),
     ...socialMetadata({ locale, title: fullTitle(label), description, url: url(locale) }),
   };
 }

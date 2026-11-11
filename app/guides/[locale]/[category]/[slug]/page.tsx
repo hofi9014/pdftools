@@ -11,6 +11,8 @@ import CTATool from '@/components/guides/CTATool';
 import { validateGuides } from '@/lib/guides-validate';
 import { safeJsonLd } from '@/lib/safe-json-ld';
 import { socialMetadata, fullTitle } from '@/lib/metadata';
+import { getCategoryLabel } from '@/lib/guide-categories';
+import { categoryTool } from '@/lib/guide-category-tools';
 
 if (process.env.NODE_ENV === 'production') {
   const { errors } = validateGuides();
@@ -121,10 +123,13 @@ export default async function ArticlePage({
           __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
+            // The trail the page shows (components/Breadcrumbs.tsx): Home › Guides › category › article.
+            // Before, item 1 was https://optimapdf.com/ (a redirect) and the category was missing.
             itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'OptimaPDF', item: 'https://optimapdf.com/' },
+              { '@type': 'ListItem', position: 1, name: t('breadcrumb.home', locale), item: `https://optimapdf.com/${locale}` },
               { '@type': 'ListItem', position: 2, name: t('guides.breadcrumb', locale), item: `https://optimapdf.com/guides/${getLocaleSegment(locale)}` },
-              { '@type': 'ListItem', position: 3, name: title, item: canonical },
+              { '@type': 'ListItem', position: 3, name: categoryTool[category] ? t(`tool.${categoryTool[category]}`, locale) : getCategoryLabel(category, locale), item: `https://optimapdf.com/guides/${getLocaleSegment(locale)}/${category}` },
+              { '@type': 'ListItem', position: 4, name: title, item: canonical },
             ],
           }),
         }}
