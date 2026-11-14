@@ -1,8 +1,6 @@
 'use client';
 import { useState, useRef } from 'react';
-import JSZip from 'jszip';
-import { pdfToIRDeck } from '@/lib/client-pdf';
-import { renderIRToPptx } from '@/lib/client-pptx';
+import { pdfToIRDeck, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -13,9 +11,14 @@ import CloudFilePicker from '@/components/CloudFilePicker';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
+
+// Fetched once the page is idle, so the tool is ready (and cached for offline use) when a file is chosen.
+const preloadTool = () => Promise.all([preloadPdfEngine(), import('jszip'), import('@/lib/client-pptx')]);
 
 export default function PDFToPowerPoint({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadTool);
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -63,7 +66,7 @@ export default function PDFToPowerPoint({ locale: forcedLocale }: { locale?: Loc
       const batch = await runBatch(files, async (file) => {
         const { deck, warnings } = await pdfToIRDeck(file);
         warnCount += warnings.length;
-        return { name: file.name.replace(/\.pdf$/i, '.pptx'), data: await renderIRToPptx(deck) };
+        return { name: file.name.replace(/\.pdf$/i, '.pptx'), data: await (await import('@/lib/client-pptx')).renderIRToPptx(deck) };
       }, setProgress);
       setWarnings(warnCount);
       setFailed(batchFailures(batch));
@@ -85,6 +88,7 @@ export default function PDFToPowerPoint({ locale: forcedLocale }: { locale?: Loc
         a.click();
         URL.revokeObjectURL(url);
       } else {
+        const JSZip = (await import('jszip')).default;
         const zip = new JSZip();
         batchResults.forEach(r => zip.file(r.name, r.data));
         const zipBlob = await zip.generateAsync({ type: 'blob' });

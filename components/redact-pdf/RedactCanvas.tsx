@@ -1,6 +1,6 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { initPdfjs } from '@/lib/client-pdf';
+import { initPdfjs } from '@/lib/client-pdf-lazy';
 import type { RedactRegion } from '@/lib/pdf-raster';
 
 interface RedactCanvasProps {

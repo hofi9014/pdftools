@@ -2,16 +2,20 @@
 import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
-import { textDocumentToPdf } from '@/lib/office-document-to-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
+
+// Fetched once the page is idle, so the tool is ready (and cached for offline use) when a file is chosen.
+const preloadTool = () => Promise.all([import('@/lib/office-document-to-pdf')]);
 
 export default function OpenOfficeToPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadTool);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -39,7 +43,7 @@ export default function OpenOfficeToPDF({ locale: forcedLocale }: { locale?: Loc
 
     try {
       // Positioned layout, then the full ODT reader, then plain text — lib/office-document-to-pdf.ts.
-      const { blob, fallbackUsed } = await textDocumentToPdf(file);
+      const { blob, fallbackUsed } = await (await import('@/lib/office-document-to-pdf')).textDocumentToPdf(file);
       processedBlobRef.current = blob;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

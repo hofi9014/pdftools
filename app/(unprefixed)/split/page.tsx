@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef } from 'react';
-import { splitPDF, splitByRanges, splitBySelection, downloadZip } from '@/lib/client-pdf';
+import { splitPDF, splitByRanges, splitBySelection, downloadZip, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import PagePreview from '@/components/PagePreview';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
@@ -10,10 +10,12 @@ import CloudFilePicker from '@/components/CloudFilePicker';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 export default function SplitPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const { locale: detectedLocale } = useLocale();
   const locale = forcedLocale || detectedLocale;
+  useIdlePreload(preloadPdfEngine);
   const [file, setFile] = useState<File | null>(null);
   const [splitMode, setSplitMode] = useState('fixed');
   const [ranges, setRanges] = useState('');

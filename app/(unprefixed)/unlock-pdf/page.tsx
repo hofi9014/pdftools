@@ -2,16 +2,18 @@
 import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
-import { unlockPdfClient } from '@/lib/client-pdf';
+import { unlockPdfClient, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import { useLocale } from '@/lib/locale-context';
 import { errorText } from '@/lib/error-text';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 export default function UnlockPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadPdfEngine);
   const [file, setFile] = useState<File | null>(null);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

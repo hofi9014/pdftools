@@ -5,12 +5,13 @@ import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import { runBatch, batchFailures, type BatchFailure } from '@/lib/batch';
 import BatchFailures from '@/components/BatchFailures';
-import { downloadZip } from '@/lib/client-pdf';
+import { downloadZip, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 const LANGUAGES = [
   { value: 'pol', labelKey: 'page.ocr.lang_polish' },
@@ -59,6 +60,7 @@ async function downloadBlob(blob: Blob, name: string) {
 
 export default function OCRPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadPdfEngine);
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);

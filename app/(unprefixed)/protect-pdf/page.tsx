@@ -2,16 +2,18 @@
 import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
-import { protectPdfClient } from '@/lib/client-pdf';
+import { protectPdfClient, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 export default function ProtectPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadPdfEngine);
   const [file, setFile] = useState<File | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

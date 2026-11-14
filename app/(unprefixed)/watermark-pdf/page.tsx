@@ -1,6 +1,6 @@
  'use client';
 import { useState, useRef } from 'react';
-import { addWatermark, downloadPdf } from '@/lib/client-pdf';
+import { addWatermark, downloadPdf, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import { useLocale } from '@/lib/locale-context';
@@ -9,6 +9,7 @@ import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 // Grey (the previous fixed colour, now the default), red, blue, green, black, white (for dark pages).
 const WATERMARK_COLORS = ['#808080', '#E53935', '#1E63D6', '#2E7D32', '#000000', '#FFFFFF'];
@@ -17,6 +18,7 @@ const WATERMARK_ROTATION = 45;
 
 export default function WatermarkPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadPdfEngine);
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState(() => t('page.watermark.preset_confidential', locale));
   const [opacity, setOpacity] = useState('50');

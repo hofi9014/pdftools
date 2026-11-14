@@ -4,18 +4,18 @@ import Image from 'next/image';
 import SignatureCanvas from 'react-signature-canvas';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
-import { signPdfClient } from '@/lib/client-pdf';
+import { signPdfClient, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import { useLocale } from '@/lib/locale-context';
 import { t, isRtlLocale, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import PadesSignForm from '@/components/sign-pdf/PadesSignForm';
 import ToolGlyph from '@/components/ToolGlyph';
 import { errorText } from '@/lib/error-text';
-
-
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 export default function SignPdf({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadPdfEngine);
   const [mode, setMode] = useState<'visual' | 'digital'>('visual');
 
   const presets = [

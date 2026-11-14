@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef } from 'react';
-import { redactPdfRaster, downloadPdf } from '@/lib/client-pdf';
+import { redactPdfRaster, downloadPdf, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import RegionSelector from '@/components/redact-pdf/RegionSelector';
 import type { RedactRegion } from '@/lib/pdf-raster';
 import CloudFileSaver from '@/components/CloudFileSaver';
@@ -11,9 +11,11 @@ import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 export default function RedactPdf({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadPdfEngine);
   const [file, setFile] = useState<File | null>(null);
   const [regions, setRegions] = useState<RedactRegion[]>([]);
   const [loading, setLoading] = useState(false);

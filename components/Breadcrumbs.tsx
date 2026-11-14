@@ -30,6 +30,11 @@ function pathSegments(pathname: string): string[] {
   });
 }
 
+/** /guides/{hub}/{category}/{slug} — the only pages whose last crumb is a guide's title. */
+export function isGuideArticlePath(segments: string[]): boolean {
+  return segments[0] === 'guides' && segments.length === 4;
+}
+
 export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale }) {
   const pathname = usePathname();
   const locale = forcedLocale ?? useHydrationSafeLocale();
@@ -39,8 +44,13 @@ export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale 
   // not imported statically here — so this site-wide component (rendered on every page)
   // doesn't bundle all guide content for pages that never show one. Populated
   // asynchronously; the slug-derived fallback below renders immediately in the meantime.
+  // Only an article address (/guides/{hub}/{category}/{slug}) has a title to look up — measured
+  // 2026-11-12: running this on every page fetched all guides in 16 languages (636 kB, 171 kB
+  // brotli) on every page of the site.
   const [guideTitles, setGuideTitles] = useState<Record<string, string>>({});
+  const onGuideArticle = isGuideArticlePath(segments);
   useEffect(() => {
+    if (!onGuideArticle) return;
     let cancelled = false;
     (async () => {
       const { getAllArticles } = await import('@/lib/guides');
@@ -57,7 +67,7 @@ export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale 
       setGuideTitles(found);
     })();
     return () => { cancelled = true; };
-  }, [pathname, locale]);
+  }, [pathname, locale, onGuideArticle]);
 
   if (segments.length === 0) return null;
 

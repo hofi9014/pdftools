@@ -1,7 +1,6 @@
 'use client';
 import { useState, useRef } from 'react';
-import JSZip from 'jszip';
-import { compressPDFClient } from '@/lib/client-pdf';
+import { compressPDFClient, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import { useLocale } from '@/lib/locale-context';
@@ -13,9 +12,14 @@ import BatchFailures from '@/components/BatchFailures';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
+
+// Fetched once the page is idle, so the tool is ready (and cached for offline use) when a file is chosen.
+const preloadTool = () => Promise.all([preloadPdfEngine(), import('jszip')]);
 
 export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadTool);
   const [files, setFiles] = useState<File[]>([]);
   const [level, setLevel] = useState('recommended');
   const [loading, setLoading] = useState(false);
@@ -88,6 +92,7 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
         a.click();
         URL.revokeObjectURL(url);
       } else {
+        const JSZip = (await import('jszip')).default;
         const zip = new JSZip();
         batchResults.forEach(r => zip.file(r.name, r.data));
         const zipBlob = await zip.generateAsync({ type: 'blob' });

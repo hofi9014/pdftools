@@ -2,16 +2,20 @@
 import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
-import { spreadsheetToPdf } from '@/lib/office-document-to-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
+
+// Fetched once the page is idle, so the tool is ready (and cached for offline use) when a file is chosen.
+const preloadTool = () => Promise.all([import('@/lib/office-document-to-pdf')]);
 
 export default function ExcelToPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadTool);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -43,7 +47,7 @@ export default function ExcelToPDF({ locale: forcedLocale }: { locale?: Locale }
     try {
       // The real sheet (grid, merged cells, widths, dates and times in their format); the plain-text
       // dump only as a fallback — lib/office-document-to-pdf.ts.
-      const { blob } = await spreadsheetToPdf(file);
+      const { blob } = await (await import('@/lib/office-document-to-pdf')).spreadsheetToPdf(file);
       processedBlobRef.current = blob;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

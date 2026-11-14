@@ -45,7 +45,8 @@ const xlsx = () => Object.assign(new Blob([readFileSync(join(ROOT, 'test-fixture
 console.log('=== the page uses the spreadsheet renderer, officeToPdf only as fallback ===');
 // Since 2026-10-27 the conversion lives in lib/office-document-to-pdf.ts, shared with Word to PDF.
 const pageSrc = readFileSync(join(ROOT, 'app/(unprefixed)/excel-to-pdf/page.tsx'), 'utf8');
-check(/await spreadsheetToPdf\(file\)/.test(pageSrc), 'the page converts through spreadsheetToPdf');
+// Since 2026-11-12 the module is imported on first use: (await import('@/lib/office-document-to-pdf')).spreadsheetToPdf(file).
+check(/import\('@\/lib\/office-document-to-pdf'\)\)\.spreadsheetToPdf\(file\)/.test(pageSrc), 'the page converts through spreadsheetToPdf');
 const page = readFileSync(join(ROOT, 'lib/office-document-to-pdf.ts'), 'utf8');
 check(/await xlsxToIR\(file\)/.test(page) && /renderSpreadsheetIRToPdf\(ir\)/.test(page), 'converts through xlsxToIR → renderSpreadsheetIRToPdf');
 check(/catch \(irErr\)[\s\S]{0,200}officeToPdf\(file\)/.test(page), 'falls back to officeToPdf if the spreadsheet reader fails');

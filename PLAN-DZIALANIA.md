@@ -108,9 +108,13 @@ narzędzia; potem języki. Rzeczy wymagające decyzji albo kont właściciela s�
 - [ ] 1.3 Kompresja do docelowego rozmiaru („zmniejsz do 1 / 2 / 5 MB / własny”): zmierzyć, co
       dziś daje każdy poziom na prawdziwych plikach, potem tryb, który dobiera poziom i jakość
       obrazów do celu; uczciwy komunikat, gdy cel jest nieosiągalny (np. sam tekst).
-- [ ] 1.4 Lżejsze pierwsze wczytanie stron narzędzi: zmierzyć, które biblioteki ładują się
+- [x] 1.4 (2026-11-12) Lżejsze pierwsze wczytanie stron narzędzi: zmierzyć, które biblioteki ładują się
       przed wyborem pliku (pdf-lib, pdf.js, jszip…), przenieść je do importu dynamicznego;
       cel liczbowy po pomiarze. Bez pogorszenia pracy offline (service worker).
+      **ZROBIONE:** skrypty w HTML strony narzędzia 1,28–1,43 MB → 0,67–0,72 MB (silnik przez
+      `lib/client-pdf-lazy.ts`, pobierany w tle po wczytaniu — offline jak dotąd); strona główna i FAQ
+      po wczytaniu 846 → 403 kB brotli (koniec pobierania silników wszystkich narzędzi i wszystkich
+      poradników na każdej stronie); `test:lazy-pdf-engine`, `test:e2e-initial-js-weight`.
 - [x] 1.5 (2026-11-07, zatwierdzone przez właściciela z podglądu) Emoji w ikonach narzędzi (`lib/icons.tsx`: 🗜️ 🔄 ✂️ 🔒 …) wyglądają inaczej
       na Windows, Androidzie i iPhonie. Ikony są na liście „nie zmieniać” z przeprojektowania,
       więc przygotuję podgląd wersji z rysunkami SVG w stylu PdfBadge obok obecnych — zmiana
