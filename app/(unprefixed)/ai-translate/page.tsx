@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { extractTextFromPDF } from '@/lib/client-pdf';
+import { extractTextFromPDF, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import { translateText } from '@/lib/client-ai';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
@@ -10,6 +10,7 @@ import CloudFilePicker from '@/components/CloudFilePicker';
 import AiNotice from '@/components/AiNotice';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 const LANG_KEYS = [
   { value: 'angielski', key: 'lang.english' },
@@ -27,6 +28,7 @@ const LANG_KEYS = [
 
 export default function AiTranslate({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadPdfEngine);
   const LANGUAGES = LANG_KEYS.map(l => ({ value: l.value, label: t(l.key, locale) }));
   const [file, setFile] = useState<File | null>(null);
   const [targetLang, setTargetLang] = useState('angielski');

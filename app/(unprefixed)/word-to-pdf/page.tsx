@@ -2,13 +2,13 @@
 import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
-import { officeDocumentToPdf } from '@/lib/office-document-to-pdf';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 // FINDING (2026-09-21) — .doc/.xls/.ppt are the legacy OLE Compound File Binary Format, not a
 // ZIP archive at all (unlike their modern .docx/.xlsx/.pptx successors), so officeToPdf's
@@ -28,8 +28,12 @@ const FORMATS = [
   { id: 'openoffice', badge: 'ODT' as const, label: 'OpenOffice', formats: 'ODT, ODS, ODP', exts: ['.odt', '.ods', '.odp'], mimes: [] },
 ];
 
+// Fetched once the page is idle, so the tool is ready (and cached for offline use) when a file is chosen.
+const preloadTool = () => Promise.all([import('@/lib/office-document-to-pdf')]);
+
 export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadTool);
   const [file, setFile] = useState<File | null>(null);
   const [format, setFormat] = useState('word');
   const [loading, setLoading] = useState(false);
@@ -73,7 +77,7 @@ export default function WordToPDF({ locale: forcedLocale }: { locale?: Locale } 
 
     try {
       // Every tab converts through the same engines as the dedicated pages (lib/office-document-to-pdf.ts).
-      const { blob, fallbackUsed } = await officeDocumentToPdf(file);
+      const { blob, fallbackUsed } = await (await import('@/lib/office-document-to-pdf')).officeDocumentToPdf(file);
       processedBlobRef.current = blob;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

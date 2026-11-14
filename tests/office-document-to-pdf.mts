@@ -44,9 +44,11 @@ const asFile = (buf: Uint8Array, name: string) => Object.assign(new Blob([buf]),
 console.log('=== the three pages convert through the shared module ===');
 const src = (p: string) => readFileSync(join(ROOT, 'app', '(unprefixed)', p, 'page.tsx'), 'utf8');
 const word = src('word-to-pdf'), excel = src('excel-to-pdf'), oo = src('openoffice-to-pdf');
-check(/await officeDocumentToPdf\(file\)/.test(word), 'Word to PDF (every tab) uses officeDocumentToPdf');
-check(/await spreadsheetToPdf\(file\)/.test(excel), 'Excel to PDF uses spreadsheetToPdf');
-check(/await textDocumentToPdf\(file\)/.test(oo), 'OpenOffice to PDF uses textDocumentToPdf');
+// The module is imported on first use since 2026-11-12: (await import('@/lib/office-document-to-pdf')).fn(file).
+const uses = (code: string, fn: string) => new RegExp(String.raw`import\('@\/lib\/office-document-to-pdf'\)\)\.${fn}\(file\)`).test(code);
+check(uses(word, 'officeDocumentToPdf'), 'Word to PDF (every tab) uses officeDocumentToPdf');
+check(uses(excel, 'spreadsheetToPdf'), 'Excel to PDF uses spreadsheetToPdf');
+check(uses(oo, 'textDocumentToPdf'), 'OpenOffice to PDF uses textDocumentToPdf');
 for (const [name, s] of [['word-to-pdf', word], ['excel-to-pdf', excel], ['openoffice-to-pdf', oo]] as const) {
   check(!/officeToPdf\(|xlsxToIR\(|docxToIR\(|odtToIR\(/.test(s), `${name}: no converter of its own left in the page`);
 }

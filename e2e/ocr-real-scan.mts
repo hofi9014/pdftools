@@ -20,6 +20,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { PDFDocument, degrees } from 'pdf-lib';
+import { t } from '../lib/i18n';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, '..');
@@ -111,7 +112,8 @@ async function runOcr(page: Page, scan: Uint8Array, name: string): Promise<{ tex
   const text = await page.inputValue('#ocr-result');
   const [download] = await Promise.all([
     page.waitForEvent('download', { timeout: 60000 }),
-    page.locator('button', { hasText: '📄' }).click(),
+    // The button had a 📄 emoji until 2026-11-08 (emoji replaced site-wide); match its label instead.
+    page.locator('button', { hasText: t('page.ocr.download_pdf', 'pl') }).click(),
   ]);
   const path = await download.path();
   return { text, pdf: new Uint8Array(readFileSync(path!)) };

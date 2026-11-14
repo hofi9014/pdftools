@@ -4,11 +4,20 @@ import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
-import PdfEditor from '@/components/edit-pdf/PdfEditor';
+import dynamic from 'next/dynamic';
 import ToolGlyph from '@/components/ToolGlyph';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
+import { preloadPdfEngine } from '@/lib/client-pdf-lazy';
+
+// The editor (pdf.js rendering, pdf-lib export, fonts) is drawn only after a file is chosen.
+const PdfEditor = dynamic(() => import('@/components/edit-pdf/PdfEditor'), { ssr: false });
+
+// Fetched once the page is idle, so the tool is ready (and cached for offline use) when a file is chosen.
+const preloadTool = () => Promise.all([preloadPdfEngine(), import('@/components/edit-pdf/PdfEditor')]);
 
 export default function EditPdfPage({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadTool);
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState('');

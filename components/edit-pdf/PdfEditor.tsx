@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
-import { initPdfjs, editPdfClient, type PdfEditElement } from '@/lib/client-pdf';
+import { initPdfjs, editPdfClient, type PdfEditElement } from '@/lib/client-pdf-lazy';
 import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { extractTextBlocks } from '@/lib/pdf/extractTextBlocks';
 import { exportEditedPdf, type TextEdit } from '@/lib/pdf/exportEditedPdf';

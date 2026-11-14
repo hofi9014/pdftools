@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { extractTextFromPDF } from '@/lib/client-pdf';
+import { extractTextFromPDF, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import { askAI } from '@/lib/client-ai';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
@@ -12,6 +12,7 @@ import { MAX_CHAT_TEXT_LENGTH } from '@/lib/ai-limit';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -20,6 +21,7 @@ interface Message {
 
 export default function AIChat({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadPdfEngine);
   const [file, setFile] = useState<File | null>(null);
   const [extractedText, setExtractedText] = useState('');
   const [loading, setLoading] = useState(false);

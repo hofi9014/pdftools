@@ -1,6 +1,6 @@
 'use client';
 import { useState, useCallback } from 'react';
-import { extractTextFromPDF } from '@/lib/client-pdf';
+import { extractTextFromPDF, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import { summarizeText } from '@/lib/client-ai';
 import { useLocale } from '@/lib/locale-context';
 import { t, isRtlLocale, type Locale } from '@/lib/i18n';
@@ -8,9 +8,11 @@ import { apiErrorText } from '@/lib/api-error';
 import { getToolIcon } from '@/lib/icons';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import AiNotice from '@/components/AiNotice';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 export default function AiSummary({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadPdfEngine);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState('');

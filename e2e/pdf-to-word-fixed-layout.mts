@@ -29,6 +29,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import JSZip from 'jszip';
 import { findOffice, convertToPdf, saveAsOdt, stopOffice } from './helpers/openoffice.mts';
 import { findMsOffice, wordOpen } from './helpers/msoffice.mts';
+import { t } from '../lib/i18n';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, '..');
@@ -182,7 +183,8 @@ async function convert(tool: 'pdf-to-word' | 'pdf-to-openoffice', file: string, 
   if (mode) await page.locator(`[data-layout-mode="${mode}"]`).click();
   const [download] = await Promise.all([
     page.waitForEvent('download', { timeout: 180000 }),
-    page.locator('button', { hasText: tool === 'pdf-to-word' ? '📝' : '📄' }).last().click(),
+    // The buttons had 📝/📄 emoji until 2026-11-08 (emoji replaced site-wide); match their labels instead.
+    page.locator('button', { hasText: t(tool === 'pdf-to-word' ? 'page.word.btn' : 'page.pdf2openoffice.btn', 'pl') }).last().click(),
   ]);
   const bytes = new Uint8Array(readFileSync((await download.path())!));
   const used = await page.locator('#layout-used').getAttribute('data-layout', { timeout: 15000 }).catch(() => null);

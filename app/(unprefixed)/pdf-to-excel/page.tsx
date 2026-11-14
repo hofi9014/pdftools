@@ -1,8 +1,6 @@
 'use client';
 import { useState, useRef } from 'react';
-import JSZip from 'jszip';
-import { pdfToIRSpreadsheet } from '@/lib/client-pdf';
-import { renderIRSpreadsheetToXlsx } from '@/lib/client-pdf-docx';
+import { pdfToIRSpreadsheet, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import { runBatch, batchFailures, type BatchFailure } from '@/lib/batch';
 import { useLocale } from '@/lib/locale-context';
 import { t, isRtlLocale, type Locale } from '@/lib/i18n';
@@ -13,9 +11,14 @@ import BatchFailures from '@/components/BatchFailures';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
+
+// Fetched once the page is idle, so the tool is ready (and cached for offline use) when a file is chosen.
+const preloadTool = () => Promise.all([preloadPdfEngine(), import('jszip'), import('@/lib/client-pdf-docx')]);
 
 export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadTool);
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -63,7 +66,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
       const batch = await runBatch(files, async (file) => {
         const { spreadsheet, warnings } = await pdfToIRSpreadsheet(file);
         warnCount += warnings.length;
-        return { name: file.name.replace(/\.pdf$/i, '.xlsx'), data: await renderIRSpreadsheetToXlsx(spreadsheet) };
+        return { name: file.name.replace(/\.pdf$/i, '.xlsx'), data: await (await import('@/lib/client-pdf-docx')).renderIRSpreadsheetToXlsx(spreadsheet) };
       }, setProgress);
       setWarnings(warnCount);
       setFailed(batchFailures(batch));
@@ -87,6 +90,7 @@ export default function PdfToExcel({ locale: forcedLocale }: { locale?: Locale }
         a.click();
         URL.revokeObjectURL(url);
       } else {
+        const JSZip = (await import('jszip')).default;
         const zip = new JSZip();
         batchResults.forEach(r => zip.file(r.name, r.data));
         const zipBlob = await zip.generateAsync({ type: 'blob' });

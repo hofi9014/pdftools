@@ -1,7 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { extractImagesFromPdf } from '@/lib/client-pdf';
-import JSZip from 'jszip';
+import { extractImagesFromPdf, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -12,9 +11,14 @@ import CloudFilePicker from '@/components/CloudFilePicker';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
+
+// Fetched once the page is idle, so the tool is ready (and cached for offline use) when a file is chosen.
+const preloadTool = () => Promise.all([preloadPdfEngine(), import('jszip')]);
 
 export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadTool);
   const [files, setFiles] = useState<File[]>([]);
   const [format, setFormat] = useState<'png' | 'jpeg' | 'webp'>('jpeg');
   const [scale, setScale] = useState('2');
@@ -92,6 +96,7 @@ export default function PdfToImages({ locale: forcedLocale }: { locale?: Locale 
       if (allResults.length === 0) throw new Error(t('page.jpg.no_results', locale));
       setImages(allResults);
 
+      const JSZip = (await import('jszip')).default;
       const zip = new JSZip();
       allResults.forEach(img => {
         // Safe: fileIdx is always the loop index i from the files array above.

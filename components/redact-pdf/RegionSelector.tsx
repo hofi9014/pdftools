@@ -1,6 +1,6 @@
 'use client';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getPageCount } from '@/lib/client-pdf';
+import { getPageCount } from '@/lib/client-pdf-lazy';
 import type { RedactRegion } from '@/lib/pdf-raster';
 import RedactCanvas from './RedactCanvas';
 import { t } from '@/lib/i18n';

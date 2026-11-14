@@ -35,7 +35,8 @@ const src = readFileSync(join(here, '..', 'app', '(unprefixed)', 'ocr-pdf', 'pag
 
 check(!/if \(i === 0\) setPdfData/.test(src), 'the "only keep file #0" pattern is gone from source');
 check(!/import JSZip from 'jszip'/.test(src), 'the dead, never-used JSZip import is gone');
-check(src.includes("import { downloadZip } from '@/lib/client-pdf'"), 'imports the shared, already-tested downloadZip helper instead');
+// Since 2026-11-12 through lib/client-pdf-lazy.ts (the same function, loaded on first use).
+check(/import \{[^}]*\bdownloadZip\b[^}]*\} from '@\/lib\/client-pdf-lazy'/.test(src), 'imports the shared, already-tested downloadZip helper instead');
 
 // Every successfully recognised file must keep its OCR'd PDF (no `if (i === 0)` guard). The
 // loop now runs through runBatch, so each file returns its own PDF and all are collected.

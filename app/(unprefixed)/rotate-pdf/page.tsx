@@ -1,9 +1,8 @@
 'use client';
 import { useState, useRef } from 'react';
-import { rotatePDF, downloadPdf } from '@/lib/client-pdf';
+import { rotatePDF, downloadPdf, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import CloudFileSaver from '@/components/CloudFileSaver';
-import JSZip from 'jszip';
 import { useLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { getToolIcon } from '@/lib/icons';
@@ -12,9 +11,14 @@ import BatchFailures from '@/components/BatchFailures';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
+
+// Fetched once the page is idle, so the tool is ready (and cached for offline use) when a file is chosen.
+const preloadTool = () => Promise.all([preloadPdfEngine(), import('jszip')]);
 
 export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadTool);
   const [files, setFiles] = useState<File[]>([]);
   const [rotation, setRotation] = useState<'90' | '180' | '270'>('90');
   const [loading, setLoading] = useState(false);
@@ -66,6 +70,7 @@ export default function RotatePDF({ locale: forcedLocale }: { locale?: Locale } 
         processedBlobRef.current = blob;
         downloadFileNameRef.current = results[0]!.name;
       } else {
+        const JSZip = (await import('jszip')).default;
         const zip = new JSZip();
         results.forEach(r => zip.file(r.name, r.data));
         const zipBlob = await zip.generateAsync({ type: 'blob' });

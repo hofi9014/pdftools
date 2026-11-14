@@ -2,7 +2,7 @@
 import { useState, useRef } from 'react';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
-import { pdfToOdt } from '@/lib/client-pdf';
+import { pdfToOdt, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import { pdfToOdtDocument, type PdfLayoutMode, type ResolvedPdfLayout } from '@/lib/pdf/pdfDocumentExport';
 import LayoutModeSelect from '@/components/LayoutModeSelect';
 import { useLocale } from '@/lib/locale-context';
@@ -11,9 +11,11 @@ import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 export default function PDFToOpenOffice({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadPdfEngine);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

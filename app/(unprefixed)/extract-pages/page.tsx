@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef } from 'react';
-import { extractPages, downloadPdf } from '@/lib/client-pdf';
+import { extractPages, downloadPdf, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import PagePreview from '@/components/PagePreview';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import CloudFilePicker from '@/components/CloudFilePicker';
@@ -10,9 +10,11 @@ import { getToolIcon } from '@/lib/icons';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 export default function ExtractPages({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadPdfEngine);
   const [file, setFile] = useState<File | null>(null);
   const [selectedPages, setSelectedPages] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);

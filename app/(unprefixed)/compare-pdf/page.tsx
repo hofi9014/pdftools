@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { comparePdfTextClient, comparePdfVisual, comparePdfSimilarity, UNRELATED_DOCUMENTS_THRESHOLD, type PageDiff } from '@/lib/client-pdf';
+import { comparePdfTextClient, comparePdfVisual, comparePdfSimilarity, UNRELATED_DOCUMENTS_THRESHOLD, type PageDiff, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import { getToolIcon } from '@/lib/icons';
 import { useLocale } from '@/lib/locale-context';
 import { errorText } from '@/lib/error-text';
@@ -8,6 +8,7 @@ import { t, type Locale } from '@/lib/i18n';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
 
 type Mode = 'text' | 'visual';
 
@@ -19,6 +20,7 @@ interface DiffItem {
 
 export default function ComparePDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadPdfEngine);
   const [mode, setMode] = useState<Mode>('text');
   const [fileA, setFileA] = useState<File | null>(null);
   const [fileB, setFileB] = useState<File | null>(null);

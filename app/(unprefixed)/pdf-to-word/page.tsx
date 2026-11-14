@@ -1,7 +1,6 @@
 'use client';
 import { useState, useRef } from 'react';
-import JSZip from 'jszip';
-import { pdfToWord } from '@/lib/client-pdf';
+import { pdfToWord, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import { pdfToDocxDocument, type PdfLayoutMode, type ResolvedPdfLayout } from '@/lib/pdf/pdfDocumentExport';
 import LayoutModeSelect from '@/components/LayoutModeSelect';
 import { useLocale } from '@/lib/locale-context';
@@ -14,9 +13,14 @@ import CloudFilePicker from '@/components/CloudFilePicker';
 import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
+import { useIdlePreload } from '@/hooks/useIdlePreload';
+
+// Fetched once the page is idle, so the tool is ready (and cached for offline use) when a file is chosen.
+const preloadTool = () => Promise.all([preloadPdfEngine(), import('jszip')]);
 
 export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
+  useIdlePreload(preloadTool);
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -97,6 +101,7 @@ export default function PDFToWord({ locale: forcedLocale }: { locale?: Locale } 
         a.click();
         URL.revokeObjectURL(url);
       } else {
+        const JSZip = (await import('jszip')).default;
         const zip = new JSZip();
         batchResults.forEach(r => zip.file(r.name, r.data));
         const zipBlob = await zip.generateAsync({ type: 'blob' });

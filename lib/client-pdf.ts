@@ -5234,8 +5234,7 @@ export function vocabularySimilarity(textA: string, textB: string): number | nul
   return common / (a.size + b.size - common);
 }
 
-/** Below this, the two files are treated as unrelated documents rather than two versions. */
-export const UNRELATED_DOCUMENTS_THRESHOLD = 0.2;
+export { UNRELATED_DOCUMENTS_THRESHOLD } from './pdf/compareThreshold';
 
 export async function comparePdfSimilarity(fileA: File, fileB: File): Promise<number | null> {
   return vocabularySimilarity(await extractTextFromPDF(fileA), await extractTextFromPDF(fileB));

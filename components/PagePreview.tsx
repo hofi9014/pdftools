@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
-import { initPdfjs } from '@/lib/client-pdf';
+import { initPdfjs } from '@/lib/client-pdf-lazy';
 
 interface PagePreviewProps {
   file: File;

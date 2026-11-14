@@ -1,6 +1,6 @@
 'use client';
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { initPdfjs } from '@/lib/client-pdf';
+import { initPdfjs } from '@/lib/client-pdf-lazy';
 
 export interface PdfPageInfo {
   pageNum: number
