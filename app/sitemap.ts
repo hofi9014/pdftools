@@ -10,7 +10,7 @@ import { tools, toolPath } from '@/lib/tools';
 
 // Every info page that exists under app/[locale]/ (the unprefixed /privacy etc. only 307-redirect
 // to a locale by Accept-Language — see proxy.ts — so they must not be listed).
-const infoPages = ['privacy', 'faq', 'help', 'rodo', 'security', 'terms', 'wsparcie', 'nasze-zasady'];
+const infoPages = ['privacy', 'faq', 'help', 'rodo', 'security', 'terms', 'wsparcie', 'nasze-zasady', 'where-your-file-goes'];
 
 /** hreflang map for /{locale}/{path}: every locale plus x-default → English, matching lib/metadata.ts. */
 function localeAlternates(base: string, path: string): Record<string, string> {

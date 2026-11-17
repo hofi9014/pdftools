@@ -15,7 +15,7 @@ export default function TermsView({ locale: forcedLocale, content }: { locale?: 
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12" dir={isRtl ? 'rtl' : 'ltr'}>
-      <Link href={homePath(locale)} className="text-sm text-[var(--coffee-accent-ink)] hover:underline mb-4 inline-block">&larr; {t('back.to_home', locale)}</Link>
+      <Link href={homePath(locale)} className="text-sm text-[var(--coffee-accent-ink)] hover:underline mb-4 inline-block">{t('back.to_home', locale)}</Link>
       <h1 className="text-3xl font-bold mb-2">{data.title}</h1>
       <p className="text-sm text-gray-500 mb-8">{data.updated}</p>
       {data.sections.map((s, i) => (

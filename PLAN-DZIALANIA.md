@@ -161,7 +161,7 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
       cytowane etykiety w 8 starszych poradnikach; test `test:guide-quoted-labels`.
 - [ ] 3.2 Teksty i zrzuty do zgłoszeń: AlternativeTo, SaaSHub, Product Hunt (ja przygotowuję,
       **[WŁAŚCICIEL]** zakłada konta i wysyła).
-- [ ] 3.3 **[DECYZJA]** Porównanie „które narzędzia PDF wysyłają plik na serwer”: pomiar metodą
+- [x] 3.3 **[DECYZJA]** Porównanie „które narzędzia PDF wysyłają plik na serwer”: pomiar metodą
       z `e2e/no-upload.mts` na syntetycznym pliku, wyłącznie fakty możliwe do powtórzenia;
       publikacja dopiero po akceptacji treści.
       2026-11-17 POMIAR ZROBIONY (zgoda właściciela; plik syntetyczny ~300 kB z unikalnym znacznikiem,
@@ -171,7 +171,10 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
       w przeglądarce do ZIP przed wysłaniem), OptaPDF (optapdf.com). Nie wysłany: OptimaPDF (32 kB
       samych żądań strony). Adobe: niezmierzalny — blokuje przeglądarki automatyczne („Access Denied”),
       ochrony nie obchodzimy. Kontrola: ten sam plik wysłany celowo z OptimaPDF został wykryty.
-      Skrypt: `test-output/_work/competitor-upload.mts` (roboczy). Czeka na decyzję o publikacji.
+      2026-11-17 OPUBLIKOWANE (decyzja właściciela: strona porównania z nazwami; Adobe usunięte z listy na
+      jego prośbę): `/{locale}/where-your-file-goes` w 16 językach, link w stopce i w sekcji „Sprawdź sam”
+      na stronie głównej, wpis w `/llms.txt`; kod pomiaru publicznie w `scripts/measure-upload-comparison.mts`;
+      test `test:upload-comparison-page`. Przed zmianą wiersza: uruchomić skrypt ponownie i zmienić datę.
 - [ ] 3.4 Kolejne poradniki do narzędzi bez poradnika (po danych z Search Console).
       2026-11-11: dodane kolejność stron, spłaszczanie, PDF do OpenOffice, PDF do SVG (19 poradników).
 - [x] 3.5 (2026-11-02, właściciel; sprawdzone na produkcji) `www.optimapdf.com` przekierowuje stale (308)

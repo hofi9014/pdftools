@@ -30,6 +30,7 @@ export default function Footer({ locale: forcedLocale }: { locale?: Locale }) {
     { labelKey: 'nav.privacy', href: toolPath('privacy', locale) },
     { labelKey: 'rodo.link', href: toolPath('rodo', locale) },
     { labelKey: 'security.link', href: toolPath('security', locale) },
+    { labelKey: 'nav.upload_check', href: locale ? `/${locale}/where-your-file-goes` : '/where-your-file-goes' },
     { labelKey: 'nav.guide', href: toolPath('guide', locale) },
   ];
 

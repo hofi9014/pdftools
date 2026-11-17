@@ -1,6 +1,6 @@
 // fr translations. A key missing here falls back to en (lib/i18n.ts).
 const fr: Record<string, string> = {
-  'back.to_home': '← Back to homepage',
+  'back.to_home': "← Retour à l'accueil",
   'breadcrumb.home': 'Accueil',
   'btn.clear': 'Effacer',
   'btn.download': 'Télécharger',
@@ -108,6 +108,7 @@ const fr: Record<string, string> = {
   'home.verify_step2': "Traitez un fichier avec un outil, par exemple compressez un PDF.",
   'home.verify_step3': "Vous verrez au plus le téléchargement du code de la page (requêtes GET). Envoyer votre fichier serait une requête POST de la taille du fichier — il n’y en a aucune.",
   'home.verify_note': "Les exceptions sont les 4 outils marqués d’un astérisque plus haut. Si vous acceptez les statistiques, vous verrez aussi de petites requêtes vers Google Analytics, sans votre fichier.",
+  'home.verify_compare': "Comparatif : quels services PDF envoient votre fichier à un serveur",
   'seo.title': '{tool} en ligne gratuitement',
   'seo.desc_local': '{desc}. Gratuit, sans inscription et sans filigrane. Le fichier est traité dans votre navigateur et n\'arrive jamais sur notre serveur.',
   'seo.desc_ai': '{desc}. Gratuit et sans inscription. Le fichier reste dans votre navigateur ; seul le texte qui en est extrait est envoyé au service d\'IA.',
@@ -203,6 +204,7 @@ const fr: Record<string, string> = {
   'nav.privacy': 'Politique de confidentialité',
   'nav.rules': 'Nos Principes',
   'nav.support': 'Faire un don',
+  'nav.upload_check': "Où va votre fichier",
   'nav.tools': 'Outils',
   'preview.heading.delete': 'Sélectionnez les pages à supprimer',
   'preview.heading.extract': 'Sélectionnez les pages à extraire',

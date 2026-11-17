@@ -250,6 +250,7 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
             </h2>
             <p className="mt-3 leading-relaxed" style={{ color: 'var(--coffee-text-secondary)' }}>{t('home.verify_intro', locale)}</p>
             <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--coffee-text-tertiary)' }}>{t('home.verify_note', locale)}</p>
+            <a href={`/${locale}/where-your-file-goes`} className="link-accent mt-3 inline-block font-semibold hover:underline">{t('home.verify_compare', locale)}</a>
           </div>
           <ol className="space-y-4">
             {(['home.verify_step1', 'home.verify_step2', 'home.verify_step3'] as const).map((key, i) => (
