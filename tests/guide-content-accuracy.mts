@@ -115,5 +115,21 @@ console.log('\n=== guide content: false claims are gone, in all 16 locales, repl
   check((unlockGuide.match(/AES-128/g) ?? []).length === locales.length, 'unlock guide names the supported schemes in every locale');
 }
 
+// JPG to PDF (2026-11-17): the guide told readers to choose a page size (A4, Letter, fit to image)
+// and an orientation in every language, but the tool's only option is the margin — each page
+// takes the size of its image (imagesToPdf(files, margin)).
+console.log('\n=== JPG to PDF guide: only the options the tool has ===');
+{
+  const page = readFileSync(join(ROOT, 'app', '(unprefixed)', 'jpg-to-pdf', 'page.tsx'), 'utf-8');
+  check(/imagesToPdf\(files, parseInt\(margin\)\)/.test(page) && !/orientation|pageSize|A4/i.test(page), 'the tool really offers the margin and nothing else');
+  const jpgGuide = (await import('../content/guides/jpg-to-pdf/how-to-convert-jpg-to-pdf.ts')).default as unknown;
+  const step = JSON.stringify(jpgGuide);
+  const sizeOrOrientation = ['A4', 'Letter', 'Seitengröße', 'Hoch- oder Querformat', 'tamaño de página', 'taille de page', 'dimensioni della pagina',
+    'tamanho da página', 'sidstorlek', 'sidestørrelse', 'síðustærð', 'Sayfa boyutunu', 'حجم الصفحة', 'اندازه صفحه', 'पृष्ठ का आकार', '用紙サイズ', '页面大小',
+    'rozmiar strony', 'orientację', 'orientation', 'orientamento', 'orientação', 'orientering', 'stefnu', 'yönlendirme', 'الاتجاه', 'جهت', 'अभिविन्यास', '向き', '方向'];
+  const left = sizeOrOrientation.filter((p) => step.includes(p));
+  check(left.length === 0, `no page size or orientation in any language (${left.join(', ') || 'none'})`);
+}
+
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);
