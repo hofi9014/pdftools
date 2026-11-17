@@ -5,6 +5,7 @@
 //
 // Run: E2E_BASE_URL=http://localhost:3100 npx tsx e2e/tool-page-seo.mts   (default: localhost:3000)
 import { tools } from '../lib/tools';
+import { guideArticlePath } from '../lib/guide-urls';
 
 const BASE = process.env.E2E_BASE_URL || 'http://localhost:3000';
 let fails = 0;
@@ -81,7 +82,7 @@ for (const l of ['pl', 'de', 'ja']) {
 // Internal links go straight to the page, never through the proxy's redirect for addresses without
 // a language. Until 2026-10-27 the home page linked every tool card as /merge, /compress… (55
 // links, each a 307 to /{locale}/…) — the site's strongest page pointing search engines at redirects.
-for (const p of ['/pl', '/de', '/ar', '/pl/merge', '/pl/faq', '/guides/przewodnik/merge-pdf/how-to-merge-pdf-online']) {
+for (const p of ['/pl', '/de', '/ar', '/pl/merge', '/pl/faq', guideArticlePath('pl', 'merge-pdf', 'how-to-merge-pdf-online')]) {
   const { html } = await get(p);
   const lang = p.startsWith('/guides') ? 'pl' : p.split('/')[1]!;
   const hrefs = [...html.matchAll(/<a\b[^>]*\bhref="(\/[^"]*)"/g)].map((m) => decode(m[1]!));
@@ -99,6 +100,15 @@ for (const p of ['/pl', '/de', '/ar', '/pl/merge', '/pl/faq', '/guides/przewodni
     const r = await fetch(BASE + h);
     check(r.status === 200 && /^image\//.test(r.headers.get('content-type') ?? ''), `${h}: ${r.status} ${r.headers.get('content-type')}`);
   }
+}
+
+// /llms.txt for AI assistants (2026-11-16): served as text by the built site (not swallowed by the
+// 404 rewrite in next.config.ts), with every tool listed.
+{
+  const r = await fetch(BASE + '/llms.txt', { redirect: 'manual' });
+  const body = await r.text();
+  check(r.status === 200 && /^text\/plain/.test(r.headers.get('content-type') ?? '') && body.startsWith('# OptimaPDF'), `/llms.txt: ${r.status} ${r.headers.get('content-type')}`);
+  check(body.includes('/en/merge') && body.includes('/en/pdf-to-word'), '/llms.txt lists the tools');
 }
 
 // Search-result fit (2026-11-10): the tool's own search title, a description that fits a result,

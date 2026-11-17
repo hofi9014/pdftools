@@ -9,6 +9,7 @@ import { getAllArticles, getAllCategories } from '@/lib/guides';
 import type { GuideArticle } from '@/types/guide';
 import { socialMetadata, fullTitle, fitList } from '@/lib/metadata';
 import { categoryTool } from '@/lib/guide-category-tools';
+import { guideCategoryPath, guideArticlePath } from '@/lib/guide-urls';
 
 
 
@@ -64,7 +65,7 @@ export default async function GuidesHubPage({ params }: { params: Promise<{ loca
         return (
           <section key={cat} className="mb-10">
             <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-3">
-              <Link href={`/guides/${getLocaleSegment(locale)}/${cat}`} className="hover:text-blue-600 transition">
+              <Link href={guideCategoryPath(locale, cat)} className="hover:text-blue-600 transition">
                 {getCategoryLabel(cat, locale)}
               </Link>
             </h2>
@@ -72,7 +73,7 @@ export default async function GuidesHubPage({ params }: { params: Promise<{ loca
               {catArticles.map(article => (
                 <Link
                   key={article.slug}
-                  href={`/guides/${getLocaleSegment(locale)}/${cat}/${article.slug}`}
+                  href={guideArticlePath(locale, cat, article.slug)}
                   className="block p-5 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm transition"
                 >
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">

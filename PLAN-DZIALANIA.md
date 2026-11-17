@@ -168,9 +168,12 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
       2026-11-11: dodane kolejność stron, spłaszczanie, PDF do OpenOffice, PDF do SVG (19 poradników).
 - [x] 3.5 (2026-11-02, właściciel; sprawdzone na produkcji) `www.optimapdf.com` przekierowuje stale (308)
       na `optimapdf.com`; domena główna bez przekierowania, 200.
-- [ ] 3.6 Adresy poradników w języku strony: dziś `/guides/anleitungen/compress-pdf/how-to-compress-pdf-online`
-      ma angielską końcówkę we wszystkich 16 językach. Zmiana ze stałymi przekierowaniami, po sprawdzeniu w
-      Search Console, ile z tych adresów jest już zaindeksowanych.
+- [x] 3.6 (2026-11-16) Adresy poradników w języku strony: `/guides/anleitungen/pdf-komprimieren/wie-man-…`
+      zamiast angielskich końcówek w 15 językach (angielskie bez zmian). Stare adresy → 308 na nowe
+      (740 przekierowań w `next.config.ts`, bez łańcuchów), przełącznik języka otwiera ten sam artykuł,
+      okruszki i mapa strony z nowymi adresami. Tabele adresów generuje `scripts/build-guide-url-slugs.mts`
+      i nigdy nie zmienia już opublikowanego adresu; testy `test:guide-localized-urls`,
+      `test:e2e-guide-localized-urls`.
 
 ## Etap 4 — języki (każdy wdrażany osobno)
 

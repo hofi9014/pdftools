@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import { GUIDES_HUB_SEGMENTS } from "./lib/guides-hub-segments";
+import { GUIDE_CATEGORY_SLUGS } from "./lib/guide-category-slugs";
+import { GUIDE_ARTICLE_SLUGS } from "./lib/guide-article-slugs";
 
 // Kept as tight as the app's actual runtime behavior allows — every origin listed here must be
 // one the browser can genuinely reach from some real code path. `unpkg.com` (only ever used by
@@ -43,6 +46,34 @@ const csp = [
 // The 16 language prefixes; tests/vercelignore-keeps-app-files.mts fails if this drifts from lib/i18n.ts.
 const LOCALE_SEGMENTS = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'];
 
+// Until 2026-11-14 every language used the English guide category and article ids
+// (/guides/przewodnik/compress-pdf/how-to-compress-pdf-online); since then each language has its
+// own (lib/guide-urls.ts). Old addresses answer 308 here — a page can only redirect with a status
+// before it starts streaming, a config redirect always does. Destinations are percent-encoded
+// (the Location header must be ASCII); sources are given both as written and percent-encoded.
+const enc = (path: string) => path.split('/').map((s) => encodeURIComponent(s)).join('/');
+// The languages that had guides before 2026-11-14 — only their old addresses exist. (A language
+// added later never had English-id addresses, and the list keeps the redirect count bounded.)
+const LEGACY_GUIDE_LOCALES = ['ar', 'de', 'es', 'fa', 'fr', 'hi', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'];
+function legacyGuideRedirects() {
+  const out: { source: string; destination: string; permanent: true }[] = [];
+  const add = (from: string, to: string) => {
+    for (const source of new Set([from, enc(from)])) out.push({ source, destination: enc(to), permanent: true });
+  };
+  for (const locale of LEGACY_GUIDE_LOCALES) {
+    const hub = GUIDES_HUB_SEGMENTS[locale as keyof typeof GUIDES_HUB_SEGMENTS];
+    for (const [category, catNames] of Object.entries(GUIDE_CATEGORY_SLUGS)) {
+      const cat = catNames[locale] ?? category;
+      if (cat !== category) add(`/guides/${hub}/${category}`, `/guides/${hub}/${cat}`);
+      for (const [slug, names] of Object.entries(GUIDE_ARTICLE_SLUGS[category] ?? {})) {
+        const art = names[locale] ?? slug;
+        if (cat !== category || art !== slug) add(`/guides/${hub}/${category}/${slug}`, `/guides/${hub}/${cat}/${art}`);
+      }
+    }
+  }
+  return out;
+}
+
 const nextConfig: NextConfig = {
   serverExternalPackages: ['@napi-rs/canvas'],
   poweredByHeader: false,
@@ -52,7 +83,7 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     // all locale segments EXCEPT 'guide' which conflicts with /guide static page
-    const segments = ['przewodnik', 'guides', 'guides-fr', 'anleitungen', 'guias', 'guias-pt', 'guider', 'guider-no', 'handbaekur', 'rehber', 'دليل', 'راهنما', 'गाइड', 'ガイド', '指南'];
+    const segments: string[] = Object.values(GUIDES_HUB_SEGMENTS).filter((s) => s !== 'guide');
     return [
       {
         source: '/pdf-to-jpg',
@@ -78,6 +109,7 @@ const nextConfig: NextConfig = {
         destination: '/guides/guide/:path+',
         permanent: true,
       },
+      ...legacyGuideRedirects(),
     ];
   },
   async rewrites() {

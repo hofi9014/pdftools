@@ -228,7 +228,10 @@
     "test:button-label-sense": "npx tsx tests/button-label-sense.mts",
     "test:guide-quoted-labels": "npx tsx tests/guide-quoted-labels.mts",
     "test:lazy-pdf-engine": "npx tsx tests/lazy-pdf-engine.mts",
-    "test:e2e-initial-js-weight": "npx tsx e2e/initial-js-weight.mts"
+    "test:e2e-initial-js-weight": "npx tsx e2e/initial-js-weight.mts",
+    "test:guide-localized-urls": "npx tsx tests/guide-localized-urls.mts",
+    "test:llms-txt": "npx tsx tests/llms-txt.mts",
+    "test:e2e-guide-localized-urls": "npx tsx e2e/guide-localized-urls.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { locales, t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
@@ -13,12 +13,30 @@ import { safeJsonLd } from '@/lib/safe-json-ld';
 import { socialMetadata, fullTitle } from '@/lib/metadata';
 import { getCategoryLabel } from '@/lib/guide-categories';
 import { categoryTool } from '@/lib/guide-category-tools';
+import { guideHubPath, guideCategoryPath, guideArticlePath, categorySegment, articleSegment, resolveCategorySegment, resolveArticleSegment, encodePath } from '@/lib/guide-urls';
 
 if (process.env.NODE_ENV === 'production') {
   const { errors } = validateGuides();
   if (errors > 0) {
     throw new Error(`Guide validation failed with ${errors} error(s)`);
   }
+}
+
+/** The article an address names — 404 if none; an old English-id address (before 2026-11-14) is
+    redirected (next.config.ts redirects it first with a 308; this covers any other spelling). */
+async function resolveArticle(params: Promise<{ locale: string; category: string; slug: string }>) {
+  const { locale: localeSegment, category: categorySeg, slug: slugSeg } = await params;
+  if (!isGuidesSegment(localeSegment)) notFound();
+  const locale = localeFromSegment(localeSegment) as Locale;
+  const cat = resolveCategorySegment(locale, categorySeg);
+  const art = cat ? resolveArticleSegment(locale, cat.category, slugSeg) : null;
+  const article = cat && art ? getArticle(cat.category, art.slug) : undefined;
+  // FINDING (2026-09-23) — an unrecognized category/slug used to be a 200 page with a "not found"
+  // message; notFound() gives it the real status (Next renders any path of this shape, not only
+  // the ones generateStaticParams lists, so invalid addresses must be refused here).
+  if (!article) notFound();
+  if (cat!.legacy || art!.legacy) permanentRedirect(encodePath(guideArticlePath(locale, article.category, article.slug)));
+  return { locale, article };
 }
 
 export async function generateStaticParams() {
@@ -28,8 +46,8 @@ export async function generateStaticParams() {
     for (const article of articles) {
       params.push({
         locale: getLocaleSegment(locale),
-        category: article.category,
-        slug: article.slug,
+        category: categorySegment(locale, article.category),
+        slug: articleSegment(locale, article.category, article.slug),
       });
     }
   }
@@ -37,12 +55,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; category: string; slug: string }> }): Promise<Metadata> {
-  const { locale: localeSegment, category, slug } = await params;
-  if (!isGuidesSegment(localeSegment)) notFound();
-  const locale = localeFromSegment(localeSegment) as Locale;
-  const article = getArticle(category, slug);
-  // notFound() here too, so the 404 gets the not-found page's noindex instead of the layout's index.
-  if (!article) notFound();
+  // Resolved here too, so the 404 gets the not-found page's noindex instead of the layout's index.
+  const { locale, article } = await resolveArticle(params);
 
   const title = (article.title as Record<string, string>)[locale] || article.title.en;
   const description = (article.excerpt as Record<string, string>)[locale] || article.excerpt.en;
@@ -66,19 +80,8 @@ export default async function ArticlePage({
 }: {
   params: Promise<{ locale: string; category: string; slug: string }>;
 }) {
-  const { locale: localeSegment, category, slug } = await params;
-  if (!isGuidesSegment(localeSegment)) notFound();
-  const locale = localeFromSegment(localeSegment) as Locale;
-  const article = getArticle(category, slug);
-
-  // FINDING (2026-09-23) — this previously returned a normal 200 response with a "not found"
-  // MESSAGE for an unrecognized category/slug combination, instead of an actual 404 status.
-  // Since dynamicParams isn't disabled for this route, Next.js renders ANY path matching this
-  // shape (not just the ones generateStaticParams() enumerates), so an arbitrary invalid slug
-  // (e.g. /guides/guides/xyzabc/not-a-real-article) rendered as a "valid-looking", HTTP 200,
-  // indexable page — unbounded soft-404 URL space wasting crawl budget. notFound() gives it the
-  // real status; Next's own not-found boundary renders in place of this component.
-  if (!article) notFound();
+  const { locale, article } = await resolveArticle(params);
+  const category = article.category;
 
   const title = (article.title as Record<string, string>)[locale] || article.title.en;
   const steps = article.body.filter((b): b is { type: 'step'; title: import('@/types/guide').LocalizedString; text: import('@/types/guide').LocalizedString } => b.type === 'step');
@@ -127,8 +130,8 @@ export default async function ArticlePage({
             // Before, item 1 was https://optimapdf.com/ (a redirect) and the category was missing.
             itemListElement: [
               { '@type': 'ListItem', position: 1, name: t('breadcrumb.home', locale), item: `https://optimapdf.com/${locale}` },
-              { '@type': 'ListItem', position: 2, name: t('guides.breadcrumb', locale), item: `https://optimapdf.com/guides/${getLocaleSegment(locale)}` },
-              { '@type': 'ListItem', position: 3, name: categoryTool[category] ? t(`tool.${categoryTool[category]}`, locale) : getCategoryLabel(category, locale), item: `https://optimapdf.com/guides/${getLocaleSegment(locale)}/${category}` },
+              { '@type': 'ListItem', position: 2, name: t('guides.breadcrumb', locale), item: `https://optimapdf.com${guideHubPath(locale)}` },
+              { '@type': 'ListItem', position: 3, name: categoryTool[category] ? t(`tool.${categoryTool[category]}`, locale) : getCategoryLabel(category, locale), item: `https://optimapdf.com${guideCategoryPath(locale, category)}` },
               { '@type': 'ListItem', position: 4, name: title, item: canonical },
             ],
           }),
@@ -142,7 +145,7 @@ export default async function ArticlePage({
       )}
 
       <Link
-        href={`/guides/${getLocaleSegment(locale)}/${category}`}
+        href={guideCategoryPath(locale, category)}
         className="text-sm text-blue-600 hover:underline mb-4 inline-block"
       >
         {t('guides.back_to_category', locale)}

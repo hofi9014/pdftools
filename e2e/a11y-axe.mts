@@ -11,6 +11,7 @@
 // server: E2E_BASE_URL (default http://localhost:3000).
 import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
+import { guideArticlePath, guideCategoryPath, encodePath } from '../lib/guide-urls.ts';
 
 const BASE = process.env.E2E_BASE_URL ?? 'http://localhost:3000';
 const axeSource = readFileSync('node_modules/axe-core/axe.min.js', 'utf8');
@@ -20,8 +21,9 @@ const PAGES = [
   'pl/security', 'pl/terms', 'pl/faq', 'pl/help', 'pl/nasze-zasady', 'pl/wsparcie', 'pl/guide', 'de/merge', 'ar/privacy',
   // Guides: the hub, a category and articles (all 19 share one template — step titles were <h4>
   // straight under <h2> until 2026-11-11).
-  'guides/przewodnik', 'guides/przewodnik/compress-pdf', 'guides/przewodnik/compress-pdf/how-to-compress-pdf-online',
-  'guides/przewodnik/flatten-pdf/how-to-flatten-pdf', `guides/${encodeURIComponent('دليل')}/pdf-to-svg/how-to-convert-pdf-to-svg`,
+  // Addresses in each language since 2026-11-14 (lib/guide-urls.ts).
+  'guides/przewodnik', guideCategoryPath('pl', 'compress-pdf').slice(1), guideArticlePath('pl', 'compress-pdf', 'how-to-compress-pdf-online').slice(1),
+  guideArticlePath('pl', 'flatten-pdf', 'how-to-flatten-pdf').slice(1), encodePath(guideArticlePath('ar', 'pdf-to-svg', 'how-to-convert-pdf-to-svg')).slice(1),
   'guides/guides/pdf-to-openoffice/how-to-convert-pdf-to-odt',
 ];
 const ENFORCED = new Set([

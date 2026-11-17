@@ -3,12 +3,12 @@ import guides from '@/content/guides';
 import { toolHowToSteps } from '@/content/tool-howto';
 import { toolUseCasesFor } from '@/content/tool-usecases';
 import { t, type Locale } from '@/lib/i18n';
-import { getLocaleSegment } from '@/lib/guides-slugs';
 import { keyBySlug, toolPath, toolProcessing, RELATED_TOOLS } from '@/lib/tools';
 import { toolSearchMetadata } from '@/lib/metadata';
 import { DAILY_LIMIT } from '@/lib/ai-limit';
 import { safeJsonLd } from '@/lib/safe-json-ld';
 import ToolGlyph from '@/components/ToolGlyph';
+import { guideArticlePath } from '@/lib/guide-urls';
 
 const SITE = 'https://optimapdf.com';
 
@@ -158,7 +158,7 @@ export default function ToolGuide({ slug, locale }: { slug: string; locale: Loca
       {guide && (
         <p className="mt-8">
           <Link
-            href={`/guides/${getLocaleSegment(locale)}/${guide.category}/${guide.slug}`}
+            href={guideArticlePath(locale, guide.category, guide.slug)}
             className="link-accent font-medium hover:underline"
           >
             <ToolGlyph name="book" /> {t('toolpage.guide_link', locale, { title: guide.title[locale] || guide.title.en })}

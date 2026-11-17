@@ -20,6 +20,7 @@ import { OG_LOCALES, toolSearchMetadata } from '../lib/metadata.ts';
 import { localeGuidesSlug } from '../lib/guides-slugs.ts';
 import { getAllArticles } from '../lib/guides.ts';
 import { buildCanonicalUrl } from '../lib/guides-canonical.ts';
+import { guideCategoryPath } from '../lib/guide-urls.ts';
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const SITE = 'https://optimapdf.com';
@@ -51,7 +52,7 @@ for (const l of locales) {
   cases.push({ path: `/${l}/merge`, locale: l, title: `${toolSearchMetadata('merge', l).title} | OptimaPDF`, type: 'website' });
   cases.push({ path: `/${l}/privacy`, locale: l, title: `${t('breadcrumb.privacy', l)} | OptimaPDF`, type: 'website' });
   cases.push({ path: `/guides/${localeGuidesSlug[l]}`, locale: l, title: `${t('guides.hub_title', l)} | OptimaPDF`, type: 'website' });
-  cases.push({ path: `/guides/${localeGuidesSlug[l]}/${article.category}`, locale: l, title: '', type: 'website' });
+  cases.push({ path: guideCategoryPath(l, article.category), locale: l, title: '', type: 'website' });
   cases.push({ path: new URL(buildCanonicalUrl(article, l)).pathname, locale: l, title: '', type: 'article' });
 }
 

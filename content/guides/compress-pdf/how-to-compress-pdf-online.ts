@@ -19,7 +19,7 @@ const article: GuideArticle = {
     fa: 'چگونه یک PDF را به صورت آنلاین به طور مؤثر فشرده کنیم',
     hi: 'ऑनलाइन PDF को प्रभावी ढंग से कैसे संपीड़ित करें',
     ja: 'オンラインでPDFを効果的に圧縮する方法',
-    zh: '如何有效地在線壓縮PDF',
+    zh: '如何有效地在线压缩PDF',
   },
   excerpt: {
     pl: 'Dowiedz się, jak zmniejszyć rozmiar pliku PDF bez utraty jakości. Porównaj poziomy kompresji i wybierz najlepszy dla swoich potrzeb.',
