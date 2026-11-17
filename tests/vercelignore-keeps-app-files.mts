@@ -76,7 +76,7 @@ for (const path of ['/pdfjs-dist/cmaps/78-H.bcmap', '/pdfjs-dist/standard_fonts/
 const locales = [.../const LOCALES = \[([^\]]*)\]/.exec(proxy)![1]!.matchAll(/'([a-z]{2})'/g)].map((m) => m[1]!);
 const i18nLocales = [.../export const locales = \[([^\]]*)\]/.exec(readFileSync(join(ROOT, 'lib/i18n.ts'), 'utf8'))![1]!.matchAll(/'([a-z]{2})'/g)].map((m) => m[1]!);
 const matcherLocales = /\(\?:((?:[a-z]{2}\|)+[a-z]{2})\)\(\?:\/\|\$\)/.exec(pageMatcher ?? '')?.[1]?.split('|') ?? [];
-check(locales.length === 16, `sanity: read LOCALES from proxy.ts (${locales.length})`);
+check(locales.length >= 16, `sanity: read LOCALES from proxy.ts (${locales.length})`);
 check([...locales].sort().join() === [...i18nLocales].sort().join(), 'proxy.ts LOCALES equals lib/i18n.ts locales');
 check([...locales].sort().join() === [...matcherLocales].sort().join(), `the matcher's locale list equals LOCALES (${matcherLocales.length})`);
 // next.config.ts sends addresses whose first segment is no language to the 404 page (afterFiles

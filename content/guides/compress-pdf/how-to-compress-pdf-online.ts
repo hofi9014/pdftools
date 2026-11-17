@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'ऑनलाइन PDF को प्रभावी ढंग से कैसे संपीड़ित करें',
     ja: 'オンラインでPDFを効果的に圧縮する方法',
     zh: '如何有效地在线压缩PDF',
+    id: 'Cara Mengompres PDF Online secara Efektif',
   },
   excerpt: {
     pl: 'Dowiedz się, jak zmniejszyć rozmiar pliku PDF bez utraty jakości. Porównaj poziomy kompresji i wybierz najlepszy dla swoich potrzeb.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'गुणवत्ता खोए बिना PDF फ़ाइल का आकार कम करना सीखें। संपीड़न स्तरों की तुलना करें और अपनी आवश्यकताओं के लिए सर्वश्रेष्ठ चुनें।',
     ja: '品質を損なうことなくPDFファイルサイズを削減する方法を学びます。圧縮レベルを比較して最適なものを選びましょう。',
     zh: '了解如何在保持质量的同时减小PDF文件大小。比较压缩级别并选择最适合您需求的级别。',
+    id: 'Pelajari cara memperkecil ukuran file PDF tanpa kehilangan kualitas. Bandingkan tingkat kompresi dan pilih yang paling sesuai dengan kebutuhan Anda.',
   },
   body: [
     {
@@ -59,6 +61,7 @@ const article: GuideArticle = {
         hi: 'PDF फ़ाइलें बहुत बड़ी हो सकती हैं, खासकर जब उनमें उच्च-रिज़ॉल्यूशन वाली छवियां, स्कैन किए गए दस्तावेज़ या एम्बेडेड फ़ॉन्ट हों। PDF संपीड़न फ़ाइल आकार को 80% तक कम कर सकता है।',
         ja: 'PDFファイルは、高解像度の画像、スキャン文書、埋め込みフォントが含まれている場合、非常に大きくなることがあります。PDF圧縮により、ファイルサイズを最大80%削減できます。',
         zh: 'PDF文件可能会变得非常大，尤其是当它们包含高分辨率图像、扫描文档或嵌入字体时。PDF压缩可以将文件大小减少多达80%。',
+        id: 'File PDF bisa menjadi sangat besar, terutama jika berisi gambar beresolusi tinggi, dokumen hasil pindaian, atau fon yang disematkan. Kompresi PDF dapat memperkecil ukuran file hingga 80%, sehingga lebih mudah dikirim lewat email, disimpan di cloud, dan dibagikan. Dalam panduan ini kami menunjukkan cara mengompres file PDF secara efektif dengan alat gratis OptimaPDF.',
       },
     },
     {
@@ -85,6 +88,7 @@ const article: GuideArticle = {
         hi: 'PDF संपीड़न क्या है?',
         ja: 'PDF圧縮とは？',
         zh: '什么是PDF压缩？',
+        id: 'Apa Itu Kompresi PDF?',
       },
     },
     {
@@ -106,6 +110,7 @@ const article: GuideArticle = {
         hi: 'PDF संपीड़न छवियों को अनुकूलित करके, अनावश्यक मेटाडेटा हटाकर और अधिक कुशल एन्कोडिंग विधियों को लागू करके PDF फ़ाइल आकार को कम करने की प्रक्रिया है।',
         ja: 'PDF圧縮とは、画像の最適化、不要なメタデータの削除、より効率的なエンコード方法の適用により、PDFファイルサイズを削減するプロセスです。',
         zh: 'PDF压缩是通过优化图像、删除不必要的元数据和应用更高效的编码方法来减小PDF文件大小的过程。',
+        id: 'Kompresi PDF adalah proses memperkecil ukuran file PDF dengan mengoptimalkan gambar, menghapus metadata yang tidak diperlukan, dan menerapkan metode pengodean yang lebih efisien. OptimaPDF menyediakan tiga tingkat kompresi — dari optimasi ringan hingga pengurangan ukuran yang agresif.',
       },
     },
     {
@@ -128,6 +133,7 @@ const article: GuideArticle = {
         hi: 'चरण दर चरण PDF कैसे संपीड़ित करें',
         ja: 'ステップバイステップでPDFを圧縮する方法',
         zh: '如何逐步压缩PDF',
+        id: 'Cara Mengompres PDF Langkah demi Langkah',
       },
     },
     {
@@ -149,6 +155,7 @@ const article: GuideArticle = {
         hi: 'संपीड़न स्तर चुनें',
         ja: '圧縮レベルを選択',
         zh: '选择压缩级别',
+        id: 'Pilih Tingkat Kompresi',
       },
       text: {
         pl: 'Niski — minimalna utrata jakości, umiarkowane zmniejszenie rozmiaru. Polecane — zbalansowany stosunek jakości do rozmiaru, najlepszy do codziennego użytku. Ekstremalne — maksymalne zmniejszenie, dla plików które muszą być jak najmniejsze. Domyślnie wybrany jest poziom Zalecany i w większości przypadków jest to optymalny wybór.',
@@ -167,6 +174,7 @@ const article: GuideArticle = {
         hi: 'कम — न्यूनतम गुणवत्ता हानि, मध्यम आकार कमी। अनुशंसित — संतुलित गुणवत्ता-आकार अनुपात, दैनिक उपयोग के लिए सर्वश्रेष्ठ। अत्यधिक — अधिकतम कमी।',
         ja: '低 — 最小限の品質低下、適度なサイズ削減。推奨 — 品質とサイズのバランスが取れた最適解。最大 — 最大限の削減。',
         zh: '低 — 质量损失最小，大小适度减小。推荐 — 质量与大小的平衡比例，最适合日常使用。极致 — 最大程度减小。',
+        id: 'Rendah — kehilangan kualitas minimal, pengurangan ukuran sedang. Disarankan — perbandingan kualitas dan ukuran yang seimbang, paling cocok untuk penggunaan sehari-hari. Ekstrem — pengurangan maksimal, untuk file yang harus sekecil mungkin. Disarankan sudah terpilih secara default dan merupakan pilihan terbaik dalam sebagian besar kasus.',
       },
     },
     {
@@ -188,6 +196,7 @@ const article: GuideArticle = {
         hi: 'PDF फ़ाइल को अपलोड क्षेत्र में छोड़ें',
         ja: 'アップロードエリアにPDFファイルをドロップ',
         zh: '将PDF文件拖放到上传区域',
+        id: 'Letakkan File PDF di Area Unggah',
       },
       text: {
         pl: 'Możesz też kliknąć w pole wyboru, aby otworzyć okno dialogowe i wybrać plik z dysku. Obsługiwane są pliki PDF o dowolnym rozmiarze — wszystkie operacje wykonywane są lokalnie w Twojej przeglądarce.',
@@ -206,6 +215,7 @@ const article: GuideArticle = {
         hi: 'आप अपलोड क्षेत्र पर क्लिक करके एक डायलॉग खोल सकते हैं और अपनी डिस्क से एक फ़ाइल चुन सकते हैं। किसी भी आकार की PDF फ़ाइलें समर्थित हैं।',
         ja: 'アップロードエリアをクリックしてダイアログを開き、ディスクからファイルを選択することもできます。あらゆるサイズのPDFファイルに対応しています。',
         zh: '您也可以点击上传区域打开对话框，从磁盘中选择文件。支持任何大小的PDF文件。',
+        id: 'Anda juga dapat mengeklik area unggah untuk membuka jendela dan memilih file dari disk. File PDF berukuran berapa pun didukung — semua proses berlangsung secara lokal di browser Anda.',
       },
     },
     {
@@ -227,6 +237,7 @@ const article: GuideArticle = {
         hi: '"PDF संपीड़ित करें" पर क्लिक करें',
         ja: '「PDFを圧縮する」をクリック',
         zh: '点击"压缩PDF"',
+        id: 'Klik "Kompres PDF"',
       },
       text: {
         pl: 'Proces kompresji trwa zwykle kilka sekund. Po zakończeniu zobaczysz podgląd z informacją o stopniu zmniejszenia pliku. Możesz od razu pobrać skompresowany PDF, klikając przycisk pobierania.',
@@ -245,6 +256,7 @@ const article: GuideArticle = {
         hi: 'संपीड़न प्रक्रिया में आमतौर पर कुछ सेकंड लगते हैं। पूरा होने पर, आप फ़ाइल आकार में कमी के बारे में जानकारी के साथ एक पूर्वावलोकन देखेंगे। आप तुरंत संपीड़ित PDF डाउनलोड कर सकते हैं।',
         ja: '圧縮処理は通常数秒で完了します。完了すると、ファイルサイズの削減に関する情報を含むプレビューが表示されます。圧縮されたPDFをすぐにダウンロードできます。',
         zh: '压缩过程通常需要几秒钟。完成后，您将看到预览，其中包含文件大小减少的信息。您可以立即下载压缩后的PDF。',
+        id: 'Proses kompresi biasanya hanya memerlukan beberapa detik. Setelah selesai, Anda akan melihat pratinjau beserta informasi tentang berkurangnya ukuran file. Anda dapat langsung mengunduh PDF yang telah dikompres dengan mengeklik tombol unduh.',
       },
     },
     {
@@ -271,6 +283,7 @@ const article: GuideArticle = {
         hi: 'प्रत्येक संपीड़न स्तर का उपयोग कब करें?',
         ja: '各圧縮レベルはいつ使うべきか？',
         zh: '何时使用每个压缩级别？',
+        id: 'Kapan Menggunakan Setiap Tingkat Kompresi?',
       },
     },
     {
@@ -293,6 +306,7 @@ const article: GuideArticle = {
           hi: 'कम: मुद्रित किए जाने वाले टेक्स्ट दस्तावेज़ — गुणवत्ता मूल के लगभग समान रहती है',
           ja: '低: 印刷するテキスト文書 — 品質はオリジナルとほぼ同じ',
           zh: '低: 将要打印的文本文档 — 质量与原始文件几乎相同',
+          id: 'Rendah: dokumen teks yang akan dicetak — kualitasnya hampir sama dengan aslinya',
         },
         {
           pl: 'Polecane: codzienne udostępnianie plików — dobry balans między rozmiarem a jakością',
@@ -311,6 +325,7 @@ const article: GuideArticle = {
           hi: 'अनुशंसित: दैनिक फ़ाइल साझाकरण — आकार और गुणवत्ता के बीच अच्छा संतुलन',
           ja: '推奨: 日常的なファイル共有 — サイズと品質のバランスが良い',
           zh: '推荐: 日常文件共享 — 大小和质量之间的良好平衡',
+          id: 'Disarankan: berbagi file sehari-hari — keseimbangan yang baik antara ukuran dan kualitas',
         },
         {
           pl: 'Ekstremalne: załączniki e-mail i archiwizacja — największe zmniejszenie kosztem jakości obrazów',
@@ -329,6 +344,7 @@ const article: GuideArticle = {
           hi: 'अत्यधिक: ईमेल अटैचमेंट और आर्काइविंग — छवि गुणवत्ता की कीमत पर सबसे बड़ी कमी',
           ja: '最大: メール添付とアーカイブ — 画質を犠牲に最大の削減',
           zh: '极致: 电子邮件附件和归档 — 以图像质量为代价的最大减小',
+          id: 'Ekstrem: lampiran email dan pengarsipan — pengurangan terbesar dengan mengorbankan kualitas gambar',
         },
       ],
     },
@@ -357,6 +373,7 @@ const article: GuideArticle = {
         hi: 'क्या PDF संपीड़न से टेक्स्ट की गुणवत्ता कम होती है?',
         ja: 'PDF圧縮はテキストの品質を低下させますか？',
         zh: 'PDF压缩会降低文本质量吗？',
+        id: 'Apakah kompresi PDF menurunkan kualitas teks?',
       },
       a: {
         pl: 'Nie, kompresja PDF wpływa głównie na obrazy i osadzone grafiki. Tekst i wektory pozostają ostre, ponieważ są kompresowane bezstratnie przy użyciu algorytmu FlateDecode. Nawet przy ekstremalnym poziomie kompresji tekst pozostaje w pełni czytelny i wyszukiwalny.',
@@ -375,6 +392,7 @@ const article: GuideArticle = {
         hi: 'नहीं, PDF संपीड़न मुख्य रूप से छवियों और एम्बेडेड ग्राफिक्स को प्रभावित करता है। टेक्स्ट और वेक्टर तेज बने रहते हैं क्योंकि वे दोषरहित संपीड़ित होते हैं।',
         ja: 'いいえ、PDF圧縮は主に画像と埋め込みグラフィックに影響します。テキストとベクターは可逆圧縮されるため、鮮明なままです。',
         zh: '不会。PDF压缩主要影响图像和嵌入的图形。文本和矢量由于采用无损压缩，依然保持清晰。',
+        id: 'Tidak. Kompresi PDF terutama memengaruhi gambar dan grafik yang disematkan. Teks dan grafik vektor tetap tajam karena dikompres tanpa kehilangan data dengan algoritme FlateDecode. Bahkan pada tingkat kompresi ekstrem, teks tetap dapat dibaca dan dicari sepenuhnya.',
       },
     },
     {
@@ -395,6 +413,7 @@ const article: GuideArticle = {
         hi: 'स्कैन किए गए दस्तावेज़ों के लिए मुझे कौन सा संपीड़न स्तर चुनना चाहिए?',
         ja: 'スキャン文書にはどの圧縮レベルを選ぶべきですか？',
         zh: '我应该为扫描文档选择哪个压缩级别？',
+        id: 'Tingkat kompresi mana yang sebaiknya dipilih untuk dokumen hasil pindaian?',
       },
       a: {
         pl: 'Do skanów polecamy poziom "Polecane" — skutecznie redukuje rozmiar przy zachowaniu dobrej czytelności. Jeśli skany są wysokiej jakości i potrzebujesz zachować szczegóły, wybierz "Niski". Poziom "Ekstremalne" może znacząco obniżyć jakość skanów - używaj go tylko do archiwizacji, gdzie liczy się przede wszystkim mały rozmiar.',
@@ -413,6 +432,7 @@ const article: GuideArticle = {
         hi: 'स्कैन के लिए हम "अनुशंसित" स्तर की सलाह देते हैं — यह अच्छी पठनीयता बनाए रखते हुए आकार को प्रभावी ढंग से कम करता है। उच्च गुणवत्ता वाले स्कैन के लिए "कम" चुनें।',
         ja: 'スキャンには「おすすめ」レベルをお勧めします — 読みやすさを維持しながら効果的にサイズを削減します。高品質スキャンの場合は「低」を選択してください。',
         zh: '对于扫描件，我们推荐"推荐"级别 — 它在保持良好可读性的同时有效减小大小。对于高质量扫描件，请选择"低"。',
+        id: 'Untuk hasil pindaian, kami menyarankan tingkat "Disarankan" — ukurannya berkurang secara efektif dan tetap mudah dibaca. Jika hasil pindaian berkualitas tinggi dan Anda perlu mempertahankan detailnya, pilih "Rendah". Tingkat "Ekstrem" dapat menurunkan kualitas pindaian secara signifikan — gunakan hanya untuk pengarsipan, saat ukuran kecil paling penting.',
       },
     },
     {
@@ -433,6 +453,7 @@ const article: GuideArticle = {
         hi: 'क्या मैं एक साथ कई PDF फ़ाइलों को संपीड़ित कर सकता हूँ?',
         ja: '複数のPDFファイルを同時に圧縮できますか？',
         zh: '我可以同时压缩多个PDF文件吗？',
+        id: 'Bisakah saya mengompres beberapa file PDF sekaligus?',
       },
       a: {
         pl: 'Tak, OptimaPDF obsługuje kompresję wielu plików jednocześnie. Wystarczy przeciągnąć wszystkie pliki PDF w pole wyboru. Każdy plik zostanie skompresowany osobno, a wyniki zapakowane w jeden plik ZIP do pobrania.',
@@ -451,6 +472,7 @@ const article: GuideArticle = {
         hi: 'हाँ, OptimaPDF एक साथ कई फ़ाइलों को संपीड़ित करने का समर्थन करता है। बस सभी PDF फ़ाइलों को अपलोड क्षेत्र में खींचें। प्रत्येक फ़ाइल को अलग-अलग संपीड़ित किया जाएगा और परिणाम डाउनलोड के लिए एक ZIP फ़ाइल में पैक किए जाएंगे।',
         ja: 'はい、OptimaPDFは複数のファイルを同時に圧縮することができます。すべてのPDFファイルをアップロードエリアにドラッグするだけで、各ファイルが個別に圧縮され、結果が1つのZIPファイルにまとめられます。',
         zh: '是的，OptimaPDF支持同时压缩多个文件。只需将所有PDF文件拖放到上传区域即可。每个文件将被单独压缩，结果打包成一个ZIP文件供下载。',
+        id: 'Ya, OptimaPDF dapat mengompres beberapa file sekaligus. Cukup seret semua file PDF ke area unggah. Setiap file dikompres secara terpisah, dan hasilnya dikemas dalam satu file ZIP untuk diunduh.',
       },
     },
   ],

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { MAX_UPLOAD_BYTES } from '@/lib/upload-limit';
 
-const LOCALES = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'] as const;
+const LOCALES = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'id', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'] as const;
 const DEFAULT_LOCALE = 'en';
 
 const LEGACY_PATHS = new Set([
@@ -198,6 +198,6 @@ export const config = {
   // fails if it drifts from LOCALES.
   matcher: [
     '/api/:path*',
-    '/((?!api|_next/static|_next/image|_next/data|favicon\\.ico|sitemap\\.xml|robots\\.txt|icon|guides|(?:ar|de|en|es|fa|fr|hi|is|it|ja|no|pl|pt|sv|tr|zh)(?:/|$)|.*\\.[a-zA-Z0-9]+$).*)',
+    '/((?!api|_next/static|_next/image|_next/data|favicon\\.ico|sitemap\\.xml|robots\\.txt|icon|guides|(?:ar|de|en|es|fa|fr|hi|id|is|it|ja|no|pl|pt|sv|tr|zh)(?:/|$)|.*\\.[a-zA-Z0-9]+$).*)',
   ],
 };

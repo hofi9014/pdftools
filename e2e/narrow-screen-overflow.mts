@@ -15,12 +15,14 @@
 // Pages: the home page and every app/[locale]/* directory, in all 16 languages.
 import { chromium, type Page } from 'playwright';
 import { readdirSync, existsSync } from 'node:fs';
+import { locales } from '../lib/i18n';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const WIDTH = 375;
-const LOCALES = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'];
+// Every language the site has (a hand-written list here missed Indonesian when it was added).
+const LOCALES = locales;
 const PARALLEL = 6;
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');

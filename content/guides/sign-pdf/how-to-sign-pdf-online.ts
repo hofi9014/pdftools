@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'बिना प्रिंट किए PDF पर ऑनलाइन हस्ताक्षर कैसे करें',
     ja: '印刷せずにPDFにオンラインで署名する方法',
     zh: '如何无需打印在线签署PDF',
+    id: 'Cara Menandatangani PDF Online Tanpa Mencetak',
   },
   excerpt: {
     pl: 'Wstaw odręczny podpis w PDF albo podpisz dokument cyfrowo własnym certyfikatem. Plik, certyfikat i hasło zostają w Twojej przeglądarce.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'PDF में हाथ से किया हस्ताक्षर जोड़ें या अपने सर्टिफ़िकेट से डिजिटल हस्ताक्षर करें। फ़ाइल, सर्टिफ़िकेट और पासवर्ड ब्राउज़र में रहते हैं।',
     ja: 'PDFに手書きの署名を入れるか、自分の証明書でデジタル署名。ファイル・証明書・パスワードはブラウザから出ません。',
     zh: '在PDF中添加手写签名，或用自己的证书进行数字签名。文件、证书和密码都留在浏览器中。',
+    id: 'Tambahkan tanda tangan tulisan tangan ke PDF atau tanda tangani secara digital dengan sertifikat Anda sendiri. File, sertifikat, dan kata sandi tetap di browser Anda.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,6 +59,7 @@ const article: GuideArticle = {
       hi: 'अनुबंध, सहमति पत्र या बिल पर अक्सर हस्ताक्षर करने पड़ते हैं, और प्रिंट व स्कैन करने में समय लगता है। PDF हस्ताक्षर करें टूल के दो मोड हैं: दृश्य हस्ताक्षर (बनाया या टाइप किया हुआ) और आपके सर्टिफ़िकेट से PAdES डिजिटल हस्ताक्षर। दोनों में दस्तावेज़ हमारे सर्वर तक नहीं पहुँचता।',
       ja: '契約書や同意書、請求書には署名が必要なことが多く、印刷してスキャンするのは手間です。PDF署名ツールには、見た目の署名（手書きまたは入力）と、自分の証明書によるPAdESデジタル署名の2つのモードがあります。どちらでも文書が当社のサーバーに送られることはありません。',
       zh: '合同、同意书或发票常常需要签名，而打印再扫描很费时间。签名PDF工具有两种模式：可视签名（手绘或输入）和使用您证书的PAdES数字签名。两种方式下文档都不会到达我们的服务器。',
+      id: 'Kontrak, formulir persetujuan, dan faktur sering memerlukan tanda tangan, sedangkan mencetak dan memindai memakan waktu. Alat Tanda Tangani PDF memiliki dua mode: tanda tangan visual (digambar atau diketik) dan tanda tangan digital PAdES dengan sertifikat Anda. Dengan cara mana pun, dokumen tidak pernah sampai ke server kami.',
     }},
     { type: 'cta', tool: 'sign' },
     { type: 'heading', level: 2, text: {
@@ -64,12 +67,12 @@ const article: GuideArticle = {
       es: 'Firma visual paso a paso', fr: 'Signature visuelle étape par étape', it: 'Firma visiva passo dopo passo',
       pt: 'Assinatura visual passo a passo', sv: 'Synlig signatur steg för steg', no: 'Synlig signatur steg for steg',
       is: 'Sýnileg undirskrift skref fyrir skref', tr: 'Adım adım görsel imza', ar: 'التوقيع المرئي خطوة بخطوة',
-      fa: 'امضای تصویری گام به گام', hi: 'चरण दर चरण दृश्य हस्ताक्षर', ja: '見た目の署名の手順', zh: '可视签名步骤',
+      fa: 'امضای تصویری گام به گام', hi: 'चरण दर चरण दृश्य हस्ताक्षर', ja: '見た目の署名の手順', zh: '可视签名步骤', id: 'Tanda tangan visual langkah demi langkah',
     }},
     { type: 'step', title: {
       pl: 'Dodaj plik PDF', en: 'Add the PDF', de: 'PDF hinzufügen', es: 'Añade el PDF', fr: 'Ajoutez le PDF', it: 'Aggiungi il PDF',
       pt: 'Adicione o PDF', sv: 'Lägg till PDF:en', no: 'Legg til PDF-en', is: 'Bættu við PDF-skránni', tr: 'PDF’yi ekleyin',
-      ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF जोड़ें', ja: 'PDFを追加する', zh: '添加PDF',
+      ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF जोड़ें', ja: 'PDFを追加する', zh: '添加PDF', id: 'Tambahkan PDF',
     }, text: {
       pl: 'Przeciągnij dokument na pole narzędzia albo kliknij je i wybierz plik.',
       en: 'Drag the document onto the tool or click it and choose the file.',
@@ -87,11 +90,12 @@ const article: GuideArticle = {
       hi: 'दस्तावेज़ को टूल पर खींचें या क्लिक करके फ़ाइल चुनें।',
       ja: '文書をツールにドラッグするか、クリックしてファイルを選びます。',
       zh: '将文档拖到工具上，或点击选择文件。',
+      id: 'Seret dokumen ke alat ini, atau klik lalu pilih file.',
     }},
     { type: 'step', title: {
       pl: 'Utwórz podpis', en: 'Create the signature', de: 'Unterschrift erstellen', es: 'Crea la firma', fr: 'Créez la signature', it: 'Crea la firma',
       pt: 'Crie a assinatura', sv: 'Skapa signaturen', no: 'Lag signaturen', is: 'Búðu til undirskriftina', tr: 'İmzayı oluşturun',
-      ar: 'أنشئ التوقيع', fa: 'امضا را بسازید', hi: 'हस्ताक्षर बनाएँ', ja: '署名を作る', zh: '创建签名',
+      ar: 'أنشئ التوقيع', fa: 'امضا را بسازید', hi: 'हस्ताक्षर बनाएँ', ja: '署名を作る', zh: '创建签名', id: 'Buat tanda tangan',
     }, text: {
       pl: 'Narysuj podpis myszką lub palcem albo wpisz imię i nazwisko jako podpis tekstowy.',
       en: 'Draw the signature with a mouse or finger, or type your name as a text signature.',
@@ -109,12 +113,13 @@ const article: GuideArticle = {
       hi: 'माउस या उँगली से हस्ताक्षर बनाएँ, या अपना नाम टेक्स्ट हस्ताक्षर के रूप में लिखें।',
       ja: 'マウスや指で署名を書くか、名前を入力してテキスト署名にします。',
       zh: '用鼠标或手指画出签名，或输入姓名作为文字签名。',
+      id: 'Gambar tanda tangan dengan mouse atau jari, atau ketik nama Anda sebagai tanda tangan teks.',
     }},
     { type: 'step', title: {
       pl: 'Wybierz strony i miejsce', en: 'Choose the pages and position', de: 'Seiten und Position wählen', es: 'Elige páginas y posición',
       fr: 'Choisissez les pages et la position', it: 'Scegli pagine e posizione', pt: 'Escolha as páginas e a posição', sv: 'Välj sidor och placering',
       no: 'Velg sider og plassering', is: 'Veldu síður og staðsetningu', tr: 'Sayfaları ve konumu seçin', ar: 'اختر الصفحات والموضع',
-      fa: 'صفحه‌ها و جای امضا را انتخاب کنید', hi: 'पेज और जगह चुनें', ja: 'ページと位置を選ぶ', zh: '选择页面和位置',
+      fa: 'صفحه‌ها و جای امضا را انتخاب کنید', hi: 'पेज और जगह चुनें', ja: 'ページと位置を選ぶ', zh: '选择页面和位置', id: 'Pilih halaman dan posisi',
     }, text: {
       pl: 'Podpis może trafić na jedną stronę, wybrane strony albo wszystkie. Wybierz jedno z gotowych miejsc, np. prawy dolny róg, albo podaj dokładne współrzędne w milimetrach, centymetrach lub calach.',
       en: 'The signature can go on one page, selected pages or all of them. Pick a ready position, such as the bottom-right corner, or enter exact coordinates in millimetres, centimetres or inches.',
@@ -132,12 +137,13 @@ const article: GuideArticle = {
       hi: 'हस्ताक्षर एक पेज, चुने हुए पेजों या सभी पेजों पर लग सकता है। कोई तैयार जगह चुनें, जैसे नीचे दायाँ कोना, या मिलीमीटर, सेंटीमीटर या इंच में सटीक निर्देशांक दें।',
       ja: '署名は1ページ、選んだページ、全ページのいずれにも入れられます。右下など用意された位置を選ぶか、ミリ・センチ・インチで正確な座標を指定します。',
       zh: '签名可以放在一页、选定的页面或所有页面上。选择预设位置（如右下角），或以毫米、厘米或英寸输入精确坐标。',
+      id: 'Tanda tangan dapat ditempatkan pada satu halaman, halaman tertentu, atau semua halaman. Pilih posisi siap pakai, misalnya sudut kanan bawah, atau masukkan koordinat tepat dalam milimeter, sentimeter, atau inci.',
     }},
     { type: 'step', title: {
       pl: 'Pobierz podpisany PDF', en: 'Download the signed PDF', de: 'Unterschriebene PDF herunterladen', es: 'Descarga el PDF firmado',
       fr: 'Téléchargez le PDF signé', it: 'Scarica il PDF firmato', pt: 'Descarregue o PDF assinado', sv: 'Ladda ner den signerade PDF:en',
       no: 'Last ned den signerte PDF-en', is: 'Sæktu undirritaða PDF-skjalið', tr: 'İmzalı PDF’yi indirin', ar: 'نزّل ملف PDF الموقَّع',
-      fa: 'PDF امضاشده را دانلود کنید', hi: 'हस्ताक्षरित PDF डाउनलोड करें', ja: '署名済みPDFをダウンロードする', zh: '下载已签名的PDF',
+      fa: 'PDF امضاشده را دانلود کنید', hi: 'हस्ताक्षरित PDF डाउनलोड करें', ja: '署名済みPDFをダウンロードする', zh: '下载已签名的PDF', id: 'Unduh PDF yang sudah ditandatangani',
     }, text: {
       pl: 'Kliknij przycisk podpisu — nowy plik zapisze się na Twoim urządzeniu, a oryginał pozostanie bez zmian.',
       en: 'Click the sign button — a new file is saved to your device and the original stays unchanged.',
@@ -155,12 +161,13 @@ const article: GuideArticle = {
       hi: 'हस्ताक्षर बटन पर क्लिक करें — नई फ़ाइल आपके डिवाइस पर सहेजी जाती है और मूल फ़ाइल नहीं बदलती।',
       ja: '署名ボタンをクリックすると新しいファイルが保存され、元のファイルはそのまま残ります。',
       zh: '点击签名按钮——新文件会保存到您的设备上，原文件保持不变。',
+      id: 'Klik tombol tanda tangan — file baru disimpan ke perangkat Anda, dan file aslinya tetap tidak berubah.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Podpis cyfrowy (PAdES)', en: 'Digital signature (PAdES)', de: 'Digitale Signatur (PAdES)', es: 'Firma digital (PAdES)',
       fr: 'Signature numérique (PAdES)', it: 'Firma digitale (PAdES)', pt: 'Assinatura digital (PAdES)', sv: 'Digital signatur (PAdES)',
       no: 'Digital signatur (PAdES)', is: 'Stafræn undirskrift (PAdES)', tr: 'Dijital imza (PAdES)', ar: 'توقيع رقمي (PAdES)',
-      fa: 'امضای دیجیتال (PAdES)', hi: 'डिजिटल हस्ताक्षर (PAdES)', ja: 'デジタル署名（PAdES）', zh: '数字签名（PAdES）',
+      fa: 'امضای دیجیتال (PAdES)', hi: 'डिजिटल हस्ताक्षर (PAdES)', ja: 'デジタル署名（PAdES）', zh: '数字签名（PAdES）', id: 'Tanda tangan digital (PAdES)',
     }},
     { type: 'paragraph', text: {
       pl: 'Jeśli masz certyfikat w pliku .p12 lub .pfx (z kluczem RSA), wybierz tryb „Podpis cyfrowy (PAdES)”, wskaż plik i podaj hasło. Dokument dostanie podpis kryptograficzny, który programy do PDF pokazują w panelu podpisów i który wykrywa każdą późniejszą zmianę pliku. Certyfikat i hasło nie opuszczają Twojego urządzenia.',
@@ -179,6 +186,7 @@ const article: GuideArticle = {
       hi: 'अगर आपके पास .p12 या .pfx फ़ाइल में सर्टिफ़िकेट (RSA कुंजी के साथ) है, तो “डिजिटल हस्ताक्षर (PAdES)” चुनें, फ़ाइल चुनें और पासवर्ड दें। दस्तावेज़ को क्रिप्टोग्राफ़िक हस्ताक्षर मिलता है जिसे PDF रीडर हस्ताक्षर पैनल में दिखाते हैं और जो फ़ाइल में बाद के किसी भी बदलाव को पकड़ लेता है। सर्टिफ़िकेट और पासवर्ड आपके डिवाइस से बाहर नहीं जाते।',
       ja: '.p12または.pfxファイルの証明書（RSA鍵）があれば、「デジタル署名（PAdES）」を選び、ファイルとパスワードを指定します。文書には暗号署名が付き、PDFリーダーの署名パネルに表示され、後からの変更も検出できます。証明書とパスワードは端末の外に出ません。',
       zh: '如果您有.p12或.pfx文件形式的证书（RSA密钥），请选择“数字签名（PAdES）”，选中文件并输入密码。文档会获得加密签名，PDF阅读器会在签名面板中显示，并能发现之后对文件的任何修改。证书和密码不会离开您的设备。',
+      id: 'Jika Anda memiliki sertifikat dalam file .p12 atau .pfx (dengan kunci RSA), pilih “Tanda tangan digital (PAdES)”, pilih file tersebut, lalu masukkan kata sandinya. Dokumen mendapat tanda tangan kriptografis yang ditampilkan pembaca PDF di panel tanda tangan dan yang akan menunjukkan setiap perubahan pada file di kemudian hari. Sertifikat dan kata sandi tidak pernah keluar dari perangkat Anda.',
     }},
     { type: 'paragraph', text: {
       pl: 'Ważne: narysowany lub wpisany podpis to obraz na stronie, a nie kwalifikowany podpis elektroniczny. Podpis PAdES z certyfikatu w pliku jest podpisem zaawansowanym; kwalifikowanym staje się tylko z certyfikatem kwalifikowanym wydanym przez kwalifikowanego dostawcę usług zaufania. Jeśli odbiorca wymaga określonej formy podpisu, sprawdź to przed wysłaniem.',
@@ -197,6 +205,7 @@ const article: GuideArticle = {
       hi: 'महत्वपूर्ण: बनाया या टाइप किया गया हस्ताक्षर पेज पर एक इमेज है, योग्य इलेक्ट्रॉनिक हस्ताक्षर नहीं। फ़ाइल वाले सर्टिफ़िकेट से किया गया PAdES हस्ताक्षर उन्नत हस्ताक्षर है; यह योग्य तभी बनता है जब सर्टिफ़िकेट किसी योग्य ट्रस्ट सेवा प्रदाता ने योग्य सर्टिफ़िकेट के रूप में जारी किया हो। अगर प्राप्तकर्ता किसी खास तरह का हस्ताक्षर माँगता है, तो भेजने से पहले जाँच लें।',
       ja: '重要：書いた署名や入力した署名はページ上の画像であり、適格電子署名ではありません。ファイル形式の証明書によるPAdES署名は高度電子署名で、適格トラストサービス事業者が発行した適格証明書を使う場合にのみ適格署名になります。受け取る側が特定の署名形式を求める場合は、送る前に確認してください。',
       zh: '重要：手绘或输入的签名只是页面上的图片，并非合格电子签名。使用文件形式证书的PAdES签名属于高级电子签名；只有使用合格信任服务提供商签发的合格证书时，才构成合格电子签名。如果接收方要求特定的签名形式，请在发送前确认。',
+      id: 'Penting: tanda tangan yang digambar atau diketik adalah gambar pada halaman, bukan tanda tangan elektronik berkualifikasi. Tanda tangan PAdES dari file sertifikat adalah tanda tangan lanjutan; tanda tangan itu baru menjadi berkualifikasi jika menggunakan sertifikat berkualifikasi dari penyedia layanan kepercayaan berkualifikasi. Jika penerima mensyaratkan bentuk tanda tangan tertentu, periksalah sebelum mengirim.',
     }},
   ],
   relatedTool: 'sign',
@@ -205,7 +214,7 @@ const article: GuideArticle = {
       pl: 'Czy taki podpis jest ważny?', en: 'Is this kind of signature valid?', de: 'Ist eine solche Unterschrift gültig?', es: '¿Es válida esta firma?',
       fr: 'Cette signature est-elle valable ?', it: 'Questa firma è valida?', pt: 'Esta assinatura é válida?', sv: 'Är en sådan signatur giltig?',
       no: 'Er en slik signatur gyldig?', is: 'Er slík undirskrift gild?', tr: 'Bu imza geçerli mi?', ar: 'هل هذا التوقيع صالح؟',
-      fa: 'آیا چنین امضایی معتبر است؟', hi: 'क्या ऐसा हस्ताक्षर मान्य है?', ja: 'この署名は有効ですか？', zh: '这种签名有效吗？',
+      fa: 'آیا چنین امضایی معتبر است؟', hi: 'क्या ऐसा हस्ताक्षर मान्य है?', ja: 'この署名は有効ですか？', zh: '这种签名有效吗？', id: 'Apakah tanda tangan semacam ini sah?',
     }, a: {
       pl: 'W wielu codziennych sprawach wystarcza, ale nie jest kwalifikowanym podpisem elektronicznym. Gdy wymagana jest konkretna forma podpisu, sprawdź to u odbiorcy dokumentu.',
       en: 'It is enough for many everyday matters, but it is not a qualified electronic signature. When a particular form is required, check with the recipient.',
@@ -223,13 +232,14 @@ const article: GuideArticle = {
       hi: 'कई रोज़मर्रा के कामों के लिए यह काफ़ी है, लेकिन यह योग्य इलेक्ट्रॉनिक हस्ताक्षर नहीं है। अगर कोई खास तरीका ज़रूरी है, तो प्राप्तकर्ता से पूछें।',
       ja: '日常の多くの場面では十分ですが、適格電子署名ではありません。特定の形式が必要な場合は受け取る側に確認してください。',
       zh: '在很多日常场合已足够，但它不是合格电子签名。如果要求特定形式，请向接收方确认。',
+      id: 'Tanda tangan ini cukup untuk banyak keperluan sehari-hari, tetapi bukan tanda tangan elektronik berkualifikasi. Jika bentuk tertentu disyaratkan, tanyakan kepada penerima.',
     }},
     { q: {
       pl: 'Czy mogę podpisać wszystkie strony naraz?', en: 'Can I sign every page at once?', de: 'Kann ich alle Seiten auf einmal unterschreiben?',
       es: '¿Puedo firmar todas las páginas a la vez?', fr: 'Puis-je signer toutes les pages d’un coup ?', it: 'Posso firmare tutte le pagine insieme?',
       pt: 'Posso assinar todas as páginas de uma vez?', sv: 'Kan jag signera alla sidor på en gång?', no: 'Kan jeg signere alle sider samtidig?',
       is: 'Get ég undirritað allar síður í einu?', tr: 'Tüm sayfaları tek seferde imzalayabilir miyim?', ar: 'هل يمكنني توقيع كل الصفحات دفعة واحدة؟',
-      fa: 'آیا می‌توانم همه صفحه‌ها را یک‌جا امضا کنم؟', hi: 'क्या मैं सभी पेजों पर एक साथ हस्ताक्षर कर सकता हूँ?', ja: '全ページに一度に署名できますか？', zh: '可以一次签署所有页面吗？',
+      fa: 'آیا می‌توانم همه صفحه‌ها را یک‌جا امضا کنم؟', hi: 'क्या मैं सभी पेजों पर एक साथ हस्ताक्षर कर सकता हूँ?', ja: '全ページに一度に署名できますか？', zh: '可以一次签署所有页面吗？', id: 'Bisakah saya menandatangani semua halaman sekaligus?',
     }, a: {
       pl: 'Tak. Wybierz opcję „Wszystkie strony”, a podpis pojawi się w tym samym miejscu na każdej stronie.',
       en: 'Yes. Choose “All pages” and the signature appears in the same place on every page.',
@@ -247,13 +257,14 @@ const article: GuideArticle = {
       hi: 'हाँ। “सभी पृष्ठ” चुनें, हस्ताक्षर हर पेज पर एक ही जगह दिखेगा।',
       ja: 'はい。「すべてのページ」を選ぶと、各ページの同じ位置に署名が入ります。',
       zh: '可以。选择“所有页面”，签名会出现在每一页的相同位置。',
+      id: 'Ya. Pilih “Semua halaman”, dan tanda tangan akan muncul di tempat yang sama pada setiap halaman.',
     }},
     { q: {
       pl: 'Czy mój certyfikat jest gdzieś wysyłany?', en: 'Is my certificate sent anywhere?', de: 'Wird mein Zertifikat irgendwohin gesendet?',
       es: '¿Se envía mi certificado a algún sitio?', fr: 'Mon certificat est-il envoyé quelque part ?', it: 'Il mio certificato viene inviato da qualche parte?',
       pt: 'O meu certificado é enviado para algum lado?', sv: 'Skickas mitt certifikat någonstans?', no: 'Blir sertifikatet mitt sendt noe sted?',
       is: 'Er skilríkið mitt sent eitthvert?', tr: 'Sertifikam bir yere gönderiliyor mu?', ar: 'هل تُرسل شهادتي إلى أي مكان؟',
-      fa: 'آیا گواهی من به جایی فرستاده می‌شود؟', hi: 'क्या मेरा सर्टिफ़िकेट कहीं भेजा जाता है?', ja: '証明書はどこかに送信されますか？', zh: '我的证书会被发送到任何地方吗？',
+      fa: 'آیا گواهی من به جایی فرستاده می‌شود؟', hi: 'क्या मेरा सर्टिफ़िकेट कहीं भेजा जाता है?', ja: '証明書はどこかに送信されますか？', zh: '我的证书会被发送到任何地方吗？', id: 'Apakah sertifikat saya dikirim ke suatu tempat?',
     }, a: {
       pl: 'Nie. Plik PDF, certyfikat i hasło są używane tylko w Twojej przeglądarce i nie trafiają na nasz serwer.',
       en: 'No. The PDF, certificate and password are used only in your browser and never reach our server.',
@@ -271,6 +282,7 @@ const article: GuideArticle = {
       hi: 'नहीं। PDF, सर्टिफ़िकेट और पासवर्ड सिर्फ़ आपके ब्राउज़र में इस्तेमाल होते हैं और हमारे सर्वर तक नहीं पहुँचते।',
       ja: 'いいえ。PDF・証明書・パスワードはブラウザ内でのみ使われ、当社のサーバーには送られません。',
       zh: '不会。PDF、证书和密码只在您的浏览器中使用，不会到达我们的服务器。',
+      id: 'Tidak. PDF, sertifikat, dan kata sandi hanya digunakan di browser Anda dan tidak pernah sampai ke server kami.',
     }},
   ],
   canonicalOverride: undefined,

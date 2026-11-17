@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'PDF को Word में कैसे बदलें',
     ja: 'PDFをWordに変換する方法',
     zh: '如何将PDF转换为Word',
+    id: 'Cara Mengonversi PDF ke Word',
   },
   excerpt: {
     pl: 'Dowiedz się, jak zamienić plik PDF na edytowalny dokument Word (DOCX). Darmowe narzędzie online — konwersja w przeglądarce, bez wysyłania plików.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'PDF फ़ाइल को संपादन योग्य Word दस्तावेज़ में बदलना सीखें। मुफ़्त ऑनलाइन उपकरण — ब्राउज़र में रूपांतरण।',
     ja: 'PDFファイルを編集可能なWord文書に変換する方法を学びます。無料のオンラインツール — ブラウザ内で変換。',
     zh: '了解如何将PDF文件转换为可编辑的Word文档。免费在线工具 — 在浏览器中完成转换。',
+    id: 'Pelajari cara mengubah file PDF menjadi dokumen Word (DOCX) yang dapat diedit. Alat online gratis — konversi berlangsung di browser Anda, tanpa mengunggah file.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,6 +59,7 @@ const article: GuideArticle = {
       hi: 'PDF से Word रूपांतरण सबसे लोकप्रिय उपकरणों में से एक है। यह तब उपयोगी होता है जब आपको PDF फ़ाइल मिलती है और आपको इसकी सामग्री संपादित करने की आवश्यकता होती है।',
       ja: 'PDFからWordへの変換は、最も人気のあるツールの1つです。PDFファイルを受け取り、その内容を編集する必要がある場合に便利です。',
       zh: 'PDF转Word是最受欢迎的工具之一。当您收到PDF文件并需要编辑其内容时非常有用。',
+      id: 'Konversi PDF ke Word adalah salah satu alat yang paling populer. Alat ini berguna ketika Anda menerima file PDF dan perlu mengedit isinya — mengubah teks, memperbaiki format, atau menambahkan paragraf. OptimaPDF mengonversi PDF ke DOCX sepenuhnya di browser Anda.',
     }},
     { type: 'cta', tool: 'word' },
     { type: 'heading', level: 2, text: {
@@ -76,6 +79,7 @@ const article: GuideArticle = {
       hi: 'चरण दर चरण PDF को Word में कैसे बदलें',
       ja: 'ステップバイステップでPDFをWordに変換する方法',
       zh: '如何逐步将PDF转换为Word',
+      id: 'Cara Mengonversi PDF ke Word Langkah demi Langkah',
     }},
     { type: 'step', title: {
       pl: 'Przeciągnij plik PDF',
@@ -94,6 +98,7 @@ const article: GuideArticle = {
       hi: 'PDF फ़ाइल छोड़ें',
       ja: 'PDFファイルをドロップ',
       zh: '放入PDF文件',
+      id: 'Letakkan File PDF',
     }, text: {
       pl: 'Przeciągnij plik PDF w pole wyboru lub kliknij, aby wybrać go z dysku. Następnie kliknij przycisk „Konwertuj do formatu Word”, aby rozpocząć konwersję.',
       en: 'Drag the PDF file into the upload area or click to select it from your disk. Then click the "Convert to Word" button to start the conversion.',
@@ -111,6 +116,7 @@ const article: GuideArticle = {
       hi: 'PDF फ़ाइल को अपलोड क्षेत्र में खींचें या अपनी डिस्क से चुनने के लिए क्लिक करें। फिर रूपांतरण शुरू करने के लिए "वर्ड में बदलें" बटन पर क्लिक करें।',
       ja: 'PDFファイルをアップロードエリアにドラッグするか、クリックして選択します。その後、「Wordに変換」ボタンをクリックして変換を開始します。',
       zh: '将PDF文件拖放到上传区域，或单击从磁盘中选择。然后点击"转换为 Word"按钮开始转换。',
+      id: 'Seret file PDF ke area unggah atau klik untuk memilihnya dari disk. Lalu klik tombol "Konversi ke Word" untuk memulai konversi.',
     }},
     { type: 'step', title: {
       pl: 'Poczekaj na konwersję',
@@ -129,6 +135,7 @@ const article: GuideArticle = {
       hi: 'रूपांतरण की प्रतीक्षा करें',
       ja: '変換が完了するまで待機',
       zh: '等待转换完成',
+      id: 'Tunggu Konversi Selesai',
     }, text: {
       pl: 'Konwersja trwa zwykle kilka sekund. Plik DOCX zostanie pobrany automatycznie. Otwórz go w Wordzie, LibreOffice lub Google Docs, aby edytować treść.',
       en: 'The conversion usually takes a few seconds. The DOCX file will be downloaded automatically. Open it in Word, LibreOffice or Google Docs to edit the content.',
@@ -146,6 +153,7 @@ const article: GuideArticle = {
       hi: 'रूपांतरण में आमतौर पर कुछ सेकंड लगते हैं। DOCX फ़ाइल स्वचालित रूप से डाउनलोड हो जाएगी। सामग्री संपादित करने के लिए इसे Word, LibreOffice या Google Docs में खोलें।',
       ja: '変換は通常数秒で完了します。DOCXファイルが自動的にダウンロードされます。Word、LibreOffice、Google Docsで開いて編集してください。',
       zh: '转换通常需要几秒钟。DOCX文件将自动下载。在Word、LibreOffice或Google Docs中打开以编辑内容。',
+      id: 'Konversi biasanya hanya memerlukan beberapa detik. File DOCX akan terunduh secara otomatis. Buka di Word, LibreOffice, atau Google Dokumen untuk mengedit isinya.',
     }},
     { type: 'cta', tool: 'word' },
     { type: 'heading', level: 3, text: {
@@ -165,10 +173,11 @@ const article: GuideArticle = {
       hi: 'रूपांतरण युक्तियाँ',
       ja: '変換のヒント',
       zh: '转换提示',
+      id: 'Tips Konversi',
     }},
     { type: 'list', items: [
-      { pl: 'Proste dokumenty tekstowe konwertują się najlepiej — zachowują formatowanie, listy i akapity', en: 'Simple text documents convert best — they retain formatting, lists and paragraphs', de: 'Einfache Textdokumente konvertieren am besten — sie behalten Formatierung, Listen und Absätze bei', es: 'Los documentos de texto simples se convierten mejor — conservan el formato, listas y párrafos', fr: 'Les documents texte simples se convertissent le mieux — ils conservent le formatage, les listes et les paragraphes', it: 'I documenti di testo semplici si convertono meglio — conservano formattazione, elenchi e paragrafi', pt: 'Documentos de texto simples convertem-se melhor — retêm formatação, listas e parágrafos', sv: 'Enkla textdokument konverteras bäst — de behåller formatering, listor och stycken', no: 'Enkle tekstdokument konverteres best — de beholder formatering, lister og avsnitt', is: 'Einföld textaskjöl umbreytast best — þau halda sniði, listum og efnisgreinum', tr: 'Basit metin belgeleri en iyi şekilde dönüşür — biçimlendirmeyi, listeleri ve paragrafları korurlar', ar: 'المستندات النصية البسيطة تتحول بشكل أفضل — تحتفظ بالتنسيق والقوائم والفقرات', fa: 'اسناد متنی ساده بهترین تبدیل را دارند — قالب‌بندی، لیست‌ها و پاراگراف‌ها را حفظ می‌کنند', hi: 'सरल टेक्स्ट दस्तावेज़ सबसे अच्छा रूपांतरित होते हैं — वे फ़ॉर्मेटिंग, सूचियां और पैराग्राफ बनाए रखते हैं', ja: 'シンプルなテキスト文書は最も変換品質が高く、書式、リスト、段落を保持します', zh: '简单的文本文档转换效果最好 — 它们保留格式、列表和段落' },
-      { pl: 'Tabele i zaawansowane układy mogą wymagać ręcznej korekty w Wordzie po konwersji', en: 'Tables and complex layouts may need manual adjustment in Word after conversion', de: 'Tabellen und komplexe Layouts können nach der Konvertierung manuelle Anpassungen erfordern', es: 'Las tablas y diseños complejos pueden necesitar ajustes manuales en Word', fr: 'Les tableaux et mises en page complexes peuvent nécessiter un ajustement manuel dans Word', it: 'Tabelle e layout complessi potrebbero richiedere regolazioni manuali in Word', pt: 'Tabelas e layouts complexos podem necessitar de ajuste manual no Word', sv: 'Tabeller och komplexa layouter kan behöva manuell justering i Word', no: 'Tabeller og komplekse oppsett kan trenge manuell justering i Word', is: 'Töflur og flókin skipulag geta þurft handvirka aðlögun í Word', tr: 'Tablolar ve karmaşık düzenler, dönüştürmeden sonra Word\'de manuel ayar gerektirebilir', ar: 'الجداول والتخطيطات المعقدة قد تحتاج إلى تعديل يدوي في Word بعد التحويل', fa: 'جدول‌ها و طرح‌های پیچیده ممکن است پس از تبدیل نیاز به تنظیم دستی در Word داشته باشند', hi: 'तालिकाओं और जटिल लेआउट को रूपांतरण के बाद Word में मैन्युअल समायोजन की आवश्यकता हो सकती है', ja: '表や複雑なレイアウトは変換後にWordで手動調整が必要な場合があります', zh: '表格和复杂的布局在转换后可能需要在Word中进行手动调整' },
+      { pl: 'Proste dokumenty tekstowe konwertują się najlepiej — zachowują formatowanie, listy i akapity', en: 'Simple text documents convert best — they retain formatting, lists and paragraphs', de: 'Einfache Textdokumente konvertieren am besten — sie behalten Formatierung, Listen und Absätze bei', es: 'Los documentos de texto simples se convierten mejor — conservan el formato, listas y párrafos', fr: 'Les documents texte simples se convertissent le mieux — ils conservent le formatage, les listes et les paragraphes', it: 'I documenti di testo semplici si convertono meglio — conservano formattazione, elenchi e paragrafi', pt: 'Documentos de texto simples convertem-se melhor — retêm formatação, listas e parágrafos', sv: 'Enkla textdokument konverteras bäst — de behåller formatering, listor och stycken', no: 'Enkle tekstdokument konverteres best — de beholder formatering, lister og avsnitt', is: 'Einföld textaskjöl umbreytast best — þau halda sniði, listum og efnisgreinum', tr: 'Basit metin belgeleri en iyi şekilde dönüşür — biçimlendirmeyi, listeleri ve paragrafları korurlar', ar: 'المستندات النصية البسيطة تتحول بشكل أفضل — تحتفظ بالتنسيق والقوائم والفقرات', fa: 'اسناد متنی ساده بهترین تبدیل را دارند — قالب‌بندی، لیست‌ها و پاراگراف‌ها را حفظ می‌کنند', hi: 'सरल टेक्स्ट दस्तावेज़ सबसे अच्छा रूपांतरित होते हैं — वे फ़ॉर्मेटिंग, सूचियां और पैराग्राफ बनाए रखते हैं', ja: 'シンプルなテキスト文書は最も変換品質が高く、書式、リスト、段落を保持します', zh: '简单的文本文档转换效果最好 — 它们保留格式、列表和段落', id: 'Dokumen teks sederhana paling baik hasil konversinya — format, daftar, dan paragrafnya tetap terjaga', },
+      { pl: 'Tabele i zaawansowane układy mogą wymagać ręcznej korekty w Wordzie po konwersji', en: 'Tables and complex layouts may need manual adjustment in Word after conversion', de: 'Tabellen und komplexe Layouts können nach der Konvertierung manuelle Anpassungen erfordern', es: 'Las tablas y diseños complejos pueden necesitar ajustes manuales en Word', fr: 'Les tableaux et mises en page complexes peuvent nécessiter un ajustement manuel dans Word', it: 'Tabelle e layout complessi potrebbero richiedere regolazioni manuali in Word', pt: 'Tabelas e layouts complexos podem necessitar de ajuste manual no Word', sv: 'Tabeller och komplexa layouter kan behöva manuell justering i Word', no: 'Tabeller og komplekse oppsett kan trenge manuell justering i Word', is: 'Töflur og flókin skipulag geta þurft handvirka aðlögun í Word', tr: 'Tablolar ve karmaşık düzenler, dönüştürmeden sonra Word\'de manuel ayar gerektirebilir', ar: 'الجداول والتخطيطات المعقدة قد تحتاج إلى تعديل يدوي في Word بعد التحويل', fa: 'جدول‌ها و طرح‌های پیچیده ممکن است پس از تبدیل نیاز به تنظیم دستی در Word داشته باشند', hi: 'तालिकाओं और जटिल लेआउट को रूपांतरण के बाद Word में मैन्युअल समायोजन की आवश्यकता हो सकती है', ja: '表や複雑なレイアウトは変換後にWordで手動調整が必要な場合があります', zh: '表格和复杂的布局在转换后可能需要在Word中进行手动调整', id: 'Tabel dan tata letak yang rumit mungkin perlu disesuaikan secara manual di Word setelah konversi', },
     ]},
     { type: 'cta', tool: 'word' },
   ],
@@ -191,6 +200,7 @@ const article: GuideArticle = {
       hi: 'क्या रूपांतरण फ़ॉर्मेटिंग को संरक्षित करता है?',
       ja: '変換は書式を保持しますか？',
       zh: '转换是否保留格式？',
+      id: 'Apakah konversi mempertahankan format?',
     }, a: {
       pl: 'Tak, podstawowe formatowanie (krój czcionki, rozmiar, pogrubienie, kursywa, listy, akapity) jest zachowane. Tabele i zaawansowane układy graficzne mogą wymagać ręcznej korekty.',
       en: 'Yes, basic formatting (font, size, bold, italic, lists, paragraphs) is preserved. Tables and advanced graphic layouts may need manual adjustment.',
@@ -208,6 +218,7 @@ const article: GuideArticle = {
       hi: 'हाँ, बुनियादी फ़ॉर्मेटिंग संरक्षित रहती है। तालिकाओं और उन्नत ग्राफ़िक लेआउट को मैन्युअल समायोजन की आवश्यकता हो सकती है।',
       ja: 'はい、基本的な書式（フォント、サイズ、太字、斜体、リスト、段落）は保持されます。表や高度なグラフィックレイアウトは手動調整が必要な場合があります。',
       zh: '是的，基本格式（字体、大小、加粗、斜体、列表、段落）会保留。表格和高级图形布局可能需要手动调整。',
+      id: 'Ya, format dasar (fon, ukuran, huruf tebal, huruf miring, daftar, paragraf) tetap dipertahankan. Tabel dan tata letak grafis yang rumit mungkin perlu disesuaikan secara manual.',
     }},
   ],
   canonicalOverride: undefined,

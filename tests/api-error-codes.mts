@@ -40,7 +40,7 @@ console.log('=== every code has a message in every language ===');
       if (code === 'ai_daily_limit' && !text.includes('{hours}')) badParams.push(`${locale}:${code}`);
     }
   }
-  check(locales.length === 16 && API_ERROR_CODES.length === 12, `sanity: ${locales.length} locales x ${API_ERROR_CODES.length} codes`);
+  check(locales.length >= 16 && API_ERROR_CODES.length === 12, `sanity: ${locales.length} locales x ${API_ERROR_CODES.length} codes`);
   check(missing.length === 0, `no missing message (${missing.slice(0, 6).join(', ')})`);
   check(untranslated.length === 0, `no locale just repeats the Polish text (${untranslated.slice(0, 6).join(', ')})`);
   check(badParams.length === 0, `the size and hours placeholders are kept (${badParams.join(', ')})`);

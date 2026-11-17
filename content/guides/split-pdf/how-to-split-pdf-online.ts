@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'PDF फ़ाइल को छोटे भागों में कैसे विभाजित करें',
     ja: 'PDFファイルを小さなファイルに分割する方法',
     zh: '如何将PDF文件分割成较小的部分',
+    id: 'Cara Memisahkan PDF Menjadi File yang Lebih Kecil',
   },
   excerpt: {
       pl: 'Dowiedz się, jak dzielić PDF na osobne dokumenty — strona po stronie, zakresy niestandardowe lub wybór konkretnych stron. W pełni lokalnie i za darmo.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
       hi: 'PDF को अलग-अलग दस्तावेज़ों में विभाजित करना सीखें — पृष्ठ-दर-पृष्ठ, कस्टम रेंज, या विशिष्ट पृष्ठ चुनकर।',
       ja: 'PDFを個別の文書に分割する方法を学びます — 1ページずつ、カスタム範囲、または特定のページを選択。',
       zh: '了解如何将PDF分割为单独的文档 — 逐页、自定义范围或选择特定页面。',
+      id: 'Pelajari cara memisahkan PDF menjadi dokumen terpisah — per halaman, dengan rentang khusus, atau dengan memilih halaman tertentu. Sepenuhnya lokal dan gratis.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,6 +59,7 @@ const article: GuideArticle = {
       hi: 'PDF को विभाजित करना तब उपयोगी होता है जब आपके पास एक बड़ा दस्तावेज़ हो और आपको केवल कुछ पृष्ठों की आवश्यकता हो, या जब आप बहु-पृष्ठ स्कैन को अलग-अलग फ़ाइलों में विभाजित करना चाहते हों।',
       ja: 'PDFの分割は、大きな文書から数ページだけが必要な場合や、マルチページのスキャンを個別のファイルに分割したい場合に便利です。',
       zh: '当您有一个大文档只需要几页，或者想要将多页扫描件拆分为单独的文件时，PDF拆分非常有用。',
+      id: 'Memisahkan PDF berguna ketika Anda memiliki dokumen besar tetapi hanya memerlukan beberapa halaman, atau ketika Anda ingin membagi hasil pindaian berhalaman banyak menjadi file-file terpisah. OptimaPDF menyediakan tiga mode pemisahan sesuai kebutuhan Anda.',
     }},
     { type: 'cta', tool: 'split' },
     { type: 'heading', level: 2, text: {
@@ -76,6 +79,7 @@ const article: GuideArticle = {
       hi: 'PDF विभाजन मोड',
       ja: 'PDF分割モード',
       zh: 'PDF拆分模式',
+      id: 'Mode Pemisahan PDF',
     }},
     { type: 'step', title: {
       pl: 'Tryb "Strona po stronie"',
@@ -94,6 +98,7 @@ const article: GuideArticle = {
       hi: '"पृष्ठ दर पृष्ठ" मोड',
       ja: '「ページごとに」モード',
       zh: '"逐页拆分"模式',
+      id: 'Mode "Per halaman"',
     }, text: {
       pl: 'Zapisuje każdą stronę jako osobny plik PDF. Na przykład PDF z 20 stronami utworzy 20 plików jednostronicowych. Idealne do rozdzielania skanów.',
       en: 'Saves every page as its own PDF file. For example, a 20-page PDF creates 20 single-page files. Ideal for breaking up scans.',
@@ -111,6 +116,7 @@ const article: GuideArticle = {
       hi: 'हर पृष्ठ को उसकी अपनी अलग PDF फ़ाइल के रूप में सहेजता है। उदाहरण के लिए, 20-पृष्ठ का PDF 20 एकल-पृष्ठ फ़ाइलें बनाता है। स्कैन को अलग करने के लिए आदर्श।',
       ja: '各ページを個別のPDFファイルとして保存します。たとえば20ページのPDFからは、1ページずつのファイルが20個作成されます。スキャンの分割に最適です。',
       zh: '将每一页保存为单独的PDF文件。例如，20页的PDF将创建20个单页文件。非常适合拆分扫描件。',
+      id: 'Menyimpan setiap halaman sebagai file PDF tersendiri. Misalnya, PDF 20 halaman menghasilkan 20 file satu halaman. Ideal untuk memecah hasil pindaian.',
     }},
     { type: 'step', title: {
       pl: 'Tryb "Zakresy niestandardowe"',
@@ -129,6 +135,7 @@ const article: GuideArticle = {
       hi: '"अनुकूलित श्रेणियाँ" मोड',
       ja: '「カスタム範囲」モード',
       zh: '"自定义范围"模式',
+      id: 'Mode "Rentang khusus"',
     }, text: {
       pl: 'Wpisz konkretne zakresy stron, np. "1-5, 8, 10-15". Każdy zakres stanie się osobnym plikiem. Możesz mieszać pojedyncze strony z zakresami.',
       en: 'Enter specific page ranges, e.g. "1-5, 8, 10-15". Each range becomes a separate file. You can mix single pages with ranges.',
@@ -146,6 +153,7 @@ const article: GuideArticle = {
       hi: 'विशिष्ट पृष्ठ श्रेणियां दर्ज करें, जैसे "1-5, 8, 10-15"। प्रत्येक श्रेणी एक अलग फ़ाइल बन जाती है। आप एकल पृष्ठों को श्रेणियों के साथ मिश्रित कर सकते हैं।',
       ja: '特定のページ範囲を入力します（例：「1-5, 8, 10-15」）。各範囲が個別のファイルになります。単一ページと範囲を混在させることができます。',
       zh: '输入特定的页码范围，例如"1-5, 8, 10-15"。每个范围成为一个单独的文件。您可以混合单页和范围。',
+      id: 'Masukkan rentang halaman tertentu, misalnya "1-5, 8, 10-15". Setiap rentang menjadi file tersendiri. Anda dapat mencampur halaman tunggal dengan rentang.',
     }},
     { type: 'step', title: {
       pl: 'Tryb "Podziel wg zaznaczenia"',
@@ -164,6 +172,7 @@ const article: GuideArticle = {
       hi: '"चयन के अनुसार विभाजित करें" मोड',
       ja: '「選択で分割」モード',
       zh: '"按选择拆分"模式',
+      id: 'Mode "Pisahkan berdasarkan pilihan"',
     }, text: {
       pl: 'Zobacz miniatury wszystkich stron i zaznacz te, które chcesz. Otrzymasz dwa pliki: jeden z zaznaczonymi stronami i drugi ze wszystkimi pozostałymi. Idealne do wyciągnięcia konkretnych stron z dokumentu.',
       en: 'View thumbnails of all pages and select the ones you want. You get two files: one with the selected pages and one with all the remaining pages. Perfect for pulling specific pages out of a document.',
@@ -181,6 +190,7 @@ const article: GuideArticle = {
       hi: 'सभी पृष्ठों की थंबनेल देखें और अपनी पसंद के पृष्ठ चुनें। आपको दो फ़ाइलें मिलती हैं: एक चयनित पृष्ठों वाली और दूसरी बाकी सभी पृष्ठों वाली। दस्तावेज़ से विशिष्ट पृष्ठ निकालने के लिए बिल्कुल सही।',
       ja: 'すべてのページのサムネイルを表示し、必要なページを選択します。選択したページのファイルと、残りのすべてのページのファイルの2つが作成されます。文書から特定のページを取り出すのに最適です。',
       zh: '查看所有页面的缩略图，然后选择所需页面。您将得到两个文件：一个包含所选页面，另一个包含所有其余页面。非常适合从文档中提取特定页面。',
+      id: 'Lihat gambar mini semua halaman dan pilih yang Anda inginkan. Anda mendapatkan dua file: satu berisi halaman yang dipilih dan satu lagi berisi semua halaman lainnya. Cocok untuk mengambil halaman tertentu dari sebuah dokumen.',
     }},
     { type: 'cta', tool: 'split' },
   ],
@@ -203,6 +213,7 @@ const article: GuideArticle = {
       hi: 'क्या मैं कई श्रेणियां चुन सकता हूँ?',
       ja: '複数の範囲を選択できますか？',
       zh: '我可以选择多个范围吗？',
+      id: 'Bisakah saya memilih beberapa rentang?',
     }, a: {
       pl: 'Tak, w trybie "Zakresy niestandardowe" możesz wpisać wiele zakresów oddzielonych przecinkami. Każdy zakres zostanie zapisany jako osobny plik. Przykład: "1-3, 5, 7-9" utworzy trzy pliki.',
       en: 'Yes, in "Custom ranges" mode you can enter multiple ranges separated by commas. Each range becomes a separate file. Example: "1-3, 5, 7-9" creates three files.',
@@ -220,6 +231,7 @@ const article: GuideArticle = {
       hi: 'हाँ, "अनुकूलित श्रेणियाँ" मोड में आप अल्पविराम से अलग की गई कई श्रेणियां दर्ज कर सकते हैं। प्रत्येक श्रेणी एक अलग फ़ाइल बन जाती है।',
       ja: 'はい、「カスタム範囲」モードでは、カンマ区切りで複数の範囲を入力できます。各範囲が個別のファイルになります。',
       zh: '可以。在"自定义范围"模式下，您可以输入多个以逗号分隔的范围。每个范围成为一个单独的文件。',
+      id: 'Ya, dalam mode "Rentang khusus" Anda dapat memasukkan beberapa rentang yang dipisahkan koma. Setiap rentang menjadi file tersendiri. Contoh: "1-3, 5, 7-9" menghasilkan tiga file.',
     }},
   ],
   canonicalOverride: undefined,

@@ -5,6 +5,7 @@
 // download at all — not even for files 1 and 3. Conversion now goes through runBatch (one
 // try/catch per file); the page downloads what succeeded and lists what failed, with the reason.
 import { readFileSync } from 'node:fs';
+import { locales } from '../lib/i18n';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { runBatch } from '../lib/batch';
@@ -58,9 +59,9 @@ check(/batch\.partial_failed/.test(comp) && /batch\.all_failed/.test(comp), 'Bat
 
 const i18n = i18nSource();
 const partialLines = i18n.split('\n').filter((l) => l.includes("'batch.partial_failed':"));
-check(partialLines.length === 16 && partialLines.every((l) => l.includes('{failed}') && l.includes('{total}')),
-  'the partial-failure message has {failed} and {total} in all 16 locales');
-check((i18n.match(/'batch\.all_failed': '[^']+'/g) ?? []).length === 16, 'the all-failed message exists in all 16 locales');
+check(partialLines.length === locales.length && partialLines.every((l) => l.includes('{failed}') && l.includes('{total}')),
+  'the partial-failure message has {failed} and {total} in every locale');
+check((i18n.match(/'batch\.all_failed': '[^']+'/g) ?? []).length === locales.length, 'the all-failed message exists in every locale');
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);

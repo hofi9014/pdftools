@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'PDF को कैसे घुमाएँ और वैसे ही सहेजें',
     ja: 'PDFを回転して、その向きで保存する方法',
     zh: '如何旋转PDF并按该方向保存',
+    id: 'Cara Memutar PDF dan Menyimpannya dalam Posisi Itu',
   },
   excerpt: {
     pl: 'Zeskanowany dokument leży na boku albo do góry nogami? Obróć wszystkie strony o 90° lub 180° i zapisz plik bez utraty jakości — w przeglądarce.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'स्कैन किया दस्तावेज़ बगल में या उल्टा है? सभी पेज 90° या 180° घुमाएँ और गुणवत्ता खोए बिना फ़ाइल सहेजें — ब्राउज़र में।',
     ja: 'スキャンした書類が横向きや逆さまになっていませんか。全ページを90°または180°回転し、画質を落とさずにブラウザ内で保存できます。',
     zh: '扫描的文档是横着的还是倒过来的？在浏览器中将所有页面旋转90°或180°，并无损保存文件。',
+    id: 'Dokumen hasil pindaian miring ke samping atau terbalik? Putar semua halaman 90° atau 180° dan simpan file tanpa kehilangan kualitas — di browser Anda.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,18 +59,19 @@ const article: GuideArticle = {
       hi: 'स्कैनर और फ़ोन अक्सर पेज को गलत दिशा में सहेजते हैं। PDF व्यूअर दृश्य घुमा सकता है, पर सिर्फ़ थोड़ी देर के लिए — फ़ाइल दोबारा खोलने पर वह फिर बगल में होती है। PDF घुमाएं टूल नई दिशा फ़ाइल में ही सहेजता है, ताकि जो भी उसे खोले, पेज सीधे देखे। सब आपके ब्राउज़र में होता है — फ़ाइल हमारे सर्वर तक नहीं पहुँचती।',
       ja: 'スキャナーやスマートフォンは、ページを誤った向きで保存することがよくあります。PDFビューアーでも表示は回転できますが一時的なもので、開き直すとまた横向きです。「PDF回転」ツールは新しい向きをファイル自体に保存するので、誰が開いてもページはまっすぐ表示されます。処理はすべてブラウザ内で行われ、ファイルが当社のサーバーに送られることはありません。',
       zh: '扫描仪和手机经常把页面保存成错误的方向。PDF阅读器可以旋转视图，但只是暂时的——再次打开文件时，它又是横着的。旋转PDF工具会把新的方向保存在文件本身中，任何人打开都能看到正向的页面。一切都在您的浏览器中完成，文件不会到达我们的服务器。',
+      id: 'Pemindai dan ponsel sering menyimpan halaman dengan arah yang salah. Penampil PDF bisa memutar tampilan, tetapi hanya untuk sementara — buka file itu lagi dan halamannya kembali miring. Alat Putar PDF menyimpan arah baru di dalam file itu sendiri, sehingga setiap orang yang membukanya melihat halaman dalam posisi tegak. Semuanya berlangsung di browser Anda — file tidak pernah sampai ke server kami.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Obracanie PDF krok po kroku', en: 'Rotating a PDF step by step', de: 'PDF Schritt für Schritt drehen',
       es: 'Rotar un PDF paso a paso', fr: 'Faire pivoter un PDF étape par étape', it: 'Ruotare un PDF passo dopo passo',
       pt: 'Rodar um PDF passo a passo', sv: 'Rotera en PDF steg för steg', no: 'Roter en PDF trinn for trinn',
       is: 'Að snúa PDF skref fyrir skref', tr: 'Adım adım PDF döndürme', ar: 'تدوير PDF خطوة بخطوة',
-      fa: 'چرخش PDF گام به گام', hi: 'चरण दर चरण PDF घुमाना', ja: 'PDFを回転する手順', zh: '逐步旋转PDF',
+      fa: 'چرخش PDF گام به گام', hi: 'चरण दर चरण PDF घुमाना', ja: 'PDFを回転する手順', zh: '逐步旋转PDF', id: 'Memutar PDF langkah demi langkah',
     }},
     { type: 'step', title: {
       pl: 'Dodaj plik PDF', en: 'Add the PDF', de: 'PDF hinzufügen', es: 'Añade el PDF', fr: 'Ajoutez le PDF', it: 'Aggiungi il PDF',
       pt: 'Adicione o PDF', sv: 'Lägg till PDF:en', no: 'Legg til PDF-en', is: 'Bættu PDF-skránni við', tr: 'PDF’yi ekleyin', ar: 'أضف ملف PDF',
-      fa: 'فایل PDF را اضافه کنید', hi: 'PDF जोड़ें', ja: 'PDFを追加する', zh: '添加PDF',
+      fa: 'فایل PDF را اضافه کنید', hi: 'PDF जोड़ें', ja: 'PDFを追加する', zh: '添加PDF', id: 'Tambahkan PDF',
     }, text: {
       pl: 'Przeciągnij plik na stronę narzędzia Obróć PDF albo kliknij, żeby go wybrać. Możesz dodać kilka plików naraz.',
       en: 'Drag the file onto the Rotate PDF page or click to choose it. You can add several files at once.',
@@ -86,11 +89,12 @@ const article: GuideArticle = {
       hi: 'फ़ाइल को PDF घुमाएं पेज पर खींचें या चुनने के लिए क्लिक करें। आप एक साथ कई फ़ाइलें जोड़ सकते हैं।',
       ja: 'ファイルを「PDF回転」のページにドラッグするか、クリックして選択します。複数のファイルをまとめて追加できます。',
       zh: '将文件拖到旋转PDF页面，或点击选择文件。可以一次添加多个文件。',
+      id: 'Seret file ke halaman Putar PDF atau klik untuk memilihnya. Anda dapat menambahkan beberapa file sekaligus.',
     }},
     { type: 'step', title: {
       pl: 'Wybierz kąt obrotu', en: 'Choose the rotation angle', de: 'Drehwinkel wählen', es: 'Elige el ángulo de rotación', fr: 'Choisissez l’angle de rotation', it: 'Scegli l’angolo di rotazione',
       pt: 'Escolha o ângulo de rotação', sv: 'Välj rotationsvinkel', no: 'Velg rotasjonsvinkel', is: 'Veldu snúningshorn', tr: 'Dönme açısını seçin', ar: 'اختر زاوية الدوران',
-      fa: 'زاویه چرخش را انتخاب کنید', hi: 'घूर्णन कोण चुनें', ja: '回転角度を選ぶ', zh: '选择旋转角度',
+      fa: 'زاویه چرخش را انتخاب کنید', hi: 'घूर्णन कोण चुनें', ja: '回転角度を選ぶ', zh: '选择旋转角度', id: 'Pilih sudut putaran',
     }, text: {
       pl: 'Obrót w prawo obraca strony o 90° zgodnie z ruchem wskazówek zegara, Obróć w lewo — o 90° w przeciwną stronę, a 180° odwraca stronę do góry nogami. Wybrany obrót dotyczy wszystkich stron każdego dodanego pliku.',
       en: 'Rotate Right turns the pages 90° clockwise, Rotate Left turns them 90° anticlockwise, and 180° turns an upside-down page the right way up. The chosen rotation applies to every page of every file you added.',
@@ -108,11 +112,12 @@ const article: GuideArticle = {
       hi: 'दाएँ घुमाएँ पेजों को 90° घड़ी की दिशा में, बाएँ घुमाएँ 90° उल्टी दिशा में घुमाता है, और 180° उल्टे पेज को सीधा करता है। चुना गया घुमाव जोड़ी गई हर फ़ाइल के सभी पेजों पर लागू होता है।',
       ja: '「右に回転」はページを時計回りに90°、「左に回転」は反時計回りに90°回し、「180°」は逆さまのページを正しい向きに戻します。選んだ回転は、追加したすべてのファイルの全ページに適用されます。',
       zh: '“向右旋转”将页面顺时针旋转90°，“向左旋转”逆时针旋转90°，“180°”可把倒置的页面转正。所选旋转会应用于所添加的每个文件的所有页面。',
+      id: 'Putar ke Kanan memutar halaman 90° searah jarum jam, Putar ke Kiri memutarnya 90° berlawanan arah jarum jam, dan 180° membalik halaman yang terbalik menjadi tegak. Putaran yang dipilih berlaku untuk setiap halaman dari setiap file yang Anda tambahkan.',
     }},
     { type: 'step', title: {
       pl: 'Obróć i pobierz', en: 'Rotate and download', de: 'Drehen und herunterladen', es: 'Gira y descarga', fr: 'Faites pivoter et téléchargez', it: 'Ruota e scarica',
       pt: 'Rode e descarregue', sv: 'Rotera och ladda ner', no: 'Roter og last ned', is: 'Snúðu og sæktu', tr: 'Döndürün ve indirin', ar: 'دوّر ثم نزّل',
-      fa: 'بچرخانید و دانلود کنید', hi: 'घुमाएँ और डाउनलोड करें', ja: '回転してダウンロードする', zh: '旋转并下载',
+      fa: 'بچرخانید و دانلود کنید', hi: 'घुमाएँ और डाउनलोड करें', ja: '回転してダウンロードする', zh: '旋转并下载', id: 'Putar dan unduh',
     }, text: {
       pl: 'Kliknij Obróć plik PDF. Jeden plik pobierze się od razu, kilka plików — razem w jednym archiwum ZIP.',
       en: 'Click Rotate PDF. A single file downloads straight away; several files come together in one ZIP archive.',
@@ -130,11 +135,12 @@ const article: GuideArticle = {
       hi: 'पीडीएफ घुमाएँ पर क्लिक करें। एक फ़ाइल तुरंत डाउनलोड होती है; कई फ़ाइलें एक ZIP संग्रह में एक साथ आती हैं।',
       ja: '「PDFを回転させる」をクリックします。ファイルが1つならすぐにダウンロードされ、複数の場合は1つのZIPアーカイブにまとめられます。',
       zh: '点击“旋转PDF”。单个文件会立即下载，多个文件会合并在一个ZIP压缩包中。',
+      id: 'Klik Putar PDF. Satu file langsung terunduh; beberapa file diunduh bersama dalam satu arsip ZIP.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Dobrze wiedzieć', en: 'Good to know', de: 'Gut zu wissen', es: 'Conviene saber', fr: 'Bon à savoir', it: 'Buono a sapersi',
       pt: 'Bom saber', sv: 'Bra att veta', no: 'Greit å vite', is: 'Gott að vita', tr: 'Bilmekte fayda var', ar: 'من المفيد معرفته',
-      fa: 'خوب است بدانید', hi: 'जानने योग्य', ja: '知っておくと便利なこと', zh: '小贴士',
+      fa: 'خوب است بدانید', hi: 'जानने योग्य', ja: '知っておくと便利なこと', zh: '小贴士', id: 'Perlu diketahui',
     }},
     { type: 'list', items: [
       {
@@ -154,6 +160,7 @@ const article: GuideArticle = {
         hi: 'घुमाने से गुणवत्ता कम नहीं होती: पेज की सामग्री दोबारा नहीं बनाई जाती, केवल फ़ाइल में सहेजी गई दिशा बदलती है। टेक्स्ट, लिंक और इमेज वैसे ही रहते हैं।',
         ja: '回転しても画質は落ちません。ページの内容は描き直されず、ファイルに保存された向きだけが変わります。テキスト、リンク、画像はそのままです。',
         zh: '旋转不会降低质量：页面内容不会被重新绘制，只改变文件中保存的方向。文字、链接和图片保持不变。',
+        id: 'Memutar tidak menurunkan kualitas: isi halaman tidak digambar ulang, hanya arah yang tersimpan di file yang berubah. Teks, tautan, dan gambar tetap sama persis.',
       },
       {
         pl: 'Obrót dodaje się do obecnego: strona, która w pliku jest już obrócona o 90°, po kolejnym obrocie w prawo będzie obrócona o 180°.',
@@ -172,6 +179,7 @@ const article: GuideArticle = {
         hi: 'घुमाव मौजूदा घुमाव में जुड़ता है: फ़ाइल में पहले से 90° घूमा पेज एक और बार दाएँ घुमाने पर 180° हो जाएगा।',
         ja: '回転は現在の向きに加算されます。ファイル内ですでに90°回転しているページは、さらに右に回転すると180°になります。',
         zh: '旋转会叠加在当前方向上：文件中已旋转90°的页面，再向右旋转一次后将为180°。',
+        id: 'Putaran ditambahkan ke putaran yang sudah ada: halaman yang di dalam file sudah diputar 90° akan berada pada 180° setelah diputar ke kanan sekali lagi.',
       },
       {
         pl: 'Narzędzie obraca wszystkie strony. Żeby obrócić tylko jedną, wydziel ją narzędziem Podziel PDF, obróć ją tutaj, a potem złóż dokument z powrotem narzędziem Połącz PDF.',
@@ -190,6 +198,7 @@ const article: GuideArticle = {
         hi: 'यह टूल सभी पेज घुमाता है। केवल एक पेज घुमाने के लिए उसे PDF विभाजित करें से अलग करें, यहाँ घुमाएँ, फिर PDF मर्ज करें से दस्तावेज़ फिर से जोड़ें।',
         ja: 'このツールはすべてのページを回転します。1ページだけ回転したい場合は、「PDF分割」で切り出してここで回転し、「PDF結合」で文書を元に戻してください。',
         zh: '此工具会旋转所有页面。若只想旋转其中一页，可先用“拆分PDF”把它分出来，在这里旋转后，再用“合并PDF”把文档拼回去。',
+        id: 'Alat ini memutar setiap halaman. Untuk memutar satu halaman saja, keluarkan halaman itu dengan Pisahkan PDF, putar di sini, lalu satukan kembali dokumennya dengan Gabungkan PDF.',
       },
     ]},
     { type: 'cta', tool: 'rotate' },
@@ -205,7 +214,7 @@ const article: GuideArticle = {
         no: 'Blir rotasjonen værende når jeg sender filen til noen?', is: 'Helst snúningurinn þegar ég sendi skrána til einhvers?',
         tr: 'Dosyayı birine gönderdiğimde döndürme korunur mu?', ar: 'هل يبقى التدوير عند إرسال الملف لشخص آخر؟',
         fa: 'آیا وقتی فایل را برای کسی بفرستم چرخش حفظ می‌شود؟', hi: 'क्या फ़ाइल किसी को भेजने पर घुमाव बना रहेगा?',
-        ja: 'ファイルを人に送っても回転は保たれますか？', zh: '把文件发给别人时，旋转会保留吗？',
+        ja: 'ファイルを人に送っても回転は保たれますか？', zh: '把文件发给别人时，旋转会保留吗？', id: 'Apakah putarannya tetap ada saat saya mengirim file ke orang lain?',
       },
       a: {
         pl: 'Tak. Orientacja jest zapisana w samym pliku PDF, więc każdy program do PDF wyświetli strony tak, jak je obróciłeś.',
@@ -224,6 +233,7 @@ const article: GuideArticle = {
         hi: 'हाँ। दिशा PDF फ़ाइल में ही सहेजी जाती है, इसलिए हर PDF प्रोग्राम पेज वैसे ही दिखाता है जैसे आपने घुमाए।',
         ja: 'はい。向きはPDFファイル自体に保存されるため、どのPDFソフトでも回転したとおりに表示されます。',
         zh: '会。方向保存在PDF文件本身中，因此任何PDF程序都会按您旋转后的样子显示页面。',
+        id: 'Ya. Arah halaman disimpan di dalam PDF itu sendiri, sehingga setiap program PDF menampilkan halaman seperti yang Anda putar.',
       },
     },
     {
@@ -235,7 +245,7 @@ const article: GuideArticle = {
         no: 'Kan jeg rotere en passordbeskyttet fil?', is: 'Get ég snúið skrá sem er varin með lykilorði?',
         tr: 'Parola korumalı bir dosyayı döndürebilir miyim?', ar: 'هل يمكنني تدوير ملف محمي بكلمة مرور؟',
         fa: 'آیا می‌توانم فایل دارای رمز عبور را بچرخانم؟', hi: 'क्या मैं पासवर्ड से सुरक्षित फ़ाइल घुमा सकता हूँ?',
-        ja: 'パスワードで保護されたファイルを回転できますか？', zh: '可以旋转受密码保护的文件吗？',
+        ja: 'パスワードで保護されたファイルを回転できますか？', zh: '可以旋转受密码保护的文件吗？', id: 'Bisakah saya memutar file yang dilindungi kata sandi?',
       },
       a: {
         pl: 'Najpierw zdejmij hasło narzędziem Odblokuj PDF. Zaszyfrowany plik zostanie odrzucony z komunikatem, a pozostałe pliki z tej samej paczki i tak zostaną obrócone.',
@@ -254,6 +264,7 @@ const article: GuideArticle = {
         hi: 'पहले PDF अनलॉक करें से पासवर्ड हटाएँ। एन्क्रिप्टेड फ़ाइल एक संदेश के साथ अस्वीकार हो जाती है, और उसी बैच की बाकी फ़ाइलें फिर भी घुमाई जाती हैं।',
         ja: 'まず「PDFロック解除」でパスワードを外してください。暗号化されたファイルはメッセージとともにスキップされますが、同じ回の他のファイルは回転されます。',
         zh: '请先用“解锁PDF”去掉密码。加密的文件会被跳过并显示提示，同一批中的其他文件仍会被旋转。',
+        id: 'Hapus kata sandinya terlebih dahulu dengan Buka Kunci PDF. File terenkripsi ditolak disertai pesan, dan file lain dalam kelompok yang sama tetap diputar.',
       },
     },
     {
@@ -265,7 +276,7 @@ const article: GuideArticle = {
         no: 'Kan jeg rotere flere filer samtidig?', is: 'Get ég snúið mörgum skrám í einu?',
         tr: 'Birden fazla dosyayı aynı anda döndürebilir miyim?', ar: 'هل يمكنني تدوير عدة ملفات دفعة واحدة؟',
         fa: 'آیا می‌توانم چند فایل را با هم بچرخانم؟', hi: 'क्या मैं एक साथ कई फ़ाइलें घुमा सकता हूँ?',
-        ja: '複数のファイルをまとめて回転できますか？', zh: '可以一次旋转多个文件吗？',
+        ja: '複数のファイルをまとめて回転できますか？', zh: '可以一次旋转多个文件吗？', id: 'Bisakah saya memutar beberapa file sekaligus?',
       },
       a: {
         pl: 'Tak. Wszystkie dodane pliki zostaną obrócone o ten sam kąt i pobrane razem w archiwum ZIP.',
@@ -284,6 +295,7 @@ const article: GuideArticle = {
         hi: 'हाँ। जोड़ी गई सभी फ़ाइलें एक ही कोण से घुमाई जाती हैं और एक ZIP संग्रह में साथ डाउनलोड होती हैं।',
         ja: 'はい。追加したすべてのファイルが同じ角度で回転され、1つのZIPアーカイブにまとめてダウンロードされます。',
         zh: '可以。所有添加的文件都会按相同角度旋转，并一起打包为ZIP下载。',
+        id: 'Ya. Semua file yang Anda tambahkan diputar dengan sudut yang sama dan diunduh bersama dalam arsip ZIP.',
       },
     },
   ],

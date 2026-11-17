@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'Word (DOCX) को मुफ़्त में PDF में कैसे बदलें',
     ja: 'Word（DOCX）を無料でPDFに変換する方法',
     zh: '如何免费将Word（DOCX）转换为PDF',
+    id: 'Cara Mengonversi Word (DOCX) ke PDF Secara Gratis',
   },
   excerpt: {
     pl: 'Zamień dokument Word .docx na PDF w przeglądarce. Tabele, obrazy, pogrubienia i podziały stron zostają, a plik nie trafia na nasz serwer.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'Word .docx दस्तावेज़ को ब्राउज़र में PDF में बदलें। तालिकाएँ, इमेज, बोल्ड टेक्स्ट और पेज ब्रेक बने रहते हैं, फ़ाइल आपके पास रहती है।',
     ja: 'Wordの.docx文書をブラウザ内でPDFに変換。表・画像・太字・改ページを保持し、ファイルは外部に送られません。',
     zh: '在浏览器中将Word .docx文档转换为PDF。保留表格、图片、粗体和分页，文件不会离开您的设备。',
+    id: 'Konversi dokumen Word .docx ke PDF di browser Anda. Tabel, gambar, huruf tebal, dan pemisah halaman tetap terjaga, dan file tidak pernah sampai ke server kami.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,6 +59,7 @@ const article: GuideArticle = {
       hi: 'PDF हर कंप्यूटर और फ़ोन पर एक जैसी दिखती है, इसलिए बायोडाटा, अनुबंध और सरकारी पत्र Word के बजाय PDF में भेजना बेहतर है। Word को PDF में टूल .docx फ़ाइल को सीधे आपके ब्राउज़र में बदलता है — दस्तावेज़ हमारे सर्वर तक नहीं पहुँचता।',
       ja: 'PDFはどのパソコンやスマートフォンでも同じように表示されるため、履歴書や契約書、役所への書類はWordよりPDFで送るのが安心です。「WordをPDFに変換」ツールは.docxをブラウザ内で直接変換し、文書が当社のサーバーに送られることはありません。',
       zh: 'PDF在任何电脑和手机上显示都一样，因此简历、合同和公文最好以PDF而不是Word格式发送。Word转PDF工具直接在浏览器中转换.docx文件，文档不会到达我们的服务器。',
+      id: 'PDF tampak sama di setiap komputer dan ponsel, karena itu CV, kontrak, dan surat resmi lebih baik dikirim sebagai PDF daripada sebagai file Word. Alat Word ke PDF mengonversi file .docx ke PDF langsung di browser Anda — dokumen tidak pernah sampai ke server kami.',
     }},
     { type: 'cta', tool: 'wordtopdf' },
     { type: 'heading', level: 2, text: {
@@ -64,13 +67,13 @@ const article: GuideArticle = {
       es: 'Cómo convertir Word a PDF paso a paso', fr: 'Convertir Word en PDF étape par étape', it: 'Convertire Word in PDF passo dopo passo',
       pt: 'Converter Word em PDF passo a passo', sv: 'Konvertera Word till PDF steg för steg', no: 'Gjør Word om til PDF steg for steg',
       is: 'Word í PDF skref fyrir skref', tr: 'Adım adım Word’den PDF’ye', ar: 'تحويل Word إلى PDF خطوة بخطوة',
-      fa: 'تبدیل Word به PDF گام به گام', hi: 'चरण दर चरण Word को PDF में बदलें', ja: 'WordをPDFに変換する手順', zh: '逐步将Word转换为PDF',
+      fa: 'تبدیل Word به PDF گام به گام', hi: 'चरण दर चरण Word को PDF में बदलें', ja: 'WordをPDFに変換する手順', zh: '逐步将Word转换为PDF', id: 'Cara mengonversi Word ke PDF langkah demi langkah',
     }},
     { type: 'step', title: {
       pl: 'Zostaw zakładkę Word', en: 'Keep the Word tab', de: 'Reiter „Word“ wählen', es: 'Deja la pestaña Word', fr: 'Gardez l’onglet Word',
       it: 'Lascia la scheda Word', pt: 'Mantenha o separador Word', sv: 'Behåll fliken Word', no: 'Behold fanen Word', is: 'Haltu Word-flipanum',
       tr: 'Word sekmesini seçili bırakın', ar: 'أبقِ تبويب Word محددًا', fa: 'زبانه Word را انتخاب‌شده نگه دارید', hi: 'Word टैब चुना रहने दें',
-      ja: '「Word」タブのままにする', zh: '保持Word选项卡',
+      ja: '「Word」タブのままにする', zh: '保持Word选项卡', id: 'Biarkan tab Word tetap terpilih',
     }, text: {
       pl: 'Na stronie narzędzia są cztery zakładki: Word (DOCX), Excel (XLSX), PowerPoint (PPTX) i OpenOffice (ODT, ODS, ODP). Dla dokumentu Worda zostaw zakładkę Word.',
       en: 'The tool has four tabs: Word (DOCX), Excel (XLSX), PowerPoint (PPTX) and OpenOffice (ODT, ODS, ODP). For a Word document, keep the Word tab.',
@@ -88,11 +91,12 @@ const article: GuideArticle = {
       hi: 'टूल में चार टैब हैं: Word (DOCX), Excel (XLSX), PowerPoint (PPTX) और OpenOffice (ODT, ODS, ODP)। Word दस्तावेज़ के लिए Word टैब रहने दें।',
       ja: 'ツールにはWord（DOCX）、Excel（XLSX）、PowerPoint（PPTX）、OpenOffice（ODT・ODS・ODP）の4つのタブがあります。Word文書ならWordタブのままにします。',
       zh: '工具有四个选项卡：Word（DOCX）、Excel（XLSX）、PowerPoint（PPTX）和OpenOffice（ODT、ODS、ODP）。Word文档请保持Word选项卡。',
+      id: 'Alat ini memiliki empat tab: Word (DOCX), Excel (XLSX), PowerPoint (PPTX), dan OpenOffice (ODT, ODS, ODP). Untuk dokumen Word, biarkan tab Word tetap terpilih.',
     }},
     { type: 'step', title: {
       pl: 'Dodaj plik .docx', en: 'Add the .docx file', de: '.docx-Datei hinzufügen', es: 'Añade el archivo .docx', fr: 'Ajoutez le fichier .docx',
       it: 'Aggiungi il file .docx', pt: 'Adicione o ficheiro .docx', sv: 'Lägg till .docx-filen', no: 'Legg til .docx-filen', is: 'Bættu við .docx-skránni',
-      tr: '.docx dosyasını ekleyin', ar: 'أضف ملف .docx', fa: 'فایل .docx را اضافه کنید', hi: '.docx फ़ाइल जोड़ें', ja: '.docxファイルを追加する', zh: '添加.docx文件',
+      tr: '.docx dosyasını ekleyin', ar: 'أضف ملف .docx', fa: 'فایل .docx را اضافه کنید', hi: '.docx फ़ाइल जोड़ें', ja: '.docxファイルを追加する', zh: '添加.docx文件', id: 'Tambahkan file .docx',
     }, text: {
       pl: 'Przeciągnij plik na pole narzędzia albo kliknij je i wybierz plik z dysku. Możesz też wybrać plik z Google Drive, Dropboxa lub OneDrive.',
       en: 'Drag the file onto the tool or click it and choose the file. You can also pick a file from Google Drive, Dropbox or OneDrive.',
@@ -110,12 +114,13 @@ const article: GuideArticle = {
       hi: 'फ़ाइल को टूल पर खींचें या क्लिक करके चुनें। आप Google Drive, Dropbox या OneDrive से भी फ़ाइल चुन सकते हैं।',
       ja: 'ファイルをツールにドラッグするか、クリックして選びます。Google ドライブ、Dropbox、OneDrive からも選べます。',
       zh: '将文件拖到工具上，或点击选择文件。也可以从Google Drive、Dropbox或OneDrive选择。',
+      id: 'Seret file ke alat ini, atau klik lalu pilih file. Anda juga dapat memilih file dari Google Drive, Dropbox, atau OneDrive.',
     }},
     { type: 'step', title: {
       pl: 'Kliknij przycisk konwersji', en: 'Click the convert button', de: 'Auf Konvertieren klicken', es: 'Pulsa el botón de convertir',
       fr: 'Cliquez sur le bouton de conversion', it: 'Fai clic sul pulsante di conversione', pt: 'Clique no botão de conversão', sv: 'Klicka på knappen för konvertering',
       no: 'Klikk på konverteringsknappen', is: 'Smelltu á umbreytingarhnappinn', tr: 'Dönüştür düğmesine tıklayın', ar: 'انقر على زر التحويل',
-      fa: 'روی دکمه تبدیل کلیک کنید', hi: 'कन्वर्ट बटन पर क्लिक करें', ja: '変換ボタンをクリックする', zh: '点击转换按钮',
+      fa: 'روی دکمه تبدیل کلیک کنید', hi: 'कन्वर्ट बटन पर क्लिक करें', ja: '変換ボタンをクリックする', zh: '点击转换按钮', id: 'Klik tombol konversi',
     }, text: {
       pl: 'Gotowy PDF pobierze się automatycznie. Jeśli chcesz, zapiszesz go też od razu w Google Drive, Dropboxie lub OneDrive.',
       en: 'The finished PDF downloads automatically. If you like, you can also save it straight to Google Drive, Dropbox or OneDrive.',
@@ -133,11 +138,12 @@ const article: GuideArticle = {
       hi: 'तैयार PDF अपने आप डाउनलोड हो जाती है। चाहें तो इसे सीधे Google Drive, Dropbox या OneDrive में भी सहेज सकते हैं।',
       ja: '完成したPDFは自動でダウンロードされます。Google ドライブ、Dropbox、OneDrive に直接保存することもできます。',
       zh: '生成的PDF会自动下载。也可以直接保存到Google Drive、Dropbox或OneDrive。',
+      id: 'PDF yang sudah jadi terunduh secara otomatis. Jika mau, Anda juga dapat menyimpannya langsung ke Google Drive, Dropbox, atau OneDrive.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Co zostaje zachowane', en: 'What is kept', de: 'Was erhalten bleibt', es: 'Qué se conserva', fr: 'Ce qui est conservé',
       it: 'Cosa viene mantenuto', pt: 'O que se mantém', sv: 'Vad som behålls', no: 'Hva som beholdes', is: 'Hvað helst',
-      tr: 'Neler korunur', ar: 'ما الذي يُحفظ', fa: 'چه چیزهایی حفظ می‌شود', hi: 'क्या बना रहता है', ja: '保持される内容', zh: '会保留哪些内容',
+      tr: 'Neler korunur', ar: 'ما الذي يُحفظ', fa: 'چه چیزهایی حفظ می‌شود', hi: 'क्या बना रहता है', ja: '保持される内容', zh: '会保留哪些内容', id: 'Apa yang dipertahankan',
     }},
     { type: 'list', items: [
       {
@@ -148,21 +154,21 @@ const article: GuideArticle = {
         no: 'Fet, kursiv, understreking, tekstfarger og størrelser', is: 'Feitletrun, skáletrun, undirstrikun, litir og stærðir texta',
         tr: 'Kalın, italik, altı çizili, metin renkleri ve boyutları', ar: 'الغامق والمائل والتسطير وألوان النص وأحجامه',
         fa: 'پررنگ، مورب، زیرخط، رنگ‌ها و اندازه‌های متن', hi: 'बोल्ड, इटैलिक, अंडरलाइन, टेक्स्ट के रंग और आकार',
-        ja: '太字・斜体・下線、文字の色とサイズ', zh: '粗体、斜体、下划线、文字颜色和大小',
+        ja: '太字・斜体・下線、文字の色とサイズ', zh: '粗体、斜体、下划线、文字颜色和大小', id: 'Huruf tebal, huruf miring, garis bawah, serta warna dan ukuran teks',
       },
       {
         pl: 'Tabele, także ze scalonymi komórkami', en: 'Tables, including merged cells', de: 'Tabellen, auch mit verbundenen Zellen',
         es: 'Tablas, también con celdas combinadas', fr: 'Tableaux, y compris les cellules fusionnées', it: 'Tabelle, anche con celle unite',
         pt: 'Tabelas, incluindo células unidas', sv: 'Tabeller, även med sammanfogade celler', no: 'Tabeller, også med sammenslåtte celler',
         is: 'Töflur, líka með sameinuðum reitum', tr: 'Birleştirilmiş hücreler dahil tablolar', ar: 'الجداول، بما فيها الخلايا المدمجة',
-        fa: 'جدول‌ها، از جمله خانه‌های ادغام‌شده', hi: 'तालिकाएँ, मर्ज किए गए सेल सहित', ja: '表（結合セルを含む）', zh: '表格，包括合并单元格',
+        fa: 'جدول‌ها، از جمله خانه‌های ادغام‌شده', hi: 'तालिकाएँ, मर्ज किए गए सेल सहित', ja: '表（結合セルを含む）', zh: '表格，包括合并单元格', id: 'Tabel, termasuk sel yang digabung',
       },
       {
         pl: 'Obrazy wstawione w dokument', en: 'Images placed in the document', de: 'Im Dokument eingefügte Bilder',
         es: 'Imágenes insertadas en el documento', fr: 'Images insérées dans le document', it: 'Immagini inserite nel documento',
         pt: 'Imagens inseridas no documento', sv: 'Bilder som infogats i dokumentet', no: 'Bilder som er satt inn i dokumentet',
         is: 'Myndir í skjalinu', tr: 'Belgeye eklenmiş görseller', ar: 'الصور المدرجة في المستند', fa: 'تصاویر درج‌شده در سند',
-        hi: 'दस्तावेज़ में डाली गई इमेज', ja: '文書に挿入された画像', zh: '文档中插入的图片',
+        hi: 'दस्तावेज़ में डाली गई इमेज', ja: '文書に挿入された画像', zh: '文档中插入的图片', id: 'Gambar yang ada di dalam dokumen',
       },
       {
         pl: 'Podziały stron, listy oraz tła i ramki akapitów', en: 'Page breaks, lists, and paragraph backgrounds and borders',
@@ -172,7 +178,7 @@ const article: GuideArticle = {
         no: 'Sideskift, lister og bakgrunner og rammer for avsnitt', is: 'Síðuskil, listar og bakgrunnar og rammar málsgreina',
         tr: 'Sayfa sonları, listeler ve paragraf arka planları ile kenarlıkları', ar: 'فواصل الصفحات والقوائم وخلفيات الفقرات وحدودها',
         fa: 'شکست صفحه، فهرست‌ها و پس‌زمینه و حاشیه پاراگراف‌ها', hi: 'पेज ब्रेक, सूचियाँ और पैराग्राफ़ की पृष्ठभूमि व बॉर्डर',
-        ja: '改ページ、箇条書き、段落の背景色と罫線', zh: '分页、列表以及段落背景和边框',
+        ja: '改ページ、箇条書き、段落の背景色と罫線', zh: '分页、列表以及段落背景和边框', id: 'Pemisah halaman, daftar, serta latar belakang dan bingkai paragraf',
       },
     ]},
     { type: 'paragraph', text: {
@@ -192,6 +198,7 @@ const article: GuideArticle = {
       hi: 'ध्यान दें: दस्तावेज़ को एक ही सैन्स-सेरिफ़ फ़ॉन्ट में दोबारा सजाया जाता है, इसलिए अक्षरों का आकार, मार्जिन और दूरी मूल से थोड़ी अलग हो सकती है। पुराना .doc फ़ॉर्मेट (Word 2007 से पहले का) समर्थित नहीं है — फ़ाइल को Word या LibreOffice में खोलकर .docx के रूप में सहेजें।',
       ja: '注意点：文書は1種類のゴシック体で組み直されるため、字形・余白・間隔が元と少し異なる場合があります。古い.doc形式（Word 2007より前）には対応していません。WordやLibreOfficeで開き、.docxとして保存してください。',
       zh: '需要了解：文档会用一种无衬线字体重新排版，因此字形、页边距和间距可能与原文略有不同。不支持旧的.doc格式（Word 2007之前）——请在Word或LibreOffice中打开并另存为.docx。',
+      id: 'Perlu diketahui: dokumen disusun ulang dengan satu fon sans-serif, sehingga bentuk huruf, margin, dan jarak bisa sedikit berbeda dari aslinya. Format .doc yang lama (sebelum Word 2007) tidak didukung — buka file seperti itu di Word atau LibreOffice lalu simpan sebagai .docx.',
     }},
     { type: 'cta', tool: 'excel2pdf' },
   ],
@@ -201,7 +208,7 @@ const article: GuideArticle = {
       pl: 'Czy mogę zamienić plik .doc?', en: 'Can I convert a .doc file?', de: 'Kann ich eine .doc-Datei umwandeln?', es: '¿Puedo convertir un archivo .doc?',
       fr: 'Puis-je convertir un fichier .doc ?', it: 'Posso convertire un file .doc?', pt: 'Posso converter um ficheiro .doc?', sv: 'Kan jag konvertera en .doc-fil?',
       no: 'Kan jeg gjøre om en .doc-fil?', is: 'Get ég breytt .doc-skrá?', tr: '.doc dosyasını dönüştürebilir miyim?', ar: 'هل يمكنني تحويل ملف .doc؟',
-      fa: 'آیا می‌توانم فایل .doc را تبدیل کنم؟', hi: 'क्या मैं .doc फ़ाइल बदल सकता हूँ?', ja: '.docファイルは変換できますか？', zh: '可以转换.doc文件吗？',
+      fa: 'آیا می‌توانم فایل .doc را تبدیل کنم؟', hi: 'क्या मैं .doc फ़ाइल बदल सकता हूँ?', ja: '.docファイルは変換できますか？', zh: '可以转换.doc文件吗？', id: 'Bisakah saya mengonversi file .doc?',
     }, a: {
       pl: 'Nie — tylko .docx. Otwórz plik .doc w Wordzie lub LibreOffice, zapisz jako .docx i dopiero wtedy go zamień.',
       en: 'No — only .docx. Open the .doc file in Word or LibreOffice, save it as .docx, then convert it.',
@@ -219,13 +226,14 @@ const article: GuideArticle = {
       hi: 'नहीं, केवल .docx। .doc फ़ाइल को Word या LibreOffice में खोलें, .docx के रूप में सहेजें, फिर बदलें।',
       ja: 'いいえ、.docxのみです。.docをWordかLibreOfficeで開き、.docxで保存してから変換してください。',
       zh: '不可以，只支持.docx。请在Word或LibreOffice中打开.doc文件，另存为.docx后再转换。',
+      id: 'Tidak — hanya .docx. Buka file .doc di Word atau LibreOffice, simpan sebagai .docx, lalu konversikan.',
     }},
     { q: {
       pl: 'Czy plik jest wysyłany na serwer?', en: 'Is the file uploaded to a server?', de: 'Wird die Datei auf einen Server hochgeladen?',
       es: '¿Se sube el archivo a un servidor?', fr: 'Le fichier est-il envoyé sur un serveur ?', it: 'Il file viene caricato su un server?',
       pt: 'O ficheiro é enviado para um servidor?', sv: 'Laddas filen upp till en server?', no: 'Blir filen lastet opp til en server?',
       is: 'Er skráin send á þjón?', tr: 'Dosya bir sunucuya yükleniyor mu?', ar: 'هل يُرفع الملف إلى خادم؟',
-      fa: 'آیا فایل روی سرور بارگذاری می‌شود؟', hi: 'क्या फ़ाइल सर्वर पर अपलोड होती है?', ja: 'ファイルはサーバーにアップロードされますか？', zh: '文件会上传到服务器吗？',
+      fa: 'آیا فایل روی سرور بارگذاری می‌شود؟', hi: 'क्या फ़ाइल सर्वर पर अपलोड होती है?', ja: 'ファイルはサーバーにアップロードされますか？', zh: '文件会上传到服务器吗？', id: 'Apakah file diunggah ke server?',
     }, a: {
       pl: 'Nie. Konwersja odbywa się w Twojej przeglądarce, a dokument nie trafia na nasz serwer.',
       en: 'No. The conversion runs in your browser and the document never reaches our server.',
@@ -243,12 +251,13 @@ const article: GuideArticle = {
       hi: 'नहीं। रूपांतरण आपके ब्राउज़र में होता है और दस्तावेज़ हमारे सर्वर तक नहीं पहुँचता।',
       ja: 'いいえ。変換はブラウザ内で行われ、文書が当社のサーバーに送られることはありません。',
       zh: '不会。转换在您的浏览器中进行，文档不会到达我们的服务器。',
+      id: 'Tidak. Konversi berjalan di browser Anda, dan dokumen tidak pernah sampai ke server kami.',
     }},
     { q: {
       pl: 'A co z arkuszami Excel?', en: 'What about Excel spreadsheets?', de: 'Und Excel-Tabellen?', es: '¿Y las hojas de Excel?',
       fr: 'Et les feuilles Excel ?', it: 'E i fogli Excel?', pt: 'E as folhas de Excel?', sv: 'Och Excel-kalkylblad?',
       no: 'Og Excel-regneark?', is: 'En Excel-töflureiknar?', tr: 'Excel tabloları ne olacak?', ar: 'وماذا عن جداول Excel؟',
-      fa: 'و صفحه‌گسترده‌های Excel؟', hi: 'और Excel स्प्रेडशीट?', ja: 'Excelのシートは？', zh: 'Excel表格怎么办？',
+      fa: 'و صفحه‌گسترده‌های Excel؟', hi: 'और Excel स्प्रेडशीट?', ja: 'Excelのシートは？', zh: 'Excel表格怎么办？', id: 'Bagaimana dengan spreadsheet Excel?',
     }, a: {
       pl: 'Użyj osobnego narzędzia Excel do PDF. Arkusz trafia do PDF z siatką, scalonymi komórkami oraz datami i godzinami w czytelnej postaci.',
       en: 'Use the separate Excel to PDF tool. The sheet goes into the PDF with its grid, merged cells, and dates and times in readable form.',
@@ -266,6 +275,7 @@ const article: GuideArticle = {
       hi: 'अलग Excel को PDF में टूल इस्तेमाल करें। शीट ग्रिड, मर्ज सेल और पढ़ने योग्य तारीख़ व समय के साथ PDF में आती है।',
       ja: '専用の「ExcelをPDFに変換」ツールを使ってください。罫線・結合セル・読みやすい日付と時刻のままPDFになります。',
       zh: '请使用专门的“Excel转PDF”工具。表格会连同网格线、合并单元格以及易读的日期和时间一起转为PDF。',
+      id: 'Gunakan alat Excel ke PDF yang terpisah. Lembar kerja masuk ke PDF lengkap dengan kisi, sel yang digabung, serta tanggal dan waktu dalam bentuk yang mudah dibaca.',
     }},
   ],
   canonicalOverride: undefined,

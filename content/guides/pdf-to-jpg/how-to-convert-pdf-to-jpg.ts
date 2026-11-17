@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'PDF को मुफ़्त में JPG में कैसे बदलें',
     ja: 'PDFを無料でJPGに変換する方法',
     zh: '如何免费将PDF转换为JPG',
+    id: 'Cara Mengonversi PDF ke JPG Secara Gratis',
   },
   excerpt: {
     pl: 'Zamień każdą stronę PDF na obraz JPG, PNG lub WebP. Wybierasz skalę i jakość, a obrazy pobierasz w pliku ZIP — wszystko w przeglądarce.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'PDF के हर पेज को JPG, PNG या WebP इमेज में बदलें। स्केल और गुणवत्ता चुनें और ZIP में डाउनलोड करें — सब ब्राउज़र में।',
     ja: 'PDFの各ページをJPG・PNG・WebP画像に変換。倍率と画質を選び、ZIPでダウンロード。すべてブラウザ内で完結します。',
     zh: '将PDF的每一页转换为JPG、PNG或WebP图片。选择缩放和质量，以ZIP下载，全部在浏览器中完成。',
+    id: 'Ubah setiap halaman PDF menjadi gambar JPG, PNG, atau WebP. Pilih skala dan kualitas, lalu unduh gambarnya sebagai ZIP — semuanya di browser Anda.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,6 +59,7 @@ const article: GuideArticle = {
       hi: 'पेज की इमेज तब काम आती है जब आप दस्तावेज़ का हिस्सा प्रेज़ेंटेशन में लगाना, चैट में भेजना या ऑनलाइन डालना चाहते हैं। PDF को चित्रों में टूल हर पेज को अलग इमेज फ़ाइल के रूप में आपके ब्राउज़र में सहेजता है — PDF हमारे सर्वर तक नहीं पहुँचती।',
       ja: 'ページを画像にすると、資料の一部をプレゼンに貼る、チャットで送る、ネットに公開するといった場面で便利です。「PDFを画像に変換」ツールは各ページを個別の画像ファイルとしてブラウザ内で保存し、PDFが当社のサーバーに送られることはありません。',
       zh: '把页面变成图片后，可以方便地放进演示文稿、在聊天中发送或发布到网上。PDF转图片工具会在您的浏览器中把每一页保存为单独的图片文件，PDF不会到达我们的服务器。',
+      id: 'Halaman dalam bentuk gambar berguna ketika Anda ingin menempelkan bagian dokumen ke presentasi, mengirim satu halaman lewat aplikasi chat, atau mengunggahnya ke internet. Alat PDF ke Gambar menyimpan setiap halaman sebagai file gambar tersendiri, dan melakukannya di browser Anda — PDF tidak pernah sampai ke server kami.',
     }},
     { type: 'cta', tool: 'images' },
     { type: 'heading', level: 2, text: {
@@ -64,12 +67,12 @@ const article: GuideArticle = {
       es: 'Cómo convertir PDF a JPG paso a paso', fr: 'Convertir un PDF en JPG étape par étape', it: 'Convertire PDF in JPG passo dopo passo',
       pt: 'Converter PDF em JPG passo a passo', sv: 'Konvertera PDF till JPG steg för steg', no: 'Gjør PDF om til JPG steg for steg',
       is: 'PDF í JPG skref fyrir skref', tr: 'Adım adım PDF’den JPG’ye', ar: 'تحويل PDF إلى JPG خطوة بخطوة',
-      fa: 'تبدیل PDF به JPG گام به گام', hi: 'चरण दर चरण PDF को JPG में बदलें', ja: 'PDFをJPGに変換する手順', zh: '逐步将PDF转换为JPG',
+      fa: 'تبدیل PDF به JPG گام به گام', hi: 'चरण दर चरण PDF को JPG में बदलें', ja: 'PDFをJPGに変換する手順', zh: '逐步将PDF转换为JPG', id: 'Cara mengonversi PDF ke JPG langkah demi langkah',
     }},
     { type: 'step', title: {
       pl: 'Dodaj plik PDF', en: 'Add the PDF', de: 'PDF hinzufügen', es: 'Añade el PDF', fr: 'Ajoutez le PDF', it: 'Aggiungi il PDF',
       pt: 'Adicione o PDF', sv: 'Lägg till PDF:en', no: 'Legg til PDF-en', is: 'Bættu við PDF-skránni', tr: 'PDF’yi ekleyin',
-      ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF जोड़ें', ja: 'PDFを追加する', zh: '添加PDF',
+      ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF जोड़ें', ja: 'PDFを追加する', zh: '添加PDF', id: 'Tambahkan PDF',
     }, text: {
       pl: 'Przeciągnij plik na pole narzędzia albo kliknij je i wybierz plik. Możesz dodać kilka plików PDF naraz.',
       en: 'Drag the file onto the tool or click it and choose the file. You can add several PDFs at once.',
@@ -87,11 +90,12 @@ const article: GuideArticle = {
       hi: 'फ़ाइल को टूल पर खींचें या क्लिक करके चुनें। आप एक साथ कई PDF जोड़ सकते हैं।',
       ja: 'ファイルをツールにドラッグするか、クリックして選びます。複数のPDFをまとめて追加できます。',
       zh: '将文件拖到工具上，或点击选择文件。可以一次添加多个PDF。',
+      id: 'Seret file ke alat ini, atau klik lalu pilih file. Anda dapat menambahkan beberapa PDF sekaligus.',
     }},
     { type: 'step', title: {
       pl: 'Wybierz format', en: 'Choose the format', de: 'Format wählen', es: 'Elige el formato', fr: 'Choisissez le format', it: 'Scegli il formato',
       pt: 'Escolha o formato', sv: 'Välj format', no: 'Velg format', is: 'Veldu snið', tr: 'Biçimi seçin',
-      ar: 'اختر التنسيق', fa: 'قالب را انتخاب کنید', hi: 'फ़ॉर्मेट चुनें', ja: '形式を選ぶ', zh: '选择格式',
+      ar: 'اختر التنسيق', fa: 'قالب را انتخاب کنید', hi: 'फ़ॉर्मेट चुनें', ja: '形式を選ぶ', zh: '选择格式', id: 'Pilih format',
     }, text: {
       pl: 'JPEG daje najmniejsze pliki, PNG zachowuje ostre krawędzie tekstu, a WebP łączy małe pliki z dobrą jakością.',
       en: 'JPEG gives the smallest files, PNG keeps text edges sharp, and WebP combines small files with good quality.',
@@ -109,12 +113,13 @@ const article: GuideArticle = {
       hi: 'JPEG सबसे छोटी फ़ाइलें देता है, PNG टेक्स्ट के किनारे साफ़ रखता है, और WebP छोटे आकार के साथ अच्छी गुणवत्ता देता है।',
       ja: 'JPEGはファイルが最も小さく、PNGは文字の輪郭がくっきり、WebPは小さなサイズと良い画質を両立します。',
       zh: 'JPEG文件最小，PNG让文字边缘保持清晰，WebP兼顾小体积和良好画质。',
+      id: 'JPEG menghasilkan file paling kecil, PNG menjaga tepi teks tetap tajam, dan WebP memadukan file kecil dengan kualitas yang baik.',
     }},
     { type: 'step', title: {
       pl: 'Ustaw skalę i jakość', en: 'Set the scale and quality', de: 'Skalierung und Qualität einstellen', es: 'Ajusta la escala y la calidad',
       fr: 'Réglez l’échelle et la qualité', it: 'Imposta scala e qualità', pt: 'Defina a escala e a qualidade', sv: 'Ställ in skala och kvalitet',
       no: 'Still inn skala og kvalitet', is: 'Stilltu kvarða og gæði', tr: 'Ölçek ve kaliteyi ayarlayın', ar: 'اضبط الحجم والجودة',
-      fa: 'مقیاس و کیفیت را تنظیم کنید', hi: 'स्केल और गुणवत्ता सेट करें', ja: '倍率と画質を設定する', zh: '设置缩放和质量',
+      fa: 'مقیاس و کیفیت را تنظیم کنید', hi: 'स्केल और गुणवत्ता सेट करें', ja: '倍率と画質を設定する', zh: '设置缩放和质量', id: 'Atur skala dan kualitas',
     }, text: {
       pl: 'Skala od 0,5 do 4 decyduje o liczbie pikseli: im wyższa, tym wyraźniejszy i większy obraz. Domyślne 2 dobrze sprawdza się na ekranie. Jakość ustawiasz dla JPEG i WebP.',
       en: 'The scale, from 0.5 to 4, sets the number of pixels: the higher it is, the sharper and larger the image. The default of 2 works well on screen. Quality applies to JPEG and WebP.',
@@ -132,12 +137,13 @@ const article: GuideArticle = {
       hi: '0.5 से 4 तक का स्केल पिक्सल की संख्या तय करता है: जितना ज़्यादा, इमेज उतनी साफ़ और बड़ी। डिफ़ॉल्ट 2 स्क्रीन के लिए अच्छा है। गुणवत्ता JPEG और WebP पर लागू होती है।',
       ja: '倍率（0.5〜4）でピクセル数が決まります。高いほど鮮明で大きな画像になります。既定の2は画面表示に十分です。画質はJPEGとWebPに適用されます。',
       zh: '缩放（0.5到4）决定像素数量：数值越高，图片越清晰、文件越大。默认值2适合屏幕查看。质量设置适用于JPEG和WebP。',
+      id: 'Skala, dari 0,5 hingga 4, menentukan jumlah piksel: makin tinggi, makin tajam dan makin besar gambarnya. Nilai bawaan 2 cocok untuk layar. Kualitas berlaku untuk JPEG dan WebP.',
     }},
     { type: 'step', title: {
       pl: 'Kliknij przycisk konwersji', en: 'Click the convert button', de: 'Auf Konvertieren klicken', es: 'Pulsa el botón de convertir',
       fr: 'Cliquez sur le bouton de conversion', it: 'Fai clic sul pulsante di conversione', pt: 'Clique no botão de conversão', sv: 'Klicka på knappen för konvertering',
       no: 'Klikk på konverteringsknappen', is: 'Smelltu á umbreytingarhnappinn', tr: 'Dönüştür düğmesine tıklayın', ar: 'انقر على زر التحويل',
-      fa: 'روی دکمه تبدیل کلیک کنید', hi: 'कन्वर्ट बटन पर क्लिक करें', ja: '変換ボタンをクリックする', zh: '点击转换按钮',
+      fa: 'روی دکمه تبدیل کلیک کنید', hi: 'कन्वर्ट बटन पर क्लिक करें', ja: '変換ボタンをクリックする', zh: '点击转换按钮', id: 'Klik tombol konversi',
     }, text: {
       pl: 'Każda strona staje się osobnym obrazem. Wszystkie obrazy pobierasz w jednym pliku ZIP, a nazwa każdego zawiera numer strony.',
       en: 'Every page becomes a separate image. You download all images in one ZIP file, and each file name contains the page number.',
@@ -155,12 +161,13 @@ const article: GuideArticle = {
       hi: 'हर पेज अलग इमेज बन जाता है। सभी इमेज एक ZIP फ़ाइल में डाउनलोड होती हैं, और हर फ़ाइल के नाम में पेज नंबर होता है।',
       ja: '各ページが個別の画像になります。すべての画像を1つのZIPでダウンロードでき、ファイル名にはページ番号が入ります。',
       zh: '每一页都会变成单独的图片。所有图片打包为一个ZIP下载，每个文件名都包含页码。',
+      id: 'Setiap halaman menjadi gambar tersendiri. Anda mengunduh semua gambar dalam satu file ZIP, dan setiap nama file memuat nomor halamannya.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Który format wybrać?', en: 'Which format should you choose?', de: 'Welches Format wählen?', es: '¿Qué formato elegir?',
       fr: 'Quel format choisir ?', it: 'Quale formato scegliere?', pt: 'Que formato escolher?', sv: 'Vilket format ska du välja?',
       no: 'Hvilket format bør du velge?', is: 'Hvaða snið á að velja?', tr: 'Hangi biçimi seçmeli?', ar: 'أي تنسيق تختار؟',
-      fa: 'کدام قالب را انتخاب کنیم؟', hi: 'कौन सा फ़ॉर्मेट चुनें?', ja: 'どの形式を選ぶべき？', zh: '应该选择哪种格式？',
+      fa: 'کدام قالب را انتخاب کنیم؟', hi: 'कौन सा फ़ॉर्मेट चुनें?', ja: 'どの形式を選ぶべき？', zh: '应该选择哪种格式？', id: 'Format mana yang sebaiknya dipilih?',
     }},
     { type: 'list', items: [
       {
@@ -180,6 +187,7 @@ const article: GuideArticle = {
         hi: 'JPEG — फ़ोटो और स्कैन के लिए। सबसे छोटी फ़ाइलें; कम गुणवत्ता पर टेक्स्ट थोड़ा धुंधला दिख सकता है।',
         ja: 'JPEG — 写真やスキャン向け。ファイルが最も小さく、低画質では文字が少しぼやけることがあります。',
         zh: 'JPEG——适合照片和扫描件。文件最小；质量较低时文字可能略显模糊。',
+        id: 'JPEG — foto dan hasil pindaian. File paling kecil; pada kualitas rendah teks bisa tampak sedikit buram.',
       },
       {
         pl: 'PNG — strony z tekstem, tabelami i wykresami. Ostre krawędzie bez strat, ale większe pliki.',
@@ -198,6 +206,7 @@ const article: GuideArticle = {
         hi: 'PNG — टेक्स्ट, तालिका और चार्ट वाले पेजों के लिए। बिना नुकसान के साफ़ किनारे, पर फ़ाइलें बड़ी।',
         ja: 'PNG — 文字・表・グラフのあるページ向け。劣化なくくっきりしますが、ファイルは大きめです。',
         zh: 'PNG——适合含文字、表格和图表的页面。边缘清晰无损，但文件较大。',
+        id: 'PNG — halaman berisi teks, tabel, dan diagram. Tepi tajam tanpa kehilangan kualitas, tetapi file lebih besar.',
       },
       {
         pl: 'WebP — nowoczesny format o małych plikach; otwiera go każda współczesna przeglądarka i większość programów graficznych.',
@@ -216,6 +225,7 @@ const article: GuideArticle = {
         hi: 'WebP — छोटी फ़ाइलों वाला आधुनिक फ़ॉर्मेट; सभी मौजूदा ब्राउज़र और ज़्यादातर इमेज प्रोग्राम इसे खोलते हैं।',
         ja: 'WebP — ファイルが小さい新しい形式。現在のブラウザやほとんどの画像ソフトで開けます。',
         zh: 'WebP——体积小的现代格式；所有新版浏览器和大多数图片软件都能打开。',
+        id: 'WebP — format modern dengan file kecil; semua browser terkini dan sebagian besar editor gambar dapat membukanya.',
       },
     ]},
     { type: 'paragraph', text: {
@@ -235,6 +245,7 @@ const article: GuideArticle = {
       hi: 'उल्टा काम चाहिए? चित्रों को PDF में टूल तस्वीरों को फिर से एक दस्तावेज़ में जोड़ देता है।',
       ja: '逆の操作が必要なら、「画像をPDFに変換」ツールで画像を1つの文書にまとめられます。',
       zh: '需要反向操作？图片转PDF工具可以把图片重新合成一个文档。',
+      id: 'Perlu kebalikannya? Alat Gambar ke PDF menyatukan gambar kembali menjadi satu dokumen.',
     }},
     { type: 'cta', tool: 'jpgTopdf' },
   ],
@@ -245,7 +256,7 @@ const article: GuideArticle = {
       es: '¿Puedo guardar solo una página?', fr: 'Puis-je enregistrer une seule page ?', it: 'Posso salvare una sola pagina?',
       pt: 'Posso guardar apenas uma página?', sv: 'Kan jag spara bara en sida?', no: 'Kan jeg lagre bare én side?',
       is: 'Get ég vistað aðeins eina síðu?', tr: 'Sadece bir sayfayı kaydedebilir miyim?', ar: 'هل يمكنني حفظ صفحة واحدة فقط؟',
-      fa: 'آیا می‌توانم فقط یک صفحه را ذخیره کنم؟', hi: 'क्या मैं सिर्फ़ एक पेज सहेज सकता हूँ?', ja: '1ページだけ保存できますか？', zh: '可以只保存一页吗？',
+      fa: 'آیا می‌توانم فقط یک صفحه را ذخیره کنم؟', hi: 'क्या मैं सिर्फ़ एक पेज सहेज सकता हूँ?', ja: '1ページだけ保存できますか？', zh: '可以只保存一页吗？', id: 'Bisakah saya menyimpan satu halaman saja?',
     }, a: {
       pl: 'Narzędzie zapisuje wszystkie strony. Jeśli potrzebujesz jednej, najpierw wyodrębnij ją narzędziem Wyodrębnij strony, a potem zamień na obraz.',
       en: 'The tool saves every page. If you need only one, extract it first with the Extract Pages tool, then convert it.',
@@ -263,13 +274,14 @@ const article: GuideArticle = {
       hi: 'टूल सभी पेज सहेजता है। अगर एक ही पेज चाहिए, तो पहले उसे पृष्ठ निकालें टूल से अलग करें, फिर बदलें।',
       ja: 'すべてのページが保存されます。1ページだけ必要なら、先に「ページ抽出」で取り出してから変換してください。',
       zh: '工具会保存所有页面。如果只需要一页，请先用“提取页面”工具取出该页，再进行转换。',
+      id: 'Alat ini menyimpan setiap halaman. Jika Anda hanya memerlukan satu, ekstrak halaman itu terlebih dahulu dengan alat Ekstrak Halaman, lalu konversikan.',
     }},
     { q: {
       pl: 'Jaką jakość będą miały obrazy?', en: 'How good will the images be?', de: 'Wie gut werden die Bilder?',
       es: '¿Qué calidad tendrán las imágenes?', fr: 'Quelle sera la qualité des images ?', it: 'Che qualità avranno le immagini?',
       pt: 'Que qualidade terão as imagens?', sv: 'Hur bra blir bilderna?', no: 'Hvor gode blir bildene?',
       is: 'Hversu góðar verða myndirnar?', tr: 'Görüntüler ne kalitede olur?', ar: 'ما جودة الصور الناتجة؟',
-      fa: 'کیفیت تصاویر چگونه خواهد بود؟', hi: 'इमेज की गुणवत्ता कैसी होगी?', ja: '画像の画質はどのくらいですか？', zh: '图片质量如何？',
+      fa: 'کیفیت تصاویر چگونه خواهد بود؟', hi: 'इमेज की गुणवत्ता कैसी होगी?', ja: '画像の画質はどのくらいですか？', zh: '图片质量如何？', id: 'Seberapa bagus kualitas gambarnya?',
     }, a: {
       pl: 'Rozdzielczość ustawiasz skalą, aż do 4×. Dla stron z tekstem wybierz PNG, dla zdjęć JPEG z jakością 80–90%.',
       en: 'You set the resolution with the scale, up to 4×. For text pages choose PNG; for photos, JPEG at 80–90% quality.',
@@ -287,13 +299,14 @@ const article: GuideArticle = {
       hi: 'रिज़ॉल्यूशन स्केल से 4× तक सेट होता है। टेक्स्ट वाले पेजों के लिए PNG, फ़ोटो के लिए 80–90% गुणवत्ता वाला JPEG चुनें।',
       ja: '解像度は倍率で最大4倍まで設定できます。文字中心のページはPNG、写真は画質80〜90%のJPEGがおすすめです。',
       zh: '分辨率通过缩放设置，最高4倍。文字页面选PNG，照片选质量80–90%的JPEG。',
+      id: 'Anda menentukan resolusinya dengan skala, hingga 4×. Untuk halaman teks pilih PNG; untuk foto, JPEG dengan kualitas 80–90%.',
     }},
     { q: {
       pl: 'Czy mój plik jest gdzieś wysyłany?', en: 'Is my file sent anywhere?', de: 'Wird meine Datei irgendwohin gesendet?',
       es: '¿Se envía mi archivo a algún sitio?', fr: 'Mon fichier est-il envoyé quelque part ?', it: 'Il mio file viene inviato da qualche parte?',
       pt: 'O meu ficheiro é enviado para algum lado?', sv: 'Skickas min fil någonstans?', no: 'Blir filen min sendt noe sted?',
       is: 'Er skráin mín send eitthvert?', tr: 'Dosyam bir yere gönderiliyor mu?', ar: 'هل يُرسل ملفي إلى أي مكان؟',
-      fa: 'آیا فایل من به جایی فرستاده می‌شود؟', hi: 'क्या मेरी फ़ाइल कहीं भेजी जाती है?', ja: 'ファイルはどこかに送信されますか？', zh: '我的文件会被发送到任何地方吗？',
+      fa: 'آیا فایل من به جایی فرستاده می‌شود؟', hi: 'क्या मेरी फ़ाइल कहीं भेजी जाती है?', ja: 'ファイルはどこかに送信されますか？', zh: '我的文件会被发送到任何地方吗？', id: 'Apakah file saya dikirim ke suatu tempat?',
     }, a: {
       pl: 'Nie. Konwersja odbywa się w Twojej przeglądarce, a plik PDF nie trafia na nasz serwer.',
       en: 'No. The conversion runs in your browser and the PDF never reaches our server.',
@@ -311,6 +324,7 @@ const article: GuideArticle = {
       hi: 'नहीं। रूपांतरण आपके ब्राउज़र में होता है और PDF हमारे सर्वर तक नहीं पहुँचती।',
       ja: 'いいえ。変換はブラウザ内で行われ、PDFが当社のサーバーに送られることはありません。',
       zh: '不会。转换在您的浏览器中进行，PDF不会到达我们的服务器。',
+      id: 'Tidak. Konversi berjalan di browser Anda, dan PDF tidak pernah sampai ke server kami.',
     }},
   ],
   canonicalOverride: undefined,

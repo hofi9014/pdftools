@@ -14,7 +14,7 @@ export const OG_IMAGE = { url: `${baseUrl}/og-image.jpg`, width: 1200, height: 6
 
 /** og:locale (language_TERRITORY), the form Facebook, LinkedIn and others read. */
 export const OG_LOCALES: Record<Locale, string> = {
-  ar: 'ar_AR', de: 'de_DE', en: 'en_US', es: 'es_ES', fa: 'fa_IR', fr: 'fr_FR', hi: 'hi_IN', is: 'is_IS',
+  ar: 'ar_AR', de: 'de_DE', en: 'en_US', es: 'es_ES', fa: 'fa_IR', fr: 'fr_FR', hi: 'hi_IN', id: 'id_ID', is: 'is_IS',
   it: 'it_IT', ja: 'ja_JP', no: 'nb_NO', pl: 'pl_PL', pt: 'pt_PT', sv: 'sv_SE', tr: 'tr_TR', zh: 'zh_CN',
 };
 

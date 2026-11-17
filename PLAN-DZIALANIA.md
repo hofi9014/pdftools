@@ -188,14 +188,21 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
 
 ## Etap 4 — języki (każdy wdrażany osobno)
 
+- [x] 4.id (2026-11-17) indonezyjski (`/id`, 17. język): słownik 1102 kluczy, 770 tekstów treści (19 poradników,
+      FAQ, Pomoc, Zasady, Regulamin, Wsparcie, porównanie, kroki i zastosowania narzędzi), teksty prawne,
+      adresy poradników (`/guides/panduan/kompres-pdf/…`), flaga, nazwa języka dla AI. Narzędzie
+      `scripts/i18n-locale.mts` (extract/apply po drzewie składni). Kolejność właściciela dalej:
+      uk, ru, nl, da, ro, cs, vi, th. Zalecane przejrzenie tekstów przez rodzimego użytkownika.
 - [ ] 4.0 Czcionka z cyrylicą (Figtree/Bricolage jej nie mają) — przed uk i bg.
 - [ ] 4.1 ukraiński · 4.2 czeski · 4.3 rumuński · 4.4 niderlandzki
 - [ ] 4.5 węgierski · 4.6 słowacki · 4.7 bułgarski · 4.8 fiński
 
-Na każdy język: listy języków w 4 miejscach (`proxy.ts`, jego matcher, `lib/i18n.ts`,
+Na każdy język: `npx tsx scripts/i18n-locale.mts extract|apply <kod>` (teksty), potem ręcznie: listy języków w 4 miejscach (`proxy.ts`, jego matcher, `lib/i18n.ts`,
 `LOCALE_SEGMENTS` w `next.config.ts`), skrypt wykrywania języka w `RootDocument`, `htmlLangMap`,
 `OG_LOCALES`, segment poradników, słownik (~980 kluczy), teksty prawne, `content/pages/*`,
-kroki narzędzi, 15 poradników, nazwy kategorii, flaga, język OCR. Przed wdrożeniem: zużycie
+kroki narzędzi, poradniki, nazwy kategorii, flaga (`public/flags`, `LanguageSelector`), `VALID_LOCALES`,
+`SUMMARY_LANGUAGES` w `app/api/ai/route.ts`, podpowiedź wyszukiwarki w `HomeView`, `scripts/build-guide-url-slugs.mts`
++ `tests/fixtures/published-guide-urls.json` (NIE `LEGACY_GUIDE_LOCALES`). Przed wdrożeniem: zużycie
 miejsca na wdrożenia (limit Hobby 10 GB).
 
 ## Do decyzji właściciela (nie ruszam bez zgody)

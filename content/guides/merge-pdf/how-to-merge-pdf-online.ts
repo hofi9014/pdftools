@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'PDF फ़ाइलों को एक दस्तावेज़ में कैसे मर्ज करें',
     ja: 'PDFファイルを1つの文書に結合する方法',
     zh: '如何将PDF文件合并为一个文档',
+    id: 'Cara Menggabungkan File PDF Menjadi Satu Dokumen',
   },
   excerpt: {
     pl: 'Naucz się łączyć wiele plików PDF w jeden dokument. Prosta instrukcja krok po kroku z darmowym narzędziem online — bez instalacji i rejestracji.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'एकाधिक PDF फ़ाइलों को एक दस्तावेज़ में कैसे संयोजित करें सीखें। एक सरल चरण-दर-चरण मार्गदर्शिका — बिना इंस्टॉलेशन या रजिस्ट्रेशन के।',
     ja: '複数のPDFファイルを1つの文書に結合する方法を学びます。インストールや登録は不要です。',
     zh: '了解如何将多个PDF文件合并为一个文档。简单的分步指南 — 无需安装或注册。',
+    id: 'Pelajari cara menggabungkan beberapa file PDF menjadi satu dokumen dengan alat online gratis — tanpa instalasi dan tanpa pendaftaran.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,6 +59,7 @@ const article: GuideArticle = {
       hi: 'PDF फ़ाइलों को मर्ज करना सबसे सामान्य दस्तावेज़ संचालनों में से एक है। जब आपके पास अलग-अलग स्कैन, चालान, रिपोर्ट या अनुबंध हों तो उपयोगी है।',
       ja: 'PDFファイルの結合は最も一般的なドキュメント操作の1つです。別々のスキャン、請求書、レポート、契約書を1つにまとめるのに便利です。',
       zh: '合并PDF文件是最常见的文档操作之一。当您有单独的扫描件、发票、报告或合同时，需要将它们合并为一个 cohesive 文档。',
+      id: 'Menggabungkan file PDF adalah salah satu operasi dokumen yang paling umum. Menyatukan beberapa file menjadi satu berguna ketika Anda memiliki hasil pindaian, faktur, laporan, atau kontrak yang terpisah dan ingin membuat satu dokumen utuh. OptimaPDF menyediakan alat penggabung PDF gratis yang bekerja sepenuhnya di browser Anda.',
     }},
     { type: 'cta', tool: 'merge' },
     { type: 'heading', level: 2, text: {
@@ -76,6 +79,7 @@ const article: GuideArticle = {
       hi: 'चरण दर चरण PDF कैसे मर्ज करें',
       ja: 'ステップバイステップでPDFを結合する方法',
       zh: '如何逐步合并PDF',
+      id: 'Cara Menggabungkan PDF Langkah demi Langkah',
     }},
     { type: 'step', title: {
       pl: 'Dodaj pliki PDF',
@@ -94,6 +98,7 @@ const article: GuideArticle = {
       hi: 'PDF फ़ाइलें जोड़ें',
       ja: 'PDFファイルを追加',
       zh: '添加PDF文件',
+      id: 'Tambahkan File PDF',
     }, text: {
       pl: 'Przeciągnij pliki PDF w pole wyboru lub kliknij, aby wybrać je z dysku. Możesz dodać wiele plików jednocześnie — obsługujemy dowolną liczbę plików.',
       en: 'Drag and drop PDF files into the upload area or click to select them from your disk. You can add multiple files at once — we support any number of files.',
@@ -111,6 +116,7 @@ const article: GuideArticle = {
       hi: 'PDF फ़ाइलों को अपलोड क्षेत्र में खींचें और छोड़ें या अपनी डिस्क से चुनने के लिए क्लिक करें। आप एक साथ कई फ़ाइलें जोड़ सकते हैं।',
       ja: 'PDFファイルをアップロードエリアにドラッグ＆ドロップするか、クリックしてディスクから選択します。複数のファイルを同時に追加できます。',
       zh: '将PDF文件拖放到上传区域，或单击从磁盘中选择。您可以一次添加多个文件。',
+      id: 'Seret dan letakkan file PDF ke area unggah atau klik untuk memilihnya dari disk. Anda dapat menambahkan beberapa file sekaligus — jumlah file tidak dibatasi.',
     }},
     { type: 'step', title: {
       pl: 'Ustaw kolejność plików',
@@ -129,6 +135,7 @@ const article: GuideArticle = {
       hi: 'फ़ाइल क्रम व्यवस्थित करें',
       ja: 'ファイルの順序を設定',
       zh: '排列文件顺序',
+      id: 'Atur Urutan File',
     }, text: {
       pl: 'Kolejność plików można zmieniać strzałkami ↑/↓ przy każdym pliku. Górny plik będzie pierwszy w scalonym dokumencie. Wskazówka: dodaj najpierw plik, który ma być pierwszy.',
       en: 'You can use the ↑/↓ buttons next to each file to change their order. The top file will be first in the merged document. Tip: add the file that should come first first.',
@@ -146,6 +153,7 @@ const article: GuideArticle = {
       hi: 'आप क्रम बदलने के लिए प्रत्येक फ़ाइल के बगल में ↑/↓ बटन का उपयोग कर सकते हैं। शीर्ष फ़ाइल मर्ज किए गए दस्तावेज़ में पहली होगी।',
       ja: '各ファイルの横にある↑/↓ボタンで順序を変更できます。一番上のファイルが結合された文書の最初になります。',
       zh: '您可以使用每个文件旁边的↑/↓按钮更改顺序。顶部文件将是合并文档中的第一个。',
+      id: 'Gunakan tombol ↑/↓ di samping setiap file untuk mengubah urutannya. File paling atas akan menjadi yang pertama dalam dokumen gabungan. Tips: tambahkan lebih dulu file yang harus berada di urutan pertama.',
     }},
     { type: 'step', title: {
       pl: 'Kliknij "Połącz PDF"',
@@ -164,6 +172,7 @@ const article: GuideArticle = {
       hi: '"PDF मर्ज करें" पर क्लिक करें',
       ja: '「PDFを結合」をクリック',
       zh: '点击"合并PDF"',
+      id: 'Klik "Gabungkan PDF"',
     }, text: {
       pl: 'Proces scalania trwa zwykle kilka sekund. Po zakończeniu plik zostanie automatycznie pobrany. Scalony dokument zachowuje strony, formatowanie i jakość z oryginalnych plików.',
       en: 'The merging process usually takes a few seconds. Once complete, the file will be downloaded automatically. The merged document retains the pages, formatting and quality of the original files.',
@@ -181,6 +190,7 @@ const article: GuideArticle = {
       hi: 'मर्ज प्रक्रिया में आमतौर पर कुछ सेकंड लगते हैं। मर्ज किया गया दस्तावेज़ मूल फ़ाइलों के पृष्ठों, फ़ॉर्मेटिंग और गुणवत्ता को बरकरार रखता है।',
       ja: '結合処理は通常数秒で完了します。結合された文書は、元のファイルのページ、書式、品質を保持します。',
       zh: '合并过程通常需要几秒钟。合并后的文档保留原始文件的页面、格式和质量。',
+      id: 'Proses penggabungan biasanya hanya memerlukan beberapa detik. Setelah selesai, file akan terunduh secara otomatis. Dokumen gabungan mempertahankan halaman, format, dan kualitas dari file aslinya.',
     }},
     { type: 'cta', tool: 'merge' },
     { type: 'heading', level: 3, text: {
@@ -200,11 +210,12 @@ const article: GuideArticle = {
       hi: 'PDF मर्ज करना कब उपयोगी है?',
       ja: 'PDF結合はどんな時に便利？',
       zh: '何时需要合并PDF？',
+      id: 'Kapan Menggabungkan PDF Berguna?',
     }},
     { type: 'list', items: [
-      { pl: 'Łączenie kilku zeskanowanych stron w jeden dokument', en: 'Combining several scanned pages into one document', de: 'Zusammenführen mehrerer gescannter Seiten zu einem Dokument', es: 'Combinar varias páginas escaneadas en un documento', fr: 'Combiner plusieurs pages scannées en un document', it: 'Unire più pagine scansionate in un documento', pt: 'Combinar várias páginas digitalizadas num documento', sv: 'Kombinera flera skannade sidor till ett dokument', no: 'Kombinere flere skannede sider til ett dokument', is: 'Sameina margar skannaðar síður í eitt skjal', tr: 'Birden fazla taranmış sayfayı tek bir belgede birleştirme', ar: 'دمج عدة صفحات ممسوحة ضوئيًا في مستند واحد', fa: 'ترکیب چندین صفحه اسکن شده در یک سند', hi: 'कई स्कैन किए गए पृष्ठों को एक दस्तावेज़ में संयोजित करना', ja: '複数のスキャンページを1つの文書に結合', zh: '将多个扫描页面合并到一个文档中' },
-      { pl: 'Łączenie faktur i raportów w jeden plik dla księgowości', en: 'Merging invoices and reports into one file for accounting', de: 'Zusammenführen von Rechnungen und Berichten für die Buchhaltung', es: 'Combinar facturas e informes en un solo archivo para contabilidad', fr: 'Fusionner factures et rapports en un seul fichier pour la comptabilité', it: 'Unire fatture e report in un unico file per la contabilità', pt: 'Fundir faturas e relatórios num único ficheiro para contabilidade', sv: 'Slå ihop fakturor och rapporter till en fil för redovisning', no: 'Slå sammen fakturaer og rapporter til én fil for regnskap', is: 'Sameina reikninga og skýrslur í eina skrá fyrir bókhald', tr: 'Faturaları ve raporları muhasebe için tek bir dosyada birleştirme', ar: 'دمج الفواتير والتقارير في ملف واحد للمحاسبة', fa: 'ادغام فاکتورها و گزارش‌ها در یک فایل برای حسابداری', hi: 'लेखांकन के लिए चालान और रिपोर्ट को एक फ़ाइल में मर्ज करना', ja: '請求書とレポートを会計用に1つのファイルに結合', zh: '将发票和报告合并到一个文件中用于会计' },
-      { pl: 'Tworzenie jednego pliku z wielu umów lub dokumentów prawnych', en: 'Creating a single file from multiple contracts or legal documents', de: 'Erstellen einer einzigen Datei aus mehreren Verträgen oder Rechtsdokumenten', es: 'Crear un solo archivo a partir de varios contratos o documentos legales', fr: 'Créer un fichier unique à partir de plusieurs contrats ou documents juridiques', it: 'Creare un unico file da più contratti o documenti legali', pt: 'Criar um único ficheiro a partir de vários contratos ou documentos legais', sv: 'Skapa en enda fil från flera kontrakt eller juridiska dokument', no: 'Opprette én fil fra flere kontrakter eller juridiske dokumenter', is: 'Búa til eina skrá úr mörgum samningum eða lagalegum skjölum', tr: 'Birden fazla sözleşme veya yasal belgeden tek bir dosya oluşturma', ar: 'إنشاء ملف واحد من عدة عقود أو مستندات قانونية', fa: 'ایجاد یک فایل از چندین قرارداد یا اسناد حقوقی', hi: 'कई अनुबंधों या कानूनी दस्तावेज़ों से एक फ़ाइल बनाना', ja: '複数の契約書や法的文書から1つのファイルを作成', zh: '从多个合同或法律文件创建单个文件' },
+      { pl: 'Łączenie kilku zeskanowanych stron w jeden dokument', en: 'Combining several scanned pages into one document', de: 'Zusammenführen mehrerer gescannter Seiten zu einem Dokument', es: 'Combinar varias páginas escaneadas en un documento', fr: 'Combiner plusieurs pages scannées en un document', it: 'Unire più pagine scansionate in un documento', pt: 'Combinar várias páginas digitalizadas num documento', sv: 'Kombinera flera skannade sidor till ett dokument', no: 'Kombinere flere skannede sider til ett dokument', is: 'Sameina margar skannaðar síður í eitt skjal', tr: 'Birden fazla taranmış sayfayı tek bir belgede birleştirme', ar: 'دمج عدة صفحات ممسوحة ضوئيًا في مستند واحد', fa: 'ترکیب چندین صفحه اسکن شده در یک سند', hi: 'कई स्कैन किए गए पृष्ठों को एक दस्तावेज़ में संयोजित करना', ja: '複数のスキャンページを1つの文書に結合', zh: '将多个扫描页面合并到一个文档中', id: 'Menyatukan beberapa halaman hasil pindaian menjadi satu dokumen', },
+      { pl: 'Łączenie faktur i raportów w jeden plik dla księgowości', en: 'Merging invoices and reports into one file for accounting', de: 'Zusammenführen von Rechnungen und Berichten für die Buchhaltung', es: 'Combinar facturas e informes en un solo archivo para contabilidad', fr: 'Fusionner factures et rapports en un seul fichier pour la comptabilité', it: 'Unire fatture e report in un unico file per la contabilità', pt: 'Fundir faturas e relatórios num único ficheiro para contabilidade', sv: 'Slå ihop fakturor och rapporter till en fil för redovisning', no: 'Slå sammen fakturaer og rapporter til én fil for regnskap', is: 'Sameina reikninga og skýrslur í eina skrá fyrir bókhald', tr: 'Faturaları ve raporları muhasebe için tek bir dosyada birleştirme', ar: 'دمج الفواتير والتقارير في ملف واحد للمحاسبة', fa: 'ادغام فاکتورها و گزارش‌ها در یک فایل برای حسابداری', hi: 'लेखांकन के लिए चालान और रिपोर्ट को एक फ़ाइल में मर्ज करना', ja: '請求書とレポートを会計用に1つのファイルに結合', zh: '将发票和报告合并到一个文件中用于会计', id: 'Menggabungkan faktur dan laporan menjadi satu file untuk keperluan akuntansi', },
+      { pl: 'Tworzenie jednego pliku z wielu umów lub dokumentów prawnych', en: 'Creating a single file from multiple contracts or legal documents', de: 'Erstellen einer einzigen Datei aus mehreren Verträgen oder Rechtsdokumenten', es: 'Crear un solo archivo a partir de varios contratos o documentos legales', fr: 'Créer un fichier unique à partir de plusieurs contrats ou documents juridiques', it: 'Creare un unico file da più contratti o documenti legali', pt: 'Criar um único ficheiro a partir de vários contratos ou documentos legais', sv: 'Skapa en enda fil från flera kontrakt eller juridiska dokument', no: 'Opprette én fil fra flere kontrakter eller juridiske dokumenter', is: 'Búa til eina skrá úr mörgum samningum eða lagalegum skjölum', tr: 'Birden fazla sözleşme veya yasal belgeden tek bir dosya oluşturma', ar: 'إنشاء ملف واحد من عدة عقود أو مستندات قانونية', fa: 'ایجاد یک فایل از چندین قرارداد یا اسناد حقوقی', hi: 'कई अनुबंधों या कानूनी दस्तावेज़ों से एक फ़ाइल बनाना', ja: '複数の契約書や法的文書から1つのファイルを作成', zh: '从多个合同或法律文件创建单个文件', id: 'Membuat satu file dari beberapa kontrak atau dokumen hukum', },
     ]},
     { type: 'cta', tool: 'merge' },
   ],
@@ -227,6 +238,7 @@ const article: GuideArticle = {
       hi: 'मैं एक बार में कितनी फ़ाइलें मर्ज कर सकता हूँ?',
       ja: '一度にいくつのファイルを結合できますか？',
       zh: '一次可以合并多少个文件？',
+      id: 'Berapa banyak file yang bisa saya gabungkan sekaligus?',
     }, a: {
       pl: 'Nie ma ograniczenia liczby plików — możesz dodać tyle plików PDF, ile potrzebujesz. Jedyne ograniczenie to pamięć Twojej przeglądarki. W praktyce narzędzie radzi sobie z kilkunastoma plikami bez problemu.',
       en: 'There is no limit on the number of files — you can add as many PDFs as you need. The only limitation is your browser\'s memory. In practice, the tool handles a dozen files without any issues.',
@@ -244,6 +256,7 @@ const article: GuideArticle = {
       hi: 'फ़ाइलों की संख्या की कोई सीमा नहीं है। एकमात्र सीमा आपके ब्राउज़र की मेमोरी है। व्यवहार में, उपकरण एक दर्जन फ़ाइलों को बिना किसी समस्या के संभाल लेता है।',
       ja: 'ファイル数に制限はありません。唯一の制限はブラウザのメモリです。実際には、このツールは十数個のファイルを問題なく処理できます。',
       zh: '文件数量没有限制。唯一的限制是浏览器的内存。实际上，该工具可以轻松处理十几个文件。',
+      id: 'Jumlah file tidak dibatasi — Anda dapat menambahkan PDF sebanyak yang diperlukan. Satu-satunya batasan adalah memori browser Anda. Dalam praktiknya, alat ini menangani belasan file tanpa masalah.',
     }},
     { q: {
       pl: 'Czy scalanie PDF wpływa na jakość dokumentów?',
@@ -262,6 +275,7 @@ const article: GuideArticle = {
       hi: 'क्या PDF मर्ज करने से दस्तावेज़ की गुणवत्ता प्रभावित होती है?',
       ja: 'PDFの結合は文書の品質に影響しますか？',
       zh: '合并PDF会影响文档质量吗？',
+      id: 'Apakah menggabungkan PDF memengaruhi kualitas dokumen?',
     }, a: {
       pl: 'Nie, scalanie nie zmienia zawartości plików. Każda strona pozostaje w oryginalnej jakości, a tekst i obrazy nie są modyfikowane. Narzędzie łączy pliki w jeden dokument bez ponownego kodowania stron.',
       en: 'No, merging does not change file contents. Each page remains in original quality and text and images are not modified. The tool combines files into one document without re-encoding pages.',
@@ -279,6 +293,7 @@ const article: GuideArticle = {
       hi: 'नहीं, मर्ज करने से फ़ाइल सामग्री नहीं बदलती है। प्रत्येक पृष्ठ मूल गुणवत्ता में रहता है और टेक्स्ट और छवियां संशोधित नहीं होती हैं।',
       ja: 'いいえ、結合はファイル内容を変更しません。各ページは元の品質を維持し、テキストや画像は変更されません。',
       zh: '不会。合并不会改变文件内容。每个页面保持原始质量，文本和图像不会被修改。',
+      id: 'Tidak. Penggabungan tidak mengubah isi file. Setiap halaman tetap dalam kualitas aslinya, dan teks serta gambar tidak diubah. Alat ini menyatukan file menjadi satu dokumen tanpa mengodekan ulang halaman.',
     }},
   ],
   canonicalOverride: undefined,

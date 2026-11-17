@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { type Locale } from './i18n';
 
-const VALID_LOCALES = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'];
+const VALID_LOCALES = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'id', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'];
 
 function isValidLocale(l: string): l is Locale {
   return VALID_LOCALES.includes(l);

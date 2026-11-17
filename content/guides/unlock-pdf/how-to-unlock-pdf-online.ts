@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'PDF को अनलॉक कैसे करें और पासवर्ड कैसे हटाएं',
     ja: 'PDFのロックを解除してパスワードを削除する方法',
     zh: '如何解锁PDF并移除密码',
+    id: 'Cara Membuka Kunci PDF dan Menghapus Kata Sandi',
   },
   excerpt: {
     pl: 'Dowiedz się, jak usunąć zabezpieczenie hasłem z pliku PDF. Wystarczy znać hasło — narzędzie działa lokalnie w przeglądarce, bez wysyłania plików na serwer.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'PDF फ़ाइल से पासवर्ड सुरक्षा हटाना सीखें। आपको बस पासवर्ड जानना होगा — सब कुछ ब्राउज़र में स्थानीय रूप से होता है।',
     ja: 'PDFファイルからパスワード保護を解除する方法を学びます。パスワードを知っているだけで、すべてブラウザ内でローカルに処理されます。',
     zh: '了解如何从PDF文件中移除密码保护。您只需知道密码 — 一切都在浏览器中本地完成，文件不会发送到任何服务器。',
+    id: 'Pelajari cara menghapus kata sandi dari file PDF. Anda hanya perlu mengetahui kata sandinya — alat ini bekerja di browser Anda, tanpa mengirim file ke server.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,6 +59,7 @@ const article: GuideArticle = {
       hi: 'PDF अनलॉक करना तब उपयोगी होता है जब आपके पास पासवर्ड-संरक्षित दस्तावेज़ हो और आपको इसे संपादित, प्रिंट या कनवर्ट करने की आवश्यकता हो।',
       ja: 'パスワードで保護された文書を編集、印刷、変換する必要がある場合、PDFのロック解除が便利です。',
       zh: '当您有受密码保护的文档需要编辑、打印或转换时，解锁PDF非常有用。',
+      id: 'Membuka kunci PDF berguna ketika Anda memiliki dokumen yang dilindungi kata sandi dan perlu mengedit, mencetak, atau mengonversinya. OptimaPDF memungkinkan Anda menghapus perlindungan tersebut jika Anda mengetahui kata sandinya. Prosesnya berlangsung sepenuhnya di browser Anda.',
     }},
     { type: 'cta', tool: 'unlock' },
     { type: 'heading', level: 2, text: {
@@ -76,6 +79,7 @@ const article: GuideArticle = {
       hi: 'चरण दर चरण PDF कैसे अनलॉक करें',
       ja: 'ステップバイステップでPDFのロックを解除する方法',
       zh: '如何逐步解锁PDF',
+      id: 'Cara Membuka Kunci PDF Langkah demi Langkah',
     }},
     { type: 'step', title: {
       pl: 'Wybierz plik PDF',
@@ -94,6 +98,7 @@ const article: GuideArticle = {
       hi: 'PDF फ़ाइल चुनें',
       ja: 'PDFファイルを選択',
       zh: '选择PDF文件',
+      id: 'Pilih File PDF',
     }, text: {
       pl: 'Przeciągnij plik PDF chroniony hasłem w pole wyboru lub kliknij, aby wybrać go z dysku. Narzędzie obsługuje standardową ochronę hasłem (AES-256, AES-128 i RC4); szyfrowanie oparte na certyfikatach nie jest obsługiwane.',
       en: 'Drag the password-protected PDF into the upload area or click to select it from your disk. The tool supports standard password protection (AES-256, AES-128 and RC4); certificate-based encryption is not supported.',
@@ -111,6 +116,7 @@ const article: GuideArticle = {
       hi: 'पासवर्ड-संरक्षित PDF को अपलोड क्षेत्र में खींचें या अपनी डिस्क से चुनने के लिए क्लिक करें। उपकरण मानक पासवर्ड सुरक्षा (AES-256, AES-128 और RC4) का समर्थन करता है; प्रमाणपत्र-आधारित एन्क्रिप्शन समर्थित नहीं है।',
       ja: 'パスワードで保護されたPDFをアップロードエリアにドラッグするか、クリックしてディスクから選択します。このツールは標準的なパスワード保護（AES-256、AES-128、RC4）に対応しています。証明書ベースの暗号化には対応していません。',
       zh: '将受密码保护的PDF拖放到上传区域，或单击从磁盘中选择。该工具支持标准密码保护（AES-256、AES-128 和 RC4）；不支持基于证书的加密。',
+      id: 'Seret PDF yang dilindungi kata sandi ke area unggah atau klik untuk memilihnya dari disk. Alat ini mendukung perlindungan kata sandi standar (AES-256, AES-128, dan RC4); enkripsi berbasis sertifikat tidak didukung.',
     }},
     { type: 'step', title: {
       pl: 'Wprowadź hasło',
@@ -129,6 +135,7 @@ const article: GuideArticle = {
       hi: 'पासवर्ड दर्ज करें',
       ja: 'パスワードを入力',
       zh: '输入密码',
+      id: 'Masukkan Kata Sandi',
     }, text: {
       pl: 'Wpisz hasło dokumentu w polu tekstowym. Jeśli hasło jest poprawne, narzędzie usunie zabezpieczenie. Uwaga: jeśli nie znasz hasła, nie ma możliwości odblokowania pliku.',
       en: 'Enter the document password in the text field. If the password is correct, the tool will remove the protection. Note: if you don\'t know the password, there is no way to unlock the file.',
@@ -146,6 +153,7 @@ const article: GuideArticle = {
       hi: 'टेक्स्ट फ़ील्ड में दस्तावेज़ पासवर्ड दर्ज करें। यदि पासवर्ड सही है, तो उपकरण सुरक्षा हटा देगा। यदि आप पासवर्ड नहीं जानते हैं, तो फ़ाइल को अनलॉक करने का कोई तरीका नहीं है।',
       ja: 'テキストフィールドにドキュメントのパスワードを入力します。パスワードが正しければ、ツールが保護を解除します。パスワードがわからない場合は、ロックを解除する方法はありません。',
       zh: '在文本字段中输入文档密码。如果密码正确，工具将移除保护。如果您不知道密码，则无法解锁文件。',
+      id: 'Masukkan kata sandi dokumen di kolom teks. Jika kata sandinya benar, alat ini akan menghapus perlindungannya. Catatan: jika Anda tidak mengetahui kata sandinya, file tidak dapat dibuka kuncinya.',
     }},
     { type: 'step', title: {
       pl: 'Pobierz odblokowany plik',
@@ -164,6 +172,7 @@ const article: GuideArticle = {
       hi: 'अनलॉक की गई फ़ाइल डाउनलोड करें',
       ja: 'ロック解除されたファイルをダウンロード',
       zh: '下载已解锁的文件',
+      id: 'Unduh File yang Sudah Tidak Terkunci',
     }, text: {
       pl: 'Kliknij "Odblokuj PDF". Po chwili plik bez zabezpieczenia zostanie pobrany. Możesz teraz swobodnie edytować, drukować i konwertować dokument.',
       en: 'Click "Unlock PDF". The unprotected file will be downloaded shortly. You can now freely edit, print and convert the document.',
@@ -181,6 +190,7 @@ const article: GuideArticle = {
       hi: '"PDF अनलॉक करें" पर क्लिक करें। असुरक्षित फ़ाइल डाउनलोड हो जाएगी। अब आप दस्तावेज़ को स्वतंत्र रूप से संपादित, प्रिंट और कनवर्ट कर सकते हैं।',
       ja: '「PDFのロックを解除」をクリックします。保護されていないファイルがダウンロードされます。これで自由に編集、印刷、変換ができます。',
       zh: '点击"解锁PDF"。未受保护的文件将被下载。您现在可以自由编辑、打印和转换文档。',
+      id: 'Klik "Buka Kunci PDF". File tanpa perlindungan akan segera terunduh. Sekarang Anda dapat mengedit, mencetak, dan mengonversi dokumen dengan bebas.',
     }},
     { type: 'cta', tool: 'unlock' },
   ],
@@ -203,6 +213,7 @@ const article: GuideArticle = {
       hi: 'क्या मैं पासवर्ड जाने बिना PDF अनलॉक कर सकता हूँ?',
       ja: 'パスワードを知らなくてもPDFのロックを解除できますか？',
       zh: '不知道密码可以解锁PDF吗？',
+      id: 'Bisakah saya membuka kunci PDF tanpa mengetahui kata sandinya?',
     }, a: {
       pl: 'Nie. Narzędzie działa w przeglądarce i nie omija zabezpieczeń. Aby odblokować plik, musisz znać hasło. Jest to celowe — gwarantuje, że nie można otworzyć cudzych dokumentów.',
       en: 'No. The tool works in your browser and does not bypass security. To unlock a file, you must know the password. This is intentional — it guarantees that nobody can open someone else\'s documents.',
@@ -220,6 +231,7 @@ const article: GuideArticle = {
       hi: 'नहीं। उपकरण सुरक्षा को बायपास नहीं करता है। फ़ाइल अनलॉक करने के लिए, आपको पासवर्ड पता होना चाहिए। यह जानबूझकर है — यह गारंटी देता है कि कोई भी दूसरे के दस्तावेज़ नहीं खोल सकता।',
       ja: 'いいえ。このツールはセキュリティを回避しません。ロックを解除するにはパスワードを知っている必要があります。これは意図的なものであり、他人の文書を開くことができないことを保証します。',
       zh: '不能。该工具不会绕过安全机制。要解锁文件，您必须知道密码。这是有意为之 — 它保证任何人都无法打开他人的文档。',
+      id: 'Tidak. Alat ini bekerja di browser Anda dan tidak menembus pengamanan. Untuk membuka kunci file, Anda harus mengetahui kata sandinya. Hal ini disengaja — agar tidak ada orang yang dapat membuka dokumen milik orang lain.',
     }},
   ],
   canonicalOverride: undefined,

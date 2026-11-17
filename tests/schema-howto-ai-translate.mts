@@ -64,7 +64,7 @@ for (const key of ['selectTargetLanguage', 'clickTranslate', 'readTranslation'])
     // Not anchored to line-start: clickTranslate follows the file's own established
     // compact style (e.g. clickConvert/clickSummarize) with pl+en on one line.
     const localeCount = (keyMatch[1].match(/\b[a-z]{2}: '/g) || []).length;
-    check(localeCount === 16, `${key} has all 16 locales (got ${localeCount})`);
+    check(localeCount === locales.length, `${key} has every locale (got ${localeCount})`);
   }
 }
 

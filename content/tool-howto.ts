@@ -14,7 +14,7 @@ const L: Record<string, Record<string, string>> = {
     tr: 'PDF dosyasını yükleyin', sv: 'Ladda upp PDF-filen',
     no: 'Last opp PDF-filen', ja: 'PDFファイルをアップロード',
     hi: 'PDF फ़ाइल अपलोड करें', ar: 'قم بتحميل ملف PDF',
-    fa: 'فایل PDF را بارگذاری کنید', zh: '上传PDF文件',
+    fa: 'فایل PDF را بارگذاری کنید', zh: '上传PDF文件', id: 'Unggah file PDF',
   },
   uploadPdfCompress: {
     pl: 'Przeciągnij plik PDF do kompresji',
@@ -33,6 +33,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل ملف PDF لضغطه',
     fa: 'فایل PDF را برای فشرده‌سازی بارگذاری کنید',
     zh: '上传要压缩的PDF文件',
+    id: 'Unggah file PDF yang akan dikompres',
   },
   uploadPdfSplit: {
     pl: 'Przeciągnij plik PDF do podziału',
@@ -51,6 +52,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل ملف PDF الذي تريد تقسيمه',
     fa: 'فایل PDF مورد نظر برای تقسیم را بارگذاری کنید',
     zh: '上传要拆分的PDF文件',
+    id: 'Unggah file PDF yang ingin Anda pisahkan',
   },
   uploadPdfConvert: {
     pl: 'Przeciągnij plik PDF do konwersji',
@@ -69,6 +71,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل ملف PDF للتحويل',
     fa: 'فایل PDF را برای تبدیل بارگذاری کنید',
     zh: '上传要转换的PDF文件',
+    id: 'Unggah file PDF yang akan dikonversi',
   },
   uploadWord: {
     pl: 'Przeciągnij dokument Word',
@@ -87,6 +90,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل مستند Word',
     fa: 'سند Word را بارگذاری کنید',
     zh: '上传Word文档',
+    id: 'Unggah dokumen Word',
   },
   uploadJpg: {
     pl: 'Przeciągnij obrazy JPG',
@@ -105,6 +109,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل صور JPG عن طريق السحب والإفلات',
     fa: 'تصاویر JPG را با کشیدن و رها کردن بارگذاری کنید',
     zh: '通过拖放上传JPG图片',
+    id: 'Unggah gambar JPG dengan cara diseret dan diletakkan',
   },
   uploadExcel: {
     pl: 'Przeciągnij plik Excel',
@@ -123,6 +128,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل ملف Excel',
     fa: 'فایل Excel را بارگذاری کنید',
     zh: '上传Excel文件',
+    id: 'Unggah file Excel',
   },
   uploadOdt: {
     pl: 'Przeciągnij dokument OpenOffice',
@@ -141,6 +147,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل مستند OpenOffice',
     fa: 'سند OpenOffice را بارگذاری کنید',
     zh: '上传OpenOffice文档',
+    id: 'Unggah dokumen OpenOffice',
   },
   enterUrl: {
     pl: 'Wprowadź adres URL strony',
@@ -159,6 +166,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'أدخل عنوان URL للموقع',
     fa: 'URL وب‌سایت را وارد کنید',
     zh: '输入网站URL',
+    id: 'Masukkan URL situs web',
   },
   uploadTwoPdfs: {
     pl: 'Przeciągnij dwa pliki PDF do porównania',
@@ -177,6 +185,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل ملفي PDF للمقارنة',
     fa: 'دو فایل PDF برای مقایسه بارگذاری کنید',
     zh: '上传两个PDF文件进行比较',
+    id: 'Unggah dua file PDF yang akan dibandingkan',
   },
   uploadPdfProtect: {
     pl: 'Przeciągnij plik PDF do zabezpieczenia',
@@ -195,6 +204,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل ملف PDF لحمايته',
     fa: 'فایل PDF را برای محافظت بارگذاری کنید',
     zh: '上传要保护的PDF文件',
+    id: 'Unggah file PDF yang akan dilindungi',
   },
   uploadPdfSign: {
     pl: 'Przeciągnij plik PDF do podpisania',
@@ -213,6 +223,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل ملف PDF للتوقيع',
     fa: 'فایل PDF را برای امضا بارگذاری کنید',
     zh: '上传要签名的PDF文件',
+    id: 'Unggah file PDF yang akan ditandatangani',
   },
   uploadPdfEdit: {
     pl: 'Przeciągnij plik PDF do edycji',
@@ -231,6 +242,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل ملف PDF للتعديل',
     fa: 'فایل PDF را برای ویرایش بارگذاری کنید',
     zh: '上传要编辑的PDF文件',
+    id: 'Unggah file PDF yang akan diedit',
   },
   uploadScanned: {
     pl: 'Przeciągnij zeskanowany dokument PDF',
@@ -249,6 +261,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل مستند PDF ممسوح ضوئياً',
     fa: 'یک سند PDF اسکن‌شده بارگذاری کنید',
     zh: '上传扫描的PDF文档',
+    id: 'Unggah dokumen PDF hasil pindaian',
   },
   uploadFormPdf: {
     pl: 'Przeciągnij plik PDF z formularzem',
@@ -267,6 +280,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل PDF مع نموذج',
     fa: 'PDF دارای فرم را بارگذاری کنید',
     zh: '上传包含表单的PDF',
+    id: 'Unggah PDF yang berisi formulir',
   },
   uploadAnnotatedPdf: {
     pl: 'Przeciągnij plik PDF z adnotacjami',
@@ -285,6 +299,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل ملف PDF مع التعليقات',
     fa: 'فایل PDF با حاشیه‌نویسی را بارگذاری کنید',
     zh: '上传带注释的PDF文件',
+    id: 'Unggah file PDF yang berisi anotasi',
   },
   uploadPasswordPdf: {
     pl: 'Przeciągnij plik PDF chroniony hasłem',
@@ -303,6 +318,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل ملف PDF المحمي بكلمة مرور',
     fa: 'فایل PDF محافظت‌شده با رمز عبور را بارگذاری کنید',
     zh: '上传受密码保护的PDF文件',
+    id: 'Unggah PDF yang dilindungi kata sandi',
   },
   uploadTabularPdf: {
     pl: 'Przeciągnij plik PDF z danymi tabelarycznymi',
@@ -321,6 +337,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتحميل ملف PDF مع بيانات جدولية',
     fa: 'فایل PDF با داده‌های جدولی را بارگذاری کنید',
     zh: '上传包含表格数据的PDF文件',
+    id: 'Unggah file PDF yang berisi data tabel',
   },
 
   // --- Arrange steps ---
@@ -341,6 +358,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'رتب الملفات بالترتيب المطلوب',
     fa: 'فایل‌ها را به ترتیب دلخواه مرتب کنید',
     zh: '按所需顺序排列文件',
+    id: 'Susun file dalam urutan yang diinginkan',
   },
   arrangeImages: {
     pl: 'Ustaw obrazy w żądanej kolejności',
@@ -359,6 +377,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'رتب الصور بالترتيب المطلوب',
     fa: 'تصاویر را به ترتیب دلخواه مرتب کنید',
     zh: '按所需顺序排列图片',
+    id: 'Susun gambar dalam urutan yang diinginkan',
   },
 
   // --- Selection / configuration steps ---
@@ -379,6 +398,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اختر وضع التقسيم: كل صفحة على حدة أو نطاقات مخصصة',
     fa: 'حالت تقسیم را انتخاب کنید: هر صفحه به صورت جداگانه یا محدوده‌های سفارشی',
     zh: '选择拆分模式：每页单独拆分或自定义范围',
+    id: 'Pilih mode pemisahan: setiap halaman secara terpisah atau rentang khusus',
   },
   selectCompression: {
     pl: 'Wybierz poziom kompresji: niski, zalecany lub ekstremalny',
@@ -397,6 +417,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اختر مستوى الضغط: منخفض، موصى به أو شديد',
     fa: 'سطح فشرده‌سازی را انتخاب کنید: کم، توصیه‌شده یا شدید',
     zh: '选择压缩级别：低、推荐或极限',
+    id: 'Pilih tingkat kompresi: rendah, disarankan, atau ekstrem',
   },
   selectRotation: {
     pl: 'Wybierz kąt obrotu: 90, 180 lub 270 stopni',
@@ -415,6 +436,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اختر زاوية التدوير: 90 أو 180 أو 270 درجة',
     fa: 'زاویه چرخش را انتخاب کنید: 90، 180 یا 270 درجه',
     zh: '选择旋转角度：90度、180度或270度',
+    id: 'Pilih sudut putaran: 90, 180, atau 270 derajat',
   },
   selectImageFormat: {
     pl: 'Wybierz format obrazu (PNG, JPEG, WebP), skalę i jakość',
@@ -433,6 +455,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اختر تنسيق الصورة (PNG، JPEG، WebP) والمقياس والجودة',
     fa: 'فرمت تصویر (PNG، JPEG، WebP)، مقیاس و کیفیت را انتخاب کنید',
     zh: '选择图片格式（PNG、JPEG、WebP）、缩放和质量',
+    id: 'Pilih format gambar (PNG, JPEG, WebP), skala, dan kualitas',
   },
   selectLanguage: {
     pl: 'Wybierz język dokumentu',
@@ -451,6 +474,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اختر لغة المستند',
     fa: 'زبان سند را انتخاب کنید',
     zh: '选择文档语言',
+    id: 'Pilih bahasa dokumen',
   },
   setMargins: {
     pl: 'Ustaw marginesy: góra, dół, lewo, prawo',
@@ -469,6 +493,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اضبط قيم الهوامش: الأعلى والأسفل واليسار واليمين',
     fa: 'مقادیر حاشیه را تنظیم کنید: بالا، پایین، چپ و راست',
     zh: '设置页边距：上、下、左、右',
+    id: 'Atur nilai margin atas, bawah, kiri, dan kanan',
   },
   editMetadata: {
     pl: 'Edytuj tytuł, autora, temat i słowa kluczowe',
@@ -487,6 +512,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'عدّل العنوان والمؤلف والموضوع والكلمات المفتاحية',
     fa: 'عنوان، نویسنده، موضوع و کلمات کلیدی را ویرایش کنید',
     zh: '编辑标题、作者、主题和关键词',
+    id: 'Edit judul, penulis, subjek, dan kata kunci',
   },
   customizeWatermark: {
     pl: 'Wprowadź tekst znaku wodnego i dostosuj wygląd',
@@ -505,6 +531,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'أدخل نص العلامة المائية وخصص المظهر',
     fa: 'متن واترمارک را وارد کنید و ظاهر را سفارشی کنید',
     zh: '输入水印文本并自定义外观',
+    id: 'Masukkan teks tanda air dan sesuaikan tampilannya',
   },
 
   // --- Click action steps ---
@@ -524,6 +551,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر الدمج',
     fa: 'روی دکمه ادغام کلیک کنید',
     zh: '点击合并按钮',
+    id: 'Klik tombol gabungkan',
   },
   clickSplit: {
     pl: 'Kliknij przycisk podziału', en: 'Click the split button',
@@ -541,6 +569,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر التقسيم',
     fa: 'روی دکمه تقسیم کلیک کنید',
     zh: '点击拆分按钮',
+    id: 'Klik tombol pisahkan',
   },
   clickCompress: {
     pl: 'Kliknij przycisk kompresji', en: 'Click the compress button',
@@ -558,6 +587,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر الضغط',
     fa: 'روی دکمه فشرده‌سازی کلیک کنید',
     zh: '点击压缩按钮',
+    id: 'Klik tombol kompres',
   },
   clickConvert: {
     pl: 'Kliknij przycisk konwersji', en: 'Click the convert button',
@@ -575,6 +605,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر التحويل',
     fa: 'روی دکمه تبدیل کلیک کنید',
     zh: '点击转换按钮',
+    id: 'Klik tombol konversi',
   },
   clickProtect: {
     pl: 'Kliknij przycisk zabezpieczenia', en: 'Click the protect button',
@@ -592,6 +623,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر الحماية',
     fa: 'روی دکمه محافظت کلیک کنید',
     zh: '点击保护按钮',
+    id: 'Klik tombol lindungi',
   },
   clickUnlock: {
     pl: 'Kliknij przycisk odblokowania', en: 'Click unlock to remove the password',
@@ -609,6 +641,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على إلغاء القفل لإزالة كلمة المرور',
     fa: 'برای حذف رمز عبور روی باز کردن قفل کلیک کنید',
     zh: '点击解锁以移除密码',
+    id: 'Klik buka kunci untuk menghapus kata sandi',
   },
   clickRotate: {
     pl: 'Kliknij przycisk obrotu', en: 'Click the rotate button',
@@ -626,6 +659,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر التدوير',
     fa: 'روی دکمه چرخش کلیک کنید',
     zh: '点击旋转按钮',
+    id: 'Klik tombol putar',
   },
   clickAddNumbers: {
     pl: 'Kliknij przycisk dodawania numerów',
@@ -644,6 +678,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر إضافة الأرقام',
     fa: 'روی دکمه افزودن اعداد کلیک کنید',
     zh: '点击添加页码按钮',
+    id: 'Klik tombol tambahkan nomor',
   },
   clickAddWatermark: {
     pl: 'Kliknij przycisk dodawania znaku wodnego',
@@ -662,6 +697,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر إضافة العلامة المائية',
     fa: 'روی دکمه افزودن واترمارک کلیک کنید',
     zh: '点击添加水印按钮',
+    id: 'Klik tombol tambahkan tanda air',
   },
   clickOcr: {
     pl: 'Kliknij przycisk OCR', en: 'Click the OCR button',
@@ -679,6 +715,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر OCR',
     fa: 'روی دکمه OCR کلیک کنید',
     zh: '点击OCR按钮',
+    id: 'Klik tombol Jalankan OCR',
   },
   clickExtract: {
     pl: 'Kliknij przycisk wyodrębniania', en: 'Click the extract button',
@@ -696,6 +733,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر الاستخراج',
     fa: 'روی دکمه استخراج کلیک کنید',
     zh: '点击提取按钮',
+    id: 'Klik tombol ekstrak',
   },
   clickDelete: {
     pl: 'Kliknij przycisk usuwania', en: 'Click the delete button',
@@ -713,6 +751,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر الحذف',
     fa: 'روی دکمه حذف کلیک کنید',
     zh: '点击删除按钮',
+    id: 'Klik tombol hapus',
   },
   clickReorder: {
     pl: 'Kliknij przycisk zmiany kolejności',
@@ -731,6 +770,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر إعادة الترتيب',
     fa: 'روی دکمه مرتب‌سازی مجدد کلیک کنید',
     zh: '点击重新排序按钮',
+    id: 'Klik tombol simpan urutan',
   },
   clickCrop: {
     pl: 'Kliknij przycisk przycinania', en: 'Click the crop button',
@@ -748,6 +788,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر القص',
     fa: 'روی دکمه برش کلیک کنید',
     zh: '点击裁剪按钮',
+    id: 'Klik tombol pangkas',
   },
   clickAddPage: {
     pl: 'Kliknij przycisk dodawania strony',
@@ -766,6 +807,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر إضافة صفحة',
     fa: 'روی دکمه افزودن صفحه کلیک کنید',
     zh: '点击添加页面按钮',
+    id: 'Klik tombol tambah halaman',
   },
   clickSave: {
     pl: 'Kliknij przycisk zapisu', en: 'Click the save button',
@@ -783,6 +825,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر الحفظ',
     fa: 'روی دکمه ذخیره کلیک کنید',
     zh: '点击保存按钮',
+    id: 'Klik tombol simpan',
   },
   clickSaveEdit: {
     pl: 'Kliknij przycisk zapisu zmian',
@@ -801,6 +844,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر حفظ التغييرات',
     fa: 'روی دکمه ذخیره تغییرات کلیک کنید',
     zh: '点击保存更改按钮',
+    id: 'Klik tombol simpan perubahan',
   },
   clickFlatten: {
     pl: 'Kliknij przycisk spłaszczania', en: 'Click the flatten button',
@@ -818,6 +862,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر التسطيح',
     fa: 'روی دکمه مسطح‌سازی کلیک کنید',
     zh: '点击压平按钮',
+    id: 'Klik tombol ratakan',
   },
   clickCompare: {
     pl: 'Kliknij przycisk porównania', en: 'Click the compare button',
@@ -835,6 +880,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر المقارنة',
     fa: 'روی دکمه مقایسه کلیک کنید',
     zh: '点击比较按钮',
+    id: 'Klik tombol bandingkan',
   },
   clickSummarize: {
     pl: 'Kliknij przycisk streszczenia',
@@ -853,6 +899,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر التلخيص',
     fa: 'روی دکمه خلاصه‌سازی کلیک کنید',
     zh: '点击摘要按钮',
+    id: 'Klik tombol buat ringkasan',
   },
   clickRedact: {
     pl: 'Kliknij przycisk redakcji', en: 'Click the redact button',
@@ -870,6 +917,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر التنقيح',
     fa: 'روی دکمه ویرایش امن کلیک کنید',
     zh: '点击编辑按钮',
+    id: 'Klik tombol sensor',
   },
   clickFill: {
     pl: 'Kliknij przycisk pobierania',
@@ -888,6 +936,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر التنزيل',
     fa: 'روی دکمه دانلود کلیک کنید',
     zh: '点击下载按钮',
+    id: 'Klik tombol unduh',
   },
 
   // --- Enter data steps ---
@@ -907,6 +956,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'أدخل كلمة مرور قوية',
     fa: 'یک رمز عبور قوی وارد کنید',
     zh: '输入强密码',
+    id: 'Masukkan kata sandi yang kuat',
   },
   enterPasswordForUnlock: {
     pl: 'Wprowadź hasło', en: 'Enter the password',
@@ -924,6 +974,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'أدخل كلمة المرور',
     fa: 'رمز عبور را وارد کنید',
     zh: '输入密码',
+    id: 'Masukkan kata sandi',
   },
   enterPosition: {
     pl: 'Wybierz pozycję, numer początkowy i rozmiar czcionki',
@@ -942,6 +993,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اختر الموضع والرقم البداية وحجم الخط',
     fa: 'موقعیت، شماره شروع و اندازه فونت را انتخاب کنید',
     zh: '选择位置、起始编号和字体大小',
+    id: 'Pilih posisi, angka awal, dan ukuran fon',
   },
   drawSignature: {
     pl: 'Narysuj lub wpisz swój podpis',
@@ -960,6 +1012,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'ارسم أو اكتب توقيعك',
     fa: 'امضای خود را بکشید یا تایپ کنید',
     zh: '绘制或输入您的签名',
+    id: 'Gambar atau ketik tanda tangan Anda',
   },
   placeSignature: {
     pl: 'Umieść podpis na dokumencie',
@@ -978,6 +1031,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'ضع التوقيع على المستند',
     fa: 'امضا را روی سند قرار دهید',
     zh: '将签名放在文档上',
+    id: 'Tempatkan tanda tangan pada dokumen',
   },
 
   // --- Selection by thumbnails ---
@@ -998,6 +1052,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اختر الصفحات لاستخراجها بالنقر على الصور المصغرة',
     fa: 'صفحات مورد نظر برای استخراج را با کلیک روی تصاویر بندانگشتی انتخاب کنید',
     zh: '点击缩略图选择要提取的页面',
+    id: 'Pilih halaman yang akan diekstrak dengan mengeklik gambar mini',
   },
   selectPagesDelete: {
     pl: 'Wybierz strony do usunięcia klikając miniatury',
@@ -1016,6 +1071,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اختر الصفحات للحذف بالنقر على الصور المصغرة',
     fa: 'صفحات مورد نظر برای حذف را با کلیک روی تصاویر بندانگشتی انتخاب کنید',
     zh: '点击缩略图选择要删除的页面',
+    id: 'Pilih halaman yang akan dihapus dengan mengeklik gambar mini',
   },
 
   // --- Drag and drop reorder ---
@@ -1036,6 +1092,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اسحب وأفلت الصور المصغرة للصفحات لإعادة الترتيب',
     fa: 'تصاویر بندانگشتی صفحات را بکشید و رها کنید تا مرتب‌سازی مجدد کنید',
     zh: '拖放页面缩略图以重新排序',
+    id: 'Seret dan letakkan gambar mini halaman untuk mengubah urutannya',
   },
 
   // --- Add content steps ---
@@ -1056,6 +1113,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'أضف نصاً أو تمييزات أو تعليقات',
     fa: 'متن، برجسته‌سازی یا حاشیه‌نویسی اضافه کنید',
     zh: '添加文本、高亮或注释',
+    id: 'Tambahkan teks, sorotan, atau anotasi',
   },
   fillFields: {
     pl: 'Wypełnij pola tekstowe, checkboxy i listy',
@@ -1074,6 +1132,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'املأ حقول النص وخانات الاختيار والقوائم المنسدلة',
     fa: 'فیلدهای متن، چک‌باکس‌ها و کشویی‌ها را پر کنید',
     zh: '填写文本字段、复选框和下拉列表',
+    id: 'Isi kolom teks, kotak centang, dan menu pilihan',
   },
 
   // --- Wait steps ---
@@ -1096,6 +1155,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل ملف PDF المضغوط',
     fa: 'فایل PDF فشرده‌شده را دانلود کنید',
     zh: '下载压缩后的PDF文件',
+    id: 'Unduh file PDF yang telah dikompres',
   },
   downloadIndividualPdfs: {
     pl: 'Pobierz rozdzielone pliki PDF',
@@ -1114,6 +1174,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل ملفات PDF الفردية',
     fa: 'فایل‌های PDF جداگانه را دانلود کنید',
     zh: '下载各个PDF文件',
+    id: 'Unduh file-file PDF hasil pemisahan',
   },
   downloadWord: {
     pl: 'Pobierz dokument Word',
@@ -1132,6 +1193,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل مستند Word',
     fa: 'سند Word را دانلود کنید',
     zh: '下载Word文档',
+    id: 'Unduh dokumen Word',
   },
   downloadZip: {
     pl: 'Pobierz obrazy jako plik ZIP',
@@ -1150,6 +1212,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل الصور كملف ZIP',
     fa: 'تصاویر را به عنوان فایل ZIP دانلود کنید',
     zh: '将图片下载为ZIP文件',
+    id: 'Unduh gambar sebagai file ZIP',
   },
   downloadProtectedPdf: {
     pl: 'Pobierz zabezpieczony plik PDF',
@@ -1168,6 +1231,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF المحمي بكلمة مرور',
     fa: 'PDF محافظت‌شده با رمز عبور را دانلود کنید',
     zh: '下载受密码保护的PDF',
+    id: 'Unduh PDF yang dilindungi kata sandi',
   },
   downloadMergedPdf: {
     pl: 'Pobierz połączony plik PDF',
@@ -1186,6 +1250,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل ملف PDF المدمج',
     fa: 'فایل PDF ادغام‌شده را دانلود کنید',
     zh: '下载合并后的PDF文件',
+    id: 'Unduh file PDF gabungan',
   },
   downloadUnlockedPdf: {
     pl: 'Pobierz odblokowany plik PDF',
@@ -1204,6 +1269,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF غير المقفل',
     fa: 'PDF قفل‌گشایی‌شده را دانلود کنید',
     zh: '下载解锁后的PDF',
+    id: 'Unduh PDF yang sudah tidak terkunci',
   },
   downloadRotatedPdf: {
     pl: 'Pobierz obrócony plik PDF',
@@ -1222,6 +1288,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF المدور',
     fa: 'PDF چرخیده را دانلود کنید',
     zh: '下载旋转后的PDF',
+    id: 'Unduh PDF yang telah diputar',
   },
   downloadNumberedPdf: {
     pl: 'Pobierz plik PDF z numerami stron',
@@ -1240,6 +1307,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF مع أرقام الصفحات',
     fa: 'PDF با شماره صفحه را دانلود کنید',
     zh: '下载带页码的PDF',
+    id: 'Unduh PDF dengan nomor halaman',
   },
   downloadWatermarkedPdf: {
     pl: 'Pobierz plik PDF ze znakiem wodnym',
@@ -1258,6 +1326,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF مع العلامة المائية',
     fa: 'PDF با واترمارک را دانلود کنید',
     zh: '下载带水印的PDF',
+    id: 'Unduh PDF dengan tanda air',
   },
   downloadOcrPdf: {
     pl: 'Pobierz PDF z rozpoznanym tekstem',
@@ -1276,6 +1345,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF مع النص الذي تم التعرف عليه',
     fa: 'PDF با متن شناسایی‌شده را دانلود کنید',
     zh: '下载带识别文本的PDF',
+    id: 'Unduh PDF dengan teks yang telah dikenali',
   },
   downloadExtractedPdf: {
     pl: 'Pobierz wyodrębnione strony jako nowy PDF',
@@ -1294,6 +1364,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل الصفحات المستخرجة كملف PDF جديد',
     fa: 'صفحات استخراج‌شده را به عنوان PDF جدید دانلود کنید',
     zh: '将提取的页面下载为新PDF',
+    id: 'Unduh halaman yang diekstrak sebagai PDF baru',
   },
   downloadWithoutPages: {
     pl: 'Pobierz plik PDF bez wybranych stron',
@@ -1312,6 +1383,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF بدون الصفحات المحددة',
     fa: 'PDF را بدون صفحات انتخاب‌شده دانلود کنید',
     zh: '下载不带选定页面的PDF',
+    id: 'Unduh PDF tanpa halaman yang dipilih',
   },
   downloadReorderedPdf: {
     pl: 'Pobierz PDF z nową kolejnością',
@@ -1330,6 +1402,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF المعاد ترتيبه',
     fa: 'PDF مرتب‌شده مجدد را دانلود کنید',
     zh: '下载重新排序的PDF',
+    id: 'Unduh PDF dengan urutan baru',
   },
   downloadCroppedPdf: {
     pl: 'Pobierz przycięty plik PDF',
@@ -1348,6 +1421,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF المقصوص',
     fa: 'PDF برش‌خورده را دانلود کنید',
     zh: '下载裁剪后的PDF',
+    id: 'Unduh PDF yang telah dipangkas',
   },
   downloadWithBlankPage: {
     pl: 'Pobierz plik PDF z nową stroną',
@@ -1366,6 +1440,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF مع الصفحة الفارغة الجديدة',
     fa: 'PDF با صفحه خالی جدید را دانلود کنید',
     zh: '下载带新空白页的PDF',
+    id: 'Unduh PDF dengan halaman kosong yang baru',
   },
   downloadEditedPdf: {
     pl: 'Pobierz edytowany plik PDF',
@@ -1384,6 +1459,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF المعدل',
     fa: 'PDF ویرایش‌شده را دانلود کنید',
     zh: '下载编辑后的PDF',
+    id: 'Unduh PDF yang telah diedit',
   },
   downloadSignedPdf: {
     pl: 'Pobierz podpisany plik PDF',
@@ -1402,6 +1478,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF الموقع',
     fa: 'PDF امضا شده را دانلود کنید',
     zh: '下载已签名的PDF',
+    id: 'Unduh PDF yang sudah ditandatangani',
   },
   downloadMetaPdf: {
     pl: 'Pobierz plik PDF z nowymi metadanymi',
@@ -1420,6 +1497,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF مع البيانات الوصفية المحدثة',
     fa: 'PDF با فراداده به‌روزرسانی‌شده را دانلود کنید',
     zh: '下载更新了元数据的PDF',
+    id: 'Unduh PDF dengan metadata yang telah diperbarui',
   },
   downloadExcel: {
     pl: 'Pobierz arkusz Excel',
@@ -1438,6 +1516,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل جدول بيانات Excel',
     fa: 'صفحه‌گسترده Excel را دانلود کنید',
     zh: '下载Excel电子表格',
+    id: 'Unduh spreadsheet Excel',
   },
   downloadPdfDoc: {
     pl: 'Pobierz dokument PDF',
@@ -1456,6 +1535,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل مستند PDF',
     fa: 'سند PDF را دانلود کنید',
     zh: '下载PDF文档',
+    id: 'Unduh dokumen PDF',
   },
   downloadTxt: {
     pl: 'Pobierz plik tekstowy',
@@ -1474,6 +1554,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل الملف النصي',
     fa: 'فایل متنی را دانلود کنید',
     zh: '下载文本文件',
+    id: 'Unduh file teks',
   },
   downloadHtml: {
     pl: 'Pobierz plik HTML',
@@ -1492,6 +1573,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل ملف HTML',
     fa: 'فایل HTML را دانلود کنید',
     zh: '下载HTML文件',
+    id: 'Unduh file HTML',
   },
   downloadSvg: {
     pl: 'Pobierz pliki SVG',
@@ -1510,6 +1592,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل ملفات SVG',
     fa: 'فایل‌های SVG را دانلود کنید',
     zh: '下载SVG文件',
+    id: 'Unduh file SVG',
   },
   downloadEpub: {
     pl: 'Pobierz e-book EPUB',
@@ -1528,6 +1611,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل الكتاب الإلكتروني EPUB',
     fa: 'کتاب الکترونیکی EPUB را دانلود کنید',
     zh: '下载EPUB电子书',
+    id: 'Unduh e-book EPUB',
   },
   downloadPptx: {
     pl: 'Pobierz prezentację PowerPoint',
@@ -1546,6 +1630,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل عرض PowerPoint التقديمي',
     fa: 'ارائه PowerPoint را دانلود کنید',
     zh: '下载PowerPoint演示文稿',
+    id: 'Unduh presentasi PowerPoint',
   },
   downloadOdt: {
     pl: 'Pobierz dokument OpenOffice',
@@ -1564,6 +1649,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل مستند OpenOffice',
     fa: 'سند OpenOffice را دانلود کنید',
     zh: '下载OpenOffice文档',
+    id: 'Unduh dokumen OpenOffice',
   },
   downloadFlattenedPdf: {
     pl: 'Pobierz spłaszczony plik PDF',
@@ -1582,6 +1668,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF المسطح',
     fa: 'PDF مسطح‌شده را دانلود کنید',
     zh: '下载压平后的PDF',
+    id: 'Unduh PDF yang telah diratakan',
   },
   downloadFilledPdf: {
     pl: 'Pobierz wypełniony plik PDF',
@@ -1600,6 +1687,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF المملوء',
     fa: 'PDF پر شده را دانلود کنید',
     zh: '下载已填写的PDF',
+    id: 'Unduh PDF yang telah diisi',
   },
   downloadPdfa: {
     pl: 'Pobierz dokument PDF/A',
@@ -1618,6 +1706,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل مستند PDF/A',
     fa: 'سند PDF/A را دانلود کنید',
     zh: '下载PDF/A文档',
+    id: 'Unduh dokumen PDF/A',
   },
   downloadRedactedPdf: {
     pl: 'Pobierz zeredagowany plik PDF',
@@ -1636,6 +1725,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF المنقح',
     fa: 'PDF ویرایش‌امن‌شده را دانلود کنید',
     zh: '下载已编辑的PDF',
+    id: 'Unduh PDF yang telah disensor',
   },
   downloadWebPdf: {
     pl: 'Pobierz PDF strony internetowej',
@@ -1654,6 +1744,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'قم بتنزيل PDF لصفحة الويب',
     fa: 'PDF صفحه وب را دانلود کنید',
     zh: '下载网页的PDF',
+    id: 'Unduh PDF dari halaman web',
   },
 
   // --- View / Read steps ---
@@ -1674,6 +1765,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'عرض الاختلافات بين الملفات',
     fa: 'تفاوت‌های بین فایل‌ها را مشاهده کنید',
     zh: '查看文件之间的差异',
+    id: 'Lihat perbedaan antara kedua file',
   },
   askQuestions: {
     pl: 'Zadawaj pytania dotyczące treści dokumentu',
@@ -1692,6 +1784,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اطرح أسئلة حول محتوى المستند',
     fa: 'در مورد محتوای سند سؤال بپرسید',
     zh: '就文档内容提问',
+    id: 'Ajukan pertanyaan tentang isi dokumen',
   },
   readSummary: {
     pl: 'Przeczytaj streszczenie wygenerowane przez AI',
@@ -1710,6 +1803,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اقرأ الملخص الذي تم إنشاؤه بواسطة الذكاء الاصطناعي',
     fa: 'خلاصه تولیدشده توسط هوش مصنوعی را بخوانید',
     zh: '阅读AI生成的摘要',
+    id: 'Baca ringkasan yang dibuat AI',
   },
   getAiAnswers: {
     pl: 'Otrzymuj odpowiedzi wygenerowane przez AI',
@@ -1728,6 +1822,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'تلقي إجابات تم إنشاؤها بواسطة الذكاء الاصطناعي',
     fa: 'پاسخ‌های تولیدشده توسط هوش مصنوعی را دریافت کنید',
     zh: '接收AI生成的答案',
+    id: 'Terima jawaban yang dibuat AI',
   },
   selectTargetLanguage: {
     // Same content as page.translate.howto_2 in lib/i18n.ts (already-translated,
@@ -1748,6 +1843,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اختر اللغة المستهدفة للترجمة',
     fa: 'زبان هدف برای ترجمه را انتخاب کنید',
     zh: '选择目标语言进行翻译',
+    id: 'Pilih bahasa tujuan terjemahan',
   },
   clickTranslate: {
     pl: 'Kliknij przycisk tłumaczenia', en: 'Click the translate button',
@@ -1765,6 +1861,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر الترجمة',
     fa: 'روی دکمه ترجمه کلیک کنید',
     zh: '点击翻译按钮',
+    id: 'Klik tombol terjemahkan',
   },
   readTranslation: {
     pl: 'Przeczytaj tłumaczenie wygenerowane przez AI',
@@ -1783,6 +1880,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'اقرأ الترجمة التي تم إنشاؤها بواسطة الذكاء الاصطناعي',
     fa: 'ترجمه تولیدشده توسط هوش مصنوعی را بخوانید',
     zh: '阅读AI生成的翻译',
+    id: 'Baca terjemahan yang dibuat AI',
   },
   pasteHtml: {
     pl: 'Wklej kod HTML w pole tekstowe',
@@ -1801,6 +1899,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'الصق شيفرة HTML في مربع النص',
     fa: 'کد HTML را در کادر متن جای‌گذاری کنید',
     zh: '将HTML代码粘贴到文本框中',
+    id: 'Tempel kode HTML ke kotak teks',
   },
   selectRegionsRedact: {
     pl: 'Zaznacz na stronach obszary do zakrycia',
@@ -1819,6 +1918,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'حدّد على الصفحات المناطق المراد حجبها',
     fa: 'در صفحه‌ها بخش‌هایی را که باید پوشانده شوند علامت بزنید',
     zh: '在页面上框选要涂黑的区域',
+    id: 'Tandai area yang akan dihitamkan pada halaman',
   },
   clickExtractText: {
     pl: 'Kliknij przycisk wyodrębnienia tekstu',
@@ -1837,6 +1937,7 @@ const L: Record<string, Record<string, string>> = {
     ar: 'انقر على زر استخراج النص',
     fa: 'روی دکمه استخراج متن کلیک کنید',
     zh: '点击提取文本按钮',
+    id: 'Klik tombol ambil teks',
   },
 };
 

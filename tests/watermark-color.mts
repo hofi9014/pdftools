@@ -5,6 +5,7 @@
 // a colour, and the page passes the chosen colour and the same angle to both the file and the
 // preview.
 import { readFileSync, existsSync } from 'node:fs';
+import { locales } from '../lib/i18n';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -65,7 +66,7 @@ check(!/#FF0000/i.test(page), 'the preview no longer hard-codes red');
 check(/transform: `rotate\(-\$\{WATERMARK_ROTATION\}deg\)`/.test(page), 'the preview is rotated like the file');
 check(/type="color"/.test(page) && /page\.watermark\.color_label/.test(page), 'the page has a labelled colour picker');
 const i18n = i18nSource();
-check((i18n.match(/'page\.watermark\.color_label': '[^']+'/g) ?? []).length === 16, 'the colour label is translated in all 16 locales');
+check((i18n.match(/'page\.watermark\.color_label': '[^']+'/g) ?? []).length === locales.length, 'the colour label is translated in every locale');
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);

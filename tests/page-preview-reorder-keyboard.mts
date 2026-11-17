@@ -77,18 +77,18 @@ if (!localesMatch) {
   fails++;
 } else {
   const locales = [...localesMatch[1].matchAll(/'([a-z]{2})'/g)].map(m => m[1]);
-  check(locales.length === 16, `locales export lists 16 languages — got ${locales.length}`);
+  check(locales.length >= 16, `locales export lists at least 16 languages — got ${locales.length}`);
   const upCount = (i18nSrc.match(/'preview\.move_up':/g) || []).length;
   const downCount = (i18nSrc.match(/'preview\.move_down':/g) || []).length;
-  check(upCount === 16, `preview.move_up defined exactly 16 times (once per locale) — got ${upCount}`);
-  check(downCount === 16, `preview.move_down defined exactly 16 times (once per locale) — got ${downCount}`);
+  check(upCount === locales.length, `preview.move_up defined exactly once per locale — got ${upCount}`);
+  check(downCount === locales.length, `preview.move_down defined exactly once per locale — got ${downCount}`);
 
   // Every move_up value must be non-empty and distinct from the raw key (i.e. actually translated,
   // not a fallback) — mirrors the same check used for the password-toggle-aria fix.
   const upValues = [...i18nSrc.matchAll(/'preview\.move_up':\s*'([^']*)'/g)].map(m => m[1]);
   const downValues = [...i18nSrc.matchAll(/'preview\.move_down':\s*'([^']*)'/g)].map(m => m[1]);
-  check(upValues.length === 16 && upValues.every(v => v.length > 0), 'every preview.move_up value is non-empty');
-  check(downValues.length === 16 && downValues.every(v => v.length > 0), 'every preview.move_down value is non-empty');
+  check(upValues.length === locales.length && upValues.every(v => v.length > 0), 'every preview.move_up value is non-empty');
+  check(downValues.length === locales.length && downValues.every(v => v.length > 0), 'every preview.move_down value is non-empty');
   check(upValues.every((v, i) => v !== downValues[i]), 'move_up and move_down are distinct translations in every locale (not copy-pasted)');
 }
 

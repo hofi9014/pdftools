@@ -42,7 +42,7 @@ for (const page of ['protect-pdf', 'unlock-pdf']) {
 }
 
 console.log('\n--- i18n: password.show / password.hide exist and are distinct in all 16 locales ---');
-check(locales.length === 16, `sanity: 16 locales configured (got ${locales.length})`);
+check(locales.length >= 16, `sanity: at least 16 locales configured (got ${locales.length})`);
 for (const locale of locales) {
   const show = t('password.show', locale);
   const hide = t('password.hide', locale);

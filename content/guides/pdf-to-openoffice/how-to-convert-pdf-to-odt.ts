@@ -25,6 +25,7 @@ const article: GuideArticle = {
     hi: 'PDF को ODT में कैसे बदलें (OpenOffice, LibreOffice)',
     ja: 'PDFをODTに変換する方法（OpenOffice、LibreOffice）',
     zh: '如何将PDF转换为ODT（OpenOffice、LibreOffice）',
+    id: 'Cara Mengonversi PDF ke ODT (OpenOffice, LibreOffice)',
   },
   excerpt: {
     pl: 'Zamień PDF na dokument ODT do edycji w OpenOffice lub LibreOffice Writer: z wiernym wyglądem stron albo jako tekst ciągły. W przeglądarce.',
@@ -43,6 +44,7 @@ const article: GuideArticle = {
     hi: 'PDF को OpenOffice या LibreOffice Writer में संपादन के लिए ODT दस्तावेज़ में बदलें — मूल जैसे रूप में या प्रवाही पाठ के रूप में, ब्राउज़र में।',
     ja: 'PDFをOpenOfficeやLibreOffice Writerで編集できるODT文書に変換します。見た目を保持するか、流し込みテキストにするかを選べます。ブラウザ内で完結します。',
     zh: '把PDF转换为可在OpenOffice或LibreOffice Writer中编辑的ODT文档，可保持原貌，也可转为流式文本，全部在浏览器中完成。',
+    id: 'Ubah PDF menjadi dokumen ODT untuk diedit di OpenOffice atau LibreOffice Writer: dengan tata letak setia atau sebagai teks mengalir. Langsung di browser Anda.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -62,18 +64,19 @@ const article: GuideArticle = {
       hi: 'ODT, Apache OpenOffice Writer और LibreOffice Writer का टेक्स्ट दस्तावेज़ फ़ॉर्मैट है। PDF को OpenOffice में टूल PDF को ऐसे दस्तावेज़ में बदलता है, ताकि आप उसका टेक्स्ट सुधार सकें। रूपांतरण आपके ब्राउज़र में होता है — फ़ाइल हमारे सर्वर तक नहीं पहुँचती।',
       ja: 'ODTは、Apache OpenOffice WriterとLibreOffice Writerの文書形式です。「PDFをOpenOfficeに変換」ツールは、PDFをこの形式の文書に変換し、文章を直せるようにします。変換はブラウザ内で行われ、ファイルが当社のサーバーに届くことはありません。',
       zh: 'ODT是Apache OpenOffice Writer和LibreOffice Writer使用的文本文档格式。“PDF转OpenOffice”工具会把PDF转换成这种文档，方便你修改其中的文字。转换在你的浏览器中进行，文件不会到达我们的服务器。',
+      id: 'ODT adalah format dokumen teks dari Apache OpenOffice Writer dan LibreOffice Writer. Alat PDF ke OpenOffice mengubah PDF menjadi dokumen semacam itu agar Anda dapat memperbaiki teksnya. Konversi berlangsung di browser Anda — file tidak sampai ke server kami.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'PDF do ODT krok po kroku', en: 'PDF to ODT step by step', de: 'PDF zu ODT Schritt für Schritt',
       es: 'PDF a ODT paso a paso', fr: 'PDF vers ODT étape par étape', it: 'PDF in ODT passo dopo passo',
       pt: 'PDF para ODT passo a passo', sv: 'PDF till ODT steg för steg', no: 'PDF til ODT trinn for trinn',
       is: 'PDF í ODT skref fyrir skref', tr: 'Adım adım PDF’den ODT’ye', ar: 'تحويل PDF إلى ODT خطوة بخطوة',
-      fa: 'تبدیل PDF به ODT گام به گام', hi: 'चरण दर चरण PDF से ODT', ja: 'PDFをODTに変換する手順', zh: '逐步将PDF转为ODT',
+      fa: 'تبدیل PDF به ODT گام به گام', hi: 'चरण दर चरण PDF से ODT', ja: 'PDFをODTに変換する手順', zh: '逐步将PDF转为ODT', id: 'PDF ke ODT langkah demi langkah',
     }},
     { type: 'step', title: {
       pl: 'Dodaj plik PDF', en: 'Add the PDF file', de: 'PDF-Datei hinzufügen', es: 'Añade el archivo PDF', fr: 'Ajoutez le fichier PDF',
       it: 'Aggiungi il file PDF', pt: 'Adicione o ficheiro PDF', sv: 'Lägg till PDF-filen', no: 'Legg til PDF-filen', is: 'Bættu PDF-skránni við',
-      tr: 'PDF dosyasını ekleyin', ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF फ़ाइल जोड़ें', ja: 'PDFファイルを追加する', zh: '添加PDF文件',
+      tr: 'PDF dosyasını ekleyin', ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF फ़ाइल जोड़ें', ja: 'PDFファイルを追加する', zh: '添加PDF文件', id: 'Tambahkan file PDF',
     }, text: {
       pl: 'Upuść plik PDF na pole wyboru albo kliknij je, żeby wskazać plik.',
       en: 'Drop the PDF file onto the upload area, or click it to choose the file.',
@@ -91,12 +94,13 @@ const article: GuideArticle = {
       hi: 'PDF फ़ाइल को अपलोड क्षेत्र पर छोड़ें, या उसे चुनने के लिए क्षेत्र पर क्लिक करें।',
       ja: 'PDFファイルをアップロード欄にドロップするか、欄をクリックしてファイルを選びます。',
       zh: '把PDF文件拖到上传区域，或点击该区域选择文件。',
+      id: 'Letakkan file PDF di area unggah, atau klik area tersebut untuk memilih file.',
     }},
     { type: 'step', title: {
       pl: 'Wybierz układ dokumentu', en: 'Choose the document layout', de: 'Dokumentlayout wählen', es: 'Elige el diseño del documento',
       fr: 'Choisissez la mise en page', it: 'Scegli il layout del documento', pt: 'Escolha o layout do documento', sv: 'Välj dokumentlayout',
       no: 'Velg dokumentoppsett', is: 'Veldu útlit skjalsins', tr: 'Belge düzenini seçin', ar: 'اختر تخطيط المستند',
-      fa: 'چیدمان سند را انتخاب کنید', hi: 'दस्तावेज़ का लेआउट चुनें', ja: '文書のレイアウトを選ぶ', zh: '选择文档版式',
+      fa: 'چیدمان سند را انتخاب کنید', hi: 'दस्तावेज़ का लेआउट चुनें', ja: '文書のレイアウトを選ぶ', zh: '选择文档版式', id: 'Pilih tata letak dokumen',
     }, text: {
       pl: '„Wierny wygląd” zachowuje wygląd każdej strony: tekst można edytować, a zdjęcia są osobnymi obrazami. „Tekst ciągły” daje akapity, listy i tabele do swobodnej edycji. „Automatycznie” wybiera za Ciebie.',
       en: '“Faithful layout” keeps how every page looks: the text is editable and photos are separate images. “Flowing text” gives paragraphs, lists and tables for free editing. “Automatic” chooses for you.',
@@ -114,12 +118,13 @@ const article: GuideArticle = {
       hi: '“मूल जैसा रूप” हर पेज का रूप बनाए रखता है: टेक्स्ट संपादन योग्य रहता है और फ़ोटो अलग इमेज होती हैं। “प्रवाही पाठ” खुलकर संपादन के लिए अनुच्छेद, सूचियाँ और तालिकाएँ देता है। “स्वचालित” आपके लिए चुनता है।',
       ja: '「見た目を保持」は各ページの見た目を保ちます。文章は編集でき、写真は個別の画像になります。「流し込みテキスト」は、自由に編集できる段落・リスト・表にします。「自動」はどちらかを自動で選びます。',
       zh: '“保持原貌”会保留每一页的外观：文字可以编辑，照片是独立的图片。“流式文本”会生成可自由编辑的段落、列表和表格。“自动”会替你选择。',
+      id: '“Tata letak setia” mempertahankan tampilan setiap halaman: teks dapat diedit dan foto menjadi gambar terpisah. “Teks mengalir” menghasilkan paragraf, daftar, dan tabel yang bebas diedit. “Otomatis” memilihkannya untuk Anda.',
     }},
     { type: 'step', title: {
       pl: 'Konwertuj i pobierz', en: 'Convert and download', de: 'Umwandeln und herunterladen', es: 'Convierte y descarga',
       fr: 'Convertissez et téléchargez', it: 'Converti e scarica', pt: 'Converta e transfira', sv: 'Konvertera och ladda ned',
       no: 'Konverter og last ned', is: 'Umbreyttu og sæktu', tr: 'Dönüştürün ve indirin', ar: 'حوّل ونزّل',
-      fa: 'تبدیل و دانلود کنید', hi: 'बदलें और डाउनलोड करें', ja: '変換してダウンロードする', zh: '转换并下载',
+      fa: 'تبدیل و دانلود کنید', hi: 'बदलें और डाउनलोड करें', ja: '変換してダウンロードする', zh: '转换并下载', id: 'Konversi dan unduh',
     }, text: {
       pl: 'Kliknij „Konwertuj do ODT”. Plik ODT pobiera się od razu, a pod komunikatem o powodzeniu widać, który układ został użyty.',
       en: 'Click “Convert to ODT”. The ODT file downloads at once, and the success message says which layout was used.',
@@ -137,11 +142,12 @@ const article: GuideArticle = {
       hi: '“ODT में बदलें” पर क्लिक करें। ODT फ़ाइल तुरंत डाउनलोड होती है, और सफलता संदेश बताता है कि कौन-सा लेआउट इस्तेमाल हुआ।',
       ja: '「ODT形式に変換」をクリックします。ODTファイルがすぐにダウンロードされ、完了メッセージに使われたレイアウトが表示されます。',
       zh: '点击“转换为 ODT”。ODT文件会立即下载，成功提示中会说明使用了哪种版式。',
+      id: 'Klik “Konversi ke ODT”. File ODT langsung terunduh, dan pesan berhasil menyebutkan tata letak mana yang digunakan.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Dobrze wiedzieć', en: 'Good to know', de: 'Gut zu wissen', es: 'Conviene saber', fr: 'Bon à savoir', it: 'Buono a sapersi',
       pt: 'Bom saber', sv: 'Bra att veta', no: 'Greit å vite', is: 'Gott að vita', tr: 'Bilmekte fayda var', ar: 'من المفيد معرفته',
-      fa: 'خوب است بدانید', hi: 'जानने योग्य', ja: '知っておくと便利なこと', zh: '小贴士',
+      fa: 'خوب است بدانید', hi: 'जानने योग्य', ja: '知っておくと便利なこと', zh: '小贴士', id: 'Perlu diketahui',
     }},
     { type: 'list', items: [
       {
@@ -161,6 +167,7 @@ const article: GuideArticle = {
         hi: 'अगर PDF वाला फ़ॉन्ट आपके कंप्यूटर में नहीं है, तो एडिटर मिलता-जुलता फ़ॉन्ट दिखाता है — सैन्स-सेरिफ़, सेरिफ़ या स्थिर चौड़ाई वाला।',
         ja: 'PDFで使われているフォントがパソコンにない場合、エディターは似たフォント（ゴシック系・明朝系・等幅）で表示します。',
         zh: '如果电脑上没有PDF中使用的字体，编辑器会显示相近的字体——无衬线、衬线或等宽字体。',
+        id: 'Jika fon yang dipakai di PDF tidak ada di komputer Anda, editor akan menampilkan fon yang mirip — sans-serif, serif, atau monospace.',
       },
       {
         pl: 'Zeskanowany dokument nie zawiera tekstu, tylko obraz strony. Tekst odczyta z niego narzędzie OCR PDF (także jako plik TXT lub DOCX).',
@@ -179,6 +186,7 @@ const article: GuideArticle = {
         hi: 'स्कैन किए गए दस्तावेज़ में टेक्स्ट नहीं होता, केवल पेज की इमेज होती है। उसका टेक्स्ट OCR PDF टूल पढ़ता है (TXT या DOCX फ़ाइल के रूप में भी)।',
         ja: 'スキャンした文書には文字データがなく、ページの画像だけが入っています。文字は「OCR PDF」ツールで読み取れます（TXTやDOCXファイルとしても保存できます）。',
         zh: '扫描的文档里没有文字，只有页面的图片。可以用“OCR PDF”工具识别其中的文字（也可保存为TXT或DOCX文件）。',
+        id: 'Dokumen hasil pindaian tidak berisi teks, hanya gambar halaman. Alat OCR PDF membaca teks dari gambar tersebut (juga sebagai file TXT atau DOCX).',
       },
       {
         pl: 'Gotowy dokument ODT zamienisz z powrotem na PDF narzędziem OpenOffice do PDF.',
@@ -197,6 +205,7 @@ const article: GuideArticle = {
         hi: 'तैयार ODT दस्तावेज़ को OpenOffice को PDF में टूल से फिर से PDF में बदला जा सकता है।',
         ja: '仕上がったODT文書は「OpenOfficeをPDFに変換」ツールでPDFに戻せます。',
         zh: '完成的ODT文档可以用“OpenOffice转PDF”工具再转回PDF。',
+        id: 'Anda dapat mengubah dokumen ODT yang sudah selesai kembali menjadi PDF dengan alat OpenOffice ke PDF.',
       },
     ]},
     { type: 'cta', tool: 'pdf2openoffice' },
@@ -209,7 +218,7 @@ const article: GuideArticle = {
         es: '¿Qué diseño elijo?', fr: 'Quelle mise en page choisir ?', it: 'Quale layout scegliere?',
         pt: 'Que layout devo escolher?', sv: 'Vilken layout ska jag välja?', no: 'Hvilket oppsett bør jeg velge?',
         is: 'Hvaða útlit á ég að velja?', tr: 'Hangi düzeni seçmeliyim?', ar: 'أي تخطيط أختار؟',
-        fa: 'کدام چیدمان را انتخاب کنم؟', hi: 'कौन-सा लेआउट चुनूँ?', ja: 'どのレイアウトを選べばよいですか？', zh: '应该选择哪种版式？',
+        fa: 'کدام چیدمان را انتخاب کنم؟', hi: 'कौन-सा लेआउट चुनूँ?', ja: 'どのレイアウトを選べばよいですか？', zh: '应该选择哪种版式？', id: 'Tata letak mana yang sebaiknya saya pilih?',
       },
       a: {
         pl: 'Do poprawek w ofercie, broszurze czy prezentacji wybierz wierny wygląd. Do przerabiania treści — dopisywania akapitów, zmiany kolejności — tekst ciągły. Jeśli nie masz pewności, zostaw „Automatycznie”.',
@@ -228,6 +237,7 @@ const article: GuideArticle = {
         hi: 'किसी ऑफ़र, ब्रोशर या स्लाइड में सुधार के लिए मूल जैसा रूप चुनें। सामग्री दोबारा गढ़ने — अनुच्छेद जोड़ने, क्रम बदलने — के लिए प्रवाही पाठ चुनें। पक्का न हो, तो “स्वचालित” रहने दें।',
         ja: '見積書やパンフレット、スライドを手直しするなら「見た目を保持」を、段落の追加や並べ替えなど内容を作り直すなら「流し込みテキスト」を選びます。迷ったら「自動」のままにしてください。',
         zh: '修改报价单、宣传册或幻灯片时选“保持原貌”；需要重写内容（添加段落、调整顺序）时选“流式文本”。不确定的话，保持“自动”即可。',
+        id: 'Untuk memperbaiki penawaran, brosur, atau slide, pilih tata letak setia. Untuk mengolah ulang isinya — menambah paragraf, mengubah urutan — pilih teks mengalir. Jika ragu, biarkan “Otomatis”.',
       },
     },
     {
@@ -236,7 +246,7 @@ const article: GuideArticle = {
         es: '¿Y si trabajo con Word?', fr: 'Et si je travaille dans Word ?', it: 'E se lavoro in Word?',
         pt: 'E se trabalhar no Word?', sv: 'Och om jag arbetar i Word?', no: 'Og hvis jeg jobber i Word?',
         is: 'En ef ég vinn í Word?', tr: 'Word’de çalışıyorsam ne yapmalıyım?', ar: 'وماذا لو كنت أعمل في Word؟',
-        fa: 'اگر با Word کار کنم چه؟', hi: 'अगर मैं Word में काम करता हूँ तो?', ja: 'Wordを使っている場合は？', zh: '如果我用的是Word呢？',
+        fa: 'اگر با Word کار کنم چه؟', hi: 'अगर मैं Word में काम करता हूँ तो?', ja: 'Wordを使っている場合は？', zh: '如果我用的是Word呢？', id: 'Bagaimana jika saya bekerja di Word?',
       },
       a: {
         pl: 'Jeśli pracujesz w Wordzie, użyj narzędzia z PDF do Worda — daje plik DOCX z tymi samymi trzema trybami układu.',
@@ -255,6 +265,7 @@ const article: GuideArticle = {
         hi: 'अगर आप Word में काम करते हैं, तो इसकी जगह PDF को Word में टूल इस्तेमाल करें — वह उन्हीं तीन लेआउट विकल्पों के साथ DOCX फ़ाइल देता है।',
         ja: 'Wordを使う場合は、代わりに「PDFをWordに変換」ツールをご利用ください。同じ3つのレイアウトでDOCXファイルを作成します。',
         zh: '如果你使用Word，请改用“PDF转Word”工具，它会生成DOCX文件，同样提供这三种版式。',
+        id: 'Jika Anda bekerja di Word, gunakan alat PDF ke Word — alat itu menghasilkan file DOCX dengan tiga mode tata letak yang sama.',
       },
     },
     {
@@ -263,7 +274,7 @@ const article: GuideArticle = {
         es: '¿Se sube mi archivo a algún sitio?', fr: 'Mon fichier est-il envoyé quelque part ?', it: 'Il mio file viene caricato da qualche parte?',
         pt: 'O meu ficheiro é enviado para algum lado?', sv: 'Laddas min fil upp någonstans?', no: 'Lastes filen min opp noe sted?',
         is: 'Er skránni minni hlaðið upp einhvert?', tr: 'Dosyam bir yere yükleniyor mu?', ar: 'هل يُرفع ملفي إلى أي مكان؟',
-        fa: 'آیا فایل من جایی بارگذاری می‌شود؟', hi: 'क्या मेरी फ़ाइल कहीं अपलोड होती है?', ja: 'ファイルはどこかにアップロードされますか？', zh: '我的文件会被上传到哪里吗？',
+        fa: 'آیا فایل من جایی بارگذاری می‌شود؟', hi: 'क्या मेरी फ़ाइल कहीं अपलोड होती है?', ja: 'ファイルはどこかにアップロードされますか？', zh: '我的文件会被上传到哪里吗？', id: 'Apakah file saya diunggah ke suatu tempat?',
       },
       a: {
         pl: 'Nie. Konwersja odbywa się w Twojej przeglądarce, więc plik nie trafia na nasz serwer.',
@@ -282,6 +293,7 @@ const article: GuideArticle = {
         hi: 'नहीं। रूपांतरण आपके ब्राउज़र में होता है, इसलिए फ़ाइल हमारे सर्वर तक नहीं पहुँचती।',
         ja: 'いいえ。変換はブラウザ内で行われるため、ファイルが当社のサーバーに届くことはありません。',
         zh: '不会。转换在你的浏览器中进行，文件不会到达我们的服务器。',
+        id: 'Tidak. Konversi berlangsung di browser Anda, sehingga file tidak sampai ke server kami.',
       },
     },
   ],

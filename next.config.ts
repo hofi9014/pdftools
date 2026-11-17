@@ -43,8 +43,8 @@ const csp = [
   "upgrade-insecure-requests",
 ].join('; ');
 
-// The 16 language prefixes; tests/vercelignore-keeps-app-files.mts fails if this drifts from lib/i18n.ts.
-const LOCALE_SEGMENTS = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'];
+// The language prefixes; tests/vercelignore-keeps-app-files.mts fails if this drifts from lib/i18n.ts.
+const LOCALE_SEGMENTS = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'id', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'];
 
 // Until 2026-11-14 every language used the English guide category and article ids
 // (/guides/przewodnik/compress-pdf/how-to-compress-pdf-online); since then each language has its

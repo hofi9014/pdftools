@@ -28,6 +28,7 @@ export const reorder: ToolUseCases = {
       hi: 'जब स्कैनर ने पेज गलत क्रम में लिए हों, तो स्कैन किए गए पेजों को सही क्रम में लगाएँ।',
       ja: 'スキャナーが間違った順番で読み込んだページを、正しい順番に並べ直せます。',
       zh: '扫描仪把页面顺序弄乱时，可以把扫描页重新排成正确的顺序。',
+      id: 'Kembalikan urutan halaman hasil pindaian jika pemindai mengambilnya dalam urutan yang salah.',
     },
     {
       en: 'Move an attachment, appendix or cover page to where it belongs in the document.',
@@ -46,6 +47,7 @@ export const reorder: ToolUseCases = {
       hi: 'किसी अटैचमेंट, परिशिष्ट या कवर पेज को दस्तावेज़ में उसकी सही जगह पर ले जाएँ।',
       ja: '添付資料・付録・表紙を、文書内の正しい位置へ移動できます。',
       zh: '把附件、附录或封面移到文档中应在的位置。',
+      id: 'Pindahkan lampiran, apendiks, atau halaman sampul ke tempat yang seharusnya dalam dokumen.',
     },
     {
       en: 'Set the final order of a document before you send or print it.',
@@ -64,6 +66,7 @@ export const reorder: ToolUseCases = {
       hi: 'दस्तावेज़ भेजने या प्रिंट करने से पहले उसका अंतिम क्रम तय करें।',
       ja: '送信や印刷の前に、文書の最終的なページ順を決められます。',
       zh: '在发送或打印之前确定文档的最终页序。',
+      id: 'Tetapkan urutan akhir dokumen sebelum Anda mengirim atau mencetaknya.',
     },
   ],
   notes: [
@@ -84,6 +87,7 @@ export const reorder: ToolUseCases = {
       hi: 'पेजों के थंबनेल खींचकर या हर थंबनेल पर बने तीरों से क्रम बदलें।',
       ja: 'ページのサムネイルをドラッグするか、各サムネイルの矢印で順番を変えられます。',
       zh: '拖动页面缩略图，或使用每个缩略图上的箭头来调整顺序。',
+      id: 'Ubah urutan dengan menyeret gambar mini halaman atau dengan tombol panah pada setiap gambar mini.',
     },
     {
       en: 'The pages themselves do not change: text stays text and images keep their quality. Bookmarks (the document outline) are not copied to the new file.',
@@ -102,6 +106,7 @@ export const reorder: ToolUseCases = {
       hi: 'पेज खुद नहीं बदलते: टेक्स्ट टेक्स्ट ही रहता है और इमेज की गुणवत्ता बनी रहती है। बुकमार्क (दस्तावेज़ की रूपरेखा) नई फ़ाइल में कॉपी नहीं होते।',
       ja: 'ページ自体は変わりません。テキストはテキストのまま、画像の画質も保たれます。しおり（文書のアウトライン）は新しいファイルにコピーされません。',
       zh: '页面本身不会改变：文字仍是文字，图片保持原有质量。书签（文档大纲）不会复制到新文件。',
+      id: 'Halamannya sendiri tidak berubah: teks tetap berupa teks dan gambar mempertahankan kualitasnya. Penanda (kerangka dokumen) tidak disalin ke file baru.',
     },
   ],
 };
@@ -125,6 +130,7 @@ export const split: ToolUseCases = {
       hi: 'लंबे दस्तावेज़ का केवल वही हिस्सा भेजें जिसकी किसी को सच में ज़रूरत है।',
       ja: '長い文書のうち、相手が本当に必要とする部分だけを送れます。',
       zh: '只发送长文档中对方真正需要的部分。',
+      id: 'Kirim hanya bagian dokumen panjang yang benar-benar diperlukan seseorang.',
     },
     {
       en: 'Divide a scan of several documents into separate files.',
@@ -143,6 +149,7 @@ export const split: ToolUseCases = {
       hi: 'कई दस्तावेज़ों के एक स्कैन को अलग-अलग फ़ाइलों में बाँटें।',
       ja: '複数の書類をまとめてスキャンしたファイルを、書類ごとに分けられます。',
       zh: '把包含多份文件的扫描件拆分成单独的文件。',
+      id: 'Bagi hasil pindaian beberapa dokumen menjadi file-file terpisah.',
     },
     {
       en: 'Stay within an attachment size limit by sending a large PDF in parts.',
@@ -161,6 +168,7 @@ export const split: ToolUseCases = {
       hi: 'बड़ी PDF को हिस्सों में भेजकर अटैचमेंट की आकार सीमा के भीतर रहें।',
       ja: '大きなPDFを分割して送れば、添付ファイルのサイズ制限内に収められます。',
       zh: '把大PDF分成几部分发送，不超过附件大小限制。',
+      id: 'Patuhi batas ukuran lampiran dengan mengirim PDF besar dalam beberapa bagian.',
     },
   ],
   notes: [
@@ -181,6 +189,7 @@ export const split: ToolUseCases = {
       hi: 'बाँटने के तीन तरीके: हर पेज अलग फ़ाइल में, आपकी लिखी रेंज (हर रेंज एक फ़ाइल) या आपके चुने हुए पेज (दो फ़ाइलें: चुने हुए पेज और बाकी)।',
       ja: '分割方法は3つ：1ページずつ別ファイル、入力した範囲ごと（範囲ごとに1ファイル）、選んだページ（選んだページと残りの2ファイル）。',
       zh: '三种拆分方式：每页一个文件、按输入的页码范围（每个范围一个文件），或按选中的页面（两个文件：选中的页面和其余页面）。',
+      id: 'Tiga cara memisahkan: setiap halaman sebagai file tersendiri, rentang yang Anda ketik (setiap rentang menjadi satu file), atau halaman yang Anda pilih (dua file: halaman yang dipilih dan sisanya).',
     },
     {
       en: 'All parts are downloaded together in one ZIP file. Bookmarks (the document outline) are not copied to the parts.',
@@ -199,6 +208,7 @@ export const split: ToolUseCases = {
       hi: 'सभी हिस्से एक ही ZIP फ़ाइल में एक साथ डाउनलोड होते हैं। बुकमार्क (दस्तावेज़ की रूपरेखा) हिस्सों में कॉपी नहीं होते।',
       ja: 'すべてのパーツは1つのZIPファイルにまとめてダウンロードされます。しおり（文書のアウトライン）はパーツにコピーされません。',
       zh: '所有部分会打包成一个ZIP文件一起下载。书签（文档大纲）不会复制到各部分。',
+      id: 'Semua bagian diunduh bersama dalam satu file ZIP. Penanda (kerangka dokumen) tidak disalin ke bagian-bagian tersebut.',
     },
   ],
 };
@@ -222,6 +232,7 @@ export const extract: ToolUseCases = {
       hi: 'किसी एक अध्याय, इनवॉइस या परिशिष्ट को अलग PDF के रूप में सहेजें।',
       ja: '1つの章・請求書・付録だけを別のPDFとして保存できます。',
       zh: '把某一章、某张发票或某个附录另存为单独的PDF。',
+      id: 'Simpan satu bab, faktur, atau lampiran sebagai PDF tersendiri.',
     },
     {
       en: 'Send only the pages that matter from a large document.',
@@ -240,6 +251,7 @@ export const extract: ToolUseCases = {
       hi: 'बड़े दस्तावेज़ से केवल ज़रूरी पेज भेजें।',
       ja: '大きな文書から必要なページだけを送れます。',
       zh: '只发送大文档中重要的页面。',
+      id: 'Kirim hanya halaman yang penting dari dokumen yang besar.',
     },
     {
       en: 'Make a smaller file from just a few pages.',
@@ -258,6 +270,7 @@ export const extract: ToolUseCases = {
       hi: 'कुछ ही पेजों से एक छोटी फ़ाइल बनाएँ।',
       ja: '数ページだけの小さなファイルを作れます。',
       zh: '只用几页生成一个更小的文件。',
+      id: 'Buat file yang lebih kecil dari beberapa halaman saja.',
     },
   ],
   notes: [
@@ -278,6 +291,7 @@ export const extract: ToolUseCases = {
       hi: 'आप पेज किसी भी क्रम में चुनें, वे मूल दस्तावेज़ का क्रम ही रखते हैं।',
       ja: 'クリックした順番に関係なく、ページは元の文書の順番のまま保存されます。',
       zh: '无论你按什么顺序点击，页面都会保持原文档中的顺序。',
+      id: 'Halaman tetap mengikuti urutan dokumen asli, apa pun urutan Anda mengekliknya.',
     },
     {
       en: 'The original file is not changed — you download a new one. Bookmarks (the document outline) are not copied to it.',
@@ -296,6 +310,7 @@ export const extract: ToolUseCases = {
       hi: 'मूल फ़ाइल नहीं बदलती — आप एक नई फ़ाइल डाउनलोड करते हैं। बुकमार्क (दस्तावेज़ की रूपरेखा) उसमें कॉपी नहीं होते।',
       ja: '元のファイルは変更されず、新しいファイルをダウンロードします。しおり（文書のアウトライン）はコピーされません。',
       zh: '原文件不会改变，你下载的是一个新文件。书签（文档大纲）不会复制到新文件。',
+      id: 'File asli tidak berubah — Anda mengunduh file baru. Penanda (kerangka dokumen) tidak disalin ke file tersebut.',
     },
   ],
 };
@@ -319,6 +334,7 @@ export const del: ToolUseCases = {
       hi: 'स्कैन से खाली या अनावश्यक पेज हटाएँ।',
       ja: 'スキャンから白紙や不要なページを取り除けます。',
       zh: '删除扫描件中的空白页或不需要的页面。',
+      id: 'Hapus halaman kosong atau yang tidak diperlukan dari hasil pindaian.',
     },
     {
       en: 'Delete pages with information you do not want to share.',
@@ -337,6 +353,7 @@ export const del: ToolUseCases = {
       hi: 'उन पेजों को हटाएँ जिनमें ऐसी जानकारी है जिसे आप साझा नहीं करना चाहते।',
       ja: '共有したくない情報が載ったページを削除できます。',
       zh: '删除包含你不想分享的信息的页面。',
+      id: 'Hapus halaman berisi informasi yang tidak ingin Anda bagikan.',
     },
     {
       en: 'Make a document shorter before you send or print it.',
@@ -355,6 +372,7 @@ export const del: ToolUseCases = {
       hi: 'भेजने या प्रिंट करने से पहले दस्तावेज़ को छोटा करें।',
       ja: '送信や印刷の前に、文書を短くできます。',
       zh: '在发送或打印前精简文档。',
+      id: 'Persingkat dokumen sebelum Anda mengirim atau mencetaknya.',
     },
   ],
   notes: [
@@ -375,6 +393,7 @@ export const del: ToolUseCases = {
       hi: 'जिन पेजों को हटाना है उनके थंबनेल पर क्लिक करें। मूल फ़ाइल नहीं बदलती — आप एक नई फ़ाइल डाउनलोड करते हैं।',
       ja: '削除したいページのサムネイルをクリックします。元のファイルは変更されず、新しいファイルをダウンロードします。',
       zh: '点击要删除的页面的缩略图。原文件不会改变，你下载的是一个新文件。',
+      id: 'Klik gambar mini halaman yang ingin Anda hapus. File asli tidak berubah — Anda mengunduh file baru.',
     },
     {
       en: 'The content of deleted pages is removed from the file, not just hidden.',
@@ -393,6 +412,7 @@ export const del: ToolUseCases = {
       hi: 'हटाए गए पेजों की सामग्री फ़ाइल से निकाल दी जाती है, सिर्फ़ छिपाई नहीं जाती।',
       ja: '削除したページの内容は、隠されるだけでなくファイルから取り除かれます。',
       zh: '被删除页面的内容会从文件中移除，而不只是被隐藏。',
+      id: 'Isi halaman yang dihapus benar-benar dihapus dari file, bukan sekadar disembunyikan.',
     },
   ],
 };
@@ -416,6 +436,7 @@ export const rotate: ToolUseCases = {
       hi: 'किसी स्कैन या पेज की फ़ोटो को ठीक करें जो तिरछी या उल्टी आई हो।',
       ja: '横向きや上下逆さまになったスキャンやページの写真を直せます。',
       zh: '修正横着或倒置的扫描件或页面照片。',
+      id: 'Perbaiki hasil pindaian atau foto halaman yang miring ke samping atau terbalik.',
     },
     {
       en: 'Turn landscape pages so they are comfortable to read on screen.',
@@ -434,6 +455,7 @@ export const rotate: ToolUseCases = {
       hi: 'लैंडस्केप पेजों को घुमाएँ ताकि स्क्रीन पर उन्हें आराम से पढ़ा जा सके।',
       ja: '横長のページを回転させて、画面で読みやすくできます。',
       zh: '旋转横向页面，在屏幕上阅读更方便。',
+      id: 'Putar halaman lanskap agar nyaman dibaca di layar.',
     },
     {
       en: 'Rotate several PDF files in one go.',
@@ -452,6 +474,7 @@ export const rotate: ToolUseCases = {
       hi: 'कई PDF फ़ाइलों को एक बार में घुमाएँ।',
       ja: '複数のPDFファイルをまとめて回転できます。',
       zh: '一次旋转多个PDF文件。',
+      id: 'Putar beberapa file PDF sekaligus.',
     },
   ],
   notes: [
@@ -472,6 +495,7 @@ export const rotate: ToolUseCases = {
       hi: 'हर फ़ाइल के सभी पेज आपके चुने कोण से घूमते हैं: 90° बाएँ, 90° दाएँ या 180°।',
       ja: '各ファイルのすべてのページが、選んだ角度（左に90°・右に90°・180°）で回転します。',
       zh: '每个文件的所有页面都会按你选择的角度旋转：向左90°、向右90°或180°。',
+      id: 'Semua halaman di setiap file diputar sesuai sudut yang Anda pilih: 90° ke kiri, 90° ke kanan, atau 180°.',
     },
     {
       en: 'Rotation is lossless: the page content is not redrawn or compressed. Several files are downloaded together in one ZIP file.',
@@ -490,6 +514,7 @@ export const rotate: ToolUseCases = {
       hi: 'घुमाना बिना नुकसान के होता है: पेज की सामग्री दोबारा नहीं बनाई जाती और न ही कंप्रेस होती है। कई फ़ाइलें एक ZIP में एक साथ डाउनलोड होती हैं।',
       ja: '回転は劣化しません。ページの内容が描き直されたり圧縮されたりすることはありません。複数のファイルは1つのZIPにまとめてダウンロードされます。',
       zh: '旋转是无损的：页面内容不会被重新绘制或压缩。多个文件会打包成一个ZIP一起下载。',
+      id: 'Pemutaran tidak mengurangi kualitas: isi halaman tidak digambar ulang atau dikompres. Beberapa file diunduh bersama dalam satu file ZIP.',
     },
   ],
 };
@@ -513,6 +538,7 @@ export const crop: ToolUseCases = {
       hi: 'स्कैन या स्लाइड के सफ़ेद मार्जिन काटें।',
       ja: 'スキャンやスライドの白い余白を切り取れます。',
       zh: '裁掉扫描件或幻灯片的白边。',
+      id: 'Pangkas margin putih pada hasil pindaian atau slide.',
     },
     {
       en: 'Make pages easier to read on a phone or e-reader by removing wide margins.',
@@ -531,6 +557,7 @@ export const crop: ToolUseCases = {
       hi: 'चौड़े मार्जिन हटाकर पेजों को फ़ोन या ई-रीडर पर पढ़ने में आसान बनाएँ।',
       ja: '広い余白を取り除くと、スマートフォンや電子書籍リーダーで読みやすくなります。',
       zh: '去掉较宽的页边距，让页面在手机或电子阅读器上更易阅读。',
+      id: 'Buat halaman lebih mudah dibaca di ponsel atau pembaca e-book dengan menghapus margin yang lebar.',
     },
     {
       en: 'Crop only selected pages, for example a single scanned page with a dark edge.',
@@ -549,6 +576,7 @@ export const crop: ToolUseCases = {
       hi: 'केवल चुने हुए पेज काटें, जैसे गहरे किनारे वाला कोई एक स्कैन पेज।',
       ja: '黒い縁が入ったスキャンページなど、選んだページだけを切り取ることもできます。',
       zh: '只裁剪选中的页面，例如某一页边缘发黑的扫描页。',
+      id: 'Pangkas halaman tertentu saja, misalnya satu halaman hasil pindaian yang tepinya gelap.',
     },
   ],
   notes: [
@@ -569,6 +597,7 @@ export const crop: ToolUseCases = {
       hi: 'मार्जिन पॉइंट, मिलीमीटर या इंच में दिए जा सकते हैं।',
       ja: '余白はポイント・ミリ・インチで指定できます。',
       zh: '页边距可以用磅、毫米或英寸来设置。',
+      id: 'Margin dapat diatur dalam poin, milimeter, atau inci.',
     },
     {
       en: 'Cropping hides the edges; what lies outside the new page area stays in the file. To remove confidential content for good, use {t:tool.redact}.',
@@ -587,6 +616,7 @@ export const crop: ToolUseCases = {
       hi: 'काटने से किनारे सिर्फ़ छिपते हैं; नए पेज क्षेत्र के बाहर का हिस्सा फ़ाइल में बना रहता है। गोपनीय सामग्री को स्थायी रूप से हटाने के लिए {t:tool.redact} का उपयोग करें।',
       ja: '切り取りは端を隠すだけで、新しいページ範囲の外側の内容はファイルに残ります。機密情報を完全に消すには「{t:tool.redact}」を使ってください。',
       zh: '裁剪只是隐藏边缘，新页面范围之外的内容仍保留在文件中。要彻底删除机密内容，请使用“{t:tool.redact}”。',
+      id: 'Pemangkasan menyembunyikan tepi halaman; apa yang berada di luar area halaman yang baru tetap ada di dalam file. Untuk menghapus isi rahasia secara permanen, gunakan {t:tool.redact}.',
     },
   ],
 };

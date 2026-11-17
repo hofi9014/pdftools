@@ -9,13 +9,13 @@ const VALID_LOCALES = locales as readonly string[];
 
 const flagMap: Record<string, string> = {
   ar: 'sa', de: 'de', en: 'gb', es: 'es', fa: 'ir', fr: 'fr', hi: 'in',
-  is: 'is', it: 'it', ja: 'jp', no: 'no', pl: 'pl', pt: 'pt',
+  id: 'id', is: 'is', it: 'it', ja: 'jp', no: 'no', pl: 'pl', pt: 'pt',
   sv: 'se', tr: 'tr', zh: 'cn',
 };
 
 const labelMap: Record<string, string> = {
   ar: 'العربية', de: 'Deutsch', en: 'English', es: 'Español', fa: 'فارسی',
-  fr: 'Français', hi: 'हिन्दी', is: 'Íslenska', it: 'Italiano', ja: '日本語',
+  fr: 'Français', hi: 'हिन्दी', id: 'Bahasa Indonesia', is: 'Íslenska', it: 'Italiano', ja: '日本語',
   no: 'Norsk', pl: 'Polski', pt: 'Português', sv: 'Svenska', tr: 'Türkçe', zh: '中文',
 };
 

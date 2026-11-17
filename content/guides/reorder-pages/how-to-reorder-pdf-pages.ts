@@ -23,6 +23,7 @@ const article: GuideArticle = {
     hi: 'PDF में पेजों का क्रम कैसे बदलें',
     ja: 'PDFのページの順番を入れ替える方法',
     zh: '如何调整PDF的页面顺序',
+    id: 'Cara Mengubah Urutan Halaman dalam PDF',
   },
   excerpt: {
     pl: 'Strony w złej kolejności? Przeciągnij miniatury na miejsce albo użyj strzałek i zapisz PDF z nową kolejnością — w przeglądarce, bez wysyłania pliku.',
@@ -41,6 +42,7 @@ const article: GuideArticle = {
     hi: 'पेज गलत क्रम में हैं? थंबनेल को सही जगह खींचें या तीरों का उपयोग करें और नए क्रम के साथ PDF सहेजें — ब्राउज़र में, फ़ाइल अपलोड किए बिना।',
     ja: 'ページの順番が違っていませんか。サムネイルをドラッグするか矢印で並べ替え、新しい順番でPDFを保存できます。ファイルはアップロードされず、ブラウザ内で完結します。',
     zh: '页面顺序不对？拖动缩略图或使用箭头调整位置，然后按新顺序保存PDF——全部在浏览器中完成，无需上传文件。',
+    id: 'Urutan halaman salah? Seret gambar mini ke tempatnya atau gunakan tombol panah, lalu simpan PDF dengan urutan baru — di browser Anda, tanpa mengunggahnya.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -60,18 +62,19 @@ const article: GuideArticle = {
       hi: 'स्कैनर ने पन्ने गलत क्रम में लिए हों, कोई परिशिष्ट शुरुआत में आ गया हो, कवर पेज आख़िर में हो — PDF में पेजों का क्रम फ़ाइल का हिस्सा होता है, और ज़्यादातर PDF रीडर उसे बदल नहीं सकते। पृष्ठ पुनर्क्रमित करें टूल हर पेज का थंबनेल दिखाता है और आपको खुद क्रम तय करने देता है। सब कुछ आपके ब्राउज़र में होता है: फ़ाइल हमारे सर्वर तक नहीं पहुँचती।',
       ja: 'スキャナーが用紙を違う順番で読み込んだ、付録が先頭に来てしまった、表紙が最後にある——PDFではページの順番もファイルの一部で、たいていのPDFリーダーでは変更できません。「ページ並べ替え」ツールは各ページのサムネイルを表示し、順番を自分で決められます。処理はすべてブラウザ内で行われ、ファイルが当社のサーバーに送られることはありません。',
       zh: '扫描仪把纸张顺序弄乱、附录跑到了最前面、封面却在最后——在PDF中，页面顺序是文件的一部分，大多数PDF阅读器都无法修改。“重新排序页面”工具会显示每一页的缩略图，让你自己决定顺序。一切都在你的浏览器中完成，文件不会到达我们的服务器。',
+      id: 'Pemindai yang mengambil lembaran dalam urutan yang salah, lampiran yang malah berada di depan, halaman sampul di bagian akhir — dalam PDF, urutan halaman adalah bagian dari file, dan sebagian besar pembaca PDF tidak dapat mengubahnya. Alat Ubah Urutan Halaman menampilkan gambar mini setiap halaman dan memungkinkan Anda mengatur urutannya sendiri. Semuanya berlangsung di browser Anda: file tidak pernah sampai ke server kami.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Zmiana kolejności stron krok po kroku', en: 'Reordering pages step by step', de: 'Seiten Schritt für Schritt neu anordnen',
       es: 'Reordenar páginas paso a paso', fr: 'Réorganiser les pages étape par étape', it: 'Riordinare le pagine passo dopo passo',
       pt: 'Reordenar páginas passo a passo', sv: 'Ändra sidordningen steg för steg', no: 'Endre siderekkefølgen trinn for trinn',
       is: 'Að endurraða síðum skref fyrir skref', tr: 'Adım adım sayfaları yeniden sıralama', ar: 'إعادة ترتيب الصفحات خطوة بخطوة',
-      fa: 'تغییر ترتیب صفحه‌ها گام به گام', hi: 'चरण दर चरण पेजों का क्रम बदलना', ja: 'ページを並べ替える手順', zh: '逐步调整页面顺序',
+      fa: 'تغییر ترتیب صفحه‌ها گام به گام', hi: 'चरण दर चरण पेजों का क्रम बदलना', ja: 'ページを並べ替える手順', zh: '逐步调整页面顺序', id: 'Mengubah urutan halaman langkah demi langkah',
     }},
     { type: 'step', title: {
       pl: 'Dodaj plik PDF', en: 'Add the PDF file', de: 'PDF-Datei hinzufügen', es: 'Añade el archivo PDF', fr: 'Ajoutez le fichier PDF',
       it: 'Aggiungi il file PDF', pt: 'Adicione o ficheiro PDF', sv: 'Lägg till PDF-filen', no: 'Legg til PDF-filen', is: 'Bættu PDF-skránni við',
-      tr: 'PDF dosyasını ekleyin', ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF फ़ाइल जोड़ें', ja: 'PDFファイルを追加する', zh: '添加PDF文件',
+      tr: 'PDF dosyasını ekleyin', ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF फ़ाइल जोड़ें', ja: 'PDFファイルを追加する', zh: '添加PDF文件', id: 'Tambahkan file PDF',
     }, text: {
       pl: 'Upuść plik na pole wyboru albo kliknij je, żeby wskazać plik. Poniżej pojawi się miniatura każdej strony.',
       en: 'Drop the file onto the upload area or click it to choose one. A thumbnail of every page appears below.',
@@ -89,11 +92,12 @@ const article: GuideArticle = {
       hi: 'फ़ाइल को अपलोड क्षेत्र पर छोड़ें या चुनने के लिए उस पर क्लिक करें। नीचे हर पेज का थंबनेल दिखाई देगा।',
       ja: 'ファイルをアップロード欄にドロップするか、欄をクリックして選びます。下に各ページのサムネイルが表示されます。',
       zh: '把文件拖到上传区域，或点击该区域选择文件。下方会显示每一页的缩略图。',
+      id: 'Letakkan file di area unggah atau klik area tersebut untuk memilih file. Gambar mini setiap halaman muncul di bawahnya.',
     }},
     { type: 'step', title: {
       pl: 'Ułóż strony', en: 'Put the pages in order', de: 'Seiten anordnen', es: 'Ordena las páginas', fr: 'Mettez les pages dans l’ordre',
       it: 'Metti in ordine le pagine', pt: 'Ponha as páginas por ordem', sv: 'Ordna sidorna', no: 'Ordne sidene', is: 'Raðaðu síðunum',
-      tr: 'Sayfaları sıralayın', ar: 'رتّب الصفحات', fa: 'صفحه‌ها را مرتب کنید', hi: 'पेजों को क्रम में लगाएँ', ja: 'ページを並べる', zh: '排列页面',
+      tr: 'Sayfaları sıralayın', ar: 'رتّب الصفحات', fa: 'صفحه‌ها را مرتب کنید', hi: 'पेजों को क्रम में लगाएँ', ja: 'ページを並べる', zh: '排列页面', id: 'Atur urutan halaman',
     }, text: {
       pl: 'Przeciągnij miniatury na nowe miejsca albo użyj strzałek ↑ i ↓ na miniaturze, żeby przesunąć stronę o jedno miejsce wcześniej lub później. Pod każdą miniaturą widać pierwotny numer strony, a w nawiasie jej nową pozycję.',
       en: 'Drag the thumbnails to their new places, or use the ↑ and ↓ arrows on a thumbnail to move a page one place earlier or later. Under each thumbnail you see its original page number and, in brackets, its new position.',
@@ -111,11 +115,12 @@ const article: GuideArticle = {
       hi: 'थंबनेल को उनकी नई जगह पर खींचें, या किसी पेज को एक स्थान आगे या पीछे करने के लिए थंबनेल पर बने ↑ और ↓ तीरों का उपयोग करें। हर थंबनेल के नीचे पेज की मूल संख्या और कोष्ठक में उसकी नई स्थिति दिखती है।',
       ja: 'サムネイルを新しい位置へドラッグするか、サムネイル上の↑と↓の矢印で1つ前または後ろへ移動します。各サムネイルの下には元のページ番号と、かっこ内に新しい位置が表示されます。',
       zh: '把缩略图拖到新的位置，或使用缩略图上的↑和↓箭头把页面向前或向后移动一位。每个缩略图下方显示原来的页码，括号内是它的新位置。',
+      id: 'Seret gambar mini ke tempat barunya, atau gunakan tombol panah ↑ dan ↓ pada gambar mini untuk memindahkan halaman satu posisi lebih awal atau lebih akhir. Di bawah setiap gambar mini terlihat nomor halaman aslinya dan, di dalam kurung, posisi barunya.',
     }},
     { type: 'step', title: {
       pl: 'Zapisz nową kolejność', en: 'Save the new order', de: 'Neue Reihenfolge speichern', es: 'Guarda el nuevo orden', fr: 'Enregistrez le nouvel ordre',
       it: 'Salva il nuovo ordine', pt: 'Guarde a nova ordem', sv: 'Spara den nya ordningen', no: 'Lagre den nye rekkefølgen', is: 'Vistaðu nýju röðina',
-      tr: 'Yeni sırayı kaydedin', ar: 'احفظ الترتيب الجديد', fa: 'ترتیب تازه را ذخیره کنید', hi: 'नया क्रम सहेजें', ja: '新しい順番を保存する', zh: '保存新顺序',
+      tr: 'Yeni sırayı kaydedin', ar: 'احفظ الترتيب الجديد', fa: 'ترتیب تازه را ذخیره کنید', hi: 'नया क्रम सहेजें', ja: '新しい順番を保存する', zh: '保存新顺序', id: 'Simpan urutan baru',
     }, text: {
       pl: 'Kliknij „Zapisz kolejność stron”. PDF z nową kolejnością od razu się pobierze, a oryginalny plik pozostanie bez zmian.',
       en: 'Click “Save page order”. The PDF with the new order downloads at once, and the original file stays unchanged.',
@@ -133,11 +138,12 @@ const article: GuideArticle = {
       hi: '“पेजों का क्रम सहेजें” पर क्लिक करें। नए क्रम वाली PDF तुरंत डाउनलोड हो जाती है और मूल फ़ाइल वैसी ही रहती है।',
       ja: '「ページ順を保存」をクリックします。新しい順番のPDFがすぐにダウンロードされ、元のファイルはそのまま残ります。',
       zh: '点击“保存页面顺序”。按新顺序排列的PDF会立即下载，原文件保持不变。',
+      id: 'Klik “Simpan urutan halaman”. PDF dengan urutan baru langsung terunduh, dan file aslinya tetap tidak berubah.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Dobrze wiedzieć', en: 'Good to know', de: 'Gut zu wissen', es: 'Conviene saber', fr: 'Bon à savoir', it: 'Buono a sapersi',
       pt: 'Bom saber', sv: 'Bra att veta', no: 'Greit å vite', is: 'Gott að vita', tr: 'Bilmekte fayda var', ar: 'من المفيد معرفته',
-      fa: 'خوب است بدانید', hi: 'जानने योग्य', ja: '知っておくと便利なこと', zh: '小贴士',
+      fa: 'خوب است بدانید', hi: 'जानने योग्य', ja: '知っておくと便利なこと', zh: '小贴士', id: 'Perlu diketahui',
     }},
     { type: 'list', items: [
       {
@@ -157,6 +163,7 @@ const article: GuideArticle = {
         hi: 'क्रम बदलने से पेज खुद नहीं बदलते: टेक्स्ट टेक्स्ट ही रहता है और इमेज की गुणवत्ता बनी रहती है।',
         ja: '順番を変えてもページ自体は変わりません。テキストはテキストのまま、画像の画質も保たれます。',
         zh: '调整顺序不会改变页面本身：文字仍是文字，图片保持原有质量。',
+        id: 'Mengubah urutan tidak mengubah halaman itu sendiri: teks tetap berupa teks dan gambar mempertahankan kualitasnya.',
       },
       {
         pl: 'Zakładki (spis treści dokumentu) nie są kopiowane do nowego pliku.',
@@ -175,6 +182,7 @@ const article: GuideArticle = {
         hi: 'बुकमार्क (दस्तावेज़ की रूपरेखा) नई फ़ाइल में कॉपी नहीं होते।',
         ja: 'しおり（文書のアウトライン）は新しいファイルにコピーされません。',
         zh: '书签（文档大纲）不会复制到新文件。',
+        id: 'Penanda (kerangka dokumen) tidak disalin ke file baru.',
       },
       {
         pl: 'Żeby usunąć strony, użyj narzędzia Usuń strony; żeby zachować tylko niektóre — Wyodrębnij strony.',
@@ -193,6 +201,7 @@ const article: GuideArticle = {
         hi: 'पेज हटाने के लिए पृष्ठ हटाएं टूल का, और केवल कुछ पेज रखने के लिए पृष्ठ निकालें टूल का उपयोग करें।',
         ja: 'ページを削除するなら「ページ削除」、一部だけ残すなら「ページ抽出」を使ってください。',
         zh: '要删除页面，请使用“删除页面”；只想保留其中几页，请使用“提取页面”。',
+        id: 'Untuk menghapus halaman, gunakan Hapus Halaman; untuk menyimpan sebagian halaman saja, gunakan Ekstrak Halaman.',
       },
     ]},
     { type: 'cta', tool: 'reorder' },
@@ -205,7 +214,7 @@ const article: GuideArticle = {
         es: '¿Puedo reordenar las páginas en el móvil?', fr: 'Puis-je réorganiser les pages sur un téléphone ?', it: 'Posso riordinare le pagine dal telefono?',
         pt: 'Posso reordenar as páginas no telemóvel?', sv: 'Kan jag ändra sidordningen i mobilen?', no: 'Kan jeg endre rekkefølgen på mobilen?',
         is: 'Get ég endurraðað síðum í síma?', tr: 'Sayfaların sırasını telefonda değiştirebilir miyim?', ar: 'هل يمكنني إعادة ترتيب الصفحات على الهاتف؟',
-        fa: 'آیا می‌توانم ترتیب صفحه‌ها را روی گوشی تغییر دهم؟', hi: 'क्या मैं फ़ोन पर पेजों का क्रम बदल सकता हूँ?', ja: 'スマートフォンでもページを並べ替えられますか？', zh: '可以在手机上调整页面顺序吗？',
+        fa: 'آیا می‌توانم ترتیب صفحه‌ها را روی گوشی تغییر دهم؟', hi: 'क्या मैं फ़ोन पर पेजों का क्रम बदल सकता हूँ?', ja: 'スマートフォンでもページを並べ替えられますか？', zh: '可以在手机上调整页面顺序吗？', id: 'Bisakah saya mengubah urutan halaman di ponsel?',
       },
       a: {
         pl: 'Tak. Jeśli przeciąganie miniatur nie działa na ekranie dotykowym, użyj strzałek ↑ i ↓ na każdej miniaturze.',
@@ -224,6 +233,7 @@ const article: GuideArticle = {
         hi: 'हाँ। अगर टच स्क्रीन पर थंबनेल खींचना काम न करे, तो हर थंबनेल पर बने ↑ और ↓ तीरों का उपयोग करें।',
         ja: 'はい。タッチ画面でサムネイルのドラッグがうまくいかない場合は、各サムネイルの↑と↓の矢印を使ってください。',
         zh: '可以。如果在触摸屏上无法拖动缩略图，请使用每个缩略图上的↑和↓箭头。',
+        id: 'Ya. Jika menyeret gambar mini tidak berfungsi di layar sentuh Anda, gunakan tombol panah ↑ dan ↓ pada setiap gambar mini.',
       },
     },
     {
@@ -232,7 +242,7 @@ const article: GuideArticle = {
         es: '¿Cambiar el orden reduce la calidad?', fr: 'Changer l’ordre réduit-il la qualité ?', it: 'Cambiare l’ordine riduce la qualità?',
         pt: 'Mudar a ordem reduz a qualidade?', sv: 'Försämras kvaliteten när ordningen ändras?', no: 'Blir kvaliteten dårligere når rekkefølgen endres?',
         is: 'Minnka gæðin þegar röðinni er breytt?', tr: 'Sırayı değiştirmek kaliteyi düşürür mü?', ar: 'هل يقلل تغيير الترتيب من الجودة؟',
-        fa: 'آیا تغییر ترتیب کیفیت را کم می‌کند؟', hi: 'क्या क्रम बदलने से गुणवत्ता घटती है?', ja: '順番を変えると画質は落ちますか？', zh: '调整顺序会降低质量吗？',
+        fa: 'آیا تغییر ترتیب کیفیت را کم می‌کند؟', hi: 'क्या क्रम बदलने से गुणवत्ता घटती है?', ja: '順番を変えると画質は落ちますか？', zh: '调整顺序会降低质量吗？', id: 'Apakah mengubah urutan menurunkan kualitas?',
       },
       a: {
         pl: 'Nie. Strony są kopiowane do nowego pliku bez zmian; nic nie jest kompresowane ani rysowane od nowa.',
@@ -251,6 +261,7 @@ const article: GuideArticle = {
         hi: 'नहीं। पेज बिना बदले नई फ़ाइल में कॉपी होते हैं; न कुछ कंप्रेस होता है, न दोबारा बनाया जाता है।',
         ja: 'いいえ。ページはそのまま新しいファイルにコピーされ、圧縮や描き直しは行われません。',
         zh: '不会。页面会原样复制到新文件中，不会被压缩或重新绘制。',
+        id: 'Tidak. Halaman disalin ke file baru tanpa perubahan; tidak ada yang dikompres atau digambar ulang.',
       },
     },
     {
@@ -259,7 +270,7 @@ const article: GuideArticle = {
         es: '¿Se sube mi archivo a algún sitio?', fr: 'Mon fichier est-il envoyé quelque part ?', it: 'Il mio file viene caricato da qualche parte?',
         pt: 'O meu ficheiro é enviado para algum lado?', sv: 'Laddas min fil upp någonstans?', no: 'Lastes filen min opp noe sted?',
         is: 'Er skránni minni hlaðið upp einhvert?', tr: 'Dosyam bir yere yükleniyor mu?', ar: 'هل يُرفع ملفي إلى أي مكان؟',
-        fa: 'آیا فایل من جایی بارگذاری می‌شود؟', hi: 'क्या मेरी फ़ाइल कहीं अपलोड होती है?', ja: 'ファイルはどこかにアップロードされますか？', zh: '我的文件会被上传到哪里吗？',
+        fa: 'آیا فایل من جایی بارگذاری می‌شود؟', hi: 'क्या मेरी फ़ाइल कहीं अपलोड होती है?', ja: 'ファイルはどこかにアップロードされますか？', zh: '我的文件会被上传到哪里吗？', id: 'Apakah file saya diunggah ke suatu tempat?',
       },
       a: {
         pl: 'Nie. Kolejność stron zmienia się w Twojej przeglądarce, więc plik nie trafia na nasz serwer.',
@@ -278,6 +289,7 @@ const article: GuideArticle = {
         hi: 'नहीं। पेजों का क्रम आपके ब्राउज़र में बदलता है, इसलिए फ़ाइल हमारे सर्वर तक नहीं पहुँचती।',
         ja: 'いいえ。ページの並べ替えはブラウザ内で行われるため、ファイルが当社のサーバーに届くことはありません。',
         zh: '不会。页面顺序在你的浏览器中调整，文件不会到达我们的服务器。',
+        id: 'Tidak. Urutan halaman diubah di browser Anda, sehingga file tidak sampai ke server kami.',
       },
     },
   ],

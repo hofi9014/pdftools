@@ -45,14 +45,16 @@ for (const tl of tools) {
     if (l !== 'en') check(steps.some((s, i) => s !== en[i]), `${tl.slug}/${l}: steps are translated, not the English fallback`);
   }
 }
-const howtoSrc = readFileSync(join(root, 'content', 'tool-howto.ts'), 'utf8');
+// Read with LF line ends: the regular expressions below match "\n", and a Windows checkout
+// (core.autocrlf) has CRLF — without this, no step text was found there and the check failed.
+const howtoSrc = readFileSync(join(root, 'content', 'tool-howto.ts'), 'utf8').replace(/\r\n/g, '\n');
 const lPart = howtoSrc.slice(howtoSrc.indexOf('const L'), howtoSrc.indexOf('type StepRef'));
 const stepsPart = howtoSrc.slice(howtoSrc.indexOf('const toolSteps'));
 const defined = [...lPart.matchAll(/\n  (\w+): \{\n([\s\S]*?)\n  \},/g)];
 const used = new Set([...stepsPart.matchAll(/\['(\w+)'\]/g)].map((m) => m[1]));
 for (const [, key, body] of defined) {
   check(used.has(key!), `step text "${key}" is used by a tool`);
-  check((body!.match(/\b[a-z]{2}: '/g) ?? []).length === 16, `step text "${key}" has 16 languages`);
+  check((body!.match(/\b[a-z]{2}: '/g) ?? []).length === locales.length, `step text "${key}" has every language`);
 }
 check([...used].every((k) => defined.some((d) => d[1] === k)), 'every step a tool uses is defined');
 // Steps that described what the tools do not do (fixed together with making the steps visible).
