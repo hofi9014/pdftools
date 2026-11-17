@@ -10,6 +10,7 @@ import { tools, toolPath, homePath, NON_LOCAL_TOOLS } from '@/lib/tools';
 import { getAllArticles } from '@/lib/guides';
 import { guideArticlePath, encodePath } from '@/lib/guide-urls';
 import { DAILY_LIMIT } from '@/lib/ai-limit';
+import { rows, MEASURED_ON } from '@/content/pages/upload-comparison';
 
 const SITE = 'https://optimapdf.com';
 
@@ -31,6 +32,7 @@ export function llmsText(): string {
   out.push('- Works on desktop and mobile browsers; can be installed as an app, and a local tool opened once also works without internet.');
   out.push('- Files can be opened from and saved to Google Drive, Dropbox and OneDrive.');
   out.push('- Anyone can check that files are not uploaded: open the browser developer tools (F12), Network tab, use a tool, and see that no request carries the file.');
+  out.push(`- Comparison measured on ${MEASURED_ON}: the compress tools of ${rows.filter((r) => r.sent).map((r) => r.name).join(', ')} sent the test file to their servers; OptimaPDF did not. Method and public measurement code: ${SITE}/en/where-your-file-goes`);
   out.push(`- Languages: ${locales.map((l) => names.of(l) ?? l).join(', ')}.`);
   out.push(`- Privacy policy: ${SITE}/en/privacy · Security: ${SITE}/en/security · Contact: kontakt@optimapdf.com`, '');
 

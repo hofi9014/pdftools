@@ -199,10 +199,23 @@ console.log('\n=== no English left in other languages ===');
     if (l === 'en') continue;
     const dict = all[l] as Record<string, string>;
     const missing = Object.keys(en).filter((k) => dict[k] === undefined);
-    const copied = Object.keys(en).filter((k) => !SAME_EVERYWHERE.has(k) && !(NON_LATIN.has(l) && LATIN_PDF_TEXT.has(k)) && dict[k] === en[k] && /[a-z]{3,}\s+[a-z]{3,}/i.test(en[k]!));
+    // Two words of 3+ letters anywhere (placeholders aside): "← Back to homepage" was left in
+    // French because the old rule wanted them next to each other (2026-11-17).
+    const words = (s: string) => (s.replace(/\{[^}]*\}/g, ' ').match(/[a-z]{3,}/gi) ?? []).length;
+    const copied = Object.keys(en).filter((k) => !SAME_EVERYWHERE.has(k) && !(NON_LATIN.has(l) && LATIN_PDF_TEXT.has(k)) && dict[k] === en[k] && words(en[k]!) >= 2);
     check(missing.length === 0, `${l}: every key translated${missing.length ? ` (missing: ${missing.join(', ')})` : ''}`);
     check(copied.length === 0, `${l}: no English sentence copied as the translation${copied.length ? ` (${copied.join(', ')})` : ''}`);
   }
+}
+
+console.log('\n=== the back link has one arrow ===');
+{
+  // 'back.to_home' starts with "←" in every language; /terms added its own and showed "← ←" (2026-11-17).
+  const { readdirSync, readFileSync: read } = await import('node:fs');
+  const files = ['components', 'components/pages', 'app'].flatMap((d) => readdirSync(d).filter((f) => f.endsWith('.tsx')).map((f) => `${d}/${f}`));
+  const doubled = files.filter((f) => /(&larr;|←)\s*\{t\('back\.to_home'/.test(read(f, 'utf8')));
+  check(locales.every((l) => (all[l] as Record<string, string>)['back.to_home']!.startsWith('←')) && doubled.length === 0,
+    `no component adds a second arrow to 'back.to_home'${doubled.length ? ` (${doubled.join(', ')})` : ''}`);
 }
 
 console.log(fails ? `\n${fails} FAIL` : '\nALL PASS');

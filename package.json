@@ -231,6 +231,7 @@
     "test:e2e-initial-js-weight": "npx tsx e2e/initial-js-weight.mts",
     "test:guide-localized-urls": "npx tsx tests/guide-localized-urls.mts",
     "test:llms-txt": "npx tsx tests/llms-txt.mts",
+    "test:upload-comparison-page": "npx tsx tests/upload-comparison-page.mts",
     "test:e2e-guide-localized-urls": "npx tsx e2e/guide-localized-urls.mts"
   },
   "dependencies": {
