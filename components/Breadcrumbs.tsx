@@ -7,6 +7,7 @@ import { t, locales, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug, localeFromSegment } from '@/lib/guides-slugs';
 import { keyBySlug, homePath } from '@/lib/tools';
 import { categoryTool } from '@/lib/guide-category-tools';
+import { resolveCategorySegment } from '@/lib/guide-category-urls';
 
 const guidesLocaleSegments = new Set(Object.values(localeGuidesSlug));
 
@@ -53,18 +54,17 @@ export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale 
     if (!onGuideArticle) return;
     let cancelled = false;
     (async () => {
-      const { getAllArticles } = await import('@/lib/guides');
+      const [{ getAllArticles }, { resolveArticleSegment }] = await Promise.all([import('@/lib/guides'), import('@/lib/guide-urls')]);
       if (cancelled) return;
-      const articles = getAllArticles();
-      const found: Record<string, string> = {};
       // Recomputed from `pathname` (already a dependency below) rather than closing over
       // the outer `segments` array, which is a fresh reference every render and would
       // otherwise force this effect to run on every re-render regardless of navigation.
-      for (const seg of pathSegments(pathname)) {
-        const article = articles.find(a => a.slug === seg);
-        if (article) found[seg] = article.title[locale] || article.title.en;
-      }
-      setGuideTitles(found);
+      // The address names the article in its own language (lib/guide-urls.ts) — resolve it.
+      const [, hub, catSeg, artSeg] = pathSegments(pathname);
+      const cat = resolveCategorySegment(localeFromSegment(hub!), catSeg!);
+      const art = cat && resolveArticleSegment(localeFromSegment(hub!), cat.category, artSeg!);
+      const article = cat && art ? getAllArticles().find(a => a.category === cat.category && a.slug === art.slug) : undefined;
+      setGuideTitles(article ? { [artSeg!]: article.title[locale] || article.title.en } : {});
     })();
     return () => { cancelled = true; };
   }, [pathname, locale, onGuideArticle]);
@@ -95,7 +95,9 @@ export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale 
           if (inGuides && i === 0) return null;
           // A guide category names its tool in lib/guide-category-tools.ts ("pdf-to-jpg" is the
           // "PDF to images" tool, which suffix-stripping could not find).
-          const key = (inGuides && categoryTool[seg]) || keyBySlug[seg] || keyBySlug[seg.replace(/-pdf$/, '')];
+          // Since 2026-11-14 the category segment is in the page's language (lib/guide-category-urls.ts).
+          const guideCategory = inGuides && i === 2 ? resolveCategorySegment(localeFromSegment(segments[1]!), seg)?.category : undefined;
+          const key = (guideCategory && categoryTool[guideCategory]) || keyBySlug[seg] || keyBySlug[seg.replace(/-pdf$/, '')];
           let label: string;
           if (inGuides && i === 1) {
             label = t('guides.breadcrumb', locale);

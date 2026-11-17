@@ -1,7 +1,7 @@
 'use client';
 import { useLocale, useHydrationSafeLocale } from '@/lib/locale-context';
 import { locales, t, type Locale } from '@/lib/i18n';
-import { localeGuidesSlug, localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
+import { localeFromSegment, getLocaleSegment } from '@/lib/guides-slugs';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useRef, useEffect, useCallback } from 'react';
 
@@ -62,9 +62,13 @@ export default function LanguageSelector({ locale: forcedLocale }: { locale?: Lo
       if (currentLocale !== code) {
         localStorage.setItem('locale', code);
         setLocaleCookie(code);
-        segments[1] = getLocaleSegment(code);
         setLocale(code);
-        router.push('/' + segments.join('/'));
+        // Category and article segments are in the page's language too (since 2026-11-14), so the
+        // whole address is translated; the address table is loaded only when someone switches.
+        void import('@/lib/guide-urls')
+          .then(({ translateGuidePath }) => translateGuidePath(pathname, code, currentLocale))
+          .catch(() => `/guides/${getLocaleSegment(code)}`)
+          .then((path) => router.push(path));
         return;
       }
     }

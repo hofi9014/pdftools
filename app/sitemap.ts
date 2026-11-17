@@ -4,6 +4,7 @@ import type { Locale } from '@/lib/i18n';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
 import guides from '@/content/guides';
 import { buildCanonicalUrl } from '@/lib/guides-canonical';
+import { guideCategoryPath } from '@/lib/guide-urls';
 import { isCategoryIndexable, getArticlesByCategory, guidesLastModified } from '@/lib/guides';
 import { tools, toolPath } from '@/lib/tools';
 
@@ -61,11 +62,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const locale of locales) {
     for (const article of guides) {
       if (!isCategoryIndexable(article.category)) continue;
-      const segment = localeGuidesSlug[locale];
-      const url = `${base}/guides/${segment}/${article.category}`;
+      const url = `${base}${guideCategoryPath(locale, article.category)}`;
       const hreflang: Record<string, string> = {};
       for (const l of locales) {
-        hreflang[l] = `${base}/guides/${localeGuidesSlug[l as Locale]}/${article.category}`;
+        hreflang[l] = `${base}${guideCategoryPath(l as Locale, article.category)}`;
       }
       if (!pages.some(p => p.url === url)) {
         pages.push({

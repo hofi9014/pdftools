@@ -299,7 +299,7 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
             const title = (article.title as Record<string, string>)[locale] || article.title.en;
             const excerpt = (article.excerpt as Record<string, string>)[locale] || article.excerpt.en;
             return (
-              <a key={article.slug} href={`/guides/${localeGuidesSlug[locale]}/${article.category}/${article.slug}`}
+              <a key={article.slug} href={article.path[locale] || article.path.en}
                 className="coffee-card block p-5 no-underline">
                 <h3 className="font-bold text-base mb-1.5" style={{ color: 'var(--coffee-text)' }}>{title}</h3>
                 <p className="text-sm leading-relaxed line-clamp-3" style={{ color: 'var(--coffee-text-secondary)' }}>{excerpt}</p>

@@ -1,12 +1,7 @@
 import { locales, type Locale } from '@/lib/i18n';
+import { GUIDES_HUB_SEGMENTS } from '@/lib/guides-hub-segments';
 
-export const localeGuidesSlug: Record<Locale, string> = {
-  pl: 'przewodnik', en: 'guides', de: 'anleitungen',
-  es: 'guias', fr: 'guides-fr', it: 'guide', pt: 'guias-pt',
-  sv: 'guider', no: 'guider-no', is: 'handbaekur',
-  tr: 'rehber', ar: 'دليل', fa: 'راهنما',
-  hi: 'गाइड', ja: 'ガイド', zh: '指南',
-};
+export const localeGuidesSlug: Record<Locale, string> = GUIDES_HUB_SEGMENTS;
 
 /** The locale of a guides URL segment. Accepts the segment percent-encoded too: a page component
     receives `/guides/دليل` as "%D8%AF%D9%84%D9%8A%D9%84" while generateMetadata receives it decoded,

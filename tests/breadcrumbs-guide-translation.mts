@@ -29,6 +29,7 @@ import { keyBySlug } from '../lib/tools';
 import { t, locales } from '../lib/i18n';
 import { categoryTool } from '../lib/guide-category-tools';
 import { getAllArticles } from '../lib/guides';
+import { categorySegment, resolveCategorySegment } from '../lib/guide-category-urls';
 
 let fails = 0;
 function check(cond: boolean, msg: string): void {
@@ -46,14 +47,25 @@ const root = join(here, '..');
 
 console.log('--- source check: Breadcrumbs.tsx actually wires up both fixes (not just data-side proof) ---');
 const breadcrumbsSrc = readFileSync(join(root, 'components', 'Breadcrumbs.tsx'), 'utf-8');
-check(breadcrumbsSrc.includes("(inGuides && categoryTool[seg]) || keyBySlug[seg] || keyBySlug[seg.replace(/-pdf$/, '')]"), 'guide categories resolve through categoryTool, then the slug, then the "-pdf"-stripped slug');
-check(breadcrumbsSrc.includes("await import('@/lib/guides')"), 'guide article data is loaded via a dynamic import (not bundled into every page)');
+// Since 2026-11-16 the category segment is localized (lib/guide-category-urls.ts), so it is
+// first resolved to the category id, then to its tool.
+check(breadcrumbsSrc.includes("resolveCategorySegment(localeFromSegment(segments[1]!), seg)?.category")
+  && breadcrumbsSrc.includes("(guideCategory && categoryTool[guideCategory]) || keyBySlug[seg] || keyBySlug[seg.replace(/-pdf$/, '')]"),
+  'guide categories resolve through the localized segment and categoryTool, then the slug, then the "-pdf"-stripped slug');
+check(breadcrumbsSrc.includes("import('@/lib/guides')") && !/^import .* from '@\/lib\/guides';$/m.test(breadcrumbsSrc),
+  'guide article data is loaded via a dynamic import (not bundled into every page)');
 check(breadcrumbsSrc.includes('guideTitles[seg]'), 'the render path actually reads the resolved guide title before falling back to the slug-derived label');
 const guideCategories = readdirSync(join(root, 'content', 'guides'), { withFileTypes: true })
   .filter((d) => d.isDirectory())
   .map((d) => d.name);
 
 check(guideCategories.length > 0, `sanity: found guide categories (${guideCategories.join(', ')})`);
+
+// Behaviour, not shape: the localized category segment of every language leads back to its category.
+for (const category of guideCategories) {
+  const bad = locales.filter((l) => resolveCategorySegment(l, categorySegment(l, category))?.category !== category);
+  check(bad.length === 0, `[${category}] localized segment resolves back to the category in all ${locales.length} languages${bad.length ? ': ' + bad.join(', ') : ''}`);
+}
 
 for (const category of guideCategories) {
   // Same order as Breadcrumbs.tsx: the category's declared tool first (2026-10-27: "pdf-to-jpg"

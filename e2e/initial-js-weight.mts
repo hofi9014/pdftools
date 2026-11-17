@@ -16,6 +16,7 @@
 // Run: E2E_BASE_URL=http://localhost:3100 npx tsx e2e/initial-js-weight.mts   (default: localhost:3000)
 import { chromium, type Page } from 'playwright';
 import { tools } from '../lib/tools';
+import { guideArticlePath } from '../lib/guide-urls';
 
 const BASE = process.env.E2E_BASE_URL || 'http://localhost:3000';
 let fails = 0;
@@ -84,7 +85,7 @@ for (const slug of ['merge', 'compress', 'edit-pdf', 'word-to-pdf']) {
   check(await fetched(urls, PDF_LIB), `/pl/${slug}: the engine is fetched in the background without any action`);
 }
 
-const article = '/guides/przewodnik/compress-pdf/how-to-compress-pdf-online';
+const article = guideArticlePath('pl', 'compress-pdf', 'how-to-compress-pdf-online');
 await visit(article, 1500, async (page) => {
   const h1 = (await page.locator('h1').first().innerText()).trim();
   const crumb = (await page.locator('nav[aria-label="Breadcrumb"] li').last().innerText()).replace(/^[\s/›>]+/, '').trim();

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { locales, t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
@@ -8,19 +8,27 @@ import { localeFromSegment, getLocaleSegment, isGuidesSegment } from '@/lib/guid
 import { getArticlesByCategory, getAllCategories, isCategoryIndexable } from '@/lib/guides';
 import CTATool from '@/components/guides/CTATool';
 import { socialMetadata, fullTitle } from '@/lib/metadata';
+import { guideHubPath, guideCategoryPath, guideArticlePath, categorySegment, resolveCategorySegment, encodePath } from '@/lib/guide-urls';
 
-
+/** The category an address names — 404 if none; an old English-id address (before 2026-11-14) is
+    redirected (next.config.ts redirects it first with a 308; this covers any other spelling). */
+async function resolveCategory(params: Promise<{ locale: string; category: string }>): Promise<{ locale: Locale; category: string }> {
+  const { locale: localeSegment, category: segment } = await params;
+  if (!isGuidesSegment(localeSegment)) notFound();
+  const locale = localeFromSegment(localeSegment) as Locale;
+  const found = resolveCategorySegment(locale, segment);
+  if (!found || !getAllCategories().includes(found.category)) notFound();
+  if (found.legacy) permanentRedirect(encodePath(guideCategoryPath(locale, found.category)));
+  return { locale, category: found.category };
+}
 
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; category: string }> }): Promise<Metadata> {
-  const { locale: localeSegment, category } = await params;
-  if (!isGuidesSegment(localeSegment)) notFound();
   // notFound() here too, so the 404 gets the not-found page's noindex instead of the layout's index.
-  if (!getAllCategories().includes(category)) notFound();
-  const locale = localeFromSegment(localeSegment) as Locale;
+  const { locale, category } = await resolveCategory(params);
   const label = getCategoryLabel(category, locale);
   const description = t('guides.hub_subtitle', locale);
-  const url = (l: Locale) => `https://optimapdf.com/guides/${getLocaleSegment(l)}/${category}`;
+  const url = (l: Locale) => `https://optimapdf.com${guideCategoryPath(l, category)}`;
   const languages: Record<string, string> = {};
   for (const l of locales) languages[l] = url(l);
   languages['x-default'] = url('en');
@@ -40,7 +48,7 @@ export async function generateStaticParams() {
   const params: { locale: string; category: string }[] = [];
   for (const locale of locales) {
     for (const cat of categories) {
-      params.push({ locale: getLocaleSegment(locale), category: cat });
+      params.push({ locale: getLocaleSegment(locale), category: categorySegment(locale, cat) });
     }
   }
   return params;
@@ -51,23 +59,20 @@ export default async function CategoryPage({
 }: {
   params: Promise<{ locale: string; category: string }>;
 }) {
-  const { locale: localeSegment, category } = await params;
-  if (!isGuidesSegment(localeSegment)) notFound();
-  const locale = localeFromSegment(localeSegment) as Locale;
+  const { locale, category } = await resolveCategory(params);
   // FINDING (2026-09-23) — same class of bug as the sibling [slug] article page: an unrecognized
   // category previously rendered a normal 200 "no articles" page (getCategoryLabel() even falls
   // back to echoing the raw, invalid category string as the page's own <h1>), instead of a real
   // 404. getAllCategories() is the definitive list derived from actual guide content, so any
   // category not in it can never have articles — checking it directly (rather than inferring
   // invalidity from an empty articles array) is also correct if that ever changes.
-  if (!getAllCategories().includes(category)) notFound();
   const articles = getArticlesByCategory(category);
   const tool = categoryTool[category];
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <Link
-        href={`/guides/${getLocaleSegment(locale)}`}
+        href={guideHubPath(locale)}
         className="text-sm text-blue-600 hover:underline mb-4 inline-block"
       >
         {t('guides.back_to_all', locale)}
@@ -87,7 +92,7 @@ export default async function CategoryPage({
         {articles.map(article => (
           <Link
             key={article.slug}
-            href={`/guides/${getLocaleSegment(locale)}/${category}/${article.slug}`}
+            href={guideArticlePath(locale, category, article.slug)}
             className="block p-5 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm transition"
           >
             <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">
