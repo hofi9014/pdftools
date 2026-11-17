@@ -45,6 +45,11 @@ async function open(path: string, reply: () => Reply, theme: 'light' | 'dark' = 
 const upload = (page: Page, selector: string, buffer: Buffer) => page.setInputFiles(selector, { name: 'dokument.pdf', mimeType: 'application/pdf', buffer });
 
 async function axeViolations(page: Page): Promise<string> {
+  // Measure the page at rest: when loading ends the button's colours change through a 150 ms CSS
+  // transition, and axe run in the middle of it saw half-faded colours on a slow CI machine
+  // (2026-11-17). Endless animations (spinners) are not waited for.
+  await page.waitForFunction(() => document.getAnimations().every((a) =>
+    a.playState !== 'running' || a.effect?.getTiming().iterations === Infinity), undefined, { timeout: 10000 });
   await page.addScriptTag({ content: axeSource });
   const res = await page.evaluate(async () => (window as unknown as { axe: { run: (o: unknown) => Promise<{ violations: { id: string; nodes: { target: string[] }[] }[] }> } }).axe.run({ runOnly: ['color-contrast', 'button-name', 'label', 'heading-order'] }));
   return res.violations.map((v) => `${v.id}×${v.nodes.length} (${v.nodes[0]?.target.join(' ').slice(0, 50)})`).join(', ');
