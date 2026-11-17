@@ -164,6 +164,14 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
 - [ ] 3.3 **[DECYZJA]** Porównanie „które narzędzia PDF wysyłają plik na serwer”: pomiar metodą
       z `e2e/no-upload.mts` na syntetycznym pliku, wyłącznie fakty możliwe do powtórzenia;
       publikacja dopiero po akceptacji treści.
+      2026-11-17 POMIAR ZROBIONY (zgoda właściciela; plik syntetyczny ~300 kB z unikalnym znacznikiem,
+      nie pliki właściciela): narzędzie „kompresuj PDF”, bajty faktycznie zapisane przez Chrome do gniazd
+      (net-log, tekst jawny po TLS, bez QUIC). Plik wysłany: iLovePDF (api7.ilovepdf.com), Smallpdf
+      (magazyn Cloudflare R2), PDF24 (filetools48.pdf24.org), Sejda (www.sejda.com — plik pakowany
+      w przeglądarce do ZIP przed wysłaniem), OptaPDF (optapdf.com). Nie wysłany: OptimaPDF (32 kB
+      samych żądań strony). Adobe: niezmierzalny — blokuje przeglądarki automatyczne („Access Denied”),
+      ochrony nie obchodzimy. Kontrola: ten sam plik wysłany celowo z OptimaPDF został wykryty.
+      Skrypt: `test-output/_work/competitor-upload.mts` (roboczy). Czeka na decyzję o publikacji.
 - [ ] 3.4 Kolejne poradniki do narzędzi bez poradnika (po danych z Search Console).
       2026-11-11: dodane kolejność stron, spłaszczanie, PDF do OpenOffice, PDF do SVG (19 poradników).
 - [x] 3.5 (2026-11-02, właściciel; sprawdzone na produkcji) `www.optimapdf.com` przekierowuje stale (308)
