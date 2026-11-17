@@ -90,6 +90,7 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
     fr: 'Rechercher des outils...',
     it: 'Cerca strumenti...',
     pt: 'Procurar ferramentas...',
+    id: 'Cari alat...',
     is: 'Leita að tólum...',
     tr: 'Araçları ara...',
     sv: 'Sök verktyg...',

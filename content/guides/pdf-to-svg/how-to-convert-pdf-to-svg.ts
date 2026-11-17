@@ -24,6 +24,7 @@ const article: GuideArticle = {
     hi: 'PDF को SVG में कैसे बदलें: हर पेज अलग फ़ाइल',
     ja: 'PDFをSVGに変換する方法：1ページ1ファイル',
     zh: '如何将PDF转换为SVG：每页一个文件',
+    id: 'Cara Mengonversi PDF ke SVG: Setiap Halaman sebagai File',
   },
   excerpt: {
     pl: 'Zapisz każdą stronę PDF jako osobny plik SVG z obrazem strony — przydatne, gdy program lub strona przyjmuje tylko SVG. W przeglądarce.',
@@ -42,6 +43,7 @@ const article: GuideArticle = {
     hi: 'हर PDF पेज को पेज की इमेज वाली अलग SVG फ़ाइल के रूप में सहेजें — तब उपयोगी, जब कोई प्रोग्राम या साइट केवल SVG लेती हो। ब्राउज़र में।',
     ja: 'PDFの各ページを、ページの画像を収めたSVGファイルとして個別に保存します。SVGしか受け付けないソフトやサイト向けです。ブラウザ内で完結します。',
     zh: '把PDF的每一页分别保存为包含页面图像的SVG文件，适合只接受SVG的程序或网站，全部在浏览器中完成。',
+    id: 'Simpan setiap halaman PDF sebagai file SVG tersendiri yang berisi gambar halaman tersebut — berguna jika program atau situs hanya menerima SVG. Langsung di browser Anda.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -61,18 +63,19 @@ const article: GuideArticle = {
       hi: 'कुछ ग्राफ़िक प्रोग्राम, वेबसाइट बिल्डर और प्रकाशन सिस्टम केवल SVG फ़ाइलें लेते हैं। PDF को SVG में टूल हर PDF पेज को उस पेज की इमेज वाली अलग SVG फ़ाइल के रूप में सहेजता है। रूपांतरण आपके ब्राउज़र में होता है — फ़ाइल हमारे सर्वर तक नहीं पहुँचती।',
       ja: 'グラフィックソフトやサイト作成ツール、CMSの中には、SVGファイルしか受け付けないものがあります。「PDFをSVGに変換」ツールは、PDFの各ページを、そのページの画像を収めたSVGファイルとして個別に保存します。変換はブラウザ内で行われ、ファイルが当社のサーバーに届くことはありません。',
       zh: '有些图形软件、建站工具和发布系统只接受SVG文件。“PDF转SVG”工具会把PDF的每一页分别保存为包含该页图像的SVG文件。转换在你的浏览器中进行，文件不会到达我们的服务器。',
+      id: 'Beberapa program grafis, pembuat situs web, dan sistem penerbitan hanya menerima file SVG. Alat PDF ke SVG menyimpan setiap halaman PDF sebagai file SVG tersendiri yang berisi gambar halaman tersebut. Konversi berlangsung di browser Anda — file tidak sampai ke server kami.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'PDF do SVG krok po kroku', en: 'PDF to SVG step by step', de: 'PDF zu SVG Schritt für Schritt',
       es: 'PDF a SVG paso a paso', fr: 'PDF vers SVG étape par étape', it: 'PDF in SVG passo dopo passo',
       pt: 'PDF para SVG passo a passo', sv: 'PDF till SVG steg för steg', no: 'PDF til SVG trinn for trinn',
       is: 'PDF í SVG skref fyrir skref', tr: 'Adım adım PDF’den SVG’ye', ar: 'تحويل PDF إلى SVG خطوة بخطوة',
-      fa: 'تبدیل PDF به SVG گام به گام', hi: 'चरण दर चरण PDF से SVG', ja: 'PDFをSVGに変換する手順', zh: '逐步将PDF转为SVG',
+      fa: 'تبدیل PDF به SVG گام به گام', hi: 'चरण दर चरण PDF से SVG', ja: 'PDFをSVGに変換する手順', zh: '逐步将PDF转为SVG', id: 'PDF ke SVG langkah demi langkah',
     }},
     { type: 'step', title: {
       pl: 'Dodaj plik PDF', en: 'Add the PDF file', de: 'PDF-Datei hinzufügen', es: 'Añade el archivo PDF', fr: 'Ajoutez le fichier PDF',
       it: 'Aggiungi il file PDF', pt: 'Adicione o ficheiro PDF', sv: 'Lägg till PDF-filen', no: 'Legg til PDF-filen', is: 'Bættu PDF-skránni við',
-      tr: 'PDF dosyasını ekleyin', ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF फ़ाइल जोड़ें', ja: 'PDFファイルを追加する', zh: '添加PDF文件',
+      tr: 'PDF dosyasını ekleyin', ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF फ़ाइल जोड़ें', ja: 'PDFファイルを追加する', zh: '添加PDF文件', id: 'Tambahkan file PDF',
     }, text: {
       pl: 'Upuść plik PDF na pole wyboru albo kliknij je, żeby wskazać plik.',
       en: 'Drop the PDF file onto the upload area, or click it to choose the file.',
@@ -90,12 +93,13 @@ const article: GuideArticle = {
       hi: 'PDF फ़ाइल को अपलोड क्षेत्र पर छोड़ें, या उसे चुनने के लिए क्षेत्र पर क्लिक करें।',
       ja: 'PDFファイルをアップロード欄にドロップするか、欄をクリックしてファイルを選びます。',
       zh: '把PDF文件拖到上传区域，或点击该区域选择文件。',
+      id: 'Letakkan file PDF di area unggah, atau klik area tersebut untuk memilih file.',
     }},
     { type: 'step', title: {
       pl: 'Uruchom konwersję', en: 'Start the conversion', de: 'Umwandlung starten', es: 'Inicia la conversión',
       fr: 'Lancez la conversion', it: 'Avvia la conversione', pt: 'Inicie a conversão', sv: 'Starta konverteringen',
       no: 'Start konverteringen', is: 'Hefðu umbreytinguna', tr: 'Dönüştürmeyi başlatın', ar: 'ابدأ التحويل',
-      fa: 'تبدیل را شروع کنید', hi: 'रूपांतरण शुरू करें', ja: '変換を開始する', zh: '开始转换',
+      fa: 'تبدیل را شروع کنید', hi: 'रूपांतरण शुरू करें', ja: '変換を開始する', zh: '开始转换', id: 'Mulai konversi',
     }, text: {
       pl: 'Kliknij „Konwertuj do formatu SVG”. Każda strona jest rysowana w podwójnej rozdzielczości i zapisywana jako osobny plik SVG.',
       en: 'Click “Convert to SVG”. Every page is drawn at double resolution and saved as a separate SVG file.',
@@ -113,12 +117,13 @@ const article: GuideArticle = {
       hi: '“SVG में बदलें” पर क्लिक करें। हर पेज दोगुने रिज़ॉल्यूशन में बनाया जाता है और अलग SVG फ़ाइल के रूप में सहेजा जाता है।',
       ja: '「SVGに変換」をクリックします。各ページが2倍の解像度で描かれ、個別のSVGファイルとして保存されます。',
       zh: '点击“转换为SVG”。每一页都会以两倍分辨率绘制，并分别保存为SVG文件。',
+      id: 'Klik “Konversi ke SVG”. Setiap halaman digambar dengan resolusi ganda dan disimpan sebagai file SVG tersendiri.',
     }},
     { type: 'step', title: {
       pl: 'Pobierz pliki', en: 'Download the files', de: 'Dateien herunterladen', es: 'Descarga los archivos',
       fr: 'Téléchargez les fichiers', it: 'Scarica i file', pt: 'Transfira os ficheiros', sv: 'Ladda ned filerna',
       no: 'Last ned filene', is: 'Sæktu skrárnar', tr: 'Dosyaları indirin', ar: 'نزّل الملفات',
-      fa: 'فایل‌ها را دانلود کنید', hi: 'फ़ाइलें डाउनलोड करें', ja: 'ファイルをダウンロードする', zh: '下载文件',
+      fa: 'فایل‌ها را دانلود کنید', hi: 'फ़ाइलें डाउनलोड करें', ja: 'ファイルをダウンロードする', zh: '下载文件', id: 'Unduh file',
     }, text: {
       pl: 'Jednostronicowy PDF daje jeden plik SVG. Przy większej liczbie stron pobierasz archiwum ZIP z plikami ponumerowanymi jak strony.',
       en: 'A one-page PDF gives a single SVG file. With more pages you download a ZIP archive with files numbered like the pages.',
@@ -136,11 +141,12 @@ const article: GuideArticle = {
       hi: 'एक पेज वाला PDF एक SVG फ़ाइल देता है। ज़्यादा पेज हों, तो पेजों की तरह क्रमांकित फ़ाइलों वाला ZIP संग्रह डाउनलोड होता है।',
       ja: '1ページのPDFからはSVGファイルが1つできます。複数ページの場合は、ページ番号付きのファイルをまとめたZIPアーカイブをダウンロードします。',
       zh: '单页PDF会得到一个SVG文件；页数更多时，会下载一个ZIP压缩包，其中的文件按页码编号。',
+      id: 'PDF satu halaman menghasilkan satu file SVG. Jika halamannya lebih banyak, Anda mengunduh arsip ZIP berisi file yang diberi nomor sesuai halamannya.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Dobrze wiedzieć', en: 'Good to know', de: 'Gut zu wissen', es: 'Conviene saber', fr: 'Bon à savoir', it: 'Buono a sapersi',
       pt: 'Bom saber', sv: 'Bra att veta', no: 'Greit å vite', is: 'Gott að vita', tr: 'Bilmekte fayda var', ar: 'من المفيد معرفته',
-      fa: 'خوب است بدانید', hi: 'जानने योग्य', ja: '知っておくと便利なこと', zh: '小贴士',
+      fa: 'خوب است بدانید', hi: 'जानने योग्य', ja: '知っておくと便利なこと', zh: '小贴士', id: 'Perlu diketahui',
     }},
     { type: 'list', items: [
       {
@@ -160,6 +166,7 @@ const article: GuideArticle = {
         hi: 'SVG फ़ाइल में पेज की इमेज होती है, रेखाएँ और वक्र नहीं, इसलिए बहुत बड़ा करने पर वह धुँधली हो जाती है।',
         ja: 'SVGファイルに入っているのは線や曲線ではなくページの画像なので、大きく拡大するとぼやけます。',
         zh: 'SVG文件里是页面的图像，而不是线条和曲线，因此放得很大时会变模糊。',
+        id: 'File SVG berisi gambar halaman, bukan garis dan kurva, sehingga menjadi buram jika diperbesar banyak.',
       },
       {
         pl: 'Tekstu w pliku SVG nie da się zaznaczyć ani edytować. Do poprawiania tekstu służy narzędzie Edytuj PDF albo zamiana na dokument tekstowy.',
@@ -178,6 +185,7 @@ const article: GuideArticle = {
         hi: 'SVG फ़ाइल का टेक्स्ट न चुना जा सकता है, न संपादित किया जा सकता है। टेक्स्ट बदलने के लिए PDF संपादित करें टूल इस्तेमाल करें या टेक्स्ट दस्तावेज़ में बदलें।',
         ja: 'SVGファイル内の文字は選択も編集もできません。文字を直すには「PDF編集」ツールを使うか、文書形式に変換してください。',
         zh: 'SVG文件中的文字无法选中或编辑。要修改文字，请使用“编辑PDF”工具，或转换为文本文档。',
+        id: 'Teks dalam file SVG tidak dapat dipilih atau diedit. Untuk mengubah teks, gunakan alat Edit PDF atau konversikan ke dokumen teks.',
       },
       {
         pl: 'Jeśli potrzebujesz zwykłego pliku graficznego, narzędzie PDF do obrazów zapisuje strony jako PNG, JPG lub WebP.',
@@ -196,6 +204,7 @@ const article: GuideArticle = {
         hi: 'अगर आपको सामान्य इमेज फ़ाइल चाहिए, तो PDF को चित्रों में टूल पेजों को PNG, JPG या WebP के रूप में सहेजता है।',
         ja: '一般的な画像ファイルが必要なら、「PDFを画像に変換」ツールでページをPNG、JPG、WebPとして保存できます。',
         zh: '如果需要普通的图片文件，“PDF转图片”工具可以把页面保存为PNG、JPG或WebP。',
+        id: 'Jika Anda memerlukan file gambar biasa, alat PDF ke Gambar menyimpan halaman sebagai PNG, JPG, atau WebP.',
       },
     ]},
     { type: 'cta', tool: 'svg' },
@@ -208,7 +217,7 @@ const article: GuideArticle = {
         es: '¿El resultado es un gráfico vectorial?', fr: 'Le résultat est-il un graphique vectoriel ?', it: 'Il risultato è una grafica vettoriale?',
         pt: 'O resultado é um gráfico vetorial?', sv: 'Är resultatet vektorgrafik?', no: 'Er resultatet vektorgrafikk?',
         is: 'Er niðurstaðan vigurgrafík?', tr: 'Sonuç vektör grafik mi?', ar: 'هل النتيجة رسوم متجهة؟',
-        fa: 'آیا نتیجه گرافیک برداری است؟', hi: 'क्या नतीजा वेक्टर ग्राफ़िक है?', ja: '結果はベクター画像ですか？', zh: '结果是矢量图吗？',
+        fa: 'آیا نتیجه گرافیک برداری است؟', hi: 'क्या नतीजा वेक्टर ग्राफ़िक है?', ja: '結果はベクター画像ですか？', zh: '结果是矢量图吗？', id: 'Apakah hasilnya berupa grafik vektor?',
       },
       a: {
         pl: 'Nie. Każdy plik SVG zawiera obraz strony w podwójnej rozdzielczości. Kształty i tekst nie są zamieniane na ścieżki wektorowe.',
@@ -227,6 +236,7 @@ const article: GuideArticle = {
         hi: 'नहीं। हर SVG फ़ाइल में पेज की दोगुने रिज़ॉल्यूशन वाली इमेज होती है। आकृतियाँ और टेक्स्ट वेक्टर पाथ में नहीं बदले जाते।',
         ja: 'いいえ。各SVGファイルには2倍の解像度のページ画像が入っています。図形や文字はベクターのパスには変換されません。',
         zh: '不是。每个SVG文件都包含两倍分辨率的页面图像，形状和文字不会被转换为矢量路径。',
+        id: 'Tidak. Setiap file SVG berisi gambar halaman dengan resolusi ganda. Bentuk dan teks tidak diubah menjadi jalur vektor.',
       },
     },
     {
@@ -235,7 +245,7 @@ const article: GuideArticle = {
         es: '¿Puedo convertir solo algunas páginas?', fr: 'Puis-je convertir seulement certaines pages ?', it: 'Posso convertire solo alcune pagine?',
         pt: 'Posso converter só algumas páginas?', sv: 'Kan jag konvertera bara vissa sidor?', no: 'Kan jeg konvertere bare noen sider?',
         is: 'Get ég breytt aðeins sumum síðum?', tr: 'Yalnızca bazı sayfaları dönüştürebilir miyim?', ar: 'هل يمكنني تحويل بعض الصفحات فقط؟',
-        fa: 'آیا می‌توانم فقط برخی صفحه‌ها را تبدیل کنم؟', hi: 'क्या मैं केवल कुछ पेज बदल सकता हूँ?', ja: '一部のページだけを変換できますか？', zh: '可以只转换部分页面吗？',
+        fa: 'آیا می‌توانم فقط برخی صفحه‌ها را تبدیل کنم؟', hi: 'क्या मैं केवल कुछ पेज बदल सकता हूँ?', ja: '一部のページだけを変換できますか？', zh: '可以只转换部分页面吗？', id: 'Bisakah saya mengonversi sebagian halaman saja?',
       },
       a: {
         pl: 'Narzędzie zamienia wszystkie strony. Wybierz potrzebne strony najpierw narzędziem Wyodrębnij strony, a potem zamień nowy plik.',
@@ -254,6 +264,7 @@ const article: GuideArticle = {
         hi: 'टूल सभी पेज बदलता है। पहले पृष्ठ निकालें टूल से ज़रूरी पेज अलग करें, फिर नई फ़ाइल बदलें।',
         ja: 'このツールはすべてのページを変換します。先に「ページ抽出」ツールで必要なページだけを取り出し、その新しいファイルを変換してください。',
         zh: '该工具会转换所有页面。请先用“提取页面”工具取出需要的页面，再转换新文件。',
+        id: 'Alat ini mengonversi setiap halaman. Pilih dulu halaman yang Anda perlukan dengan alat Ekstrak Halaman, lalu konversikan file baru tersebut.',
       },
     },
     {
@@ -262,7 +273,7 @@ const article: GuideArticle = {
         es: '¿Se sube mi archivo a algún sitio?', fr: 'Mon fichier est-il envoyé quelque part ?', it: 'Il mio file viene caricato da qualche parte?',
         pt: 'O meu ficheiro é enviado para algum lado?', sv: 'Laddas min fil upp någonstans?', no: 'Lastes filen min opp noe sted?',
         is: 'Er skránni minni hlaðið upp einhvert?', tr: 'Dosyam bir yere yükleniyor mu?', ar: 'هل يُرفع ملفي إلى أي مكان؟',
-        fa: 'آیا فایل من جایی بارگذاری می‌شود؟', hi: 'क्या मेरी फ़ाइल कहीं अपलोड होती है?', ja: 'ファイルはどこかにアップロードされますか？', zh: '我的文件会被上传到哪里吗？',
+        fa: 'آیا فایل من جایی بارگذاری می‌شود؟', hi: 'क्या मेरी फ़ाइल कहीं अपलोड होती है?', ja: 'ファイルはどこかにアップロードされますか？', zh: '我的文件会被上传到哪里吗？', id: 'Apakah file saya diunggah ke suatu tempat?',
       },
       a: {
         pl: 'Nie. Konwersja odbywa się w Twojej przeglądarce, więc plik nie trafia na nasz serwer.',
@@ -281,6 +292,7 @@ const article: GuideArticle = {
         hi: 'नहीं। रूपांतरण आपके ब्राउज़र में होता है, इसलिए फ़ाइल हमारे सर्वर तक नहीं पहुँचती।',
         ja: 'いいえ。変換はブラウザ内で行われるため、ファイルが当社のサーバーに届くことはありません。',
         zh: '不会。转换在你的浏览器中进行，文件不会到达我们的服务器。',
+        id: 'Tidak. Konversi berlangsung di browser Anda, sehingga file tidak sampai ke server kami.',
       },
     },
   ],

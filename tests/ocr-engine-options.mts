@@ -13,6 +13,7 @@
 //     language without data must be detected before the engine is started (tesseract.js swallows
 //     a failed language download and its promise never settles).
 import { register } from 'node:module';
+import { locales } from '../lib/i18n';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
@@ -114,7 +115,7 @@ const script = readFileSync(join(ROOT, 'scripts/copy-tesseract-assets.mjs'), 'ut
 check(/ocr-languages\.json/.test(script) && !/const langs = \['pol', 'eng'\]/.test(script), 'the asset script downloads every listed language, not just pol and eng');
 check(/page\.ocr\.err_language_unavailable/.test(pageSrc), 'the page shows the localized "language data unavailable" message');
 const i18n = i18nSource();
-check((i18n.match(/'page\.ocr\.err_language_unavailable':/g) ?? []).length === 16, 'that message exists in all 16 locales');
+check((i18n.match(/'page\.ocr\.err_language_unavailable':/g) ?? []).length === locales.length, 'that message exists in every locale');
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);

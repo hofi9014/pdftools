@@ -24,6 +24,7 @@ const article: GuideArticle = {
     hi: 'PDF को समतल कैसे करें: फ़ॉर्म और एनोटेशन',
     ja: 'PDFを平坦化する方法：フォームと注釈',
     zh: '如何扁平化PDF：表单和注释',
+    id: 'Cara Meratakan PDF: Formulir dan Anotasi',
   },
   excerpt: {
     pl: 'Wpisz wypełnione pola formularza na stałe w stronę i usuń komentarze przed wysłaniem — tak, żeby nikt już nie zmienił odpowiedzi. W przeglądarce.',
@@ -42,6 +43,7 @@ const article: GuideArticle = {
     hi: 'भरे हुए फ़ॉर्म फ़ील्ड को पेज का स्थायी हिस्सा बनाएँ और भेजने से पहले टिप्पणियाँ हटाएँ, ताकि कोई जवाब न बदल सके — ब्राउज़र में।',
     ja: '入力済みのフォーム欄をページに固定し、送信前にコメントを取り除けば、回答はもう変更できません。すべてブラウザ内で行えます。',
     zh: '把已填写的表单字段固定为页面的一部分，并在发送前删除批注，使答案无法再被修改——全部在浏览器中完成。',
+    id: 'Jadikan isian formulir bagian tetap dari halaman dan hapus komentar sebelum mengirim, agar jawabannya tidak bisa diubah lagi — langsung di browser Anda.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -61,18 +63,19 @@ const article: GuideArticle = {
       hi: 'भरे हुए PDF फ़ॉर्म में फ़ील्ड अब भी सक्रिय रहते हैं: जो भी उसे खोले, जवाब बदल सकता है। टिप्पणियाँ और हाइलाइट भी अलग हिस्से होते हैं, जो भेजने से पहले आसानी से छूट जाते हैं। समतल करने से फ़ील्ड की सामग्री पेज में स्थायी रूप से लिख दी जाती है और एनोटेशन हट जाते हैं। PDF समतल करें टूल यह काम आपके ब्राउज़र में करता है, फ़ाइल हमारे सर्वर पर भेजे बिना।',
       ja: '入力済みのPDFフォームには、まだ有効な入力欄が残っています。開いた人なら誰でも回答を書き換えられます。コメントやハイライトも別の要素なので、送信前に見落としがちです。平坦化すると、入力欄の内容がページに固定され、注釈が取り除かれます。「PDF平坦化」ツールなら、ファイルを当社のサーバーに送らずブラウザ内で処理できます。',
       zh: '填好的PDF表单仍然保留着可编辑的字段：任何打开它的人都能修改答案。批注和高亮也是独立的元素，发送前很容易被忽略。扁平化会把字段内容永久写入页面，并删除注释。“扁平化PDF”工具在你的浏览器中完成这一切，不会把文件发送到我们的服务器。',
+      id: 'Formulir PDF yang sudah diisi masih memiliki kolom aktif: siapa pun yang membukanya dapat mengubah jawabannya. Komentar dan sorotan juga merupakan elemen terpisah yang mudah terlewat sebelum dikirim. Perataan menuliskan isi kolom secara permanen ke halaman dan menghapus anotasi. Alat Ratakan PDF melakukannya di browser Anda, tanpa mengirim file ke server kami.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Spłaszczanie PDF krok po kroku', en: 'Flattening a PDF step by step', de: 'PDF Schritt für Schritt glätten',
       es: 'Aplanar un PDF paso a paso', fr: 'Aplatir un PDF étape par étape', it: 'Appiattire un PDF passo dopo passo',
       pt: 'Aplainar um PDF passo a passo', sv: 'Platta till en PDF steg för steg', no: 'Flat ut en PDF trinn for trinn',
       is: 'Að fletja PDF skref fyrir skref', tr: 'Adım adım PDF düzleştirme', ar: 'تسوية PDF خطوة بخطوة',
-      fa: 'تسطیح PDF گام به گام', hi: 'चरण दर चरण PDF समतल करना', ja: 'PDFを平坦化する手順', zh: '逐步扁平化PDF',
+      fa: 'تسطیح PDF گام به گام', hi: 'चरण दर चरण PDF समतल करना', ja: 'PDFを平坦化する手順', zh: '逐步扁平化PDF', id: 'Meratakan PDF langkah demi langkah',
     }},
     { type: 'step', title: {
       pl: 'Dodaj plik PDF', en: 'Add the PDF file', de: 'PDF-Datei hinzufügen', es: 'Añade el archivo PDF', fr: 'Ajoutez le fichier PDF',
       it: 'Aggiungi il file PDF', pt: 'Adicione o ficheiro PDF', sv: 'Lägg till PDF-filen', no: 'Legg til PDF-filen', is: 'Bættu PDF-skránni við',
-      tr: 'PDF dosyasını ekleyin', ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF फ़ाइल जोड़ें', ja: 'PDFファイルを追加する', zh: '添加PDF文件',
+      tr: 'PDF dosyasını ekleyin', ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF फ़ाइल जोड़ें', ja: 'PDFファイルを追加する', zh: '添加PDF文件', id: 'Tambahkan file PDF',
     }, text: {
       pl: 'Upuść wypełniony formularz albo dokument z komentarzami na pole wyboru albo kliknij je, żeby wskazać plik.',
       en: 'Drop the filled-in form or the document with comments onto the upload area, or click it to choose the file.',
@@ -90,11 +93,12 @@ const article: GuideArticle = {
       hi: 'भरा हुआ फ़ॉर्म या टिप्पणियों वाला दस्तावेज़ अपलोड क्षेत्र पर छोड़ें, या फ़ाइल चुनने के लिए उस पर क्लिक करें।',
       ja: '入力済みのフォームやコメント付きの文書をアップロード欄にドロップするか、欄をクリックしてファイルを選びます。',
       zh: '把填好的表单或带批注的文档拖到上传区域，或点击该区域选择文件。',
+      id: 'Letakkan formulir yang sudah diisi atau dokumen berisi komentar di area unggah, atau klik area tersebut untuk memilih file.',
     }},
     { type: 'step', title: {
       pl: 'Spłaszcz plik', en: 'Flatten the file', de: 'Datei glätten', es: 'Aplana el archivo', fr: 'Aplatissez le fichier',
       it: 'Appiattisci il file', pt: 'Aplaine o ficheiro', sv: 'Platta till filen', no: 'Flat ut filen', is: 'Flettu skrána út',
-      tr: 'Dosyayı düzleştirin', ar: 'سوِّ الملف', fa: 'فایل را تسطیح کنید', hi: 'फ़ाइल समतल करें', ja: 'ファイルを平坦化する', zh: '扁平化文件',
+      tr: 'Dosyayı düzleştirin', ar: 'سوِّ الملف', fa: 'فایل را تسطیح کنید', hi: 'फ़ाइल समतल करें', ja: 'ファイルを平坦化する', zh: '扁平化文件', id: 'Ratakan file',
     }, text: {
       pl: 'Kliknij „Spłaszcz PDF”. Zawartość pól formularza zostaje narysowana na stronie, a pola i adnotacje są usuwane.',
       en: 'Click “Flatten PDF”. The contents of the form fields are drawn onto the page, and the fields and annotations are removed.',
@@ -112,11 +116,12 @@ const article: GuideArticle = {
       hi: '“पीडीएफ समतल करें” पर क्लिक करें। फ़ॉर्म फ़ील्ड की सामग्री पेज पर बना दी जाती है और फ़ील्ड व एनोटेशन हट जाते हैं।',
       ja: '「PDFを平らにする」をクリックします。入力欄の内容がページ上に描かれ、入力欄と注釈は取り除かれます。',
       zh: '点击“扁平化PDF”。表单字段的内容会绘制到页面上，字段和注释随之删除。',
+      id: 'Klik “Ratakan PDF”. Isi kolom formulir digambar ke halaman, lalu kolom dan anotasinya dihapus.',
     }},
     { type: 'step', title: {
       pl: 'Pobierz wynik', en: 'Download the result', de: 'Ergebnis herunterladen', es: 'Descarga el resultado', fr: 'Téléchargez le résultat',
       it: 'Scarica il risultato', pt: 'Transfira o resultado', sv: 'Ladda ned resultatet', no: 'Last ned resultatet', is: 'Sæktu niðurstöðuna',
-      tr: 'Sonucu indirin', ar: 'نزّل النتيجة', fa: 'نتیجه را دانلود کنید', hi: 'नतीजा डाउनलोड करें', ja: '結果をダウンロードする', zh: '下载结果',
+      tr: 'Sonucu indirin', ar: 'نزّل النتيجة', fa: 'نتیجه را دانلود کنید', hi: 'नतीजा डाउनलोड करें', ja: '結果をダウンロードする', zh: '下载结果', id: 'Unduh hasilnya',
     }, text: {
       pl: 'Spłaszczony plik pobiera się od razu. Jeśli w pliku nie było pól ani adnotacji, zobaczysz informację, że nie było czego spłaszczać — plik jest wtedy identyczny.',
       en: 'The flattened file downloads at once. If the file had no fields or annotations, you will see a message that there was nothing to flatten — the file is then identical.',
@@ -134,11 +139,12 @@ const article: GuideArticle = {
       hi: 'समतल की गई फ़ाइल तुरंत डाउनलोड होती है। अगर फ़ाइल में न फ़ील्ड थे न एनोटेशन, तो संदेश दिखेगा कि समतल करने को कुछ नहीं था — तब फ़ाइल वैसी ही रहती है।',
       ja: '平坦化したファイルはすぐにダウンロードされます。入力欄も注釈もなかった場合は、平坦化するものがなかったことを知らせるメッセージが表示され、ファイルは同じ内容のままです。',
       zh: '扁平化后的文件会立即下载。如果文件中既没有字段也没有注释，会提示没有可扁平化的内容，此时文件保持不变。',
+      id: 'File yang sudah diratakan langsung terunduh. Jika file tidak memiliki kolom atau anotasi, Anda akan melihat pesan bahwa tidak ada yang perlu diratakan — file tetap sama.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Dobrze wiedzieć', en: 'Good to know', de: 'Gut zu wissen', es: 'Conviene saber', fr: 'Bon à savoir', it: 'Buono a sapersi',
       pt: 'Bom saber', sv: 'Bra att veta', no: 'Greit å vite', is: 'Gott að vita', tr: 'Bilmekte fayda var', ar: 'من المفيد معرفته',
-      fa: 'خوب است بدانید', hi: 'जानने योग्य', ja: '知っておくと便利なこと', zh: '小贴士',
+      fa: 'خوب است بدانید', hi: 'जानने योग्य', ja: '知っておくと便利なこと', zh: '小贴士', id: 'Perlu diketahui',
     }},
     { type: 'list', items: [
       {
@@ -158,6 +164,7 @@ const article: GuideArticle = {
         hi: 'दस्तावेज़ के लिंक भी हट जाते हैं, क्योंकि वे एनोटेशन हैं। टेक्स्ट टेक्स्ट ही रहता है — पेज इमेज में नहीं बदलता।',
         ja: 'リンクも注釈の一種なので、文書内のリンクも消えます。本文はテキストのままで、ページが画像になることはありません。',
         zh: '文档中的链接也会消失，因为它们也是注释。文字仍是文字，页面不会变成图片。',
+        id: 'Tautan dalam dokumen juga hilang karena tautan merupakan anotasi. Teks dokumen tetap berupa teks — halaman tidak diubah menjadi gambar.',
       },
       {
         pl: 'Pola podpisu cyfrowego zostają nietknięte.',
@@ -176,6 +183,7 @@ const article: GuideArticle = {
         hi: 'डिजिटल हस्ताक्षर वाले फ़ील्ड जस के तस रहते हैं।',
         ja: 'デジタル署名の欄はそのまま残ります。',
         zh: '数字签名字段保持不变。',
+        id: 'Kolom tanda tangan digital tidak diubah.',
       },
       {
         pl: 'Plik zabezpieczony hasłem trzeba najpierw odblokować narzędziem Odblokuj PDF.',
@@ -194,6 +202,7 @@ const article: GuideArticle = {
         hi: 'पासवर्ड से सुरक्षित फ़ाइल को पहले PDF अनलॉक करें टूल से खोलना होगा।',
         ja: 'パスワードで保護されたファイルは、先に「PDFロック解除」ツールで解除してください。',
         zh: '受密码保护的文件需要先用“解锁PDF”工具解锁。',
+        id: 'File yang dilindungi kata sandi harus dibuka kuncinya terlebih dahulu dengan alat Buka Kunci PDF.',
       },
     ]},
     { type: 'cta', tool: 'flatten' },
@@ -206,7 +215,7 @@ const article: GuideArticle = {
         es: '¿Qué significa «aplanar un PDF»?', fr: 'Que signifie « aplatir un PDF » ?', it: 'Che cosa significa «appiattire un PDF»?',
         pt: 'O que significa «aplainar um PDF»?', sv: 'Vad betyder ”platta till en PDF”?', no: 'Hva betyr «flate ut en PDF»?',
         is: 'Hvað þýðir „að fletja PDF“?', tr: '“PDF’yi düzleştirmek” ne demek?', ar: 'ماذا تعني «تسوية ملف PDF»؟',
-        fa: '«تسطیح PDF» یعنی چه؟', hi: '“PDF को समतल करना” का क्या मतलब है?', ja: '「PDFの平坦化」とは何ですか？', zh: '“扁平化PDF”是什么意思？',
+        fa: '«تسطیح PDF» یعنی چه؟', hi: '“PDF को समतल करना” का क्या मतलब है?', ja: '「PDFの平坦化」とは何ですか？', zh: '“扁平化PDF”是什么意思？', id: 'Apa arti “meratakan PDF”?',
       },
       a: {
         pl: 'To zamiana elementów, które da się edytować albo usunąć osobno — pól formularza i adnotacji — na zwykłą zawartość strony albo ich usunięcie. Po spłaszczeniu odpowiedzi w formularzu są częścią strony.',
@@ -225,6 +234,7 @@ const article: GuideArticle = {
         hi: 'इसका मतलब है कि अलग से संपादित या हटाए जा सकने वाले हिस्से — फ़ॉर्म फ़ील्ड और एनोटेशन — पेज की सामान्य सामग्री बन जाते हैं या हटा दिए जाते हैं। इसके बाद फ़ॉर्म के जवाब पेज का हिस्सा होते हैं।',
         ja: '個別に編集・削除できる要素（フォームの入力欄や注釈）を、ページの通常の内容に変えるか取り除くことです。平坦化後は、フォームの回答がページの一部になります。',
         zh: '就是把可以单独编辑或删除的元素（表单字段和注释）变成普通的页面内容，或将其删除。扁平化后，表单答案就成为页面的一部分。',
+        id: 'Artinya mengubah elemen yang dapat diedit atau dihapus secara terpisah — kolom formulir dan anotasi — menjadi isi halaman biasa, atau menghapusnya. Setelah diratakan, jawaban formulir menjadi bagian dari halaman.',
       },
     },
     {
@@ -233,7 +243,7 @@ const article: GuideArticle = {
         es: '¿Se pueden cambiar las respuestas después de aplanar?', fr: 'Peut-on encore modifier les réponses après l’aplatissement ?', it: 'Si possono ancora cambiare le risposte dopo l’appiattimento?',
         pt: 'Ainda é possível alterar as respostas depois de aplainar?', sv: 'Kan svaren fortfarande ändras efter tillplattningen?', no: 'Kan svarene fortsatt endres etter utflatingen?',
         is: 'Er enn hægt að breyta svörunum eftir útflöttun?', tr: 'Düzleştirdikten sonra yanıtlar hâlâ değiştirilebilir mi?', ar: 'هل يمكن تغيير الإجابات بعد التسوية؟',
-        fa: 'آیا پس از تسطیح هنوز می‌توان پاسخ‌ها را تغییر داد؟', hi: 'क्या समतल करने के बाद भी जवाब बदले जा सकते हैं?', ja: '平坦化した後も回答を変更できますか？', zh: '扁平化之后还能修改答案吗？',
+        fa: 'آیا پس از تسطیح هنوز می‌توان پاسخ‌ها را تغییر داد؟', hi: 'क्या समतल करने के बाद भी जवाब बदले जा सकते हैं?', ja: '平坦化した後も回答を変更できますか？', zh: '扁平化之后还能修改答案吗？', id: 'Apakah jawabannya masih bisa diubah setelah diratakan?',
       },
       a: {
         pl: 'Nie jako pola formularza — tych już nie ma. Zachowaj oryginał, jeśli chcesz kiedyś poprawić odpowiedzi.',
@@ -252,6 +262,7 @@ const article: GuideArticle = {
         hi: 'फ़ॉर्म फ़ील्ड के रूप में नहीं — वे अब नहीं रहे। अगर बाद में जवाब सुधारने पड़ सकते हैं, तो मूल फ़ाइल संभालकर रखें।',
         ja: 'フォームの入力欄としては変更できません。入力欄はなくなっています。後で回答を直すかもしれない場合は、元のファイルを残しておいてください。',
         zh: '无法再作为表单字段修改——字段已经不存在了。如果以后可能要修改答案，请保留原文件。',
+        id: 'Tidak lagi sebagai kolom formulir — kolom tersebut sudah tidak ada. Simpan file aslinya jika Anda mungkin ingin memperbaiki jawaban di kemudian hari.',
       },
     },
     {
@@ -260,7 +271,7 @@ const article: GuideArticle = {
         es: '¿Se sube mi archivo a algún sitio?', fr: 'Mon fichier est-il envoyé quelque part ?', it: 'Il mio file viene caricato da qualche parte?',
         pt: 'O meu ficheiro é enviado para algum lado?', sv: 'Laddas min fil upp någonstans?', no: 'Lastes filen min opp noe sted?',
         is: 'Er skránni minni hlaðið upp einhvert?', tr: 'Dosyam bir yere yükleniyor mu?', ar: 'هل يُرفع ملفي إلى أي مكان؟',
-        fa: 'آیا فایل من جایی بارگذاری می‌شود؟', hi: 'क्या मेरी फ़ाइल कहीं अपलोड होती है?', ja: 'ファイルはどこかにアップロードされますか？', zh: '我的文件会被上传到哪里吗？',
+        fa: 'آیا فایل من جایی بارگذاری می‌شود؟', hi: 'क्या मेरी फ़ाइल कहीं अपलोड होती है?', ja: 'ファイルはどこかにアップロードされますか？', zh: '我的文件会被上传到哪里吗？', id: 'Apakah file saya diunggah ke suatu tempat?',
       },
       a: {
         pl: 'Nie. Spłaszczanie odbywa się w Twojej przeglądarce, więc plik nie trafia na nasz serwer.',
@@ -279,6 +290,7 @@ const article: GuideArticle = {
         hi: 'नहीं। समतल करने का काम आपके ब्राउज़र में होता है, इसलिए फ़ाइल हमारे सर्वर तक नहीं पहुँचती।',
         ja: 'いいえ。平坦化はブラウザ内で行われるため、ファイルが当社のサーバーに届くことはありません。',
         zh: '不会。扁平化在你的浏览器中进行，文件不会到达我们的服务器。',
+        id: 'Tidak. Perataan berlangsung di browser Anda, sehingga file tidak sampai ke server kami.',
       },
     },
   ],

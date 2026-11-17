@@ -28,6 +28,7 @@
 // replacement.
 
 import { readFileSync } from 'node:fs';
+import { locales } from '../lib/i18n';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -111,7 +112,7 @@ console.log('\n=== guide content: false claims are gone, in all 16 locales, repl
   check(/AESV2/.test(v4), 'engine really has an AES-128 (V=4) path');
   const unlockGuide = readFileSync(join(ROOT, 'content', 'guides', 'unlock-pdf', 'how-to-unlock-pdf-online.ts'), 'utf-8');
   check(!unlockGuide.includes('The tool supports all standard PDF protections.'), 'unlock guide (en) no longer claims "all standard PDF protections"');
-  check((unlockGuide.match(/AES-128/g) ?? []).length === 16, 'unlock guide names the supported schemes in all 16 locales');
+  check((unlockGuide.match(/AES-128/g) ?? []).length === locales.length, 'unlock guide names the supported schemes in every locale');
 }
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);

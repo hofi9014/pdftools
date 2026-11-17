@@ -1,12 +1,12 @@
 import { all as bundled } from '#translations';
 
 export const defaultLocale = 'en' as const;
-export const locales = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'] as const;
+export const locales = ['ar', 'de', 'en', 'es', 'fa', 'fr', 'hi', 'id', 'is', 'it', 'ja', 'no', 'pl', 'pt', 'sv', 'tr', 'zh'] as const;
 export type Locale = (typeof locales)[number];
 
 export const htmlLangMap: Record<Locale, string> = {
   ar: 'ar', de: 'de', en: 'en', es: 'es', fa: 'fa', fr: 'fr', hi: 'hi',
-  is: 'is', it: 'it', ja: 'ja', no: 'no', pl: 'pl', pt: 'pt-PT',
+  id: 'id', is: 'is', it: 'it', ja: 'ja', no: 'no', pl: 'pl', pt: 'pt-PT',
   sv: 'sv', tr: 'tr', zh: 'zh-Hans',
 };
 

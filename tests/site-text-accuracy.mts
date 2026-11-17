@@ -190,6 +190,9 @@ console.log('\n=== no English left in other languages ===');
   // translation looks the same: both show English text on a translated page. Names that are the
   // same in every language are listed here.
   const SAME_EVERYWHERE = new Set(['tool.ocr']);
+  // Names that are the established term in one language: "edit" is an Indonesian word (KBBI)
+  // and "Edit PDF" is what Indonesian users search for and other Indonesian PDF sites call it.
+  const SAME_IN: Record<string, Set<string>> = { id: new Set(['tool.edit']) };
   // The HTML sample becomes PDF text in Liberation Sans, which has no Arabic, Persian, Devanagari
   // or CJK letters: those languages keep the English sample rather than a PDF of empty boxes.
   const LATIN_PDF_TEXT = new Set(['page.html.sample_title', 'page.html.sample_text']);
@@ -202,7 +205,7 @@ console.log('\n=== no English left in other languages ===');
     // Two words of 3+ letters anywhere (placeholders aside): "← Back to homepage" was left in
     // French because the old rule wanted them next to each other (2026-11-17).
     const words = (s: string) => (s.replace(/\{[^}]*\}/g, ' ').match(/[a-z]{3,}/gi) ?? []).length;
-    const copied = Object.keys(en).filter((k) => !SAME_EVERYWHERE.has(k) && !(NON_LATIN.has(l) && LATIN_PDF_TEXT.has(k)) && dict[k] === en[k] && words(en[k]!) >= 2);
+    const copied = Object.keys(en).filter((k) => !SAME_EVERYWHERE.has(k) && !SAME_IN[l]?.has(k) && !(NON_LATIN.has(l) && LATIN_PDF_TEXT.has(k)) && dict[k] === en[k] && words(en[k]!) >= 2);
     check(missing.length === 0, `${l}: every key translated${missing.length ? ` (missing: ${missing.join(', ')})` : ''}`);
     check(copied.length === 0, `${l}: no English sentence copied as the translation${copied.length ? ` (${copied.join(', ')})` : ''}`);
   }

@@ -16,7 +16,7 @@ import { guideArticlePath, guideCategoryPath, encodePath } from '../lib/guide-ur
 const BASE = process.env.E2E_BASE_URL ?? 'http://localhost:3000';
 const axeSource = readFileSync('node_modules/axe-core/axe.min.js', 'utf8');
 const PAGES = [
-  'pl', 'en', 'ar', 'pl/merge', 'pl/compress', 'pl/pdf-to-word', 'pl/edit-pdf', 'pl/sign-pdf', 'pl/ocr-pdf',
+  'pl', 'en', 'ar', 'id', 'id/merge', 'pl/merge', 'pl/compress', 'pl/pdf-to-word', 'pl/edit-pdf', 'pl/sign-pdf', 'pl/ocr-pdf',
   'pl/protect-pdf', 'pl/unlock-pdf', 'pl/split', 'pl/ai-chat', 'pl/watermark-pdf', 'pl/privacy', 'pl/rodo',
   'pl/security', 'pl/terms', 'pl/faq', 'pl/help', 'pl/nasze-zasady', 'pl/wsparcie', 'pl/guide', 'de/merge', 'ar/privacy', 'pl/where-your-file-goes', 'ar/where-your-file-goes',
   // Guides: the hub, a category and articles (all 19 share one template — step titles were <h4>

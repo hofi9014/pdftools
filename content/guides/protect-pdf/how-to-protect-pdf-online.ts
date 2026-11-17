@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'PDF को पासवर्ड से कैसे सुरक्षित करें',
     ja: 'PDFをパスワードで保護する方法',
     zh: '如何用密码保护PDF',
+    id: 'Cara Melindungi PDF dengan Kata Sandi',
   },
   excerpt: {
     pl: 'Dodaj hasło do pliku PDF, aby chronić poufne dokumenty. Instrukcja krok po kroku — bez instalacji, w pełni lokalnie w przeglądarce.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'संवेदनशील दस्तावेज़ों की सुरक्षा के लिए अपनी PDF फ़ाइल में पासवर्ड जोड़ें। चरण-दर-चरण मार्गदर्शिका — बिना इंस्टॉलेशन, पूरी तरह से स्थानीय।',
     ja: '機密文書を保護するためにPDFファイルにパスワードを追加します。インストール不要、完全にブラウザ内で完結。',
     zh: '为PDF文件添加密码以保护敏感文档。分步指南 — 无需安装，完全在浏览器中本地完成。',
+    id: 'Tambahkan kata sandi ke file PDF Anda untuk melindungi dokumen sensitif. Panduan langkah demi langkah — tanpa instalasi, sepenuhnya lokal di browser Anda.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,6 +59,7 @@ const article: GuideArticle = {
       hi: 'पासवर्ड से PDF की सुरक्षा करना संवेदनशील दस्तावेज़ों को अनधिकृत पहुंच से बचाने का एक प्रभावी तरीका है। OptimaPDF AES-256 एन्क्रिप्शन का उपयोग करता है।',
       ja: 'パスワードによるPDF保護は、機密文書を不正アクセスから守る効果的な方法です。OptimaPDFはAES-256暗号化を使用します。',
       zh: '用密码保护PDF是防止未经授权访问敏感文档的有效方法。OptimaPDF使用AES-256加密。一切都在浏览器中本地完成。',
+      id: 'Melindungi PDF dengan kata sandi adalah cara efektif untuk mencegah akses tanpa izin ke dokumen sensitif. OptimaPDF menggunakan enkripsi AES-256, standar keamanan saat ini. Semuanya berlangsung secara lokal di browser Anda.',
     }},
     { type: 'cta', tool: 'protect' },
     { type: 'heading', level: 2, text: {
@@ -76,6 +79,7 @@ const article: GuideArticle = {
       hi: 'चरण दर चरण PDF कैसे सुरक्षित करें',
       ja: 'ステップバイステップでPDFを保護する方法',
       zh: '如何逐步保护PDF',
+      id: 'Cara Melindungi PDF Langkah demi Langkah',
     }},
     { type: 'step', title: {
       pl: 'Wprowadź hasło',
@@ -94,6 +98,7 @@ const article: GuideArticle = {
       hi: 'एक पासवर्ड दर्ज करें',
       ja: 'パスワードを入力',
       zh: '输入密码',
+      id: 'Masukkan Kata Sandi',
     }, text: {
       pl: 'Wprowadź hasło, którym chcesz zabezpieczyć dokument. Minimalna długość to 4 znaki. Im dłuższe i bardziej złożone hasło, tym trudniej je złamać. Wskaźnik siły hasła pomoże Ci ocenić jego bezpieczeństwo.',
       en: 'Enter the password you want to use to secure the document. Minimum length is 4 characters. The longer and more complex the password, the harder it is to crack. The password strength meter helps you assess security.',
@@ -111,6 +116,7 @@ const article: GuideArticle = {
       hi: 'वह पासवर्ड दर्ज करें जिसका उपयोग आप दस्तावेज़ को सुरक्षित करने के लिए करना चाहते हैं। न्यूनतम लंबाई 4 अक्षर है। पासवर्ड जितना लंबा और जटिल होगा, इसे तोड़ना उतना ही कठिन होगा।',
       ja: '文書を保護するためのパスワードを入力します。最低4文字以上。パスワードが長く複雑であればあるほど、解読は困難になります。',
       zh: '输入要用于保护文档的密码。最小长度为4个字符。密码越长越复杂，越难破解。',
+      id: 'Masukkan kata sandi yang ingin Anda gunakan untuk mengamankan dokumen. Panjang minimalnya 4 karakter. Makin panjang dan rumit kata sandinya, makin sulit dibobol. Pengukur kekuatan kata sandi membantu Anda menilai keamanannya.',
     }},
     { type: 'step', title: {
       pl: 'Potwierdź hasło',
@@ -129,6 +135,7 @@ const article: GuideArticle = {
       hi: 'पासवर्ड की पुष्टि करें',
       ja: 'パスワードを確認',
       zh: '确认密码',
+      id: 'Konfirmasi Kata Sandi',
     }, text: {
       pl: 'Wpisz hasło ponownie w polu potwierdzenia. Aplikacja sprawdzi, czy oba hasła są identyczne. Jeśli hasła różnią się, pojawi się ostrzeżenie.',
       en: 'Re-enter the password in the confirmation field. The app checks if both passwords match. If they differ, a warning will appear.',
@@ -146,6 +153,7 @@ const article: GuideArticle = {
       hi: 'पुष्टिकरण फ़ील्ड में पासवर्ड पुनः दर्ज करें। ऐप जाँचता है कि दोनों पासवर्ड मेल खाते हैं या नहीं।',
       ja: '確認フィールドにパスワードを再入力します。アプリが両方のパスワードが一致するか確認します。',
       zh: '在确认字段中重新输入密码。应用程序会检查两个密码是否匹配。',
+      id: 'Ketik ulang kata sandi di kolom konfirmasi. Aplikasi memeriksa apakah kedua kata sandi cocok. Jika berbeda, akan muncul peringatan.',
     }},
     { type: 'step', title: {
       pl: 'Pobierz zabezpieczony plik',
@@ -164,6 +172,7 @@ const article: GuideArticle = {
       hi: 'सुरक्षित फ़ाइल डाउनलोड करें',
       ja: '保護されたファイルをダウンロード',
       zh: '下载受保护的文件',
+      id: 'Unduh File yang Dilindungi',
     }, text: {
       pl: 'Kliknij "Zabezpiecz PDF". Po chwili plik zostanie pobrany. Od tej pory do otwarcia dokumentu potrzebne będzie hasło. Uwaga: OptimaPDF nie przechowuje haseł — jeśli zapomnisz hasła, nie ma możliwości odzyskania dostępu.',
       en: 'Click "Protect PDF". The file will be downloaded shortly. From now on, the password will be required to open the document. Note: OptimaPDF does not store passwords — if you forget it, there is no way to recover access.',
@@ -181,6 +190,7 @@ const article: GuideArticle = {
       hi: '"PDF सुरक्षित करें" पर क्लिक करें। फ़ाइल डाउनलोड हो जाएगी। अब से दस्तावेज़ खोलने के लिए पासवर्ड की आवश्यकता होगी। OptimaPDF पासवर्ड संग्रहीत नहीं करता है।',
       ja: '「PDFを保護する」をクリックします。ファイルがダウンロードされます。今後、文書を開くにはパスワードが必要になります。OptimaPDFはパスワードを保存しません。',
       zh: '点击"保护PDF"。文件将下载。从现在开始，打开文档需要密码。注意：OptimaPDF不存储密码 — 如果您忘记密码，无法恢复访问。',
+      id: 'Klik "Lindungi PDF". File akan segera terunduh. Mulai saat itu, kata sandi diperlukan untuk membuka dokumen. Catatan: OptimaPDF tidak menyimpan kata sandi — jika Anda lupa, akses tidak dapat dipulihkan.',
     }},
     { type: 'cta', tool: 'protect' },
   ],
@@ -203,6 +213,7 @@ const article: GuideArticle = {
       hi: 'कौन सा एन्क्रिप्शन उपयोग किया जाता है?',
       ja: 'どの暗号化方式が使用されていますか？',
       zh: '使用什么加密？',
+      id: 'Enkripsi apa yang digunakan?',
     }, a: {
       pl: 'OptimaPDF używa szyfrowania AES-256, które jest obecnie standardem w zabezpieczaniu dokumentów PDF. Jest to ten sam standard, którego używają instytucje rządowe i banki.',
       en: 'OptimaPDF uses AES-256 encryption, the current standard for securing PDF documents. It is the same standard used by government institutions and banks.',
@@ -220,6 +231,7 @@ const article: GuideArticle = {
       hi: 'OptimaPDF AES-256 एन्क्रिप्शन का उपयोग करता है, जो PDF सुरक्षा के लिए वर्तमान मानक है। यह वही मानक है जो सरकारी संस्थानों और बैंकों द्वारा उपयोग किया जाता है।',
       ja: 'OptimaPDFは、PDFセキュリティの現在の標準であるAES-256暗号化を使用しています。これは政府機関や銀行が使用するのと同じ標準です。',
       zh: 'OptimaPDF使用AES-256加密，这是当前保护PDF的标准。与政府机构和银行使用的标准相同。',
+      id: 'OptimaPDF menggunakan enkripsi AES-256, standar terkini untuk mengamankan dokumen PDF. Standar yang sama digunakan oleh lembaga pemerintah dan bank.',
     }},
   ],
   canonicalOverride: undefined,

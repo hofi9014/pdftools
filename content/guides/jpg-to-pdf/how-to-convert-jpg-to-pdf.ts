@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'JPG को PDF में कैसे बदलें',
     ja: 'JPGをPDFに変換する方法',
     zh: '如何将JPG转换为PDF',
+    id: 'Cara Mengonversi JPG ke PDF',
   },
   excerpt: {
     pl: 'Zamień zdjęcia i obrazy JPG, PNG, WebP na plik PDF. Połącz wiele obrazów w jeden dokument — idealne do skanów i dokumentacji.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'फ़ोटो और छवियों को PDF फ़ाइल में बदलें। कई छवियों को एक दस्तावेज़ में संयोजित करें।',
     ja: '写真や画像をPDFファイルに変換します。複数の画像を1つの文書に結合します。',
     zh: '将照片和图像转换为PDF文件。将多个图像合并到一个文档中。',
+    id: 'Ubah foto dan gambar (JPG, PNG, WebP) menjadi file PDF. Gabungkan beberapa gambar menjadi satu dokumen — cocok untuk hasil pindaian dan dokumentasi.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,6 +59,7 @@ const article: GuideArticle = {
       hi: 'फ़ोटो को एक फ़ाइल के रूप में भेजने या स्कैन किए गए पृष्ठों से दस्तावेज़ बनाने के लिए छवियों को PDF में बदलना उपयोगी है।',
       ja: '画像からPDFへの変換は、写真を1つのファイルとして送信したり、スキャンページから文書を作成したりするのに便利です。',
       zh: '将图像转换为PDF在需要将照片作为单个文件发送或从扫描页面创建文档时非常有用。',
+      id: 'Mengubah gambar menjadi PDF berguna ketika Anda ingin mengirim foto sebagai satu file, membuat dokumen dari halaman hasil pindaian, atau menyusun portofolio. OptimaPDF mendukung JPG, PNG, dan WebP — Anda dapat mencampur format dalam satu dokumen.',
     }},
     { type: 'cta', tool: 'jpgTopdf' },
     { type: 'heading', level: 2, text: {
@@ -76,6 +79,7 @@ const article: GuideArticle = {
       hi: 'चरण दर चरण JPG को PDF में कैसे बदलें',
       ja: 'ステップバイステップでJPGをPDFに変換する方法',
       zh: '如何逐步将JPG转换为PDF',
+      id: 'Cara Mengonversi JPG ke PDF Langkah demi Langkah',
     }},
     { type: 'step', title: {
       pl: 'Dodaj obrazy',
@@ -94,6 +98,7 @@ const article: GuideArticle = {
       hi: 'चित्र जोड़ें',
       ja: '画像を追加',
       zh: '添加图像',
+      id: 'Tambahkan Gambar',
     }, text: {
       pl: 'Przeciągnij obrazy (JPG, PNG, WebP) w pole wyboru lub kliknij, aby wybrać je z dysku. Możesz dodać wiele obrazów jednocześnie, a także mieszać różne formaty w jednym dokumencie.',
       en: 'Drag images (JPG, PNG, WebP) into the upload area or click to select them from your disk. You can add multiple images at once and mix different formats in one document.',
@@ -111,6 +116,7 @@ const article: GuideArticle = {
       hi: 'चित्रों को अपलोड क्षेत्र में खींचें या अपनी डिस्क से चुनने के लिए क्लिक करें। आप एक साथ कई चित्र जोड़ सकते हैं और विभिन्न प्रारूपों को मिश्रित कर सकते हैं।',
       ja: '画像をアップロードエリアにドラッグするか、クリックしてディスクから選択します。複数の画像を同時に追加でき、異なる形式を混在させることもできます。',
       zh: '将图像拖放到上传区域，或单击从磁盘中选择。您可以一次添加多个图像，并在一个文档中混合不同的格式。',
+      id: 'Seret gambar (JPG, PNG, WebP) ke area unggah atau klik untuk memilihnya dari disk. Anda dapat menambahkan beberapa gambar sekaligus dan mencampur format yang berbeda dalam satu dokumen.',
     }},
     { type: 'step', title: {
       pl: 'Ustaw kolejność i opcje',
@@ -129,6 +135,7 @@ const article: GuideArticle = {
       hi: 'क्रम और विकल्प सेट करें',
       ja: '順序とオプションを設定',
       zh: '设置顺序和选项',
+      id: 'Atur Urutan dan Margin',
     }, text: {
       pl: 'Kolejność obrazów można zmieniać strzałkami ↑/↓ przy każdym pliku. Wybierz rozmiar strony (A4, Letter, lub dopasowany do obrazu) oraz margines. Możesz też wybrać orientację: pionową lub poziomą.',
       en: 'Use the ↑/↓ buttons next to each image to change their order. Choose the page size (A4, Letter, or fit to image) and margin. You can also select orientation: portrait or landscape.',
@@ -146,6 +153,7 @@ const article: GuideArticle = {
       hi: 'क्रम बदलने के लिए प्रत्येक चित्र के बगल में ↑/↓ बटन का उपयोग करें। पृष्ठ का आकार और मार्जिन चुनें। आप ओरिएंटेशन भी चुन सकते हैं।',
       ja: '各画像の横にある↑/↓ボタンで順序を変更します。用紙サイズと余白を選択します。向き（縦/横）も選択できます。',
       zh: '使用每个图像旁边的↑/↓按钮更改顺序。选择页面大小和边距。您还可以选择方向。',
+      id: 'Gunakan tombol ↑/↓ di samping setiap gambar untuk mengubah urutannya. Pilih margin halaman: tanpa margin, kecil, atau besar.',
     }},
     { type: 'step', title: {
       pl: 'Pobierz plik PDF',
@@ -164,6 +172,7 @@ const article: GuideArticle = {
       hi: 'PDF फ़ाइल डाउनलोड करें',
       ja: 'PDFファイルをダウンロード',
       zh: '下载PDF文件',
+      id: 'Unduh File PDF',
     }, text: {
       pl: 'Kliknij "Utwórz PDF". Po chwili plik zostanie pobrany. Każdy obraz stanie się osobną stroną w dokumencie PDF. Jakość obrazów pozostaje oryginalna.',
       en: 'Click "Create PDF". The file will be downloaded shortly. Each image becomes a separate page in the PDF document. Image quality remains original.',
@@ -181,6 +190,7 @@ const article: GuideArticle = {
       hi: '"पीडीएफ बनाएँ" पर क्लिक करें। प्रत्येक चित्र PDF दस्तावेज़ में एक अलग पृष्ठ बन जाता है। छवि गुणवत्ता मूल बनी रहती है।',
       ja: '「PDFを作成する」をクリックします。各画像がPDF文書の個別のページになります。画質は元のままです。',
       zh: '点击"创建PDF"。每个图像成为PDF文档中的一个单独页面。图像质量保持原始水平。',
+      id: 'Klik "Buat PDF". File akan segera terunduh. Setiap gambar menjadi halaman tersendiri dalam dokumen PDF. Kualitas gambar tetap seperti aslinya.',
     }},
     { type: 'cta', tool: 'jpgTopdf' },
   ],
@@ -203,6 +213,7 @@ const article: GuideArticle = {
       hi: 'कौन से चित्र प्रारूप समर्थित हैं?',
       ja: '対応している画像形式は？',
       zh: '支持哪些图像格式？',
+      id: 'Format gambar apa saja yang didukung?',
     }, a: {
       pl: 'Obsługiwane są formaty JPG, PNG i WebP. Możesz mieszać różne formaty w jednym dokumencie — na przykład dodać 3 zdjęcia JPG i 2 zrzuty ekranu PNG w jednym pliku PDF.',
       en: 'JPG, PNG and WebP formats are supported. You can mix different formats in one document — for example, add 3 JPG photos and 2 PNG screenshots in a single PDF file.',
@@ -220,6 +231,7 @@ const article: GuideArticle = {
       hi: 'JPG, PNG और WebP प्रारूप समर्थित हैं। आप एक दस्तावेज़ में विभिन्न प्रारूपों को मिश्रित कर सकते हैं।',
       ja: 'JPG、PNG、WebP形式に対応しています。1つの文書で異なる形式を混在させることができます。',
       zh: '支持JPG、PNG和WebP格式。您可以在一个文档中混合不同的格式。',
+      id: 'Format JPG, PNG, dan WebP didukung. Anda dapat mencampur format yang berbeda dalam satu dokumen — misalnya menambahkan 3 foto JPG dan 2 tangkapan layar PNG ke dalam satu file PDF.',
     }},
   ],
   canonicalOverride: undefined,

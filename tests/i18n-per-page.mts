@@ -67,7 +67,7 @@ const { all, locales, messagesFor, registerMessages, t } = await import('../lib/
     for (const [k, v] of Object.entries(m)) if (v !== (all[l]![k] ?? en[k])) wrong++;
   }
   check(incomplete === 0 && wrong === 0, `messagesFor(locale) = that language with the en fallback applied, for all 16 (${incomplete} missing, ${wrong} wrong)`);
-  check(Object.keys(all).length === 16 && locales.every((l) => Object.keys(all[l]!).length > 900), 'on the server all 16 dictionaries are loaded');
+  check(Object.keys(all).length === locales.length && locales.every((l) => Object.keys(all[l]!).length > 900), `on the server all ${locales.length} dictionaries are loaded`);
 }
 
 console.log('\n=== a language the page did not load is reported ===');

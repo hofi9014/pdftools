@@ -60,7 +60,7 @@ const oldValues = new Set([
   '(valkvætt)', '(isteğe bağlı)', '(valfritt)', '(valgfritt)', '（任意）',
   '(वैकल्पिक)', '(اختياري)', '(اختیاری)', '（可选）',
 ]);
-check(locales.length === 16, `expected 16 locales (got ${locales.length})`);
+check(locales.length >= 16, `expected at least 16 locales (got ${locales.length})`);
 for (const loc of locales) {
   const value = i18nAll[loc]?.['page.unlock.optional'];
   check(typeof value === 'string' && value.length > 0, `${loc}: page.unlock.optional is present and non-empty`);

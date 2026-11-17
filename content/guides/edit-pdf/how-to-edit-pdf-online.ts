@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'PDF को मुफ़्त में ऑनलाइन कैसे संपादित करें',
     ja: 'PDFを無料でオンライン編集する方法',
     zh: '如何免费在线编辑PDF',
+    id: 'Cara Mengedit PDF Online Secara Gratis',
   },
   excerpt: {
     pl: 'Popraw tekst, dopisz uwagi, zaznacz fragmenty, dodaj obraz lub podpis. Edytor PDF działa w przeglądarce, bez rejestracji i znaku wodnego.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'टेक्स्ट सुधारें, नोट जोड़ें, हिस्से हाइलाइट करें, इमेज या हस्ताक्षर डालें। PDF एडिटर ब्राउज़र में चलता है, बिना पंजीकरण और वॉटरमार्क के।',
     ja: '文字の修正、メモの追加、マーカー、画像や署名の挿入。PDFエディターはブラウザで動作し、登録も透かしも不要です。',
     zh: '修改文字、添加备注、高亮段落、插入图片或签名。PDF编辑器在浏览器中运行，无需注册，没有水印。',
+    id: 'Perbaiki teks, tambahkan catatan, sorot bagian penting, sisipkan gambar atau tanda tangan. Editor PDF berjalan di browser Anda, tanpa daftar dan tanpa tanda air.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,18 +59,19 @@ const article: GuideArticle = {
       hi: 'टाइपो ठीक करने, तारीख जोड़ने या ज़रूरी हिस्सा हाइलाइट करने के लिए पेड प्रोग्राम की ज़रूरत नहीं। PDF एडिटर ब्राउज़र में चलता है: आप टेक्स्ट, आकार, हाइलाइट, इमेज और हस्ताक्षर जोड़ते हैं और परिणाम नई फ़ाइल के रूप में सहेजते हैं। दस्तावेज़ हमारे सर्वर तक नहीं पहुँचता।',
       ja: '誤字の修正や日付の追加、重要な箇所のマーカーに有料ソフトは要りません。PDFエディターはブラウザで動き、文字・図形・マーカー・画像・署名を加えて新しいファイルとして保存できます。文書が当社のサーバーに送られることはありません。',
       zh: '修改错别字、添加日期或高亮重要段落，无需付费软件。PDF编辑器在浏览器中运行：添加文字、形状、高亮、图片和签名，然后将结果保存为新文件。文档不会到达我们的服务器。',
+      id: 'Memperbaiki salah ketik, menambahkan tanggal, atau menyorot bagian penting tidak memerlukan perangkat lunak berbayar. Editor PDF berjalan di browser Anda: Anda menambahkan teks, bentuk, sorotan, gambar, dan tanda tangan, lalu menyimpan hasilnya sebagai file baru. Dokumen tidak pernah sampai ke server kami.',
     }},
     { type: 'cta', tool: 'edit' },
     { type: 'heading', level: 2, text: {
       pl: 'Jak edytować PDF krok po kroku', en: 'How to edit a PDF step by step', de: 'PDF bearbeiten – Schritt für Schritt', es: 'Cómo editar un PDF paso a paso',
       fr: 'Modifier un PDF étape par étape', it: 'Modificare un PDF passo dopo passo', pt: 'Editar um PDF passo a passo', sv: 'Redigera en PDF steg för steg',
       no: 'Rediger en PDF steg for steg', is: 'Breyttu PDF skref fyrir skref', tr: 'Adım adım PDF düzenleme', ar: 'تحرير PDF خطوة بخطوة',
-      fa: 'ویرایش PDF گام به گام', hi: 'चरण दर चरण PDF संपादित करें', ja: 'PDFを編集する手順', zh: '逐步编辑PDF',
+      fa: 'ویرایش PDF گام به گام', hi: 'चरण दर चरण PDF संपादित करें', ja: 'PDFを編集する手順', zh: '逐步编辑PDF', id: 'Cara mengedit PDF langkah demi langkah',
     }},
     { type: 'step', title: {
       pl: 'Dodaj plik PDF', en: 'Add the PDF', de: 'PDF hinzufügen', es: 'Añade el PDF', fr: 'Ajoutez le PDF', it: 'Aggiungi il PDF',
       pt: 'Adicione o PDF', sv: 'Lägg till PDF:en', no: 'Legg til PDF-en', is: 'Bættu við PDF-skránni', tr: 'PDF’yi ekleyin',
-      ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF जोड़ें', ja: 'PDFを追加する', zh: '添加PDF',
+      ar: 'أضف ملف PDF', fa: 'فایل PDF را اضافه کنید', hi: 'PDF जोड़ें', ja: 'PDFを追加する', zh: '添加PDF', id: 'Tambahkan PDF',
     }, text: {
       pl: 'Przeciągnij plik na pole narzędzia albo kliknij je i wybierz plik. Strony otworzą się w edytorze, a miniatury pozwolą przejść do dowolnej z nich.',
       en: 'Drag the file onto the tool or click it and choose the file. The pages open in the editor, and thumbnails let you jump to any of them.',
@@ -86,11 +89,12 @@ const article: GuideArticle = {
       hi: 'फ़ाइल को टूल पर खींचें या क्लिक करके चुनें। पेज एडिटर में खुलते हैं, और थंबनेल से किसी भी पेज पर जा सकते हैं।',
       ja: 'ファイルをツールにドラッグするか、クリックして選びます。ページがエディターで開き、サムネイルから任意のページへ移動できます。',
       zh: '将文件拖到工具上，或点击选择文件。页面会在编辑器中打开，可通过缩略图跳转到任意页面。',
+      id: 'Seret file ke alat ini, atau klik lalu pilih file. Halaman-halamannya terbuka di editor, dan gambar mini memudahkan Anda berpindah ke halaman mana pun.',
     }},
     { type: 'step', title: {
       pl: 'Wybierz narzędzie', en: 'Pick a tool', de: 'Werkzeug wählen', es: 'Elige una herramienta', fr: 'Choisissez un outil', it: 'Scegli uno strumento',
       pt: 'Escolha uma ferramenta', sv: 'Välj ett verktyg', no: 'Velg et verktøy', is: 'Veldu verkfæri', tr: 'Bir araç seçin',
-      ar: 'اختر أداة', fa: 'یک ابزار انتخاب کنید', hi: 'एक टूल चुनें', ja: 'ツールを選ぶ', zh: '选择工具',
+      ar: 'اختر أداة', fa: 'یک ابزار انتخاب کنید', hi: 'एक टूल चुनें', ja: 'ツールを選ぶ', zh: '选择工具', id: 'Pilih alat',
     }, text: {
       pl: 'Na pasku znajdziesz tekst, prostokąt, okrąg, linię, strzałkę, zakreślacz, rysowanie odręczne, obraz i podpis. Kliknij na stronie, aby dodać element, i przeciągnij go myszką, aby przesunąć.',
       en: 'The toolbar has text, rectangle, circle, line, arrow, highlighter, freehand drawing, image and signature. Click on the page to add an element and drag it to move it.',
@@ -108,12 +112,13 @@ const article: GuideArticle = {
       hi: 'टूलबार में टेक्स्ट, आयत, वृत्त, रेखा, तीर, हाइलाइटर, फ़्रीहैंड ड्रॉइंग, इमेज और हस्ताक्षर हैं। तत्व जोड़ने के लिए पेज पर क्लिक करें और खिसकाने के लिए खींचें।',
       ja: 'ツールバーには文字、四角形、円、線、矢印、マーカー、フリーハンド、画像、署名があります。ページをクリックして追加し、ドラッグで移動します。',
       zh: '工具栏有文字、矩形、圆形、直线、箭头、荧光笔、手绘、图片和签名。点击页面添加元素，拖动即可移动。',
+      id: 'Bilah alat berisi teks, persegi panjang, lingkaran, garis, panah, stabilo, gambar tangan bebas, gambar, dan tanda tangan. Klik pada halaman untuk menambahkan elemen, lalu seret untuk memindahkannya.',
     }},
     { type: 'step', title: {
       pl: 'Popraw istniejący tekst', en: 'Fix existing text', de: 'Vorhandenen Text korrigieren', es: 'Corrige el texto existente',
       fr: 'Corrigez le texte existant', it: 'Correggi il testo esistente', pt: 'Corrija o texto existente', sv: 'Rätta befintlig text',
       no: 'Rett eksisterende tekst', is: 'Lagaðu texta sem fyrir er', tr: 'Mevcut metni düzeltin', ar: 'صحّح النص الموجود',
-      fa: 'متن موجود را اصلاح کنید', hi: 'मौजूदा टेक्स्ट सुधारें', ja: '既存の文字を直す', zh: '修改现有文字',
+      fa: 'متن موجود را اصلاح کنید', hi: 'मौजूदा टेक्स्ट सुधारें', ja: '既存の文字を直す', zh: '修改现有文字', id: 'Perbaiki teks yang ada',
     }, text: {
       pl: 'Kliknij tekst na stronie, wpisz nową treść i wybierz czcionkę. Wszystkie czcionki edytora mają polskie litery.',
       en: 'Click text on the page, type the new wording and choose a font. All the editor’s fonts include letters with accents, such as Polish, Czech or German ones.',
@@ -131,11 +136,12 @@ const article: GuideArticle = {
       hi: 'पेज पर किसी टेक्स्ट पर क्लिक करें, नया टेक्स्ट लिखें और फ़ॉन्ट चुनें। एडिटर के फ़ॉन्ट में लैटिन के विशेष अक्षर शामिल हैं।',
       ja: 'ページ上の文字をクリックし、新しい文言を入力してフォントを選びます。エディターのフォントはアクセント付きのラテン文字に対応しています。',
       zh: '点击页面上的文字，输入新内容并选择字体。编辑器的字体支持带重音符号的拉丁字母。',
+      id: 'Klik teks di halaman, ketik kata-kata yang baru, lalu pilih fon. Semua fon di editor mendukung huruf beraksen, misalnya huruf Polandia, Ceko, atau Jerman.',
     }},
     { type: 'step', title: {
       pl: 'Zapisz i pobierz', en: 'Save and download', de: 'Speichern und herunterladen', es: 'Guarda y descarga', fr: 'Enregistrez et téléchargez',
       it: 'Salva e scarica', pt: 'Guarde e descarregue', sv: 'Spara och ladda ner', no: 'Lagre og last ned', is: 'Vistaðu og sæktu',
-      tr: 'Kaydedin ve indirin', ar: 'احفظ ونزّل', fa: 'ذخیره و دانلود کنید', hi: 'सहेजें और डाउनलोड करें', ja: '保存してダウンロードする', zh: '保存并下载',
+      tr: 'Kaydedin ve indirin', ar: 'احفظ ونزّل', fa: 'ذخیره و دانلود کنید', hi: 'सहेजें और डाउनलोड करें', ja: '保存してダウンロードする', zh: '保存并下载', id: 'Simpan dan unduh',
     }, text: {
       pl: 'Kliknij przycisk zapisu — pobierzesz nowy plik PDF, a oryginał zostanie bez zmian.',
       en: 'Click the save button — you download a new PDF and the original stays unchanged.',
@@ -153,11 +159,12 @@ const article: GuideArticle = {
       hi: 'सहेजें बटन पर क्लिक करें — नई PDF डाउनलोड होगी और मूल फ़ाइल नहीं बदलेगी।',
       ja: '保存ボタンをクリックすると新しいPDFがダウンロードされ、元のファイルはそのままです。',
       zh: '点击保存按钮——会下载一个新的PDF，原文件保持不变。',
+      id: 'Klik tombol simpan — Anda mengunduh PDF baru, dan file aslinya tetap tidak berubah.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Przydatne skróty', en: 'Handy shortcuts', de: 'Praktische Tastenkürzel', es: 'Atajos útiles', fr: 'Raccourcis utiles', it: 'Scorciatoie utili',
       pt: 'Atalhos úteis', sv: 'Användbara kortkommandon', no: 'Nyttige snarveier', is: 'Gagnlegar flýtileiðir', tr: 'Kullanışlı kısayollar',
-      ar: 'اختصارات مفيدة', fa: 'میان‌برهای کاربردی', hi: 'काम के शॉर्टकट', ja: '便利なショートカット', zh: '实用快捷键',
+      ar: 'اختصارات مفيدة', fa: 'میان‌برهای کاربردی', hi: 'काम के शॉर्टकट', ja: '便利なショートカット', zh: '实用快捷键', id: 'Pintasan praktis',
     }},
     { type: 'list', items: [
       {
@@ -168,7 +175,7 @@ const article: GuideArticle = {
         no: 'Ctrl+Z angrer siste endring; Ctrl+Skift+Z eller Ctrl+Y gjør den om igjen.', is: 'Ctrl+Z afturkallar síðustu breytingu; Ctrl+Shift+Z eða Ctrl+Y endurtekur hana.',
         tr: 'Ctrl+Z son değişikliği geri alır; Ctrl+Shift+Z veya Ctrl+Y yineler.', ar: 'يتراجع Ctrl+Z عن آخر تغيير، ويعيده Ctrl+Shift+Z أو Ctrl+Y.',
         fa: 'Ctrl+Z آخرین تغییر را برمی‌گرداند و Ctrl+Shift+Z یا Ctrl+Y آن را دوباره انجام می‌دهد.', hi: 'Ctrl+Z आख़िरी बदलाव वापस लेता है; Ctrl+Shift+Z या Ctrl+Y उसे दोबारा करता है।',
-        ja: 'Ctrl+Zで直前の変更を元に戻し、Ctrl+Shift+ZまたはCtrl+Yでやり直します。', zh: 'Ctrl+Z撤销上一步，Ctrl+Shift+Z或Ctrl+Y重做。',
+        ja: 'Ctrl+Zで直前の変更を元に戻し、Ctrl+Shift+ZまたはCtrl+Yでやり直します。', zh: 'Ctrl+Z撤销上一步，Ctrl+Shift+Z或Ctrl+Y重做。', id: 'Ctrl+Z membatalkan perubahan terakhir; Ctrl+Shift+Z atau Ctrl+Y mengulanginya.',
       },
       {
         pl: 'Delete usuwa zaznaczony element. Na Macu zamiast Ctrl użyj Cmd.', en: 'Delete removes the selected element. On a Mac, use Cmd instead of Ctrl.',
@@ -178,7 +185,7 @@ const article: GuideArticle = {
         no: 'Delete fjerner valgt element. På Mac bruker du Cmd i stedet for Ctrl.', is: 'Delete eyðir völdu atriði. Á Mac notarðu Cmd í stað Ctrl.',
         tr: 'Delete seçili öğeyi siler. Mac’te Ctrl yerine Cmd kullanın.', ar: 'يحذف Delete العنصر المحدد. على Mac استخدم Cmd بدل Ctrl.',
         fa: 'Delete عنصر انتخاب‌شده را حذف می‌کند. در Mac به‌جای Ctrl از Cmd استفاده کنید.', hi: 'Delete चुने हुए तत्व को हटाता है। Mac पर Ctrl की जगह Cmd इस्तेमाल करें।',
-        ja: 'Deleteで選択中の要素を削除します。MacではCtrlの代わりにCmdを使います。', zh: 'Delete删除所选元素。Mac上用Cmd代替Ctrl。',
+        ja: 'Deleteで選択中の要素を削除します。MacではCtrlの代わりにCmdを使います。', zh: 'Delete删除所选元素。Mac上用Cmd代替Ctrl。', id: 'Delete menghapus elemen yang dipilih. Di Mac, gunakan Cmd sebagai pengganti Ctrl.',
       },
     ]},
     { type: 'paragraph', text: {
@@ -198,6 +205,7 @@ const article: GuideArticle = {
       hi: 'ध्यान दें: मौजूदा टेक्स्ट सुधारने पर पुराना टेक्स्ट ढक जाता है और नया ऊपर लिखा जाता है। पुराना टेक्स्ट फ़ाइल में रहता है — उदाहरण के लिए उसे कॉपी किया जा सकता है। गोपनीय जानकारी हमेशा के लिए हटाने के लिए PDF रिडैक्ट करें टूल इस्तेमाल करें।',
       ja: '注意：既存の文字を直すと、古い文字を覆い隠して新しい文字を上に書きます。古い文字はファイル内に残り、コピーすることもできます。機密情報を完全に消すには「PDF墨消し」ツールを使ってください。',
       zh: '注意：修改现有文字时，旧文字会被遮盖，新文字写在上面。旧文字仍保留在文件中，例如仍可被复制。要彻底删除机密信息，请使用“涂黑PDF”工具。',
+      id: 'Catatan: memperbaiki teks yang ada akan menutupi teks lama dan menuliskan teks baru di atasnya. Teks lama masih ada di dalam file — misalnya masih bisa disalin. Untuk menghapus data rahasia secara permanen, gunakan alat Sensor PDF.',
     }},
     { type: 'cta', tool: 'redact' },
   ],
@@ -207,7 +215,7 @@ const article: GuideArticle = {
       pl: 'Czy mogę edytować zeskanowany PDF?', en: 'Can I edit a scanned PDF?', de: 'Kann ich eine gescannte PDF bearbeiten?', es: '¿Puedo editar un PDF escaneado?',
       fr: 'Puis-je modifier un PDF scanné ?', it: 'Posso modificare un PDF scansionato?', pt: 'Posso editar um PDF digitalizado?', sv: 'Kan jag redigera en skannad PDF?',
       no: 'Kan jeg redigere en skannet PDF?', is: 'Get ég breytt skannaðri PDF?', tr: 'Taranmış bir PDF’yi düzenleyebilir miyim?', ar: 'هل يمكنني تحرير PDF ممسوح ضوئيًا؟',
-      fa: 'آیا می‌توانم PDF اسکن‌شده را ویرایش کنم؟', hi: 'क्या मैं स्कैन की गई PDF संपादित कर सकता हूँ?', ja: 'スキャンしたPDFは編集できますか？', zh: '可以编辑扫描版PDF吗？',
+      fa: 'آیا می‌توانم PDF اسکن‌شده را ویرایش کنم؟', hi: 'क्या मैं स्कैन की गई PDF संपादित कर सकता हूँ?', ja: 'スキャンしたPDFは編集できますか？', zh: '可以编辑扫描版PDF吗？', id: 'Bisakah saya mengedit PDF hasil pindaian?',
     }, a: {
       pl: 'Możesz dodawać tekst, kształty, zaznaczenia i podpis. Tekstu ze skanu nie da się poprawiać jak zwykłego tekstu, bo jest częścią obrazu — możesz go zakryć prostokątem i dopisać nowy.',
       en: 'You can add text, shapes, highlights and a signature. Text in a scan cannot be edited like normal text because it is part of the image — you can cover it with a rectangle and write new text.',
@@ -225,13 +233,14 @@ const article: GuideArticle = {
       hi: 'आप टेक्स्ट, आकार, हाइलाइट और हस्ताक्षर जोड़ सकते हैं। स्कैन का टेक्स्ट इमेज का हिस्सा होता है, इसलिए उसे सामान्य टेक्स्ट की तरह नहीं बदला जा सकता — आप उसे आयत से ढककर नया टेक्स्ट लिख सकते हैं।',
       ja: '文字・図形・マーカー・署名は追加できます。スキャン内の文字は画像の一部なので通常の文字のようには直せませんが、四角形で隠して新しい文字を書くことはできます。',
       zh: '可以添加文字、形状、高亮和签名。扫描件中的文字是图片的一部分，不能像普通文字那样修改——可以用矩形遮盖后写上新文字。',
+      id: 'Anda dapat menambahkan teks, bentuk, sorotan, dan tanda tangan. Teks dalam hasil pindaian tidak dapat diedit seperti teks biasa karena merupakan bagian dari gambar — Anda dapat menutupinya dengan persegi panjang lalu menulis teks baru.',
     }},
     { q: {
       pl: 'Czy edycja jest darmowa i bez znaku wodnego?', en: 'Is editing free and without a watermark?', de: 'Ist das Bearbeiten kostenlos und ohne Wasserzeichen?',
       es: '¿La edición es gratuita y sin marca de agua?', fr: 'La modification est-elle gratuite et sans filigrane ?', it: 'La modifica è gratuita e senza filigrana?',
       pt: 'A edição é gratuita e sem marca de água?', sv: 'Är redigeringen gratis och utan vattenstämpel?', no: 'Er redigeringen gratis og uten vannmerke?',
       is: 'Er breytingin ókeypis og án vatnsmerkis?', tr: 'Düzenleme ücretsiz ve filigransız mı?', ar: 'هل التحرير مجاني ودون علامة مائية؟',
-      fa: 'آیا ویرایش رایگان و بدون واترمارک است؟', hi: 'क्या संपादन मुफ़्त और बिना वॉटरमार्क के है?', ja: '編集は無料で透かしなしですか？', zh: '编辑免费且没有水印吗？',
+      fa: 'آیا ویرایش رایگان و بدون واترمارک است؟', hi: 'क्या संपादन मुफ़्त और बिना वॉटरमार्क के है?', ja: '編集は無料で透かしなしですか？', zh: '编辑免费且没有水印吗？', id: 'Apakah mengedit gratis dan tanpa tanda air?',
     }, a: {
       pl: 'Tak. Bez rejestracji, bez limitu stron i bez znaku wodnego.', en: 'Yes. No sign-up, no page limit and no watermark.',
       de: 'Ja. Ohne Anmeldung, ohne Seitenlimit und ohne Wasserzeichen.', es: 'Sí. Sin registro, sin límite de páginas y sin marca de agua.',
@@ -240,14 +249,14 @@ const article: GuideArticle = {
       no: 'Ja. Uten registrering, uten sidegrense og uten vannmerke.', is: 'Já. Án skráningar, án síðutakmarka og án vatnsmerkis.',
       tr: 'Evet. Kayıt yok, sayfa sınırı yok, filigran yok.', ar: 'نعم. دون تسجيل ودون حد للصفحات ودون علامة مائية.',
       fa: 'بله. بدون ثبت‌نام، بدون محدودیت صفحه و بدون واترمارک.', hi: 'हाँ। बिना पंजीकरण, बिना पेज सीमा और बिना वॉटरमार्क।',
-      ja: 'はい。登録不要、ページ数の制限なし、透かしもありません。', zh: '是的。无需注册，不限页数，没有水印。',
+      ja: 'はい。登録不要、ページ数の制限なし、透かしもありません。', zh: '是的。无需注册，不限页数，没有水印。', id: 'Ya. Tanpa daftar, tanpa batasan jumlah halaman, dan tanpa tanda air.',
     }},
     { q: {
       pl: 'Czy plik jest wysyłany na serwer?', en: 'Is the file uploaded to a server?', de: 'Wird die Datei auf einen Server hochgeladen?',
       es: '¿Se sube el archivo a un servidor?', fr: 'Le fichier est-il envoyé sur un serveur ?', it: 'Il file viene caricato su un server?',
       pt: 'O ficheiro é enviado para um servidor?', sv: 'Laddas filen upp till en server?', no: 'Blir filen lastet opp til en server?',
       is: 'Er skráin send á þjón?', tr: 'Dosya bir sunucuya yükleniyor mu?', ar: 'هل يُرفع الملف إلى خادم؟',
-      fa: 'آیا فایل روی سرور بارگذاری می‌شود؟', hi: 'क्या फ़ाइल सर्वर पर अपलोड होती है?', ja: 'ファイルはサーバーにアップロードされますか？', zh: '文件会上传到服务器吗？',
+      fa: 'آیا فایل روی سرور بارگذاری می‌شود؟', hi: 'क्या फ़ाइल सर्वर पर अपलोड होती है?', ja: 'ファイルはサーバーにアップロードされますか？', zh: '文件会上传到服务器吗？', id: 'Apakah file diunggah ke server?',
     }, a: {
       pl: 'Nie. Edycja odbywa się w Twojej przeglądarce, a dokument nie trafia na nasz serwer.',
       en: 'No. Editing happens in your browser and the document never reaches our server.',
@@ -265,6 +274,7 @@ const article: GuideArticle = {
       hi: 'नहीं। संपादन आपके ब्राउज़र में होता है और दस्तावेज़ हमारे सर्वर तक नहीं पहुँचता।',
       ja: 'いいえ。編集はブラウザ内で行われ、文書が当社のサーバーに送られることはありません。',
       zh: '不会。编辑在您的浏览器中进行，文档不会到达我们的服务器。',
+      id: 'Tidak. Pengeditan berlangsung di browser Anda, dan dokumen tidak pernah sampai ke server kami.',
     }},
   ],
   canonicalOverride: undefined,

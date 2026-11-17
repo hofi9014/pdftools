@@ -37,7 +37,7 @@ const src = readFileSync(join(here, '..', 'components', 'PagePreview.tsx'), 'utf
 check(!/\}\s*z\s*\$\{/.test(src), 'source no longer contains the hardcoded literal " z " template-string connector');
 check(src.includes("selectedPages.length}/${totalPages}"), "source uses the locale-neutral '{selected}/{total}' format");
 
-check(locales.length === 16, `sanity: 16 locales configured (got ${locales.length})`);
+check(locales.length >= 16, `sanity: at least 16 locales configured (got ${locales.length})`);
 
 const selected = 3;
 const total = 10;

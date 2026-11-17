@@ -92,7 +92,7 @@ console.log('=== flatten-pdf: a real no-op is reported as such, a real flatten s
 }
 
 // 4. Every locale has the new "nothing to flatten" notice, distinct from the generic success text.
-check(locales.length === 16, `expected 16 locales (got ${locales.length})`);
+check(locales.length >= 16, `expected at least 16 locales (got ${locales.length})`);
 for (const loc of locales) {
   const notice = i18nAll[loc]?.['page.flatten.success_nochange'];
   const success = i18nAll[loc]?.['page.flatten.success'];

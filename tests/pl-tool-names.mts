@@ -8,6 +8,7 @@
 // Also: the html-to-pdf page warned that the result is "plain text only — tables, bold, images
 // are not preserved", which stopped being true when the tagged renderer replaced the old one.
 import { readFileSync } from 'node:fs';
+import { locales } from '../lib/i18n';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { t } from '../lib/i18n';
@@ -50,7 +51,7 @@ for (const loc of ['pl', 'en', 'de'] as const) {
   const w = t('page.html.warning', loc);
   check(!/tylko tekst|plain text only|nur .*Text/i.test(w), `[${loc}] the notice no longer claims "text only" (${w.slice(0, 60)}…)`);
 }
-check((src.match(/'page\.html\.warning': '[^']*data:[^']*'/g) ?? []).length === 16, 'the notice names data: images (the only kind kept) in all 16 locales');
+check((src.match(/'page\.html\.warning': '[^']*data:[^']*'/g) ?? []).length === locales.length, 'the notice names data: images (the only kind kept) in every locale');
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);

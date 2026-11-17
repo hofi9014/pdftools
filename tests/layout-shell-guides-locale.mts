@@ -13,6 +13,7 @@
 // same localeFromSegment() the article page itself already uses.
 
 import { extractLocaleFromPath } from '../components/LayoutShell';
+import { locales } from '../lib/i18n';
 import { localeGuidesSlug, isGuidesSegment } from '../lib/guides-slugs';
 
 let fails = 0;
@@ -46,7 +47,7 @@ check(extractLocaleFromPath('/guides/totally-unknown-slug/x/y') === 'en', 'an un
 // guides pages decide with isGuidesSegment (the header still falls back to en, above).
 console.log('\n=== which segments are guides pages ===');
 const known = Object.values(localeGuidesSlug);
-check(known.length === 16 && known.every((s) => isGuidesSegment(s)), 'all 16 guides segments are recognized');
+check(known.length === locales.length && known.every((s) => isGuidesSegment(s)), `all ${locales.length} guides segments are recognized`);
 check(known.every((s) => isGuidesSegment(encodeURIComponent(s))), 'also percent-encoded, as the page receives the non-Latin ones');
 check(!['undefined', 'xyz', 'guides-x', '', 'en', 'pl'].some((s) => isGuidesSegment(s)), 'undefined, xyz, a language code or an empty segment are not');
 

@@ -31,6 +31,7 @@ export const ocr: ToolUseCases = {
       hi: 'स्कैन किए गए दस्तावेज़ को खोजने योग्य बनाएँ, ताकि Ctrl+F से उसमें शब्द ढूँढ सकें।',
       ja: 'スキャンした文書を検索できるようにし、Ctrl+Fで語句を探せるようにします。',
       zh: '让扫描文档可以搜索，用Ctrl+F查找其中的文字。',
+      id: 'Jadikan dokumen hasil pindaian dapat dicari, sehingga Anda dapat menemukan kata di dalamnya dengan Ctrl+F.',
     },
     {
       en: 'Copy text from a scan or from a photo of a page saved as PDF.',
@@ -49,6 +50,7 @@ export const ocr: ToolUseCases = {
       hi: 'किसी स्कैन या PDF के रूप में सहेजी गई पेज की फ़ोटो से टेक्स्ट कॉपी करें।',
       ja: 'スキャンや、PDFとして保存したページの写真から文字をコピーできます。',
       zh: '从扫描件或存成PDF的页面照片中复制文字。',
+      id: 'Salin teks dari hasil pindaian atau dari foto halaman yang disimpan sebagai PDF.',
     },
     {
       en: 'Get the text of a scan as a TXT or Word (DOCX) file.',
@@ -67,6 +69,7 @@ export const ocr: ToolUseCases = {
       hi: 'स्कैन का टेक्स्ट TXT या Word (DOCX) फ़ाइल के रूप में पाएँ।',
       ja: 'スキャンの文字をTXTファイルやWord（DOCX）ファイルとして保存できます。',
       zh: '把扫描件的文字保存为TXT或Word（DOCX）文件。',
+      id: 'Dapatkan teks dari hasil pindaian sebagai file TXT atau Word (DOCX).',
     },
   ],
   notes: [
@@ -87,6 +90,7 @@ export const ocr: ToolUseCases = {
       hi: 'पहचान के लिए {ocr_languages} भाषाएँ; सबसे अच्छे नतीजे के लिए दस्तावेज़ की भाषा चुनें।',
       ja: '認識できる言語は{ocr_languages}種類。最良の結果を得るには文書の言語を選んでください。',
       zh: '支持{ocr_languages}种识别语言；选择文档所用的语言可获得最佳效果。',
+      id: '{ocr_languages} bahasa pengenalan; pilih bahasa dokumen untuk hasil terbaik.',
     },
     {
       en: 'The searchable PDF keeps the original page image and adds an invisible text layer on top of it.',
@@ -105,6 +109,7 @@ export const ocr: ToolUseCases = {
       hi: 'खोजने योग्य PDF मूल पेज की इमेज बनाए रखती है और उसके ऊपर एक अदृश्य टेक्स्ट परत जोड़ती है।',
       ja: '検索可能なPDFは元のページ画像をそのまま残し、その上に見えないテキスト層を追加します。',
       zh: '可搜索的PDF保留原始页面图像，并在其上叠加一层不可见的文字。',
+      id: 'PDF yang dapat dicari mempertahankan gambar halaman asli dan menambahkan lapisan teks tak terlihat di atasnya.',
     },
     {
       en: 'The first time you choose a language, its recognition data is downloaded from this site; the recognition itself runs in your browser. Very small or blurred print may be recognized with errors.',
@@ -123,6 +128,7 @@ export const ocr: ToolUseCases = {
       hi: 'किसी भाषा को पहली बार चुनने पर उसका पहचान डेटा इसी साइट से डाउनलोड होता है; पहचान का काम आपके ब्राउज़र में होता है। बहुत छोटे या धुंधले अक्षरों में गलतियाँ हो सकती हैं।',
       ja: '言語を初めて選ぶと、その認識データがこのサイトからダウンロードされます。認識そのものはブラウザー内で行われます。非常に小さい文字やぼやけた文字は誤って認識されることがあります。',
       zh: '首次选择某种语言时，会从本网站下载该语言的识别数据；识别本身在你的浏览器中进行。字号很小或模糊的文字可能会识别出错。',
+      id: 'Saat pertama kali Anda memilih suatu bahasa, data pengenalannya diunduh dari situs ini; proses pengenalannya sendiri berjalan di browser Anda. Huruf yang sangat kecil atau buram bisa dikenali dengan kesalahan.',
     },
   ],
 };
@@ -146,6 +152,7 @@ export const flatten: ToolUseCases = {
       hi: 'भरे हुए फ़ॉर्म फ़ील्ड को पेज का हिस्सा बना दें, ताकि PDF रीडर में जवाब बदले न जा सकें।',
       ja: '入力済みのフォーム欄をページに固定し、PDFリーダーで回答を変更できないようにします。',
       zh: '把已填写的表单字段固定到页面上，使答案无法再在PDF阅读器中修改。',
+      id: 'Jadikan kolom formulir yang sudah diisi sebagai bagian dari halaman, sehingga jawabannya tidak dapat diubah lagi di pembaca PDF.',
     },
     {
       en: 'Remove comments, highlights and other annotations before sending the final version.',
@@ -164,6 +171,7 @@ export const flatten: ToolUseCases = {
       hi: 'अंतिम संस्करण भेजने से पहले टिप्पणियाँ, हाइलाइट और दूसरे एनोटेशन हटाएँ।',
       ja: '最終版を送る前に、コメント・ハイライトなどの注釈を取り除けます。',
       zh: '发送最终版本前，删除批注、高亮和其他注释。',
+      id: 'Hapus komentar, sorotan, dan anotasi lainnya sebelum mengirim versi final.',
     },
     {
       en: 'Prepare a filled-in form for printing or archiving.',
@@ -182,6 +190,7 @@ export const flatten: ToolUseCases = {
       hi: 'भरे हुए फ़ॉर्म को प्रिंट या संग्रह के लिए तैयार करें।',
       ja: '入力済みのフォームを印刷や保管用に整えられます。',
       zh: '把填好的表单整理好，用于打印或存档。',
+      id: 'Siapkan formulir yang sudah diisi untuk dicetak atau diarsipkan.',
     },
   ],
   notes: [
@@ -202,6 +211,7 @@ export const flatten: ToolUseCases = {
       hi: 'दस्तावेज़ के लिंक भी हट जाते हैं, क्योंकि वे भी एनोटेशन हैं। टेक्स्ट टेक्स्ट ही रहता है — पेज इमेज में नहीं बदलता।',
       ja: 'リンクも注釈の一種なので、文書内のリンクも削除されます。テキストはテキストのままで、ページが画像になることはありません。',
       zh: '文档中的链接也会被删除，因为链接也是注释。文字仍是文字，页面不会变成图片。',
+      id: 'Tautan dalam dokumen juga dihapus karena tautan merupakan anotasi. Teks tetap berupa teks — halaman tidak diubah menjadi gambar.',
     },
     {
       en: 'If the file has no form fields or annotations, you get an identical file and a message that there was nothing to flatten.',
@@ -220,6 +230,7 @@ export const flatten: ToolUseCases = {
       hi: 'अगर फ़ाइल में न फ़ॉर्म फ़ील्ड हैं न एनोटेशन, तो आपको वही फ़ाइल और यह संदेश मिलता है कि फ़्लैट करने को कुछ नहीं था।',
       ja: 'フォーム欄も注釈もないファイルの場合は、同じ内容のファイルと「平坦化するものがなかった」というメッセージが表示されます。',
       zh: '如果文件既没有表单字段也没有注释，你会得到一个相同的文件，并提示没有可扁平化的内容。',
+      id: 'Jika file tidak memiliki kolom formulir atau anotasi, Anda mendapatkan file yang sama persis dan pesan bahwa tidak ada yang perlu diratakan.',
     },
   ],
 };
@@ -243,6 +254,7 @@ export const openoffice: ToolUseCases = {
       hi: 'Writer दस्तावेज़ (.odt) को ऐसी PDF के रूप में साझा करें जो हर डिवाइस पर एक जैसी खुले।',
       ja: 'Writer文書（.odt）を、どの端末でも同じように開けるPDFとして共有できます。',
       zh: '把Writer文档（.odt）转成在任何设备上打开都一样的PDF来分享。',
+      id: 'Bagikan dokumen Writer (.odt) sebagai PDF yang terbuka dengan tampilan yang sama di setiap perangkat.',
     },
     {
       en: 'Send a document to someone who does not have OpenOffice or LibreOffice.',
@@ -261,6 +273,7 @@ export const openoffice: ToolUseCases = {
       hi: 'ऐसे व्यक्ति को दस्तावेज़ भेजें जिसके पास OpenOffice या LibreOffice नहीं है।',
       ja: 'OpenOfficeやLibreOfficeを持っていない相手に文書を送れます。',
       zh: '把文档发给没有安装OpenOffice或LibreOffice的人。',
+      id: 'Kirim dokumen kepada seseorang yang tidak memiliki OpenOffice atau LibreOffice.',
     },
     {
       en: 'Turn a document saved earlier with {t:tool.pdf2openoffice} back into a PDF after editing it.',
@@ -279,6 +292,7 @@ export const openoffice: ToolUseCases = {
       hi: 'पहले {t:tool.pdf2openoffice} से सहेजे गए दस्तावेज़ को संपादन के बाद फिर से PDF में बदलें।',
       ja: '以前「{t:tool.pdf2openoffice}」で保存した文書を、編集後にもう一度PDFへ戻せます。',
       zh: '把之前用“{t:tool.pdf2openoffice}”保存的文档编辑后再转回PDF。',
+      id: 'Ubah kembali menjadi PDF dokumen yang sebelumnya disimpan dengan {t:tool.pdf2openoffice}, setelah Anda mengeditnya.',
     },
   ],
   notes: [
@@ -299,6 +313,7 @@ export const openoffice: ToolUseCases = {
       hi: 'यह टूल Writer के टेक्स्ट दस्तावेज़ (.odt) लेता है। पेज ब्रेक, तालिकाएँ, इमेज और रंगीन बैकग्राउंड साथ आते हैं।',
       ja: 'このツールはWriterの文書（.odt）に対応しています。改ページ・表・画像・色付きの背景も引き継がれます。',
       zh: '本工具接受Writer文本文档（.odt）。分页、表格、图片和彩色背景都会保留。',
+      id: 'Alat ini menerima dokumen teks Writer (.odt). Pemisah halaman, tabel, gambar, dan latar belakang berwarna ikut dipindahkan.',
     },
     {
       en: 'Text is set in one sans-serif font, so the letters can look different from the fonts used in the document.',
@@ -317,6 +332,7 @@ export const openoffice: ToolUseCases = {
       hi: 'टेक्स्ट एक ही सैन्स-सेरिफ़ फ़ॉन्ट में लिखा जाता है, इसलिए अक्षर दस्तावेज़ के फ़ॉन्ट से अलग दिख सकते हैं।',
       ja: 'テキストは1種類のゴシック体（サンセリフ）で組まれるため、文書で使われたフォントとは見た目が異なる場合があります。',
       zh: '文字统一使用一种无衬线字体排版，因此字形可能与文档原有字体不同。',
+      id: 'Teks disusun dengan satu fon sans-serif, sehingga hurufnya bisa tampak berbeda dari fon yang dipakai dalam dokumen.',
     },
   ],
 };
@@ -340,6 +356,7 @@ export const pdf2openoffice: ToolUseCases = {
       hi: 'जब आपके पास PDF एडिटर न हो, तो PDF को OpenOffice या LibreOffice Writer में संपादित करें।',
       ja: 'PDF編集ソフトがなくても、OpenOfficeやLibreOffice WriterでPDFを編集できます。',
       zh: '没有PDF编辑器时，可以在OpenOffice或LibreOffice Writer中编辑PDF。',
+      id: 'Edit PDF di OpenOffice atau LibreOffice Writer jika Anda tidak memiliki editor PDF.',
     },
     {
       en: 'Reuse text and tables from a PDF in your own document.',
@@ -358,6 +375,7 @@ export const pdf2openoffice: ToolUseCases = {
       hi: 'PDF के टेक्स्ट और तालिकाओं को अपने दस्तावेज़ में दोबारा इस्तेमाल करें।',
       ja: 'PDFの文章や表を、自分の文書で再利用できます。',
       zh: '在自己的文档中重复使用PDF里的文字和表格。',
+      id: 'Gunakan kembali teks dan tabel dari PDF di dokumen Anda sendiri.',
     },
     {
       en: 'Correct a document when only its PDF version is left.',
@@ -376,6 +394,7 @@ export const pdf2openoffice: ToolUseCases = {
       hi: 'ऐसे दस्तावेज़ को सुधारें जिसका अब केवल PDF संस्करण बचा है।',
       ja: 'PDF版しか残っていない文書を修正できます。',
       zh: '在只剩PDF版本时修改文档。',
+      id: 'Perbaiki dokumen yang hanya tersisa dalam versi PDF.',
     },
   ],
   notes: [
@@ -396,6 +415,7 @@ export const pdf2openoffice: ToolUseCases = {
       hi: '“{t:layout.fixed}” हर पेज का रूप बनाए रखता है: टेक्स्ट पेज के बैकग्राउंड के ऊपर ऐसे फ़्रेम में होता है जिन्हें हिलाया और संपादित किया जा सकता है, और फ़ोटो अलग इमेज होती हैं। “{t:layout.flow}” लगातार पैराग्राफ़, सूचियाँ और तालिकाएँ देता है जिन्हें आप खुलकर बदल सकते हैं। “{t:layout.auto}” आपके लिए चुनता है।',
       ja: '「{t:layout.fixed}」は各ページの見た目を保ちます。テキストはページの背景の上に、移動・編集できる枠として配置され、写真は個別の画像になります。「{t:layout.flow}」は自由に書き換えられる連続した段落・リスト・表になります。「{t:layout.auto}」はどちらかを自動で選びます。',
       zh: '“{t:layout.fixed}”保留每一页的外观：文字位于页面背景之上可移动、可编辑的文本框中，照片是单独的图片。“{t:layout.flow}”生成可自由改写的连续段落、列表和表格。“{t:layout.auto}”会替你选择。',
+      id: '“{t:layout.fixed}” mempertahankan tampilan setiap halaman: teks berada dalam bingkai yang dapat dipindahkan dan diedit, di atas latar halaman, dan foto menjadi gambar terpisah. “{t:layout.flow}” menghasilkan paragraf, daftar, dan tabel yang bersambung dan bebas ditulis ulang. “{t:layout.auto}” memilihkannya untuk Anda.',
     },
     {
       en: 'Fonts that are not installed on your computer are replaced by similar ones. A scanned PDF contains only pictures of pages, so the result has no editable text.',
@@ -414,6 +434,7 @@ export const pdf2openoffice: ToolUseCases = {
       hi: 'जो फ़ॉन्ट आपके कंप्यूटर में इंस्टॉल नहीं हैं, उनकी जगह मिलते-जुलते फ़ॉन्ट आते हैं। स्कैन की गई PDF में केवल पेजों की इमेज होती हैं, इसलिए नतीजे में संपादन योग्य टेक्स्ट नहीं होगा।',
       ja: 'パソコンにインストールされていないフォントは似たフォントに置き換えられます。スキャンしたPDFにはページの画像しかないため、結果に編集できるテキストは含まれません。',
       zh: '电脑上未安装的字体会被相近的字体替代。扫描的PDF只包含页面图像，因此结果中不会有可编辑的文字。',
+      id: 'Fon yang tidak terpasang di komputer Anda diganti dengan fon yang mirip. PDF hasil pindaian hanya berisi gambar halaman, sehingga hasilnya tidak memiliki teks yang dapat diedit.',
     },
   ],
 };
@@ -437,6 +458,7 @@ export const svg: ToolUseCases = {
       hi: 'किसी PDF पेज को वेबसाइट या ऐसे प्रोग्राम में लगाएँ जो SVG फ़ाइलें स्वीकार करता है।',
       ja: 'PDFのページを、SVGファイルに対応したウェブサイトやソフトに配置できます。',
       zh: '把PDF页面放到网站或支持SVG文件的程序中。',
+      id: 'Tempatkan halaman PDF di situs web atau di program yang menerima file SVG.',
     },
     {
       en: 'Get every page of a document as a separate SVG file.',
@@ -455,6 +477,7 @@ export const svg: ToolUseCases = {
       hi: 'दस्तावेज़ के हर पेज को अलग SVG फ़ाइल के रूप में पाएँ।',
       ja: '文書の各ページを、それぞれ別のSVGファイルとして取り出せます。',
       zh: '把文档的每一页分别保存为单独的SVG文件。',
+      id: 'Dapatkan setiap halaman dokumen sebagai file SVG tersendiri.',
     },
   ],
   notes: [
@@ -475,6 +498,7 @@ export const svg: ToolUseCases = {
       hi: 'हर SVG में पेज की एक इमेज होती है (पेज के दोगुने आकार में रेंडर की गई), वेक्टर आकृतियाँ नहीं: टेक्स्ट और रेखाओं को पाथ की तरह संपादित नहीं किया जा सकता, और बहुत ज़ूम करने पर पिक्सेल दिखते हैं।',
       ja: '各SVGにはベクター図形ではなく、ページの画像（ページの2倍の大きさで描画）が入っています。文字や線をパスとして編集することはできず、大きく拡大するとピクセルが見えます。',
       zh: '每个SVG包含的是页面图像（按页面两倍大小渲染），而不是矢量图形：文字和线条无法作为路径编辑，放大很多时会看到像素。',
+      id: 'Setiap file SVG berisi gambar halaman (digambar dengan ukuran dua kali lipat halaman), bukan bentuk vektor: teks dan garis tidak dapat diedit sebagai jalur, dan jika diperbesar jauh, pikselnya akan terlihat.',
     },
     {
       en: 'All pages are downloaded together in one ZIP file.',
@@ -493,6 +517,7 @@ export const svg: ToolUseCases = {
       hi: 'सभी पेज एक ही ZIP फ़ाइल में एक साथ डाउनलोड होते हैं।',
       ja: 'すべてのページは1つのZIPファイルにまとめてダウンロードされます。',
       zh: '所有页面会打包成一个ZIP文件一起下载。',
+      id: 'Semua halaman diunduh bersama dalam satu file ZIP.',
     },
   ],
 };
@@ -516,6 +541,7 @@ export const epub: ToolUseCases = {
       hi: 'टेक्स्ट वाली PDF को ई-रीडर पर पढ़ें, जहाँ टेक्स्ट स्क्रीन के आकार के अनुसार ढल जाता है।',
       ja: '文字主体のPDFを、画面サイズに合わせて文字が流れる電子書籍リーダーで読めます。',
       zh: '在电子阅读器上阅读文字型PDF，文字会随屏幕大小自动排版。',
+      id: 'Baca PDF berisi teks di pembaca e-book, tempat teks menyesuaikan dengan ukuran layar.',
     },
     {
       en: 'Make a report or a book in PDF easier to read on a phone.',
@@ -534,6 +560,7 @@ export const epub: ToolUseCases = {
       hi: 'PDF में रिपोर्ट या किताब को फ़ोन पर पढ़ना आसान बनाएँ।',
       ja: 'PDFのレポートや本を、スマートフォンで読みやすくできます。',
       zh: '让PDF格式的报告或书籍在手机上更易阅读。',
+      id: 'Buat laporan atau buku dalam PDF lebih mudah dibaca di ponsel.',
     },
   ],
   notes: [
@@ -554,6 +581,7 @@ export const epub: ToolUseCases = {
       hi: 'टेक्स्ट, शीर्षक, बोल्ड और इटैलिक साथ आते हैं; इमेज नहीं। PDF का हर पेज ई-बुक का अलग खंड बनता है।',
       ja: '本文・見出し・太字・斜体は引き継がれますが、画像は含まれません。PDFの各ページが電子書籍の個別のセクションになります。',
       zh: '文字、标题、粗体和斜体会保留，图片不会。PDF的每一页会成为电子书中单独的一节。',
+      id: 'Teks, judul, huruf tebal, dan huruf miring ikut dipindahkan; gambar tidak. Setiap halaman PDF menjadi bagian tersendiri dalam e-book.',
     },
     {
       en: 'It works best with text documents; a scanned PDF has no text to convert.',
@@ -572,6 +600,7 @@ export const epub: ToolUseCases = {
       hi: 'यह टेक्स्ट दस्तावेज़ों के साथ सबसे अच्छा काम करता है; स्कैन की गई PDF में बदलने लायक टेक्स्ट नहीं होता।',
       ja: '文字主体の文書で最もよく機能します。スキャンしたPDFには変換できるテキストがありません。',
       zh: '最适合文字型文档；扫描的PDF没有可转换的文字。',
+      id: 'Alat ini paling cocok untuk dokumen teks; PDF hasil pindaian tidak berisi teks yang dapat dikonversi.',
     },
   ],
 };

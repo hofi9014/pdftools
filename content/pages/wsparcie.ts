@@ -754,4 +754,51 @@ export const content = {
       },
     ],
   },
+  id: {
+    title: 'Dukung Proyek Ini',
+    subtitle: 'Cara Anda dapat membantu OptimaPDF berkembang.',
+    donateSection: {
+      h: 'Belikan kami kopi',
+      p: 'OptimaPDF gratis dan akan tetap gratis. Jika alat-alat kami bermanfaat bagi Anda, Anda dapat mendukung pengembangan situs ini dengan donasi sukarela. Berapa pun jumlahnya, sekecil apa pun, membantu menutup biaya server, API, dan domain. Tidak ada kewajiban apa pun — ini murni dukungan sukarela.',
+      button: 'Belikan kami kopi',
+      note: 'Pembayaran diproses dengan aman oleh Stripe. Tidak perlu akun.',
+    },
+    sections: [
+      {
+        h: 'Kontak email',
+        p: 'Kirim email kepada kami di:',
+        link: 'mailto:kontakt@optimapdf.com',
+        linkText: 'kontakt@optimapdf.com',
+      },
+      {
+        h: 'Pertanyaan yang sering diajukan',
+        p: 'Sebelum menghubungi kami, periksa halaman FAQ — di sana Anda akan menemukan jawaban atas pertanyaan umum tentang alat, privasi, dan cara kerja situs ini.',
+        link: '/faq',
+        linkText: 'Buka FAQ →',
+      },
+      {
+        h: 'Laporan galat',
+        p: 'Jika Anda menemukan galat di salah satu alat, jelaskan sedetail mungkin:',
+        items: [
+          'Alat dan operasi apa yang menyebabkan galat?',
+          'Browser dan sistem operasi apa yang Anda gunakan?',
+          'Apakah galat terjadi pada file tertentu? (jika ya, berapa ukuran dan jumlah halamannya)',
+          'Apakah ada galat berwarna merah di konsol browser (F12 → Console)?',
+        ],
+      },
+      {
+        h: 'Usulan fitur',
+        p: 'Punya ide untuk alat baru atau penyempurnaan alat yang sudah ada? Kami senang mendengarnya! Jelaskan usulan Anda secara singkat dan mengapa menurut Anda usulan itu bermanfaat.',
+      },
+      {
+        h: 'Tautan',
+        items: [
+          'Kebijakan Privasi — /privacy',
+          'Ketentuan Layanan — /terms',
+          'FAQ — /faq',
+          'Beranda — /',
+        ],
+      },
+    ],
+  },
 };

@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'PDF से पेज कैसे हटाएँ',
     ja: 'PDFからページを削除する方法',
     zh: '如何从PDF中删除页面',
+    id: 'Cara Menghapus Halaman dari PDF',
   },
   excerpt: {
     pl: 'Zaznacz na miniaturach strony, których nie chcesz, i pobierz PDF bez nich. Usunięta treść znika z pliku, a nie tylko z widoku — w przeglądarce.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'थंबनेल पर वे पेज चुनें जो आपको नहीं चाहिए और उनके बिना PDF डाउनलोड करें। हटाई गई सामग्री सिर्फ़ दृश्य से नहीं, फ़ाइल से निकलती है।',
     ja: '不要なページをサムネイルで選び、そのページを除いたPDFをダウンロード。削除した内容は表示だけでなくファイルからも消えます。ブラウザ内で完結。',
     zh: '在缩略图上标记不需要的页面，下载去掉这些页面的PDF。删除的内容会从文件中移除，而不只是从视图中隐藏，全部在浏览器中完成。',
+    id: 'Tandai halaman yang tidak diperlukan pada gambar mini, lalu unduh PDF tanpa halaman itu. Isi yang dihapus benar-benar keluar dari file — langsung di browser Anda.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,18 +59,19 @@ const article: GuideArticle = {
       hi: 'स्कैनर से आया खाली पेज, पुराना अनुलग्नक, या ऐसी जानकारी वाला पेज जिसे प्राप्तकर्ता को नहीं देखना चाहिए — कभी-कभी दस्तावेज़ कुछ पेजों के बिना भेजना पड़ता है। पृष्ठ हटाएं टूल यह आपके ब्राउज़र में करता है: फ़ाइल हमारे सर्वर तक नहीं पहुँचती और आपकी डिस्क पर मूल फ़ाइल वैसी ही रहती है।',
       ja: 'スキャナーが出した白紙のページ、古くなった添付資料、相手に見せるべきでない情報のあるページ。数ページを除いて文書を送りたいことがあります。「ページ削除」ツールはこれをブラウザ内で行います。ファイルが当社のサーバーに送られることはなく、ディスク上の元のファイルもそのままです。',
       zh: '扫描仪产生的空白页、过时的附件、含有收件人不应看到的信息的页面——有时需要在发送文档前去掉几页。删除页面工具会在您的浏览器中完成这项工作：文件不会到达我们的服务器，您磁盘上的原文件也保持不变。',
+      id: 'Halaman kosong dari pemindai, lampiran yang sudah usang, halaman berisi data yang tidak boleh dilihat penerima — terkadang dokumen harus dikirim tanpa beberapa halaman. Alat Hapus Halaman melakukannya di browser Anda: file tidak pernah sampai ke server kami, dan file asli di disk Anda tetap utuh.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Usuwanie stron krok po kroku', en: 'Deleting pages step by step', de: 'Seiten Schritt für Schritt löschen',
       es: 'Eliminar páginas paso a paso', fr: 'Supprimer des pages étape par étape', it: 'Eliminare pagine passo dopo passo',
       pt: 'Eliminar páginas passo a passo', sv: 'Ta bort sidor steg för steg', no: 'Slett sider trinn for trinn',
       is: 'Að eyða síðum skref fyrir skref', tr: 'Adım adım sayfa silme', ar: 'حذف الصفحات خطوة بخطوة',
-      fa: 'حذف صفحات گام به گام', hi: 'चरण दर चरण पेज हटाना', ja: 'ページを削除する手順', zh: '逐步删除页面',
+      fa: 'حذف صفحات گام به گام', hi: 'चरण दर चरण पेज हटाना', ja: 'ページを削除する手順', zh: '逐步删除页面', id: 'Menghapus halaman langkah demi langkah',
     }},
     { type: 'step', title: {
       pl: 'Dodaj plik PDF', en: 'Add the PDF', de: 'PDF hinzufügen', es: 'Añade el PDF', fr: 'Ajoutez le PDF', it: 'Aggiungi il PDF',
       pt: 'Adicione o PDF', sv: 'Lägg till PDF:en', no: 'Legg til PDF-en', is: 'Bættu PDF-skránni við', tr: 'PDF’yi ekleyin', ar: 'أضف ملف PDF',
-      fa: 'فایل PDF را اضافه کنید', hi: 'PDF जोड़ें', ja: 'PDFを追加する', zh: '添加PDF',
+      fa: 'فایل PDF را اضافه کنید', hi: 'PDF जोड़ें', ja: 'PDFを追加する', zh: '添加PDF', id: 'Tambahkan PDF',
     }, text: {
       pl: 'Przeciągnij plik na stronę narzędzia Usuń strony albo kliknij, żeby go wybrać. Po chwili zobaczysz miniatury wszystkich stron.',
       en: 'Drag the file onto the Delete Pages page or click to choose it. After a moment you will see thumbnails of every page.',
@@ -86,11 +89,12 @@ const article: GuideArticle = {
       hi: 'फ़ाइल को पृष्ठ हटाएं पेज पर खींचें या चुनने के लिए क्लिक करें। कुछ ही पल में आपको सभी पेजों के थंबनेल दिखेंगे।',
       ja: 'ファイルを「ページ削除」のページにドラッグするか、クリックして選択します。しばらくすると全ページのサムネイルが表示されます。',
       zh: '将文件拖到删除页面工具页，或点击选择文件。稍等片刻即可看到所有页面的缩略图。',
+      id: 'Seret file ke halaman Hapus Halaman atau klik untuk memilihnya. Sesaat kemudian Anda akan melihat gambar mini setiap halaman.',
     }},
     { type: 'step', title: {
       pl: 'Zaznacz strony do usunięcia', en: 'Mark the pages to delete', de: 'Zu löschende Seiten markieren', es: 'Marca las páginas que quieres eliminar', fr: 'Marquez les pages à supprimer', it: 'Segna le pagine da eliminare',
       pt: 'Marque as páginas a eliminar', sv: 'Markera sidorna som ska bort', no: 'Merk sidene som skal slettes', is: 'Merktu síðurnar sem á að eyða', tr: 'Silinecek sayfaları işaretleyin', ar: 'حدّد الصفحات المراد حذفها',
-      fa: 'صفحات مورد حذف را علامت بزنید', hi: 'हटाने वाले पेज चुनें', ja: '削除するページを選ぶ', zh: '标记要删除的页面',
+      fa: 'صفحات مورد حذف را علامت بزنید', hi: 'हटाने वाले पेज चुनें', ja: '削除するページを選ぶ', zh: '标记要删除的页面', id: 'Tandai halaman yang akan dihapus',
     }, text: {
       pl: 'Kliknij miniaturę strony, którą chcesz usunąć — dostanie czerwoną ramkę i krzyżyk. Ponowne kliknięcie cofa zaznaczenie. Nad miniaturami widać, ile stron jest zaznaczonych.',
       en: 'Click the thumbnail of a page you want to remove — it gets a red border and a cross. Click again to unmark it. Above the thumbnails you can see how many pages are marked.',
@@ -108,11 +112,12 @@ const article: GuideArticle = {
       hi: 'जिस पेज को हटाना है उसके थंबनेल पर क्लिक करें — उस पर लाल किनारा और क्रॉस आ जाता है। दोबारा क्लिक करने से चयन हट जाता है। थंबनेल के ऊपर दिखता है कि कितने पेज चुने गए हैं।',
       ja: '削除したいページのサムネイルをクリックすると、赤い枠と×印が付きます。もう一度クリックすると選択が外れます。サムネイルの上に、選択中のページ数が表示されます。',
       zh: '点击要删除页面的缩略图，它会出现红色边框和叉号。再次点击即可取消。缩略图上方会显示已标记的页数。',
+      id: 'Klik gambar mini halaman yang ingin Anda hapus — halaman itu akan diberi bingkai merah dan tanda silang. Klik sekali lagi untuk membatalkan tanda. Di atas gambar mini Anda dapat melihat berapa halaman yang ditandai.',
     }},
     { type: 'step', title: {
       pl: 'Usuń i pobierz', en: 'Delete and download', de: 'Löschen und herunterladen', es: 'Elimina y descarga', fr: 'Supprimez et téléchargez', it: 'Elimina e scarica',
       pt: 'Elimine e descarregue', sv: 'Ta bort och ladda ner', no: 'Slett og last ned', is: 'Eyddu og sæktu', tr: 'Silin ve indirin', ar: 'احذف ثم نزّل',
-      fa: 'حذف و دانلود کنید', hi: 'हटाएँ और डाउनलोड करें', ja: '削除してダウンロードする', zh: '删除并下载',
+      fa: 'حذف و دانلود کنید', hi: 'हटाएँ और डाउनलोड करें', ja: '削除してダウンロードする', zh: '删除并下载', id: 'Hapus dan unduh',
     }, text: {
       pl: 'Kliknij Usuń wybrane strony. Pobierzesz nowy plik bez zaznaczonych stron; pozostałe zachowują kolejność, tekst, linki i jakość.',
       en: 'Click Delete Selected Pages. You download a new file without the marked pages; the rest keep their order, text, links and quality.',
@@ -130,11 +135,12 @@ const article: GuideArticle = {
       hi: 'चयनित पृष्ठ हटाएँ पर क्लिक करें। आप चुने गए पेजों के बिना एक नई फ़ाइल डाउनलोड करते हैं; बाकी पेजों का क्रम, टेक्स्ट, लिंक और गुणवत्ता वैसी ही रहती है।',
       ja: '「選択したページを削除する」をクリックします。選んだページを除いた新しいファイルがダウンロードされ、残りのページは順序、テキスト、リンク、画質を保ちます。',
       zh: '点击“删除选定页面”。您会下载一个不含所标记页面的新文件，其余页面的顺序、文字、链接和质量都保持不变。',
+      id: 'Klik Hapus Halaman yang Dipilih. Anda mengunduh file baru tanpa halaman yang ditandai; halaman lainnya tetap dengan urutan, teks, tautan, dan kualitas yang sama.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Dobrze wiedzieć', en: 'Good to know', de: 'Gut zu wissen', es: 'Conviene saber', fr: 'Bon à savoir', it: 'Buono a sapersi',
       pt: 'Bom saber', sv: 'Bra att veta', no: 'Greit å vite', is: 'Gott að vita', tr: 'Bilmekte fayda var', ar: 'من المفيد معرفته',
-      fa: 'خوب است بدانید', hi: 'जानने योग्य', ja: '知っておくと便利なこと', zh: '小贴士',
+      fa: 'خوب است بدانید', hi: 'जानने योग्य', ja: '知っておくと便利なこと', zh: '小贴士', id: 'Perlu diketahui',
     }},
     { type: 'list', items: [
       {
@@ -154,6 +160,7 @@ const article: GuideArticle = {
         hi: 'हटाया गया पेज अपने टेक्स्ट और इमेज के साथ फ़ाइल से निकल जाता है — वह अंदर छिपा नहीं रहता जहाँ कोई दूसरा प्रोग्राम उसे पढ़ सके। बाकी पेज जिन फ़ॉन्ट और इमेज का उपयोग करते हैं, वे बने रहते हैं।',
         ja: '削除したページは、テキストや画像ごとファイルから取り除かれます。別のソフトで読める形でファイル内に隠れて残ることはありません。残りのページが使うフォントや画像はそのまま残ります。',
         zh: '删除的页面会连同其文字和图片一起从文件中移除，不会隐藏在文件内部被其他程序读取。其余页面使用的字体和图片会保留。',
+        id: 'Halaman yang dihapus keluar dari file bersama teks dan gambarnya — halaman itu tidak tertinggal tersembunyi di dalam file, tempat program lain bisa membacanya. Fon dan gambar yang dipakai halaman lainnya tetap ada.',
       },
       {
         pl: 'Jeśli chcesz zostawić tylko kilka stron z długiego dokumentu, szybciej będzie zaznaczyć je w narzędziu Wyodrębnij strony.',
@@ -172,6 +179,7 @@ const article: GuideArticle = {
         hi: 'अगर किसी लंबे दस्तावेज़ के केवल कुछ पेज रखने हैं, तो उन्हें पृष्ठ निकालें टूल में चुनना ज़्यादा तेज़ है।',
         ja: '長い文書から数ページだけ残したい場合は、「ページ抽出」ツールでそのページを選ぶほうが早く済みます。',
         zh: '如果只想保留长文档中的几页，用“提取页面”工具标记这几页会更快。',
+        id: 'Jika Anda hanya ingin menyimpan beberapa halaman dari dokumen yang panjang, lebih cepat menandai halaman tersebut di alat Ekstrak Halaman.',
       },
       {
         pl: 'Usunięcie strony nie zaczerni fragmentu tekstu na stronie, która zostaje. Do zakrycia danych na pozostałych stronach służy narzędzie Redaguj PDF.',
@@ -190,6 +198,7 @@ const article: GuideArticle = {
         hi: 'पेज हटाने से बचे हुए पेज का कोई टेक्स्ट काला नहीं होता। बाकी पेजों पर जानकारी छिपाने के लिए PDF रिडैक्ट करें टूल का उपयोग करें।',
         ja: 'ページを削除しても、残るページの文字の一部が黒塗りされるわけではありません。残りのページの情報を隠すには、「PDF墨消し」ツールを使ってください。',
         zh: '删除页面并不会涂黑保留页面上的部分文字。要隐藏其余页面上的信息，请使用“涂黑PDF”工具。',
+        id: 'Menghapus halaman tidak menghitamkan sebagian teks pada halaman yang tetap ada. Untuk menyembunyikan data pada halaman lainnya, gunakan alat Sensor PDF.',
       },
     ]},
     { type: 'cta', tool: 'delete' },
@@ -205,7 +214,7 @@ const article: GuideArticle = {
         no: 'Endres originalfilen også?', is: 'Breytist upprunalega skráin líka?',
         tr: 'Orijinal dosya da değişir mi?', ar: 'هل يتغير الملف الأصلي أيضًا؟',
         fa: 'آیا فایل اصلی هم تغییر می‌کند؟', hi: 'क्या मूल फ़ाइल भी बदलेगी?',
-        ja: '元のファイルも変更されますか？', zh: '原文件也会被修改吗？',
+        ja: '元のファイルも変更されますか？', zh: '原文件也会被修改吗？', id: 'Apakah file asli juga akan berubah?',
       },
       a: {
         pl: 'Nie. Narzędzie tworzy nowy plik do pobrania, a plik na Twoim dysku zostaje taki, jaki był.',
@@ -224,6 +233,7 @@ const article: GuideArticle = {
         hi: 'नहीं। टूल डाउनलोड के लिए नई फ़ाइल बनाता है, और आपकी डिस्क पर फ़ाइल वैसी ही रहती है।',
         ja: 'いいえ。ツールはダウンロード用の新しいファイルを作成し、ディスク上のファイルはそのまま残ります。',
         zh: '不会。工具会生成一个供下载的新文件，您磁盘上的文件保持原样。',
+        id: 'Tidak. Alat ini membuat file baru untuk diunduh, dan file di disk Anda tetap seperti semula.',
       },
     },
     {
@@ -235,7 +245,7 @@ const article: GuideArticle = {
         no: 'Er den slettede siden virkelig borte fra filen?', is: 'Er eydda síðan í raun horfin úr skránni?',
         tr: 'Silinen sayfa dosyadan gerçekten çıkıyor mu?', ar: 'هل تُزال الصفحة المحذوفة من الملف فعلًا؟',
         fa: 'آیا صفحه حذف‌شده واقعاً از فایل پاک می‌شود؟', hi: 'क्या हटाया गया पेज सचमुच फ़ाइल से चला जाता है?',
-        ja: '削除したページは本当にファイルから消えますか？', zh: '删除的页面真的从文件中移除了吗？',
+        ja: '削除したページは本当にファイルから消えますか？', zh: '删除的页面真的从文件中移除了吗？', id: 'Apakah halaman yang dihapus benar-benar hilang dari file?',
       },
       a: {
         pl: 'Tak. Treść, obrazy i czcionki używane tylko przez usunięte strony nie trafiają do nowego pliku, więc nie da się ich z niego odczytać. Plik zwykle robi się przez to mniejszy.',
@@ -254,6 +264,7 @@ const article: GuideArticle = {
         hi: 'हाँ। जो सामग्री, इमेज और फ़ॉन्ट केवल हटाए गए पेज इस्तेमाल करते थे, वे नई फ़ाइल में नहीं जाते, इसलिए उनसे पढ़े नहीं जा सकते। इससे फ़ाइल आमतौर पर छोटी भी हो जाती है।',
         ja: 'はい。削除したページだけが使っていた内容、画像、フォントは新しいファイルに含まれないため、そこから読み取ることはできません。その分、ファイルは通常小さくなります。',
         zh: '是的。仅被删除页面使用的内容、图片和字体不会写入新文件，因此无法从中读取。文件通常也会因此变小。',
+        id: 'Ya. Isi, gambar, dan fon yang hanya dipakai oleh halaman yang dihapus tidak masuk ke file baru, sehingga tidak dapat dibaca darinya. Karena itu, ukuran file biasanya menjadi lebih kecil.',
       },
     },
     {
@@ -265,7 +276,7 @@ const article: GuideArticle = {
         no: 'Kan jeg slette sider fra en passordbeskyttet fil?', is: 'Get ég eytt síðum úr skrá sem er varin með lykilorði?',
         tr: 'Parola korumalı bir dosyadan sayfa silebilir miyim?', ar: 'هل يمكنني حذف صفحات من ملف محمي بكلمة مرور؟',
         fa: 'آیا می‌توانم از فایل دارای رمز عبور صفحه حذف کنم؟', hi: 'क्या मैं पासवर्ड से सुरक्षित फ़ाइल से पेज हटा सकता हूँ?',
-        ja: 'パスワードで保護されたファイルからページを削除できますか？', zh: '可以从受密码保护的文件中删除页面吗？',
+        ja: 'パスワードで保護されたファイルからページを削除できますか？', zh: '可以从受密码保护的文件中删除页面吗？', id: 'Bisakah saya menghapus halaman dari file yang dilindungi kata sandi?',
       },
       a: {
         pl: 'Najpierw zdejmij hasło narzędziem Odblokuj PDF, a potem usuń strony z odblokowanego pliku.',
@@ -284,6 +295,7 @@ const article: GuideArticle = {
         hi: 'पहले PDF अनलॉक करें से पासवर्ड हटाएँ, फिर अनलॉक की गई फ़ाइल से पेज हटाएँ।',
         ja: 'まず「PDFロック解除」でパスワードを外し、その後ロックを解除したファイルからページを削除してください。',
         zh: '请先用“解锁PDF”去掉密码，再从解锁后的文件中删除页面。',
+        id: 'Hapus kata sandinya terlebih dahulu dengan Buka Kunci PDF, lalu hapus halaman dari file yang sudah tidak terkunci.',
       },
     },
   ],

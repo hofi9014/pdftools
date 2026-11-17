@@ -29,7 +29,7 @@ const MAX_OUTPUT_TOKENS_TRANSLATE = 16000;
 // The language a summary is written in: the page's language, as a closed set so that the field
 // cannot carry instructions for the model. A page cached from before this field sends none.
 const SUMMARY_LANGUAGES: Record<string, string> = {
-  ar: 'Arabic', de: 'German', en: 'English', es: 'Spanish', fa: 'Persian', fr: 'French', hi: 'Hindi', is: 'Icelandic',
+  ar: 'Arabic', de: 'German', en: 'English', es: 'Spanish', fa: 'Persian', fr: 'French', hi: 'Hindi', id: 'Indonesian', is: 'Icelandic',
   it: 'Italian', ja: 'Japanese', no: 'Norwegian', pl: 'Polish', pt: 'Portuguese', sv: 'Swedish', tr: 'Turkish', zh: 'Simplified Chinese',
 };
 

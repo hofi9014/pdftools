@@ -62,6 +62,7 @@ console.log('=== the summary is written in the language of the page ===');
 const names: Record<string, string> = {
   pl: 'Polish', en: 'English', de: 'German', es: 'Spanish', fr: 'French', it: 'Italian', pt: 'Portuguese', sv: 'Swedish',
   no: 'Norwegian', is: 'Icelandic', tr: 'Turkish', ja: 'Japanese', zh: 'Chinese', hi: 'Hindi', ar: 'Arabic', fa: 'Persian',
+  id: 'Indonesian',
 };
 for (const l of locales) {
   const res = await call({ task: 'summary', text: 'tekst', language: l });

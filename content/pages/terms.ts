@@ -212,4 +212,16 @@ export const content = {
       { h: '6. Contact', p: 'For inquiries: kontakt@optimapdf.com.' },
     ],
   },
+  id: {
+    title: 'Ketentuan Layanan',
+    updated: 'Terakhir diperbarui: 29 Juni 2026',
+    sections: [
+      { h: '1. Ketentuan Umum', p: 'Ketentuan Layanan ini mengatur penggunaan OptimaPDF (optimapdf.com) yang dikelola oleh Leszek Hofman, Dąbrówka Nowa, Polandia. Dengan menggunakan layanan ini, Anda menerima ketentuan ini.' },
+      { h: '2. Deskripsi Layanan', p: 'OptimaPDF menyediakan alat online gratis untuk mengedit, mengonversi, dan mengelola PDF. Semua alat tersedia tanpa pendaftaran. Pemrosesan file berlangsung secara lokal di browser Anda — file tidak dikirim ke server kami (kecuali URL ke PDF).' },
+      { h: '3. Tanggung Jawab', p: 'OptimaPDF berupaya memberikan hasil yang akurat, tetapi tidak menjamin layanan yang tanpa gangguan. Pengguna disarankan untuk menyimpan cadangan file mereka.' },
+      { h: '4. Hak Cipta', p: 'Nama dan logo OptimaPDF adalah milik layanan ini. Menyalin atau menyebarkan kode tanpa izin dilarang.' },
+      { h: '5. Privasi', p: 'Lihat Kebijakan Privasi kami untuk rincian tentang pemrosesan data.' },
+      { h: '6. Kontak', p: 'Untuk pertanyaan: kontakt@optimapdf.com.' },
+    ],
+  },
 };

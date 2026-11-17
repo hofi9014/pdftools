@@ -651,4 +651,44 @@ export const content: Record<string, { title: string; subtitle: string; sections
       },
     ],
   },
+  id: {
+    title: 'Prinsip Kami',
+    subtitle: 'Cara kami membangun OptimaPDF — secara transparan dan adil.',
+    sections: [
+      {
+        h: '1. 100% gratis untuk setiap pengguna',
+        p: 'Semua 40+ alat PDF dan fitur AI (dalam batas harian) gratis dan akan tetap gratis — tanpa biaya tersembunyi, tanpa kartu kredit, tanpa pendaftaran, dan tanpa langganan untuk menggunakan alat-alat ini. Ke depannya, kami berencana membuat paket berbayar terpisah, Optimapdf for Business, dengan fitur tambahan (batas AI lebih tinggi, dukungan prioritas, API). Hal ini tidak mengubah apa pun pada fitur gratis yang ada sekarang — fitur tersebut tetap tersedia bagi semua orang tanpa biaya, seperti saat ini.',
+      },
+      {
+        h: '2. Mengapa ada batas AI (15 permintaan per hari)?',
+        p: 'Fitur AI (Chat AI, Ringkasan AI, Terjemahan AI) gratis dan tidak memerlukan kunci API sendiri — setiap pengguna mendapat 15 permintaan per hari tanpa biaya. Batas ini ada karena setiap permintaan AI menimbulkan biaya bagi kami (biaya API OpenRouter). Berbeda dengan alat yang memproses file Anda di browser, AI memerlukan komunikasi dengan server eksternal, sehingga menimbulkan biaya operasional yang nyata. Batas 15 permintaan per hari memungkinkan kami menyediakan fitur ini secara gratis bagi semua pengguna tanpa memberlakukan langganan atau biaya.',
+      },
+      {
+        h: '3. Privasi Anda yang utama',
+        p: 'OptimaPDF dibangun berdasarkan prinsip privacy by design (privasi sejak perancangan). Sebagian besar alat memproses file sepenuhnya di browser Anda — file tidak pernah keluar dari perangkat Anda. Kami tidak mensyaratkan pendaftaran, login, atau data pribadi apa pun.',
+      },
+      {
+        h: '4. Transparansi teknis',
+        p: 'Kami menyebutkan dengan jelas alat mana yang bekerja di sisi klien (di browser Anda) dan mana yang memerlukan pemrosesan di server. Kami selalu menjelaskan apa yang terjadi pada file Anda di setiap langkah.',
+      },
+      {
+        h: '5. Keamanan yang utama',
+        p: 'Kami menggunakan koneksi HTTPS terenkripsi, Content Security Policy, perlindungan terhadap penyalahgunaan API, dan batas jumlah permintaan. Yang terpenting, alat-alat file berjalan di browser Anda, sehingga file Anda sama sekali tidak pernah sampai ke server kami.',
+      },
+      {
+        h: '6. Iklan dan pelacakan — secara adil dan transparan',
+        p: 'Saat ini situs tidak menampilkan iklan. Ke depannya, kami mungkin menampilkan iklan yang tidak mengganggu (mis. Google AdSense) untuk menutup biaya hosting dan pengembangan — jika itu terjadi, kami akan memperbarui informasi ini. Apa pun yang terjadi, semua alat PDF akan tetap gratis. Kami menggunakan Google Analytics hanya dengan persetujuan Anda, yang dapat Anda tarik kapan saja melalui tombol "Pengaturan cookie". Kami tidak menggunakan piksel pemasaran ulang maupun pembuatan profil perilaku.',
+      },
+      {
+        h: 'Dukungan sukarela',
+        pStart: 'Anda dapat secara sukarela mendukung pengembangan OptimaPDF melalui halaman ',
+        linkLabel: 'Donasi',
+        pEnd: '. Ini sepenuhnya opsional dan tidak memengaruhi akses ke fitur apa pun — alat-alat tetap gratis, terlepas dari apakah Anda memilih untuk mendukung proyek ini atau tidak.',
+      },
+      {
+        h: '7. Terbuka untuk masukan',
+        p: 'Kami membangun OptimaPDF dengan memperhatikan kebutuhan pengguna. Setiap pendapat, laporan galat, atau usulan fitur sangat berharga bagi kami. Anda dapat menghubungi kami melalui halaman dukungan.',
+      },
+    ],
+  },
 };

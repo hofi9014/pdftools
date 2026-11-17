@@ -27,6 +27,7 @@
 //   CSP-blocked, so even a visitor who explicitly accepted analytics never actually sent any.
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { locales } from '../lib/i18n';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { getFontFamily } from '../lib/pdf/fonts';
@@ -118,8 +119,8 @@ console.log('\n=== url-to-pdf has an inline "leaves your device" disclosure, lik
   const i18nSrc = i18nSource();
   const urlWarningCount = (i18nSrc.match(/'page\.url_warning':/g) || []).length;
   const aiWarningCount = (i18nSrc.match(/'page\.ai_warning':/g) || []).length;
-  check(urlWarningCount === 16, `page.url_warning exists for all 16 locales — got ${urlWarningCount}`);
-  check(aiWarningCount === 16, `page.ai_warning still exists for all 16 locales — got ${aiWarningCount}`);
+  check(urlWarningCount === locales.length, `page.url_warning exists for every locale — got ${urlWarningCount}`);
+  check(aiWarningCount === locales.length, `page.ai_warning still exists for every locale — got ${aiWarningCount}`);
 
   // One "our server" marker per locale, in file order (pl,en,es,de,fr,it,pt,is,tr,sv,no,ja,hi,ar,fa,zh) —
   // the exact phrase inserted into that locale's page.ai_warning when this fix was made.

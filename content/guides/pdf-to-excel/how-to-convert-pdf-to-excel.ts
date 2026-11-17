@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'PDF की तालिका को Excel शीट में कैसे बदलें',
     ja: 'PDFの表をExcelシートに変換する方法',
     zh: '如何把PDF中的表格转换为Excel工作表',
+    id: 'Cara Memindahkan Tabel PDF ke Lembar Excel',
   },
   excerpt: {
     pl: 'Faktura, wyciąg albo raport w PDF? Przenieś tabelę do Excela tak, żeby każda wartość trafiła do swojej komórki, a kwoty dało się zsumować.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'PDF में चालान, विवरण या रिपोर्ट है? तालिका को Excel में ले जाएँ ताकि हर मान अपने सेल में आए और राशियाँ जोड़ी जा सकें।',
     ja: '請求書や明細書、レポートがPDFしかない場合でも、表をExcelに移せば、値がそれぞれのセルに入り、金額を合計できます。',
     zh: '手头只有PDF格式的发票、对账单或报告？把表格转到Excel中，让每个值进入各自的单元格，金额也能直接求和。',
+    id: 'Punya faktur, rekening koran, atau laporan dalam PDF? Pindahkan tabelnya ke Excel agar setiap nilai masuk ke selnya sendiri dan jumlahnya dapat dihitung.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,18 +59,19 @@ const article: GuideArticle = {
       hi: 'PDF से तालिका को Excel में कॉपी करने पर आमतौर पर मिले-जुले टेक्स्ट का एक ही कॉलम बनता है। PDF को Excel में टूल तालिका की बनावट — रेखाएँ और टेक्स्ट की जगह — पढ़ता है और हर मान को अलग सेल में लिखता है। यह आपके ब्राउज़र में चलता है: PDF हमारे सर्वर तक नहीं पहुँचती।',
       ja: 'PDFの表をExcelにコピーすると、たいていは文字が混ざった1列になってしまいます。「PDFをExcelに変換」ツールは表の構造（罫線と文字の位置）を読み取り、値を1つずつ別のセルに書き込みます。処理はブラウザ内で行われ、PDFが当社のサーバーに送られることはありません。',
       zh: '把PDF中的表格复制到Excel，通常只会得到一列混乱的文字。PDF转Excel工具会读取表格的结构——线条和文字的位置——把每个值写入单独的单元格。它在您的浏览器中运行，PDF不会到达我们的服务器。',
+      id: 'Menyalin tabel dari PDF ke Excel biasanya berakhir dengan satu kolom teks yang campur aduk. Alat PDF ke Excel membaca susunan tabel — garis-garisnya dan letak teksnya — lalu menuliskan setiap nilai ke selnya sendiri. Alat ini berjalan di browser Anda: PDF tidak pernah sampai ke server kami.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Konwersja krok po kroku', en: 'Converting step by step', de: 'Schritt für Schritt umwandeln',
       es: 'Conversión paso a paso', fr: 'Conversion étape par étape', it: 'Conversione passo dopo passo',
       pt: 'Conversão passo a passo', sv: 'Konvertera steg för steg', no: 'Konverter trinn for trinn',
       is: 'Umbreyting skref fyrir skref', tr: 'Adım adım dönüştürme', ar: 'التحويل خطوة بخطوة',
-      fa: 'تبدیل گام به گام', hi: 'चरण दर चरण रूपांतरण', ja: '変換の手順', zh: '逐步转换',
+      fa: 'تبدیل گام به گام', hi: 'चरण दर चरण रूपांतरण', ja: '変換の手順', zh: '逐步转换', id: 'Mengonversi langkah demi langkah',
     }},
     { type: 'step', title: {
       pl: 'Dodaj plik PDF', en: 'Add the PDF', de: 'PDF hinzufügen', es: 'Añade el PDF', fr: 'Ajoutez le PDF', it: 'Aggiungi il PDF',
       pt: 'Adicione o PDF', sv: 'Lägg till PDF:en', no: 'Legg til PDF-en', is: 'Bættu PDF-skránni við', tr: 'PDF’yi ekleyin', ar: 'أضف ملف PDF',
-      fa: 'فایل PDF را اضافه کنید', hi: 'PDF जोड़ें', ja: 'PDFを追加する', zh: '添加PDF',
+      fa: 'فایل PDF را اضافه کنید', hi: 'PDF जोड़ें', ja: 'PDFを追加する', zh: '添加PDF', id: 'Tambahkan PDF',
     }, text: {
       pl: 'Przeciągnij plik na stronę narzędzia PDF do Excela albo kliknij, żeby go wybrać. Możesz dodać kilka plików naraz.',
       en: 'Drag the file onto the PDF to Excel page or click to choose it. You can add several files at once.',
@@ -86,11 +89,12 @@ const article: GuideArticle = {
       hi: 'फ़ाइल को PDF को Excel में पेज पर खींचें या चुनने के लिए क्लिक करें। आप एक साथ कई फ़ाइलें जोड़ सकते हैं।',
       ja: 'ファイルを「PDFをExcelに変換」のページにドラッグするか、クリックして選択します。複数のファイルをまとめて追加できます。',
       zh: '将文件拖到PDF转Excel页面，或点击选择文件。可以一次添加多个文件。',
+      id: 'Seret file ke halaman PDF ke Excel atau klik untuk memilihnya. Anda dapat menambahkan beberapa file sekaligus.',
     }},
     { type: 'step', title: {
       pl: 'Kliknij Konwertuj do formatu Excel', en: 'Click Convert to Excel', de: 'Auf In Excel konvertieren klicken', es: 'Haz clic en Convertir a Excel', fr: 'Cliquez sur Convertir au format Excel', it: 'Fai clic su Converti in Excel',
       pt: 'Clique em Converter para o Excel', sv: 'Klicka på Konvertera till Excel', no: 'Klikk på Konverter til Excel', is: 'Smelltu á Umbreyta í Excel', tr: 'Excel’e Dönüştür’e tıklayın', ar: 'انقر على تحويل إلى Excel',
-      fa: 'روی تبدیل به Excel کلیک کنید', hi: 'एक्सेल में बदलें पर क्लिक करें', ja: '「Excelに変換」をクリックする', zh: '点击“转换为 Excel”',
+      fa: 'روی تبدیل به Excel کلیک کنید', hi: 'एक्सेल में बदलें पर क्लिक करें', ja: '「Excelに変換」をクリックする', zh: '点击“转换为 Excel”', id: 'Klik Konversi ke Excel',
     }, text: {
       pl: 'Narzędzie odczyta tabele ze wszystkich stron. Jeden plik pobierze się jako arkusz .xlsx, kilka plików — razem w archiwum ZIP.',
       en: 'The tool reads the tables from every page. One file downloads as an .xlsx sheet; several files come together in a ZIP archive.',
@@ -108,11 +112,12 @@ const article: GuideArticle = {
       hi: 'टूल सभी पेजों की तालिकाएँ पढ़ता है। एक फ़ाइल .xlsx शीट के रूप में डाउनलोड होती है; कई फ़ाइलें एक ZIP संग्रह में साथ आती हैं।',
       ja: 'ツールは全ページの表を読み取ります。ファイルが1つなら.xlsxとしてダウンロードされ、複数の場合は1つのZIPアーカイブにまとめられます。',
       zh: '工具会读取所有页面中的表格。单个文件下载为.xlsx工作表，多个文件会一起打包为ZIP。',
+      id: 'Alat ini membaca tabel dari setiap halaman. Satu file terunduh sebagai lembar .xlsx; beberapa file diunduh bersama dalam arsip ZIP.',
     }},
     { type: 'step', title: {
       pl: 'Sprawdź arkusz', en: 'Check the sheet', de: 'Tabelle prüfen', es: 'Revisa la hoja', fr: 'Vérifiez la feuille', it: 'Controlla il foglio',
       pt: 'Verifique a folha', sv: 'Kontrollera bladet', no: 'Kontroller arket', is: 'Athugaðu blaðið', tr: 'Sayfayı kontrol edin', ar: 'راجع الورقة',
-      fa: 'برگه را بررسی کنید', hi: 'शीट जाँचें', ja: 'シートを確認する', zh: '检查工作表',
+      fa: 'برگه را بررسی کنید', hi: 'शीट जाँचें', ja: 'シートを確認する', zh: '检查工作表', id: 'Periksa lembarnya',
     }, text: {
       pl: 'Otwórz plik w Excelu, LibreOffice albo Arkuszach Google. Rzuć okiem na kolumny i kwoty, zanim zaczniesz liczyć — układ PDF bywa różny, a narzędzie pisze tylko to, co da się jednoznacznie odczytać.',
       en: 'Open the file in Excel, LibreOffice or Google Sheets. Glance over the columns and amounts before you start calculating — PDF layouts vary, and the tool writes only what it can read unambiguously.',
@@ -130,11 +135,12 @@ const article: GuideArticle = {
       hi: 'फ़ाइल को Excel, LibreOffice या Google Sheets में खोलें। गणना शुरू करने से पहले कॉलम और राशियाँ देख लें — PDF का लेआउट अलग-अलग होता है और टूल सिर्फ़ वही लिखता है जो साफ़-साफ़ पढ़ सके।',
       ja: 'ファイルをExcel、LibreOffice、Googleスプレッドシートで開きます。計算を始める前に列と金額をざっと確認してください。PDFのレイアウトはさまざまで、ツールは曖昧さなく読み取れるものだけを書き込みます。',
       zh: '在Excel、LibreOffice或Google表格中打开文件。开始计算前先看一下各列和金额——PDF的版式各不相同，工具只写入能明确识别的内容。',
+      id: 'Buka file di Excel, LibreOffice, atau Google Spreadsheet. Periksa sekilas kolom dan angkanya sebelum mulai menghitung — tata letak PDF berbeda-beda, dan alat ini hanya menuliskan apa yang dapat dibacanya dengan jelas.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Co trafia do arkusza', en: 'What ends up in the sheet', de: 'Was in der Tabelle landet', es: 'Qué llega a la hoja', fr: 'Ce que contient la feuille', it: 'Cosa finisce nel foglio',
       pt: 'O que vai para a folha', sv: 'Vad som hamnar i bladet', no: 'Hva som havner i arket', is: 'Hvað fer í blaðið', tr: 'Sayfaya neler aktarılır', ar: 'ما الذي يصل إلى الورقة',
-      fa: 'چه چیزی به برگه می‌رسد', hi: 'शीट में क्या आता है', ja: 'シートに入る内容', zh: '工作表中会包含什么',
+      fa: 'چه چیزی به برگه می‌رسد', hi: 'शीट में क्या आता है', ja: 'シートに入る内容', zh: '工作表中会包含什么', id: 'Apa yang masuk ke lembar',
     }},
     { type: 'list', items: [
       {
@@ -154,6 +160,7 @@ const article: GuideArticle = {
         hi: 'PDF तालिका का हर सेल शीट में अलग सेल बनता है, और मर्ज किए गए सेल मर्ज ही रहते हैं। कई पेजों में फैली लंबी तालिका एक ही ब्लॉक रहती है।',
         ja: 'PDFの表の各セルはシートの別々のセルになり、結合セルは結合されたまま残ります。複数ページにまたがる長い表も1つのまとまりになります。',
         zh: 'PDF表格中的每个单元格都会成为工作表中的独立单元格，合并单元格保持合并。跨越多页的长表格仍是一个整体。',
+        id: 'Setiap sel tabel PDF menjadi sel tersendiri di lembar, dan sel yang digabung tetap digabung. Tabel panjang yang tersebar di beberapa halaman tetap menjadi satu blok.',
       },
       {
         pl: 'Kwoty takie jak 1 307,49 albo 26 183,95 zł stają się liczbami, które można sumować, i wyglądają tak jak w PDF. Zapisy niejednoznaczne, np. 1,234 (tysiąc dwieście czy jeden przecinek?), zostają tekstem, żeby nic nie zmieniło wartości po cichu.',
@@ -172,6 +179,7 @@ const article: GuideArticle = {
         hi: '1,307.49 या 26 183,95 zł जैसी राशियाँ जोड़ने योग्य संख्याएँ बन जाती हैं और PDF जैसी ही दिखती हैं। 1,234 जैसे अस्पष्ट मान (एक हज़ार से ज़्यादा या एक से थोड़ा ज़्यादा?) टेक्स्ट ही रहते हैं, ताकि कोई मान चुपचाप न बदले।',
         ja: '「1 307,49」や「26 183,95 zł」のような金額は、合計できる数値になり、表示はPDFと同じです。「1,234」のように曖昧な書き方（千台か、1をわずかに超える数か）は、値が知らないうちに変わらないよう文字列のまま残ります。',
         zh: '像“1 307,49”或“26 183,95 zł”这样的金额会变成可以求和的数字，显示方式与PDF一致。像“1,234”这样含义不明的写法（一千多还是一点多？）会保留为文本，避免数值被悄悄改变。',
+        id: 'Jumlah uang seperti 1,307.49 atau 26 183,95 zł menjadi angka yang dapat dijumlahkan dan ditampilkan seperti di PDF. Penulisan yang ambigu seperti 1,234 atau 1.234 (seribu lebih atau sedikit di atas satu?) tetap berupa teks, sehingga tidak ada nilai yang diubah diam-diam.',
       },
       {
         pl: 'Tekst spoza tabel, np. nagłówek faktury czy uwagi pod tabelą, trafia do wierszy w kolejności, w jakiej stoi na stronie.',
@@ -190,6 +198,7 @@ const article: GuideArticle = {
         hi: 'तालिकाओं से बाहर का टेक्स्ट, जैसे चालान का शीर्षक या तालिका के नीचे की टिप्पणियाँ, पेज पर जिस क्रम में है उसी क्रम में पंक्तियों में आता है।',
         ja: '請求書の見出しや表の下の注記など、表の外の文字は、ページ上の順序どおりに行として入ります。',
         zh: '表格之外的文字，例如发票抬头或表格下方的备注，会按其在页面上的顺序写入各行。',
+        id: 'Teks di luar tabel, seperti kepala faktur atau catatan di bawah tabel, masuk ke baris-baris sesuai urutannya di halaman.',
       },
       {
         pl: 'Skan (strona zapisana jako obraz) nie ma tekstu ani narysowanych linii tabeli, więc narzędzie nie znajdzie w nim tabeli. Najlepiej działa PDF zapisany wprost z programu: faktura z systemu, eksport z banku, raport.',
@@ -208,6 +217,7 @@ const article: GuideArticle = {
         hi: 'स्कैन (इमेज के रूप में सहेजा गया पेज) में न टेक्स्ट होता है न खींची गई तालिका की रेखाएँ, इसलिए टूल को उसमें कोई तालिका नहीं मिलती। यह सबसे अच्छा किसी प्रोग्राम से सीधे सहेजी गई PDF पर काम करता है: सिस्टम का चालान, बैंक का निर्यात, रिपोर्ट।',
         ja: 'スキャンしたページ（画像として保存されたページ）には文字も描かれた罫線もないため、ツールは表を見つけられません。システムから出力した請求書、銀行のエクスポート、レポートなど、ソフトから直接保存したPDFで最もよく機能します。',
         zh: '扫描件（以图片形式保存的页面）既没有文字，也没有绘制的表格线，因此工具无法在其中找到表格。最适合的是直接从程序保存的PDF：系统开出的发票、银行导出文件、报告等。',
+        id: 'Hasil pindaian (halaman yang disimpan sebagai gambar) tidak berisi teks maupun garis tabel yang digambar, sehingga alat ini tidak menemukan tabel di dalamnya. Alat ini paling baik digunakan untuk PDF yang disimpan langsung dari program: faktur dari sistem, ekspor dari bank, atau laporan.',
       },
     ]},
     { type: 'cta', tool: 'excel' },
@@ -223,7 +233,7 @@ const article: GuideArticle = {
         no: 'Hva skjer hvis PDF-en ikke har noen tabell?', is: 'Hvað gerist ef PDF-skráin hefur enga töflu?',
         tr: 'PDF’de hiç tablo yoksa ne olur?', ar: 'ماذا يحدث إذا لم يحتوِ ملف PDF على أي جدول؟',
         fa: 'اگر PDF هیچ جدولی نداشته باشد چه می‌شود؟', hi: 'अगर PDF में कोई तालिका न हो तो क्या होगा?',
-        ja: 'PDFに表がない場合はどうなりますか？', zh: '如果PDF中没有表格会怎样？',
+        ja: 'PDFに表がない場合はどうなりますか？', zh: '如果PDF中没有表格会怎样？', id: 'Apa yang terjadi jika PDF tidak berisi tabel?',
       },
       a: {
         pl: 'Zobaczysz komunikat, że nie wykryto tabeli, i nie dostaniesz pustego arkusza. Do zwykłego tekstu lepiej nadaje się narzędzie PDF do Worda.',
@@ -242,6 +252,7 @@ const article: GuideArticle = {
         hi: 'आपको संदेश दिखेगा कि कोई तालिका नहीं मिली, और खाली शीट नहीं मिलेगी। सामान्य टेक्स्ट के लिए PDF से Word टूल बेहतर है।',
         ja: '表が見つからなかったというメッセージが表示され、空のシートは作成されません。普通の文章には「PDFをWordに変換」ツールのほうが適しています。',
         zh: '会显示未找到表格的提示，不会生成空白工作表。对于普通文字，PDF转Word工具更合适。',
+        id: 'Anda akan melihat pesan bahwa tidak ada tabel yang ditemukan, dan Anda tidak mendapatkan lembar kosong. Untuk teks biasa, alat PDF ke Word lebih cocok.',
       },
     },
     {
@@ -253,7 +264,7 @@ const article: GuideArticle = {
         no: 'Kan jeg summere beløpene fra PDF-en direkte i Excel?', is: 'Get ég lagt upphæðirnar úr PDF-skránni saman strax í Excel?',
         tr: 'PDF’deki tutarları Excel’de hemen toplayabilir miyim?', ar: 'هل يمكنني جمع المبالغ القادمة من PDF في Excel مباشرة؟',
         fa: 'آیا می‌توانم مبالغ PDF را بلافاصله در Excel جمع بزنم؟', hi: 'क्या मैं PDF की राशियाँ Excel में तुरंत जोड़ सकता हूँ?',
-        ja: 'PDFの金額をExcelですぐに合計できますか？', zh: '可以直接在Excel中对PDF里的金额求和吗？',
+        ja: 'PDFの金額をExcelですぐに合計できますか？', zh: '可以直接在Excel中对PDF里的金额求和吗？', id: 'Bisakah saya langsung menjumlahkan angka dari PDF di Excel?',
       },
       a: {
         pl: 'Tak, jeśli zapis kwoty jest jednoznaczny — wtedy komórka zawiera liczbę, a nie tekst, także z walutą (zł, €, $ i inne popularne). Kwoty niejednoznaczne zostają tekstem i warto je sprawdzić.',
@@ -272,6 +283,7 @@ const article: GuideArticle = {
         hi: 'हाँ, जब राशि साफ़ तरीके से लिखी हो — तब सेल में टेक्स्ट नहीं, संख्या होती है, मुद्रा के साथ भी (zł, €, $ और अन्य आम मुद्राएँ)। अस्पष्ट राशियाँ टेक्स्ट रहती हैं और उन्हें जाँच लेना अच्छा है।',
         ja: 'はい、金額の書き方が明確であれば、セルには文字列ではなく数値が入ります。通貨（zł、€、$など一般的なもの）付きでも同様です。曖昧な金額は文字列のまま残るので、確認しておくと安心です。',
         zh: '可以，只要金额的写法明确——单元格中就是数字而不是文本，带货币符号（zł、€、$等常见货币）也一样。含义不明的金额会保留为文本，建议检查一下。',
+        id: 'Ya, jika jumlahnya ditulis secara jelas — sel tersebut berisi angka, bukan teks, juga jika disertai mata uang seperti zł, €, $, £, atau CHF. Rupiah belum dikenali, dan jumlah yang ditulis secara ambigu tetap berupa teks — sebaiknya periksa keduanya.',
       },
     },
     {
@@ -283,7 +295,7 @@ const article: GuideArticle = {
         no: 'Kan jeg konvertere flere PDF-filer samtidig?', is: 'Get ég umbreytt mörgum PDF-skrám í einu?',
         tr: 'Birden fazla PDF dosyasını aynı anda dönüştürebilir miyim?', ar: 'هل يمكنني تحويل عدة ملفات PDF دفعة واحدة؟',
         fa: 'آیا می‌توانم چند فایل PDF را با هم تبدیل کنم؟', hi: 'क्या मैं एक साथ कई PDF फ़ाइलें बदल सकता हूँ?',
-        ja: '複数のPDFをまとめて変換できますか？', zh: '可以一次转换多个PDF文件吗？',
+        ja: '複数のPDFをまとめて変換できますか？', zh: '可以一次转换多个PDF文件吗？', id: 'Bisakah saya mengonversi beberapa file PDF sekaligus?',
       },
       a: {
         pl: 'Tak. Każdy plik dostaje własny arkusz, a wszystkie pobierasz razem w archiwum ZIP. Plik, którego nie da się zamienić (np. bez tabeli albo zabezpieczony hasłem), zostanie pominięty z wyjaśnieniem, a pozostałe i tak się pobiorą.',
@@ -302,6 +314,7 @@ const article: GuideArticle = {
         hi: 'हाँ। हर फ़ाइल को अपनी वर्कबुक मिलती है और आप सभी को एक ZIP संग्रह में साथ डाउनलोड करते हैं। जो फ़ाइल नहीं बदली जा सकती (बिना तालिका या पासवर्ड से सुरक्षित), उसे कारण बताकर छोड़ दिया जाता है, और बाकी फिर भी डाउनलोड होती हैं।',
         ja: 'はい。ファイルごとに個別のブックが作られ、すべてを1つのZIPアーカイブでダウンロードできます。変換できないファイル（表がない、パスワード保護されているなど）は理由とともにスキップされ、残りはそのままダウンロードされます。',
         zh: '可以。每个文件生成各自的工作簿，并一起打包为ZIP下载。无法转换的文件（没有表格或受密码保护）会被跳过并说明原因，其余文件照常下载。',
+        id: 'Ya. Setiap file mendapat buku kerjanya sendiri, dan Anda mengunduh semuanya bersama dalam arsip ZIP. File yang tidak dapat dikonversi (tidak berisi tabel atau dilindungi kata sandi) dilewati disertai penjelasan, dan file lainnya tetap terunduh.',
       },
     },
   ],

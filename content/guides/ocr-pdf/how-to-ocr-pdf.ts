@@ -20,6 +20,7 @@ const article: GuideArticle = {
     hi: 'OCR: स्कैन किए गए PDF से टेक्स्ट कैसे निकालें',
     ja: 'OCR：スキャンしたPDFから文字を取り出す方法',
     zh: 'OCR：如何从扫描版PDF中提取文字',
+    id: 'OCR: Cara Mendapatkan Teks dari PDF Hasil Pindaian',
   },
   excerpt: {
     pl: 'Zamień skan na PDF, w którym da się wyszukiwać i kopiować tekst, albo na plik TXT lub DOCX. Rozpoznawanie w 33 językach, w przeglądarce.',
@@ -38,6 +39,7 @@ const article: GuideArticle = {
     hi: 'स्कैन को ऐसी PDF में बदलें जिसमें खोज और कॉपी हो सके, या TXT या DOCX फ़ाइल में। 33 भाषाओं में पहचान, ब्राउज़र में।',
     ja: 'スキャン画像を検索・コピーできるPDFや、TXT・DOCXに変換。33言語に対応し、ブラウザ内で処理します。',
     zh: '将扫描件转换为可搜索、可复制文字的PDF，或TXT、DOCX文件。支持33种语言，在浏览器中处理。',
+    id: 'Ubah hasil pindaian menjadi PDF yang teksnya dapat dicari dan disalin, atau menjadi file TXT atau DOCX. Pengenalan teks dalam 33 bahasa, langsung di browser Anda.',
   },
   body: [
     { type: 'paragraph', text: {
@@ -57,19 +59,20 @@ const article: GuideArticle = {
       hi: 'स्कैन किया गया दस्तावेज़ आमतौर पर सिर्फ़ एक इमेज होता है: उसमें शब्द खोजे नहीं जा सकते और वाक्य कॉपी नहीं होते। OCR (ऑप्टिकल कैरेक्टर रिकग्निशन) पेज की इमेज से टेक्स्ट पढ़ता है। OCR PDF टूल यह आपके ब्राउज़र में करता है — स्कैन हमारे सर्वर तक नहीं पहुँचता।',
       ja: 'スキャンした文書はたいてい画像にすぎず、単語を検索したり文章をコピーしたりできません。OCR（光学文字認識）はページの画像から文字を読み取ります。OCR PDFツールはこれをブラウザ内で行い、スキャンが当社のサーバーに送られることはありません。',
       zh: '扫描的文档通常只是图片：无法搜索词语，也无法复制句子。OCR（光学字符识别）会从页面图片中读出文字。OCR PDF工具在您的浏览器中完成识别，扫描件不会到达我们的服务器。',
+      id: 'Dokumen hasil pindaian biasanya hanya berupa gambar: Anda tidak dapat mencari kata atau menyalin kalimat di dalamnya. OCR (pengenalan karakter optik) membaca teks dari gambar halaman. Alat OCR PDF melakukannya di browser Anda — hasil pindaian tidak pernah sampai ke server kami.',
     }},
     { type: 'cta', tool: 'ocr' },
     { type: 'heading', level: 2, text: {
       pl: 'Jak użyć OCR krok po kroku', en: 'How to use OCR step by step', de: 'OCR Schritt für Schritt nutzen', es: 'Cómo usar el OCR paso a paso',
       fr: 'Utiliser l’OCR étape par étape', it: 'Usare l’OCR passo dopo passo', pt: 'Usar o OCR passo a passo', sv: 'Använd OCR steg för steg',
       no: 'Bruk OCR steg for steg', is: 'OCR skref fyrir skref', tr: 'Adım adım OCR kullanımı', ar: 'استخدام OCR خطوة بخطوة',
-      fa: 'استفاده از OCR گام به گام', hi: 'चरण दर चरण OCR का उपयोग', ja: 'OCRの使い方', zh: 'OCR使用步骤',
+      fa: 'استفاده از OCR گام به گام', hi: 'चरण दर चरण OCR का उपयोग', ja: 'OCRの使い方', zh: 'OCR使用步骤', id: 'Cara menggunakan OCR langkah demi langkah',
     }},
     { type: 'step', title: {
       pl: 'Dodaj zeskanowany PDF', en: 'Add the scanned PDF', de: 'Gescannte PDF hinzufügen', es: 'Añade el PDF escaneado', fr: 'Ajoutez le PDF scanné',
       it: 'Aggiungi il PDF scansionato', pt: 'Adicione o PDF digitalizado', sv: 'Lägg till den skannade PDF:en', no: 'Legg til den skannede PDF-en',
       is: 'Bættu við skönnuðu PDF-skránni', tr: 'Taranmış PDF’yi ekleyin', ar: 'أضف ملف PDF الممسوح', fa: 'PDF اسکن‌شده را اضافه کنید',
-      hi: 'स्कैन की गई PDF जोड़ें', ja: 'スキャンしたPDFを追加する', zh: '添加扫描版PDF',
+      hi: 'स्कैन की गई PDF जोड़ें', ja: 'スキャンしたPDFを追加する', zh: '添加扫描版PDF', id: 'Tambahkan PDF hasil pindaian',
     }, text: {
       pl: 'Przeciągnij plik na pole narzędzia albo kliknij je i wybierz plik. Możesz dodać kilka dokumentów naraz.',
       en: 'Drag the file onto the tool or click it and choose the file. You can add several documents at once.',
@@ -87,12 +90,13 @@ const article: GuideArticle = {
       hi: 'फ़ाइल को टूल पर खींचें या क्लिक करके चुनें। आप एक साथ कई दस्तावेज़ जोड़ सकते हैं।',
       ja: 'ファイルをツールにドラッグするか、クリックして選びます。複数の文書をまとめて追加できます。',
       zh: '将文件拖到工具上，或点击选择文件。可以一次添加多个文档。',
+      id: 'Seret file ke alat ini, atau klik lalu pilih file. Anda dapat menambahkan beberapa dokumen sekaligus.',
     }},
     { type: 'step', title: {
       pl: 'Wybierz język dokumentu', en: 'Choose the document language', de: 'Sprache des Dokuments wählen', es: 'Elige el idioma del documento',
       fr: 'Choisissez la langue du document', it: 'Scegli la lingua del documento', pt: 'Escolha a língua do documento', sv: 'Välj dokumentets språk',
       no: 'Velg dokumentets språk', is: 'Veldu tungumál skjalsins', tr: 'Belgenin dilini seçin', ar: 'اختر لغة المستند',
-      fa: 'زبان سند را انتخاب کنید', hi: 'दस्तावेज़ की भाषा चुनें', ja: '文書の言語を選ぶ', zh: '选择文档语言',
+      fa: 'زبان سند را انتخاب کنید', hi: 'दस्तावेज़ की भाषा चुनें', ja: '文書の言語を選ぶ', zh: '选择文档语言', id: 'Pilih bahasa dokumen',
     }, text: {
       pl: 'Język wpływa na rozpoznawanie liter, np. ą, ę i ł w polskim tekście. Przy pierwszym użyciu danego języka przeglądarka pobiera jego dane.',
       en: 'The language affects how letters are recognised, such as accented letters. The first time you use a language, your browser downloads its data.',
@@ -110,11 +114,12 @@ const article: GuideArticle = {
       hi: 'भाषा अक्षरों की पहचान को प्रभावित करती है। किसी भाषा का पहली बार उपयोग करने पर ब्राउज़र उसका डेटा डाउनलोड करता है।',
       ja: '言語の選択は文字の認識に影響します。その言語を初めて使うとき、ブラウザが言語データをダウンロードします。',
       zh: '语言会影响字符识别。首次使用某种语言时，浏览器会下载该语言的数据。',
+      id: 'Bahasa memengaruhi cara huruf dikenali, misalnya huruf beraksen. Saat pertama kali Anda menggunakan suatu bahasa, browser Anda mengunduh datanya.',
     }},
     { type: 'step', title: {
       pl: 'Kliknij przycisk OCR', en: 'Click the OCR button', de: 'Auf OCR klicken', es: 'Pulsa el botón OCR', fr: 'Cliquez sur le bouton OCR',
       it: 'Fai clic sul pulsante OCR', pt: 'Clique no botão OCR', sv: 'Klicka på OCR-knappen', no: 'Klikk på OCR-knappen', is: 'Smelltu á OCR-hnappinn',
-      tr: 'OCR düğmesine tıklayın', ar: 'انقر على زر OCR', fa: 'روی دکمه OCR کلیک کنید', hi: 'OCR बटन पर क्लिक करें', ja: 'OCRボタンをクリックする', zh: '点击OCR按钮',
+      tr: 'OCR düğmesine tıklayın', ar: 'انقر على زر OCR', fa: 'روی دکمه OCR کلیک کنید', hi: 'OCR बटन पर क्लिक करें', ja: 'OCRボタンをクリックする', zh: '点击OCR按钮', id: 'Klik tombol Jalankan OCR',
     }, text: {
       pl: 'Strony są odczytywane po kolei, a postęp widać na pasku. Strony z drobnym drukiem są czytane drugi raz w wyższej rozdzielczości, więc trwają dłużej.',
       en: 'Pages are read one by one and a bar shows the progress. Pages with small print are read a second time at higher resolution, so they take longer.',
@@ -132,11 +137,12 @@ const article: GuideArticle = {
       hi: 'पेज एक-एक करके पढ़े जाते हैं और एक पट्टी प्रगति दिखाती है। छोटे अक्षरों वाले पेज ऊँचे रिज़ॉल्यूशन में दोबारा पढ़े जाते हैं, इसलिए उनमें ज़्यादा समय लगता है।',
       ja: 'ページは1枚ずつ読み取られ、進行状況がバーに表示されます。小さな文字のページはより高い解像度でもう一度読み取るため、時間がかかります。',
       zh: '页面会逐页识别，进度条显示进度。字体较小的页面会以更高分辨率再识别一次，因此耗时更长。',
+      id: 'Halaman dibaca satu per satu, dan sebuah bilah menunjukkan kemajuannya. Halaman dengan huruf kecil dibaca sekali lagi dengan resolusi lebih tinggi, sehingga memerlukan waktu lebih lama.',
     }},
     { type: 'step', title: {
       pl: 'Pobierz wynik', en: 'Download the result', de: 'Ergebnis herunterladen', es: 'Descarga el resultado', fr: 'Téléchargez le résultat',
       it: 'Scarica il risultato', pt: 'Descarregue o resultado', sv: 'Ladda ner resultatet', no: 'Last ned resultatet', is: 'Sæktu niðurstöðuna',
-      tr: 'Sonucu indirin', ar: 'نزّل النتيجة', fa: 'نتیجه را دانلود کنید', hi: 'परिणाम डाउनलोड करें', ja: '結果をダウンロードする', zh: '下载结果',
+      tr: 'Sonucu indirin', ar: 'نزّل النتيجة', fa: 'نتیجه را دانلود کنید', hi: 'परिणाम डाउनलोड करें', ja: '結果をダウンロードする', zh: '下载结果', id: 'Unduh hasilnya',
     }, text: {
       pl: 'Do wyboru: PDF z warstwą tekstu (wygląda jak oryginał, ale można w nim szukać i kopiować), plik TXT albo dokument DOCX do edycji.',
       en: 'Choose a PDF with a text layer (it looks like the original but can be searched and copied), a TXT file or a DOCX document to edit.',
@@ -154,12 +160,13 @@ const article: GuideArticle = {
       hi: 'चुनें: टेक्स्ट परत वाली PDF (मूल जैसी दिखती है, पर खोज और कॉपी हो सकती है), TXT फ़ाइल या संपादन के लिए DOCX दस्तावेज़।',
       ja: 'テキスト層付きPDF（見た目は元のままで検索・コピーが可能）、TXTファイル、編集用のDOCX文書から選べます。',
       zh: '可选择：带文字层的PDF（外观与原件相同，但可搜索和复制）、TXT文件或可编辑的DOCX文档。',
+      id: 'Pilih PDF dengan lapisan teks (tampak seperti aslinya, tetapi dapat dicari dan disalin), file TXT, atau dokumen DOCX untuk diedit.',
     }},
     { type: 'heading', level: 2, text: {
       pl: 'Jak uzyskać najlepszy wynik', en: 'How to get the best result', de: 'So erzielen Sie das beste Ergebnis', es: 'Cómo obtener el mejor resultado',
       fr: 'Comment obtenir le meilleur résultat', it: 'Come ottenere il risultato migliore', pt: 'Como obter o melhor resultado', sv: 'Så får du bästa resultat',
       no: 'Slik får du best resultat', is: 'Hvernig á að ná bestum árangri', tr: 'En iyi sonucu almak için', ar: 'كيف تحصل على أفضل نتيجة',
-      fa: 'چگونه بهترین نتیجه را بگیریم', hi: 'सबसे अच्छा परिणाम कैसे पाएँ', ja: '良い結果を得るコツ', zh: '如何获得最佳效果',
+      fa: 'چگونه بهترین نتیجه را بگیریم', hi: 'सबसे अच्छा परिणाम कैसे पाएँ', ja: '良い結果を得るコツ', zh: '如何获得最佳效果', id: 'Cara mendapatkan hasil terbaik',
     }},
     { type: 'list', items: [
       {
@@ -167,7 +174,7 @@ const article: GuideArticle = {
         es: 'Escanea a 300 ppp o más.', fr: 'Scannez à 300 ppp ou plus.', it: 'Scansiona ad almeno 300 dpi.', pt: 'Digitalize a 300 ppp ou mais.',
         sv: 'Skanna med minst 300 dpi.', no: 'Skann med minst 300 dpi.', is: 'Skannaðu í 300 pát eða meira.', tr: 'En az 300 dpi çözünürlükte tarayın.',
         ar: 'امسح المستند بدقة 300 نقطة في البوصة أو أكثر.', fa: 'با وضوح دست‌کم ۳۰۰ dpi اسکن کنید.', hi: 'कम से कम 300 dpi पर स्कैन करें।',
-        ja: '300dpi以上でスキャンする。', zh: '以300 dpi或更高分辨率扫描。',
+        ja: '300dpi以上でスキャンする。', zh: '以300 dpi或更高分辨率扫描。', id: 'Pindai dengan resolusi 300 dpi atau lebih.',
       },
       {
         pl: 'Proste, równo oświetlone strony dają lepszy wynik niż krzywe zdjęcia z telefonu.', en: 'Straight, evenly lit pages work better than skewed phone photos.',
@@ -177,7 +184,7 @@ const article: GuideArticle = {
         no: 'Rette, jevnt belyste sider fungerer bedre enn skjeve mobilbilder.', is: 'Beinar, jafnt lýstar síður virka betur en skakkar símamyndir.',
         tr: 'Düz ve eşit aydınlatılmış sayfalar, eğri telefon fotoğraflarından daha iyi sonuç verir.', ar: 'تعطي الصفحات المستقيمة والمضاءة بالتساوي نتيجة أفضل من صور الهاتف المائلة.',
         fa: 'صفحه‌های صاف با نور یکنواخت نتیجه بهتری از عکس‌های کج گوشی می‌دهند.', hi: 'सीधे और बराबर रोशनी वाले पेज, टेढ़ी मोबाइल फ़ोटो से बेहतर परिणाम देते हैं।',
-        ja: 'まっすぐで均一に照らされたページは、斜めのスマホ写真より良い結果になります。', zh: '平整、光照均匀的页面比歪斜的手机照片效果更好。',
+        ja: 'まっすぐで均一に照らされたページは、斜めのスマホ写真より良い結果になります。', zh: '平整、光照均匀的页面比歪斜的手机照片效果更好。', id: 'Halaman yang lurus dan pencahayaannya merata memberi hasil lebih baik daripada foto ponsel yang miring.',
       },
       {
         pl: 'Bardzo drobny druk, np. w gęstych tabelach, jest odczytywany gorzej niż zwykły tekst.', en: 'Very small print, such as in dense tables, is read less accurately than ordinary text.',
@@ -187,7 +194,7 @@ const article: GuideArticle = {
         no: 'Svært liten skrift, for eksempel i tette tabeller, gjenkjennes dårligere enn vanlig tekst.', is: 'Mjög smátt letur, t.d. í þéttum töflum, greinist verr en venjulegur texti.',
         tr: 'Yoğun tablolardaki gibi çok küçük yazılar, normal metne göre daha az doğru okunur.', ar: 'يُقرأ الخط الصغير جدًا، كما في الجداول الكثيفة، بدقة أقل من النص العادي.',
         fa: 'متن بسیار ریز، مثلاً در جدول‌های فشرده، کمتر از متن معمولی درست خوانده می‌شود.', hi: 'बहुत छोटे अक्षर, जैसे घनी तालिकाओं में, सामान्य टेक्स्ट की तुलना में कम सटीक पढ़े जाते हैं।',
-        ja: '表などの非常に小さな文字は、通常の文字より認識精度が下がります。', zh: '很小的字（例如密集表格中的文字）识别准确度低于普通文字。',
+        ja: '表などの非常に小さな文字は、通常の文字より認識精度が下がります。', zh: '很小的字（例如密集表格中的文字）识别准确度低于普通文字。', id: 'Huruf yang sangat kecil, seperti pada tabel yang padat, dibaca kurang akurat dibandingkan teks biasa.',
       },
       {
         pl: 'OCR służy do tekstu drukowanego — pismo odręczne jest rozpoznawane słabo.', en: 'OCR is meant for printed text — handwriting is recognised poorly.',
@@ -197,7 +204,7 @@ const article: GuideArticle = {
         no: 'OCR er laget for trykt tekst — håndskrift gjenkjennes dårlig.', is: 'OCR er ætlað prentuðum texta — handskrift greinist illa.',
         tr: 'OCR basılı metin içindir; el yazısı zayıf tanınır.', ar: 'صُمم OCR للنص المطبوع، أما الكتابة اليدوية فيُتعرف عليها بشكل ضعيف.',
         fa: 'OCR برای متن چاپی است و دست‌خط را ضعیف تشخیص می‌دهد.', hi: 'OCR छपे हुए टेक्स्ट के लिए है — हस्तलिखित टेक्स्ट ठीक से नहीं पहचाना जाता।',
-        ja: 'OCRは印刷された文字向けで、手書き文字の認識は苦手です。', zh: 'OCR适用于印刷文字，手写字识别效果较差。',
+        ja: 'OCRは印刷された文字向けで、手書き文字の認識は苦手です。', zh: 'OCR适用于印刷文字，手写字识别效果较差。', id: 'OCR ditujukan untuk teks cetak — tulisan tangan sulit dikenali.',
       },
     ]},
   ],
@@ -207,7 +214,7 @@ const article: GuideArticle = {
       pl: 'Jakie języki są obsługiwane?', en: 'Which languages are supported?', de: 'Welche Sprachen werden unterstützt?', es: '¿Qué idiomas se admiten?',
       fr: 'Quelles langues sont prises en charge ?', it: 'Quali lingue sono supportate?', pt: 'Que línguas são suportadas?', sv: 'Vilka språk stöds?',
       no: 'Hvilke språk støttes?', is: 'Hvaða tungumál eru studd?', tr: 'Hangi diller destekleniyor?', ar: 'ما اللغات المدعومة؟',
-      fa: 'چه زبان‌هایی پشتیبانی می‌شوند؟', hi: 'कौन सी भाषाएँ समर्थित हैं?', ja: '対応言語は？', zh: '支持哪些语言？',
+      fa: 'چه زبان‌هایی پشتیبانی می‌شوند؟', hi: 'कौन सी भाषाएँ समर्थित हैं?', ja: '対応言語は？', zh: '支持哪些语言？', id: 'Bahasa apa saja yang didukung?',
     }, a: {
       pl: '33 języki, m.in. polski, angielski, niemiecki, francuski, hiszpański, włoski, ukraiński, rosyjski, czeski, arabski, chiński, japoński i koreański.',
       en: '33 languages, including English, Polish, German, French, Spanish, Italian, Ukrainian, Russian, Czech, Arabic, Chinese, Japanese and Korean.',
@@ -225,13 +232,14 @@ const article: GuideArticle = {
       hi: '33 भाषाएँ, जिनमें हिंदी, अंग्रेज़ी, पोलिश, जर्मन, फ़्रेंच, स्पेनिश, इतालवी, यूक्रेनी, रूसी, चेक, अरबी, चीनी, जापानी और कोरियाई शामिल हैं।',
       ja: '日本語、英語、ポーランド語、ドイツ語、フランス語、スペイン語、イタリア語、ウクライナ語、ロシア語、チェコ語、アラビア語、中国語、韓国語など33言語です。',
       zh: '共33种语言，包括中文、英语、波兰语、德语、法语、西班牙语、意大利语、乌克兰语、俄语、捷克语、阿拉伯语、日语和韩语。',
+      id: '33 bahasa, termasuk Inggris, Polandia, Jerman, Prancis, Spanyol, Italia, Ukraina, Rusia, Ceko, Arab, Tionghoa, Jepang, Korea, dan Indonesia.',
     }},
     { q: {
       pl: 'Czy skan jest wysyłany na serwer?', en: 'Is the scan uploaded to a server?', de: 'Wird der Scan auf einen Server hochgeladen?',
       es: '¿Se sube el escaneo a un servidor?', fr: 'Le scan est-il envoyé sur un serveur ?', it: 'La scansione viene caricata su un server?',
       pt: 'A digitalização é enviada para um servidor?', sv: 'Laddas skanningen upp till en server?', no: 'Blir skanningen lastet opp til en server?',
       is: 'Er skönnunin send á þjón?', tr: 'Tarama bir sunucuya yükleniyor mu?', ar: 'هل يُرفع المسح إلى خادم؟',
-      fa: 'آیا اسکن روی سرور بارگذاری می‌شود؟', hi: 'क्या स्कैन सर्वर पर अपलोड होता है?', ja: 'スキャンはサーバーにアップロードされますか？', zh: '扫描件会上传到服务器吗？',
+      fa: 'آیا اسکن روی سرور بارگذاری می‌شود؟', hi: 'क्या स्कैन सर्वर पर अपलोड होता है?', ja: 'スキャンはサーバーにアップロードされますか？', zh: '扫描件会上传到服务器吗？', id: 'Apakah hasil pindaian diunggah ke server?',
     }, a: {
       pl: 'Nie. Rozpoznawanie odbywa się w Twojej przeglądarce. Z internetu pobierane są tylko dane wybranego języka, a skan nie trafia na nasz serwer.',
       en: 'No. Recognition runs in your browser. Only the data for the chosen language is downloaded; the scan never reaches our server.',
@@ -249,12 +257,13 @@ const article: GuideArticle = {
       hi: 'नहीं। पहचान आपके ब्राउज़र में होती है। केवल चुनी गई भाषा का डेटा डाउनलोड होता है; स्कैन हमारे सर्वर तक नहीं पहुँचता।',
       ja: 'いいえ。認識はブラウザ内で行われます。ダウンロードされるのは選んだ言語のデータだけで、スキャンが当社のサーバーに送られることはありません。',
       zh: '不会。识别在您的浏览器中进行，只会下载所选语言的数据，扫描件不会到达我们的服务器。',
+      id: 'Tidak. Pengenalan teks berjalan di browser Anda. Hanya data untuk bahasa yang dipilih yang diunduh; hasil pindaian tidak pernah sampai ke server kami.',
     }},
     { q: {
       pl: 'Czy potem mogę edytować tekst?', en: 'Can I edit the text afterwards?', de: 'Kann ich den Text danach bearbeiten?', es: '¿Puedo editar el texto después?',
       fr: 'Puis-je modifier le texte ensuite ?', it: 'Posso modificare il testo dopo?', pt: 'Posso editar o texto depois?', sv: 'Kan jag redigera texten efteråt?',
       no: 'Kan jeg redigere teksten etterpå?', is: 'Get ég breytt textanum á eftir?', tr: 'Metni sonradan düzenleyebilir miyim?', ar: 'هل يمكنني تحرير النص بعد ذلك؟',
-      fa: 'آیا بعداً می‌توانم متن را ویرایش کنم؟', hi: 'क्या बाद में टेक्स्ट संपादित कर सकता हूँ?', ja: 'あとで文字を編集できますか？', zh: '之后可以编辑文字吗？',
+      fa: 'آیا بعداً می‌توانم متن را ویرایش کنم؟', hi: 'क्या बाद में टेक्स्ट संपादित कर सकता हूँ?', ja: 'あとで文字を編集できますか？', zh: '之后可以编辑文字吗？', id: 'Bisakah saya mengedit teksnya setelah itu?',
     }, a: {
       pl: 'Tak — pobierz wynik jako DOCX i otwórz go w Wordzie, LibreOffice lub Google Docs. PDF z warstwą tekstu wygląda jak oryginalny skan, więc służy do wyszukiwania i kopiowania, nie do poprawiania.',
       en: 'Yes — download the result as DOCX and open it in Word, LibreOffice or Google Docs. The PDF with a text layer looks like the original scan, so it is for searching and copying, not for editing.',
@@ -272,6 +281,7 @@ const article: GuideArticle = {
       hi: 'हाँ — परिणाम DOCX में डाउनलोड करें और Word, LibreOffice या Google Docs में खोलें। टेक्स्ट परत वाली PDF मूल स्कैन जैसी दिखती है, इसलिए वह खोज और कॉपी के लिए है, संपादन के लिए नहीं।',
       ja: 'はい。DOCXでダウンロードし、Word、LibreOffice、Google ドキュメントで開いてください。テキスト層付きPDFは元のスキャンと同じ見た目なので、検索やコピー向けで、編集には向きません。',
       zh: '可以——将结果下载为DOCX，然后用Word、LibreOffice或Google文档打开。带文字层的PDF外观与原扫描件相同，适合搜索和复制，不适合编辑。',
+      id: 'Ya — unduh hasilnya sebagai DOCX dan buka di Word, LibreOffice, atau Google Dokumen. PDF dengan lapisan teks tampak seperti hasil pindaian aslinya, jadi file itu untuk mencari dan menyalin, bukan untuk mengedit.',
     }},
   ],
   canonicalOverride: undefined,

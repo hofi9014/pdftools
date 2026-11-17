@@ -7,6 +7,7 @@ import es from './es';
 import fa from './fa';
 import fr from './fr';
 import hi from './hi';
+import id from './id';
 import is from './is';
 import it from './it';
 import ja from './ja';
@@ -17,7 +18,7 @@ import sv from './sv';
 import tr from './tr';
 import zh from './zh';
 
-export const legalTexts: Record<Locale, LegalTexts> = { ar, de, en, es, fa, fr, hi, is, it, ja, no, pl, pt, sv, tr, zh };
+export const legalTexts: Record<Locale, LegalTexts> = { ar, de, en, es, fa, fr, hi, id, is, it, ja, no, pl, pt, sv, tr, zh };
 
 export function legalFor(locale: Locale | string): LegalTexts {
   return legalTexts[locale as Locale] ?? en;
