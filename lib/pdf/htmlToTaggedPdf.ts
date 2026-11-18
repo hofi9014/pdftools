@@ -49,9 +49,30 @@ type Block =
   | { kind: 'preformatted'; text: string }
   | { kind: 'blockquote'; runs: InlineRun[] }
   | { kind: 'list'; ordered: boolean; items: InlineRun[][] }
-  | { kind: 'table'; rows: { header: boolean; cells: InlineRun[][] }[] }
+  | { kind: 'table'; rows: TableRow[]; widths?: number[] }
   | { kind: 'image'; dataUrl: string; alt: string }
-  | { kind: 'rule' };
+  | { kind: 'rule' }
+  | { kind: 'pagebreak' };
+
+type CellAlign = 'left' | 'center' | 'right';
+interface TableRow { header: boolean; cells: InlineRun[][]; aligns: CellAlign[] }
+
+// A cell's horizontal alignment: the HTML `align` attribute or a `text-align` in its style.
+function cellAlign(cell: Element): CellAlign {
+  const fromStyle = /text-align\s*:\s*(left|center|right)/i.exec(cell.getAttribute('style') || '')?.[1];
+  const value = (fromStyle || cell.getAttribute('align') || 'left').toLowerCase();
+  return value === 'right' || value === 'center' ? value : 'left';
+}
+
+// Column widths from <colgroup><col width="N%"> — used only when every column has one and they
+// add up to about 100%; otherwise the columns stay equal.
+function tableWidths(table: Element, numCols: number): number[] | undefined {
+  const cols = Array.from(table.querySelectorAll(':scope > colgroup > col'));
+  if (cols.length !== numCols) return undefined;
+  const widths = cols.map((c) => /^\s*(\d+(?:\.\d+)?)\s*%\s*$/.exec(c.getAttribute('width') || '')?.[1]).map((w) => (w === undefined ? NaN : Number(w) / 100));
+  const sum = widths.reduce((a, b) => a + b, 0);
+  return widths.every((w) => w > 0) && Math.abs(sum - 1) < 0.02 ? widths.map((w) => w / sum) : undefined;
+}
 
 const SKIP_TAGS = new Set(['script', 'style', 'head', 'template']);
 const INLINE_CONTAINER_TAGS = new Set(['div', 'span', 'section', 'article', 'main', 'header', 'footer', 'nav', 'aside', 'figure', 'figcaption']);
@@ -130,17 +151,19 @@ function parseHtmlToBlocks(html: string): { blocks: Block[]; lang?: string; titl
           if (runs.length) blocks.push({ kind: 'paragraph', runs });
         });
       } else if (tag === 'table') {
-        const rows: { header: boolean; cells: InlineRun[][] }[] = [];
+        const rows: TableRow[] = [];
         el.querySelectorAll('tr').forEach((tr) => {
           const cells: InlineRun[][] = [];
+          const aligns: CellAlign[] = [];
           let header = false;
           tr.querySelectorAll('th,td').forEach((cell) => {
             if (cell.tagName.toLowerCase() === 'th') header = true;
             cells.push(collectRuns(cell));
+            aligns.push(cellAlign(cell));
           });
-          if (cells.length) rows.push({ header, cells });
+          if (cells.length) rows.push({ header, cells, aligns });
         });
-        if (rows.length) blocks.push({ kind: 'table', rows });
+        if (rows.length) blocks.push({ kind: 'table', rows, widths: tableWidths(el, Math.max(...rows.map((r) => r.cells.length))) });
       } else if (tag === 'img') {
         const src = el.getAttribute('src') || '';
         // Only inline data: URIs — fetching a remote <img src> would be a real network request
@@ -149,7 +172,8 @@ function parseHtmlToBlocks(html: string): { blocks: Block[]; lang?: string; titl
           blocks.push({ kind: 'image', dataUrl: src, alt: el.getAttribute('alt') || '' });
         }
       } else if (tag === 'hr') {
-        blocks.push({ kind: 'rule' });
+        // <hr data-page-break> starts a new page (several invoices in one PDF, each on its own pages).
+        blocks.push(el.hasAttribute('data-page-break') ? { kind: 'pagebreak' } : { kind: 'rule' });
       } else if (INLINE_CONTAINER_TAGS.has(tag) || true) {
         // Generic container (div/span/section/... or any other unrecognized tag): no structure
         // of its own, just recurse into children so nothing nested inside is silently dropped.
@@ -207,6 +231,24 @@ function wrapRuns(runs: InlineRun[], fonts: FontSet, baseSize: number, maxWidth:
     const baselineShift = run.sub ? -baseSize * 0.2 : run.sup ? baseSize * 0.3 : 0;
     const color = run.link ? { r: 0.1, g: 0.3, b: 0.75 } : { r: 0, g: 0, b: 0 };
     const wordWidth = font.widthOfTextAtSize(word, size);
+    // A word wider than the whole line (a long URL, a long word in a narrow table column) is
+    // broken between characters, as a browser does with overflow-wrap; drawn whole, it ran past
+    // the edge of its cell or of the page.
+    if (wordWidth > maxWidth && word.length > 1) {
+      const chars = Array.from(word);
+      let piece = '';
+      let first = true;
+      for (const ch of chars) {
+        if (piece && font.widthOfTextAtSize(piece + ch, size) > maxWidth) {
+          pushToken(piece, run, first ? glue : true);
+          first = false;
+          piece = '';
+        }
+        piece += ch;
+      }
+      if (piece) pushToken(piece, run, first ? glue : true);
+      return;
+    }
     let needsSpace = currentLine.length > 0 && !glue;
     let spaceWidth = needsSpace ? font.widthOfTextAtSize(' ', size) : 0;
     if (currentLine.length && currentLineWidth + spaceWidth + wordWidth > maxWidth) {
@@ -481,22 +523,24 @@ function setKidsDirect(state: RenderState, dict: PDFDict, kids: PDFRef[]): void 
   dict.set(PDFName.of('K'), arr);
 }
 
-function renderTable(state: RenderState, rows: { header: boolean; cells: InlineRun[][] }[], parentRef: PDFRef): PDFRef[] {
+function renderTable(state: RenderState, rows: TableRow[], parentRef: PDFRef, widths?: number[]): PDFRef[] {
   const { ref: tableRef, dict: tableDict } = registerContainer(state, 'Table', parentRef);
   const numCols = Math.max(1, ...rows.map((r) => r.cells.length));
-  const colWidth = CONTENT_WIDTH / numCols;
+  const colW = (c: number): number => (widths ? widths[c]! * CONTENT_WIDTH : CONTENT_WIDTH / numCols);
+  const colX: number[] = [MARGIN];
+  for (let c = 0; c < numCols; c++) colX.push(colX[c]! + colW(c));
   const size = 10;
   const cellPad = 4;
   const rowRefs: PDFRef[] = [];
 
   const lineStep = size * 1.35;
   const maxSliceLines = Math.max(1, Math.floor((PAGE_HEIGHT - MARGIN * 2 - cellPad * 2) / lineStep));
-  const slices: { header: boolean; cells: InlineRun[][]; cellLines: RunSegment[][][] }[] = [];
+  const slices: { header: boolean; cells: InlineRun[][]; aligns: CellAlign[]; cellLines: RunSegment[][][] }[] = [];
   for (const row of rows) {
-    const full = row.cells.map((cellRuns) => wrapRuns(cellRuns, state.fonts, size, colWidth - cellPad * 2));
+    const full = row.cells.map((cellRuns, c) => wrapRuns(cellRuns, state.fonts, size, colW(c) - cellPad * 2));
     const total = Math.max(1, ...full.map((l) => l.length));
     for (let start = 0; start < total; start += maxSliceLines) {
-      slices.push({ header: row.header, cells: row.cells, cellLines: full.map((l) => l.slice(start, start + maxSliceLines)) });
+      slices.push({ header: row.header, cells: row.cells, aligns: row.aligns, cellLines: full.map((l) => l.slice(start, start + maxSliceLines)) });
     }
   }
 
@@ -511,14 +555,18 @@ function renderTable(state: RenderState, rows: { header: boolean; cells: InlineR
     const cellKids: PDFRef[] = [];
     row.cells.forEach((_runs, colIdx) => {
       const tag = row.header ? 'TH' : 'TD';
-      const x = MARGIN + colIdx * colWidth + cellPad;
+      const x = colX[colIdx]! + cellPad;
+      const inner = colW(colIdx) - cellPad * 2;
+      const align = row.aligns[colIdx] ?? 'left';
       const { ref, dict: cellDict } = beginMarkedContent(state, tag, trRef);
       // PDF/UA-1 7.5#1: a header cell without /Headers+/ID must say what it heads. A <th> row
       // here is always a row of column headers.
       if (row.header) cellDict.set(PDFName.of('A'), state.pdf.context.obj({ O: PDFName.of('Table'), Scope: PDFName.of('Column') }));
       let cy = rowTop - size * 1.1;
       for (const line of cellLines[colIdx] ?? []) {
-        drawLine(state, line, x, cy - size * 0.1);
+        const w = line.reduce((sum, seg) => sum + seg.font.widthOfTextAtSize(seg.text, seg.size), 0);
+        const lx = align === 'right' ? x + Math.max(0, inner - w) : align === 'center' ? x + Math.max(0, (inner - w) / 2) : x;
+        drawLine(state, line, lx, cy - size * 0.1);
         cy -= size * 1.35;
       }
       endMarkedContent(state);
@@ -530,11 +578,11 @@ function renderTable(state: RenderState, rows: { header: boolean; cells: InlineR
     // Grid lines are visual structure, not textual content — Artifact, not tagged.
     state.page.pushOperators(PDFOperator.of(PDFOperatorNames.BeginMarkedContent, [PDFName.of('Artifact')]));
     for (let c = 0; c <= numCols; c++) {
-      const gx = MARGIN + c * colWidth;
+      const gx = colX[c]!;
       state.page.drawLine({ start: { x: gx, y: rowTop }, end: { x: gx, y: rowTop - rowHeight }, thickness: 0.5, color: rgb(0.75, 0.75, 0.75) });
     }
-    state.page.drawLine({ start: { x: MARGIN, y: rowTop - rowHeight }, end: { x: MARGIN + numCols * colWidth, y: rowTop - rowHeight }, thickness: 0.5, color: rgb(0.75, 0.75, 0.75) });
-    state.page.drawLine({ start: { x: MARGIN, y: rowTop }, end: { x: MARGIN + numCols * colWidth, y: rowTop }, thickness: 0.5, color: rgb(0.75, 0.75, 0.75) });
+    state.page.drawLine({ start: { x: MARGIN, y: rowTop - rowHeight }, end: { x: colX[numCols]!, y: rowTop - rowHeight }, thickness: 0.5, color: rgb(0.75, 0.75, 0.75) });
+    state.page.drawLine({ start: { x: MARGIN, y: rowTop }, end: { x: colX[numCols]!, y: rowTop }, thickness: 0.5, color: rgb(0.75, 0.75, 0.75) });
     state.page.pushOperators(PDFOperator.of(PDFOperatorNames.EndMarkedContent));
 
     state.y -= rowHeight;
@@ -653,9 +701,10 @@ export async function htmlToTaggedPdf(html: string): Promise<Blob> {
     else if (block.kind === 'blockquote') refs = renderBlockquote(state, block.runs, structTreeRootRef);
     else if (block.kind === 'preformatted') refs = renderPreformatted(state, block.text, structTreeRootRef);
     else if (block.kind === 'list') refs = renderList(state, block.ordered, block.items, structTreeRootRef);
-    else if (block.kind === 'table') refs = renderTable(state, block.rows, structTreeRootRef);
+    else if (block.kind === 'table') refs = renderTable(state, block.rows, structTreeRootRef, block.widths);
     else if (block.kind === 'image') refs = await renderImage(state, block.dataUrl, block.alt, structTreeRootRef);
     else if (block.kind === 'rule') renderRule(state);
+    else if (block.kind === 'pagebreak') { if (state.y < PAGE_HEIGHT - MARGIN) newPage(state); }
     topKids.push(...refs);
   }
 

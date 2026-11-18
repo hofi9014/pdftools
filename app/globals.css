@@ -489,3 +489,40 @@ body {
 .hover\:bg-blue-50:hover {
   background-color: var(--coffee-accent-subtle) !important;
 }
+
+/* ── KSeF XML to PDF (components/ksef/KsefTool.tsx, HTML from lib/ksef/html.ts) ───────────── */
+.ksef-notice {
+  background-color: var(--coffee-surface-solid);
+  border: 1px solid var(--coffee-border);
+  color: var(--coffee-text);
+}
+.ksef-btn-secondary {
+  background-color: var(--coffee-surface-solid);
+  border: 1px solid var(--coffee-border);
+  color: var(--coffee-text);
+}
+.ksef-btn-secondary:hover { background-color: var(--coffee-surface-hover); }
+.ksef-file { border-color: var(--coffee-border); background-color: var(--coffee-surface-solid); }
+.ksef-file-current { border-color: var(--coffee-accent); box-shadow: 0 0 0 1px var(--coffee-accent); }
+.ksef-preview { background-color: var(--coffee-surface-solid); border-color: var(--coffee-border); color: var(--coffee-text); }
+.ksef-preview:focus { outline: 2px solid var(--coffee-accent-ink); outline-offset: 2px; }
+.ksef-invoice { font-size: 0.9rem; line-height: 1.45; }
+.ksef-invoice .ksef-title { font-size: 1.35rem; font-weight: 700; margin-bottom: 0.75rem; }
+.ksef-invoice h4 {
+  font-size: 1rem; font-weight: 700; margin: 1.4rem 0 0.5rem;
+  padding-bottom: 0.25rem; border-bottom: 1px solid var(--coffee-border);
+}
+.ksef-rows { display: grid; gap: 0.15rem; margin: 0; }
+.ksef-rows > div { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 0.75rem; padding: 0.2rem 0; }
+.ksef-rows dt { color: var(--coffee-text-secondary); }
+.ksef-rows dd { margin: 0; overflow-wrap: anywhere; }
+.ksef-table-wrap { overflow-x: auto; margin: 0.25rem 0 0.5rem; }
+.ksef-table { width: 100%; border-collapse: collapse; min-width: 36rem; }
+.ksef-table caption { text-align: start; font-weight: 600; padding: 0.25rem 0; }
+.ksef-table th, .ksef-table td { border: 1px solid var(--coffee-border); padding: 0.35rem 0.5rem; vertical-align: top; text-align: start; overflow-wrap: break-word; hyphens: manual; }
+.ksef-table th { background-color: var(--coffee-surface-hover); font-weight: 600; }
+.ksef-total { margin: 0.75rem 0; font-size: 1.05rem; text-align: end; }
+@media (max-width: 640px) {
+  .ksef-rows > div { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .ksef-rows dd { padding-bottom: 0.35rem; }
+}
