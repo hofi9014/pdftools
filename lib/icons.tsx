@@ -77,6 +77,8 @@ const tools: Record<string, React.ReactNode> = {
   html:         row(<>{gl('globe')}{ar()}{<PdfBadge />}</>),
   url:          row(<>{gl('link')}{ar()}{<PdfBadge />}</>),
   html2pdf:     row(<>{<PdfBadge />}{ar()}{gl('globe')}</>),
+  // Polish only (lib/tools.ts LOCALE_ONLY_TOOLS): KSeF e-invoice XML to PDF.
+  ksef:         row(<>{<PdfBadge type="XML" />}{ar()}{<PdfBadge />}</>),
 
   protect:      row(<>{gl('lock')}{<PdfBadge />}</>),
   unlock:       row(<>{gl('unlock')}{<PdfBadge />}</>),

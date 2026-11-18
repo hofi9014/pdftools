@@ -60,6 +60,26 @@ console.log('=== the page (HTML as served) ===');
   check(pl.includes('href="/pl/ksef-xml-na-pdf"') && !en.includes('ksef-xml-na-pdf'), 'in the Polish menu, not in the English one');
 }
 
+console.log('\n=== the Polish home page lists, finds and counts it ===');
+{
+  const browser0 = await chromium.launch();
+  for (const [loc, expectTile, total, local] of [['pl', true, 41, 37], ['en', false, 40, 36]] as const) {
+    const ctx = await browser0.newContext({ serviceWorkers: 'block' });
+    await ctx.addInitScript(() => { try { localStorage.setItem('cookie-consent', 'declined'); } catch { /* */ } });
+    const page = await ctx.newPage();
+    await page.goto(`${BASE}/${loc}`, { waitUntil: 'networkidle' });
+    const tile = page.locator('#tools a[href="/pl/ksef-xml-na-pdf"]');
+    check((await tile.count() === 1) === expectTile, `/${loc}: KSeF tile in the tool catalog — ${expectTile ? 'present' : 'absent'}`);
+    const hero = (await page.locator('main').innerText()).replace(/\s+/g, ' ');
+    check(hero.includes(`${total} `) && hero.includes(`${local}/${total}`), `/${loc}: counts ${total} tools, ${local}/${total} local`);
+    await page.locator('#tool-search').fill('ksef');
+    const found = page.locator('[role="status"] a[href="/pl/ksef-xml-na-pdf"]');
+    check((await found.count() === 1) === expectTile, `/${loc}: search "ksef" ${expectTile ? 'finds' : 'does not offer'} the tool`);
+    await ctx.close();
+  }
+  await browser0.close();
+}
+
 const files = ['mf', 'brochure', 'other'].flatMap((d) => readdirSync(join(DIR, d)).map((f) => ({ name: f, mimeType: 'text/xml', buffer: readFileSync(join(DIR, d, f)) })));
 const invoices = files.filter((f) => !['mf-upo.xml', 'fa1-stub.xml', 'inny-xml.xml', 'notatka.xml'].includes(f.name));
 

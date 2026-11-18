@@ -6,7 +6,7 @@
 // Run: npx tsx tests/home-local-footnote.mts
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { tools } from '../lib/tools';
+import { tools, toolCounts, localeOnlyTools } from '../lib/tools';
 import { t, locales } from '../lib/i18n';
 
 let fails = 0;
@@ -28,13 +28,19 @@ const home = readFileSync(join(process.cwd(), 'components', 'pages', 'HomeView.t
 check(home.includes("['aichat', 'aisummary', 'translate'].map") && home.includes("url: t('tool.url', locale)"),
   'HomeView fills the footnote with the AI tools and URL to PDF');
 check(home.includes("t('home.local_footnote'"), 'HomeView renders home.local_footnote');
+check(home.includes('toolCounts(locale)') && home.includes('localeOnlyTools(locale)'), 'HomeView counts and lists the tools of its own language');
+check(toolCounts('pl').total === tools.length + 1 && toolCounts('en').total === tools.length && localeOnlyTools('pl').some((x) => x.href === '/pl/ksef-xml-na-pdf'), 'Polish counts KSeF XML to PDF, English does not');
 check(home.includes("t('home.verify_title'") && home.includes("'home.verify_step3'"), 'HomeView renders the "check for yourself" section');
 
 for (const loc of locales) {
-  const [local, total] = t('stats.local', loc).split('/').map(Number);
-  const nonLocal = (total ?? 0) - (local ?? 0);
-  check(total === tools.length && nonLocal === serverKeys.length,
-    `${loc}: stats.local "${local}/${total}" matches ${tools.length} tools, ${serverKeys.length} not local`);
+  // The figures are filled in from the registry (toolCounts), so a new tool cannot leave them stale.
+  const counts = toolCounts(loc);
+  const expectTotal = tools.length + localeOnlyTools(loc).length;
+  const nonLocal = counts.total - counts.local;
+  check(t('stats.local', loc) === '{local}/{total}' && t('hero.subtitle', loc).split('{n}').length === 2 && !/40/.test(t('hero.subtitle', loc)),
+    `${loc}: stats.local and hero.subtitle take the numbers as placeholders, no "40" written in`);
+  check(counts.total === expectTotal && nonLocal === serverKeys.length,
+    `${loc}: ${counts.local}/${counts.total} — ${expectTotal} tools in this language, ${serverKeys.length} not local`);
   const raw = t('home.local_footnote', loc);
   check(raw !== 'home.local_footnote' && raw.includes('{ai}') && raw.includes('{url}') && raw.includes(String(nonLocal)),
     `${loc}: footnote has {ai}, {url} and the number ${nonLocal}`);

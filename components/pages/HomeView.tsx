@@ -9,7 +9,7 @@ import InstallSection from '@/components/InstallSection';
 import PdfBadge from '@/components/PdfBadge';
 import ToolGlyph from '@/components/ToolGlyph';
 import HeroCoffeeCup from '@/components/HeroCoffeeCup';
-import { tools, toolPath, categories } from '@/lib/tools';
+import { tools, toolPath, categories, localeOnlyTools, toolCounts, type LocaleOnlyTool } from '@/lib/tools';
 
 const aiTools = new Set(['aichat', 'aisummary', 'translate']);
 
@@ -39,10 +39,24 @@ function ToolCard({ tool, locale }: { tool: ToolInfo; locale: Locale }) {
   );
 }
 
-function ToolCatalog({ groups, locale }: { groups: { cat: CategoryInfo; filtered: ToolInfo[] }[]; locale: Locale }) {
+// A tool that exists in this language only (lib/tools.ts LOCALE_ONLY_TOOLS): its name and
+// description are written in that language, so they are not translation keys.
+function LocaleOnlyCard({ tool }: { tool: LocaleOnlyTool }) {
+  return (
+    <a href={tool.href} className="coffee-card flex flex-col gap-3 p-4 sm:p-5 no-underline">
+      <span className="self-start text-2xl sm:text-3xl px-3 py-2.5 rounded-2xl" style={{ backgroundColor: catBg(tool.category) }}>
+        {getToolIcon(tool.key)}
+      </span>
+      <h4 className="font-bold text-sm sm:text-base" style={{ color: 'var(--coffee-text)' }}>{tool.name}</h4>
+      <p className="text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--coffee-text-tertiary)' }}>{tool.desc}</p>
+    </a>
+  );
+}
+
+function ToolCatalog({ groups, locale }: { groups: { cat: CategoryInfo; filtered: ToolInfo[]; extra: LocaleOnlyTool[] }[]; locale: Locale }) {
   return (
     <>
-      {groups.map(({ cat, filtered }) => (
+      {groups.map(({ cat, filtered, extra }) => (
         <div key={cat.key} className="mb-12 last:mb-0">
           <h3 className="font-display text-xl font-extrabold mb-5 flex items-center gap-3" style={{ color: 'var(--coffee-text)' }}>
             <span aria-hidden="true" className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: catBg(cat.key) }}>{getCategoryIcon(cat.key)}</span>
@@ -52,6 +66,7 @@ function ToolCatalog({ groups, locale }: { groups: { cat: CategoryInfo; filtered
             {filtered.map((tool) => (
               <ToolCard key={tool.key} tool={tool} locale={locale} />
             ))}
+            {extra.map((tool) => <LocaleOnlyCard key={tool.key} tool={tool} />)}
           </div>
         </div>
       ))}
@@ -66,6 +81,7 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
   const locale = forcedLocale || detectedLocale;
   const [search, setSearch] = useState('');
   const q = search ? norm(search) : '';
+  const counts = toolCounts(locale);
   const filteredTools = useMemo(() => {
     return categories
       .map(cat => {
@@ -78,9 +94,10 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
               norm(tt.slug).includes(q)
             )
           : base;
-        return { cat, filtered };
+        const extra = localeOnlyTools(locale).filter((x) => x.category === cat.key && (!q || norm(x.name).includes(q) || norm(x.desc).includes(q) || norm(x.key).includes(q)));
+        return { cat, filtered, extra };
       })
-      .filter(({ filtered }) => filtered.length > 0);
+      .filter(({ filtered, extra }) => filtered.length + extra.length > 0);
   }, [q, locale]);
   const searchPlaceholder: Record<string, string> = {
     pl: 'Szukaj narzędzia...',
@@ -121,7 +138,7 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
               {t('home.title', locale)}
             </h1>
             <p className="text-lg sm:text-xl leading-relaxed max-w-[34em]" style={{ color: 'var(--coffee-text-secondary)' }}>
-              {t('hero.subtitle', locale)}
+              {t('hero.subtitle', locale, { n: String(counts.total) })}
             </p>
             <div className="mt-1 p-4 sm:p-5 rounded-[22px] border-2 border-dashed flex flex-col sm:flex-row sm:items-center gap-4"
               style={{ borderColor: 'var(--coffee-accent)', backgroundColor: 'var(--coffee-surface-solid)', boxShadow: 'var(--coffee-shadow)' }}>
@@ -145,8 +162,8 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
               <a href="#tools" className="btn-accent justify-center shrink-0 no-underline">{t('home.cta', locale)}</a>
             </div>
             <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold" style={{ color: 'var(--coffee-text-secondary)' }}>
-              <li>✓ {tools.length} {t('stats.tools', locale)}</li>
-              <li>✓ {t('stats.local', locale)} {t('stats.local_sub', locale)}<sup aria-hidden="true">*</sup></li>
+              <li>✓ {counts.total} {t('stats.tools', locale)}</li>
+              <li>✓ {t('stats.local', locale, { local: String(counts.local), total: String(counts.total) })} {t('stats.local_sub', locale)}<sup aria-hidden="true">*</sup></li>
               <li>✓ 100% {t('stats.free', locale)}</li>
             </ul>
             {/* The "local" claims carry an asterisk naming the 4 tools that are not local: the AI tools

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { all, locales, t, type Locale } from '@/lib/i18n';
-import { keyBySlug, toolProcessing, tools, NON_LOCAL_TOOLS } from '@/lib/tools';
+import { keyBySlug, toolProcessing, toolCounts } from '@/lib/tools';
 import { legalFor } from '@/lib/legal';
 import { content as termsContent } from '@/content/pages/terms';
 import { content as supportContent } from '@/content/pages/wsparcie';
@@ -170,7 +170,8 @@ export function fitList(locale: Locale, lead: string, items: string[]): string {
 
 /** The home page's description; the number of tools that work in the browser comes from the tool list. */
 export function homeDescription(locale: Locale): string {
-  return t('meta.description', locale, { local: String(tools.length - Object.keys(NON_LOCAL_TOOLS).length), total: String(tools.length) });
+  const { local, total } = toolCounts(locale);
+  return t('meta.description', locale, { local: String(local), total: String(total) });
 }
 
 /**
