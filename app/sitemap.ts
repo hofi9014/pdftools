@@ -7,6 +7,7 @@ import { buildCanonicalUrl } from '@/lib/guides-canonical';
 import { guideCategoryPath } from '@/lib/guide-urls';
 import { isCategoryIndexable, getArticlesByCategory, guidesLastModified } from '@/lib/guides';
 import { tools, toolPath } from '@/lib/tools';
+import { KSEF_PATH } from '@/lib/ksef/route';
 
 // Every info page that exists under app/[locale]/ (the unprefixed /privacy etc. only 307-redirect
 // to a locale by Accept-Language — see proxy.ts — so they must not be listed).
@@ -40,6 +41,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   addLocalized('', 'weekly', 1.0);
   for (const t of tools.filter(t => !t.disabled)) addLocalized(toolPath(t.key).slice(1), 'weekly', 0.8);
   for (const p of infoPages) addLocalized(p, 'weekly', 0.5);
+  // KSeF XML to PDF exists only in Polish: one URL, no language alternates.
+  pages.push({ url: base + KSEF_PATH, changeFrequency: 'weekly', priority: 0.8 });
 
   // hub pages: /guides/{localeSegment}
   for (const locale of locales) {

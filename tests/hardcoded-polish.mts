@@ -38,6 +38,9 @@ const walk = (d: string) => {
 const SKIP = [
   /^lib\/translations\//, /^lib\/legal\//, /^lib\/guides-validate\.ts$/, /^lib\/guide-categories\.ts$/,
   /^app\/api\//, /^lib\/error-text\.ts$/, /^lib\/pdf\/pdfToSheet\.ts$/, /^lib\/pdf\/fixedLayoutPdf\.ts$/,
+  // KSeF XML to PDF exists only in Polish (/pl/ksef-xml-na-pdf): it shows Polish e-invoices from the
+  // Polish system, with the field names of the Ministry's schema (decided 2026-11-18).
+  /^lib\/ksef\//, /^components\/ksef\//, /^app\/\[locale\]\/ksef-xml-na-pdf\//,
 ];
 // A line is fine when it is a per-language map entry ("pl: '…'"), a console message, an engine
 // message (checked below against ENGINE_MESSAGES), or Polish letters used as data.

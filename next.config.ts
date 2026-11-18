@@ -90,6 +90,8 @@ const nextConfig: NextConfig = {
         destination: '/pdf-to-images',
         permanent: true,
       },
+      // KSeF XML to PDF exists only in Polish.
+      { source: '/ksef-xml-na-pdf', destination: '/pl/ksef-xml-na-pdf', permanent: true },
       // exact match dla wszystkich segmentów (root → /guides/{segment})
       ...segments.map((segment) => ({
         source: `/${segment}`,

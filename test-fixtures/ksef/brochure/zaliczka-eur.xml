@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Faktura xmlns="http://crd.gov.pl/wzor/2025/06/25/13775/">
+	<Naglowek>
+		<KodFormularza kodSystemowy="FA (3)" wersjaSchemy="1-0E">FA</KodFormularza>
+		<WariantFormularza>3</WariantFormularza>
+		<DataWytworzeniaFa>2026-09-15T10:00:00Z</DataWytworzeniaFa>
+		<SystemInfo>optimapdf test</SystemInfo>
+	</Naglowek>
+	<Podmiot1>
+		<DaneIdentyfikacyjne>
+			<NIP>5265877635</NIP>
+			<Nazwa>Hurtownia Tekstyliów Sp. z o.o.</Nazwa>
+		</DaneIdentyfikacyjne>
+		<Adres>
+			<KodKraju>PL</KodKraju>
+			<AdresL1>ul. Łąkowa 12</AdresL1>
+			<AdresL2>90-001 Łódź</AdresL2>
+		</Adres>
+	</Podmiot1>
+	<Podmiot2>
+		<DaneIdentyfikacyjne>
+			<NIP>6808208874</NIP>
+			<Nazwa>Sklep Żółty Koc Jan Kowalski</Nazwa>
+		</DaneIdentyfikacyjne>
+		<Adres>
+			<KodKraju>PL</KodKraju>
+			<AdresL1>ul. Główna 5</AdresL1>
+			<AdresL2>00-950 Warszawa</AdresL2>
+		</Adres>
+		<JST>2</JST>
+		<GV>2</GV>
+	</Podmiot2>
+	<Fa>
+		<KodWaluty>EUR</KodWaluty>
+		<P_1>2026-09-20</P_1>
+		<P_2>FZ/3/09/2026</P_2>
+		<P_13_1>3252.03</P_13_1>
+		<P_14_1>747.97</P_14_1>
+		<P_14_1W>3351.16</P_14_1W>
+		<P_15>4000.00</P_15>
+		<Adnotacje>
+			<P_16>2</P_16>
+			<P_17>2</P_17>
+			<P_18>2</P_18>
+			<P_18A>2</P_18A>
+			<Zwolnienie>
+				<P_19N>1</P_19N>
+			</Zwolnienie>
+			<NoweSrodkiTransportu>
+				<P_22N>1</P_22N>
+			</NoweSrodkiTransportu>
+			<P_23>2</P_23>
+			<PMarzy>
+				<P_PMarzyN>1</P_PMarzyN>
+			</PMarzy>
+		</Adnotacje>
+		<RodzajFaktury>ZAL</RodzajFaktury>
+		<ZaliczkaCzesciowa>
+			<P_6Z>2026-09-10</P_6Z>
+			<P_15Z>500</P_15Z>
+			<KursWalutyZW>4.4512</KursWalutyZW>
+		</ZaliczkaCzesciowa>
+		<ZaliczkaCzesciowa>
+			<P_6Z>2026-09-15</P_6Z>
+			<P_15Z>2500</P_15Z>
+			<KursWalutyZW>4.4724</KursWalutyZW>
+		</ZaliczkaCzesciowa>
+		<ZaliczkaCzesciowa>
+			<P_6Z>2026-09-20</P_6Z>
+			<P_15Z>1000</P_15Z>
+			<KursWalutyZW>4.5148</KursWalutyZW>
+		</ZaliczkaCzesciowa>
+		<Zamowienie>
+			<WartoscZamowienia>8000.00</WartoscZamowienia>
+			<ZamowienieWiersz>
+				<NrWierszaZam>1</NrWierszaZam>
+				<P_7Z>Koc polarowy – partia hurtowa</P_7Z>
+				<P_8AZ>szt.</P_8AZ>
+				<P_8BZ>325</P_8BZ>
+				<P_9AZ>20.00</P_9AZ>
+				<P_11NettoZ>6500.00</P_11NettoZ>
+				<P_11VatZ>1495.00</P_11VatZ>
+				<P_12Z>23</P_12Z>
+			</ZamowienieWiersz>
+		</Zamowienie>
+	</Fa>
+</Faktura>

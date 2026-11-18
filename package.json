@@ -232,7 +232,9 @@
     "test:guide-localized-urls": "npx tsx tests/guide-localized-urls.mts",
     "test:llms-txt": "npx tsx tests/llms-txt.mts",
     "test:upload-comparison-page": "npx tsx tests/upload-comparison-page.mts",
-    "test:e2e-guide-localized-urls": "npx tsx e2e/guide-localized-urls.mts"
+    "test:e2e-guide-localized-urls": "npx tsx e2e/guide-localized-urls.mts",
+    "test:ksef-xml-to-pdf": "npx tsx tests/ksef-xml-to-pdf.mts",
+    "test:e2e-ksef-xml-to-pdf": "npx tsx e2e/ksef-xml-to-pdf.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

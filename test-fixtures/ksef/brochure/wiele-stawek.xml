@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Faktura xmlns="http://crd.gov.pl/wzor/2025/06/25/13775/">
+	<Naglowek>
+		<KodFormularza kodSystemowy="FA (3)" wersjaSchemy="1-0E">FA</KodFormularza>
+		<WariantFormularza>3</WariantFormularza>
+		<DataWytworzeniaFa>2026-09-15T10:00:00Z</DataWytworzeniaFa>
+		<SystemInfo>optimapdf test</SystemInfo>
+	</Naglowek>
+	<Podmiot1>
+		<DaneIdentyfikacyjne>
+			<NIP>5265877635</NIP>
+			<Nazwa>Hurtownia Tekstyliów Sp. z o.o.</Nazwa>
+		</DaneIdentyfikacyjne>
+		<Adres>
+			<KodKraju>PL</KodKraju>
+			<AdresL1>ul. Łąkowa 12</AdresL1>
+			<AdresL2>90-001 Łódź</AdresL2>
+		</Adres>
+	</Podmiot1>
+	<Podmiot2>
+		<DaneIdentyfikacyjne>
+			<NIP>6808208874</NIP>
+			<Nazwa>Sklep Żółty Koc Jan Kowalski</Nazwa>
+		</DaneIdentyfikacyjne>
+		<Adres>
+			<KodKraju>PL</KodKraju>
+			<AdresL1>ul. Główna 5</AdresL1>
+			<AdresL2>00-950 Warszawa</AdresL2>
+		</Adres>
+		<JST>2</JST>
+		<GV>2</GV>
+	</Podmiot2>
+	<Podmiot3>
+		<DaneIdentyfikacyjne>
+			<NIP>7740001454</NIP>
+			<Nazwa>Oddział Magazynowy w Kutnie</Nazwa>
+		</DaneIdentyfikacyjne>
+		<Adres>
+			<KodKraju>PL</KodKraju>
+			<AdresL1>ul. Składowa 3</AdresL1>
+			<AdresL2>99-300 Kutno</AdresL2>
+		</Adres>
+		<Rola>2</Rola>
+	</Podmiot3>
+	<Fa>
+		<KodWaluty>PLN</KodWaluty>
+		<P_1>2026-09-30</P_1>
+		<P_1M>Łódź</P_1M>
+		<P_2>FV/245/09/2026</P_2>
+		<P_6>2026-09-30</P_6>
+		<P_13_1>1000.00</P_13_1>
+		<P_14_1>230.00</P_14_1>
+		<P_13_2>200.00</P_13_2>
+		<P_14_2>16.00</P_14_2>
+		<P_13_3>100.00</P_13_3>
+		<P_14_3>5.00</P_14_3>
+		<P_13_7>300.00</P_13_7>
+		<P_13_10>500.00</P_13_10>
+		<P_15>2351.00</P_15>
+		<Adnotacje>
+			<P_16>2</P_16>
+			<P_17>2</P_17>
+			<P_18>1</P_18>
+			<P_18A>2</P_18A>
+			<Zwolnienie>
+				<P_19>1</P_19>
+				<P_19A>art. 43 ust. 1 pkt 18 ustawy</P_19A>
+			</Zwolnienie>
+			<NoweSrodkiTransportu>
+				<P_22N>1</P_22N>
+			</NoweSrodkiTransportu>
+			<P_23>2</P_23>
+			<PMarzy>
+				<P_PMarzyN>1</P_PMarzyN>
+			</PMarzy>
+		</Adnotacje>
+		<RodzajFaktury>VAT</RodzajFaktury>
+		<DodatkowyOpis>
+			<Klucz>Numer projektu</Klucz>
+			<Wartosc>PRJ/2026/17</Wartosc>
+		</DodatkowyOpis>
+		<FaWiersz>
+			<NrWierszaFa>1</NrWierszaFa>
+			<P_7>Projekt graficzny katalogu</P_7>
+			<P_8A>usł.</P_8A>
+			<P_8B>1</P_8B>
+			<P_9A>1000.00</P_9A>
+			<P_11>1000.00</P_11>
+			<P_12>23</P_12>
+		</FaWiersz>
+		<FaWiersz>
+			<NrWierszaFa>2</NrWierszaFa>
+			<P_7>Usługa cateringowa</P_7>
+			<P_8A>usł.</P_8A>
+			<P_8B>1</P_8B>
+			<P_9A>200.00</P_9A>
+			<P_11>200.00</P_11>
+			<P_12>8</P_12>
+		</FaWiersz>
+		<FaWiersz>
+			<NrWierszaFa>3</NrWierszaFa>
+			<P_7>Książka „Tkaniny naturalne”</P_7>
+			<Indeks>KS-0042</Indeks>
+			<P_8A>szt.</P_8A>
+			<P_8B>2</P_8B>
+			<P_9A>50.00</P_9A>
+			<P_11>100.00</P_11>
+			<P_12>5</P_12>
+		</FaWiersz>
+		<FaWiersz>
+			<NrWierszaFa>4</NrWierszaFa>
+			<P_7>Szkolenie zawodowe</P_7>
+			<P_8A>usł.</P_8A>
+			<P_8B>1</P_8B>
+			<P_9A>300.00</P_9A>
+			<P_11>300.00</P_11>
+			<P_12>zw</P_12>
+		</FaWiersz>
+		<FaWiersz>
+			<NrWierszaFa>5</NrWierszaFa>
+			<P_7>Złom stalowy</P_7>
+			<P_8A>t</P_8A>
+			<P_8B>0.5</P_8B>
+			<P_9A>1000.00</P_9A>
+			<P_11>500.00</P_11>
+			<P_12>oo</P_12>
+		</FaWiersz>
+		<Rozliczenie>
+			<Obciazenia>
+				<Kwota>17</Kwota>
+				<Powod>Zwrot kosztów - opłata skarbowa</Powod>
+			</Obciazenia>
+			<SumaObciazen>17</SumaObciazen>
+			<Odliczenia>
+				<Kwota>300</Kwota>
+				<Powod>Rozliczenie salda klienta</Powod>
+			</Odliczenia>
+			<SumaOdliczen>300</SumaOdliczen>
+			<DoZaplaty>2068.00</DoZaplaty>
+		</Rozliczenie>
+		<Platnosc>
+			<TerminPlatnosci>
+				<Termin>2026-10-14</Termin>
+			</TerminPlatnosci>
+			<FormaPlatnosci>6</FormaPlatnosci>
+			<RachunekBankowy>
+				<NrRB>61109010140000071219812874</NrRB>
+				<NazwaBanku>Bank Przykładowy S.A.</NazwaBanku>
+			</RachunekBankowy>
+			<Skonto>
+				<WarunkiSkonta>zapłata w ciągu 7 dni</WarunkiSkonta>
+				<WysokoscSkonta>2%</WysokoscSkonta>
+			</Skonto>
+		</Platnosc>
+		<WarunkiTransakcji>
+			<Umowy>
+				<DataUmowy>2026-01-05</DataUmowy>
+				<NrUmowy>U/2026/03</NrUmowy>
+			</Umowy>
+		</WarunkiTransakcji>
+	</Fa>
+	<Stopka>
+		<Informacje>
+			<StopkaFaktury>Dziękujemy za zakupy.
+Reklamacje: reklamacje@example.com</StopkaFaktury>
+		</Informacje>
+		<Rejestry>
+			<KRS>0000123456</KRS>
+			<REGON>123456785</REGON>
+		</Rejestry>
+	</Stopka>
+</Faktura>

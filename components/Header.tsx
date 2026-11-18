@@ -6,6 +6,7 @@ import { localeGuidesSlug } from '@/lib/guides-slugs';
 import { getCategoryIcon } from '@/lib/icons';
 import ToolGlyph, { type GlyphName } from '@/components/ToolGlyph';
 import { toolsByCategory, toolPath, homePath } from '@/lib/tools';
+import { KSEF_PATH, KSEF_TOOL_NAME } from '@/lib/ksef/route';
 import ThemeToggle from './ThemeToggle';
 import LanguageSelector from './LanguageSelector';
 import MobileMenu from './MobileMenu';
@@ -14,6 +15,8 @@ interface CatTool {
   key: string;
   href: string;
   navKey?: string;
+  /** A fixed label instead of a translation key (the Polish-only KSeF tool). */
+  label?: string;
   icon?: GlyphName;
 }
 
@@ -37,7 +40,11 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
     },
     {
       key: 'convert',
-      tools: toolsByCategory('convert').map(t => ({ key: t.key, href: toolPath(t.key, locale) })),
+      tools: [
+        ...toolsByCategory('convert').map(t => ({ key: t.key, href: toolPath(t.key, locale) })),
+        // KSeF XML to PDF exists only in Polish (lib/ksef/route.ts).
+        ...(locale === 'pl' ? [{ key: 'ksef', href: KSEF_PATH, label: KSEF_TOOL_NAME }] : []),
+      ],
     },
     {
       key: 'secure',
@@ -86,7 +93,7 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
                         <Link href={tool.href}
                           className="block px-3 py-2 rounded-lg text-sm transition hover:bg-[var(--coffee-surface-hover)]"
                           style={{ color: 'var(--coffee-text-secondary)' }}>
-                          {tool.icon && <span className="me-1.5"><ToolGlyph name={tool.icon} /></span>}{t(tool.navKey ?? `tool.${tool.key}`, locale)}
+                          {tool.icon && <span className="me-1.5"><ToolGlyph name={tool.icon} /></span>}{tool.label ?? t(tool.navKey ?? `tool.${tool.key}`, locale)}
                         </Link>
                       </div>
                     ))}

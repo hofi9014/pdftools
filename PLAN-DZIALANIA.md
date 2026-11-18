@@ -212,8 +212,12 @@ miejsca na wdrożenia (limit Hobby 10 GB).
   2026-11-03 panel pokazuje 0 B — poniżej limitu.
 - **ZROBIONE 2026-11-02 (decyzja właściciela: usunąć):** obietnica „odznaki Supporter” i listy
   wspierających zniknęła ze strony Wsparcia w 16 językach (`15e9d61`, sprawdzone na produkcji).
-- **[DECYZJA]** Faktury KSeF (XML → czytelny PDF) — duży projekt, najpierw sprawdzenie
-  przepisów i schematu FA(3).
+- **ZROBIONE 2026-11-18 (decyzje właściciela: strona tylko po polsku, własna wizualizacja):**
+  faktury KSeF (XML → czytelny PDF) — `/pl/ksef-xml-na-pdf`, struktury FA(3) i FA(2), etykiety
+  i kody ze schematów XSD Ministerstwa Finansów, każde pole z pliku w podglądzie i w PDF,
+  jeden PDF / wspólny PDF / ZIP, bez wysyłania pliku (`test:ksef-xml-to-pdf`,
+  `test:e2e-ksef-xml-to-pdf`, wpis w AGENTS.md). Do sprawdzenia przez właściciela: prawdziwe
+  faktury z własnego KSeF i PDF otwarty w Acrobacie.
 - **ZROBIONE 2026-11-04 (wygląd zatwierdzony przez właściciela):** filiżanka kawy z parą w kole na
   stronie głównej, za ikonami, w całości w kole (`components/HeroCoffeeCup.tsx`, `test:hero-coffee-cup`).
 - **ZROBIONE 2026-11-07 (właściciel zatwierdził podgląd):** ikony narzędzi i kategorii rysowane zamiast emoji (1.5).

@@ -7,6 +7,7 @@
 
 import { t, locales, type Locale } from '@/lib/i18n';
 import { tools, toolPath, homePath, NON_LOCAL_TOOLS } from '@/lib/tools';
+import { KSEF_PATH, KSEF_TOOL_NAME } from '@/lib/ksef/route';
 import { getAllArticles } from '@/lib/guides';
 import { guideArticlePath, encodePath } from '@/lib/guide-urls';
 import { DAILY_LIMIT } from '@/lib/ai-limit';
@@ -38,6 +39,10 @@ export function llmsText(): string {
 
   out.push('## Tools', '');
   for (const x of listed) out.push(line(t(`tool.${x.key}`, 'en'), toolPath(x.key, 'en'), t(`desc.${x.key}`, 'en')));
+  out.push('');
+
+  out.push('## Polish only', '');
+  out.push(line(`${KSEF_TOOL_NAME} (KSeF XML to PDF)`, KSEF_PATH, 'Opens an e-invoice XML file from the Polish National e-Invoicing System (KSeF, structures FA(3) and FA(2)) in the browser, shows every field of the invoice and saves it as PDF. The file is not uploaded.'));
   out.push('');
 
   out.push('## Guides', '');
