@@ -144,7 +144,14 @@ for (const slug of slugs) {
     if (!reached) noState.push(`${slug}/${mode}${uploaded ? '' : ' (no upload)'}${clicked ? '' : ' (no button)'}`);
     for (const theme of ['light', 'dark'] as const) {
       await page.evaluate((dark) => document.documentElement.classList.toggle('dark', dark), theme === 'dark');
+      // Wait for colour transitions to finish: measured mid-transition, a colour is half-way between
+      // two states (CI, 2026-11-17: 4.27:1 on /pl/reorder-pages after the theme switch; 2026-11-18:
+      // 4.07:1 on the convert button of /pl/openoffice-to-pdf, whose transition started after the
+      // first check). Settled = no running finite animation in two checks 150 ms apart.
+      const settled = () => page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getTiming().iterations === Infinity), undefined, { timeout: 10_000 }).catch(() => {});
+      await settled();
       await page.waitForTimeout(150);
+      await settled();
       const bad = await axe(page);
       check(bad.length === 0, `${theme} /pl/${slug} ${mode}${reached ? '' : ' (no state shown)'}: ${bad.length ? '\n      ' + bad.slice(0, 6).join('\n      ') : 'clean'}`);
     }
