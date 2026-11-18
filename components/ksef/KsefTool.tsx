@@ -3,6 +3,7 @@
 // Nothing is sent anywhere — the reading code (lib/ksef) is loaded on demand when files are added.
 import { useRef, useState } from 'react';
 import ToolGlyph from '@/components/ToolGlyph';
+import { getToolIcon } from '@/lib/icons';
 import type { KsefFileResult } from '@/lib/ksef/client';
 import { KSEF_NOTICE } from '@/lib/ksef/view';
 
@@ -98,7 +99,7 @@ export default function KsefTool({ title, lead }: { title: string; lead: string 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="text-center mb-8">
-        <div className="text-6xl mb-4" aria-hidden="true"><ToolGlyph name="receipt" /></div>
+        <div className="text-6xl mb-4" aria-hidden="true">{getToolIcon('ksef')}</div>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tool-heading mb-3">{title}</h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">{lead}</p>
       </div>

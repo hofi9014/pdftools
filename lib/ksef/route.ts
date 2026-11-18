@@ -3,3 +3,4 @@
 export const KSEF_SLUG = 'ksef-xml-na-pdf';
 export const KSEF_TOOL_NAME = 'KSeF XML na PDF';
 export const KSEF_PATH = `/pl/${KSEF_SLUG}`;
+export const KSEF_TOOL_DESC = 'Otwórz plik XML e-faktury z KSeF i zapisz go jako PDF';

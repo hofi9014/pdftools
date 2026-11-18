@@ -1,3 +1,5 @@
+import { KSEF_PATH, KSEF_TOOL_NAME, KSEF_TOOL_DESC } from './ksef/route';
+
 export interface ToolDef {
   key: string;
   slug: string;
@@ -72,6 +74,24 @@ for (const t of tools) {
  * this list to the pages that actually call the server (tests/home-local-footnote.mts).
  */
 export const NON_LOCAL_TOOLS: Record<string, 'ai' | 'url'> = { aichat: 'ai', aisummary: 'ai', translate: 'ai', url: 'url' };
+
+/**
+ * Tools that exist in one language only (KSeF is a Polish system). They are not in `tools`, so
+ * they get no page, guide or sitemap entry in the other languages; the home page lists and counts
+ * them only in their own language. All of them process the file in the browser.
+ */
+export interface LocaleOnlyTool { key: string; locale: string; category: string; href: string; name: string; desc: string }
+export const LOCALE_ONLY_TOOLS: LocaleOnlyTool[] = [
+  { key: 'ksef', locale: 'pl', category: 'convert', href: KSEF_PATH, name: KSEF_TOOL_NAME, desc: KSEF_TOOL_DESC },
+];
+export function localeOnlyTools(locale: string): LocaleOnlyTool[] {
+  return LOCALE_ONLY_TOOLS.filter((x) => x.locale === locale);
+}
+/** How many tools the site has in this language, and how many of them process files locally. */
+export function toolCounts(locale: string): { total: number; local: number } {
+  const total = tools.length + localeOnlyTools(locale).length;
+  return { total, local: total - Object.keys(NON_LOCAL_TOOLS).length };
+}
 
 export function toolProcessing(key: string): 'local' | 'ai' | 'url' {
   return NON_LOCAL_TOOLS[key] ?? 'local';
