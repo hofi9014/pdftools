@@ -60,6 +60,27 @@ console.log('=== the page (HTML as served) ===');
   check(pl.includes('href="/pl/ksef-xml-na-pdf"') && !en.includes('ksef-xml-na-pdf'), 'in the Polish menu, not in the English one');
 }
 
+console.log('\n=== the guide under the tool ===');
+const GUIDE = `${PAGE}/jak-otworzyc-fakture-xml`;
+{
+  const res = await fetch(GUIDE);
+  const html = await res.text();
+  check(res.status === 200, `${GUIDE.replace(BASE, '')} → ${res.status}`);
+  check(/<h1[^>]*>Jak otworzyć fakturę XML z KSeF i zapisać ją jako PDF<\/h1>/.test(html), 'H1');
+  check(html.includes('<link rel="canonical" href="https://optimapdf.com/pl/ksef-xml-na-pdf/jak-otworzyc-fakture-xml"'), 'canonical');
+  check(html.includes('"@type":"Article"') && html.includes('"@type":"FAQPage"') && html.includes('"@type":"BreadcrumbList"'), 'Article, FAQPage, BreadcrumbList');
+  check(html.includes('property="og:type" content="article"'), 'og:type article');
+  check(html.includes('href="/pl/ksef-xml-na-pdf"') && html.includes('Kiedy na wizualizacji musi być kod QR'), 'links to the tool, the QR section is in the HTML');
+  check((await (await fetch(PAGE)).text()).includes('href="/pl/ksef-xml-na-pdf/jak-otworzyc-fakture-xml"'), 'the tool page links to the guide');
+  check((await fetch(`${BASE}/en/ksef-xml-na-pdf/jak-otworzyc-fakture-xml`)).status === 404, 'English address → 404 (Polish only)');
+  const sitemap = await (await fetch(`${BASE}/sitemap.xml`)).text();
+  check(sitemap.includes('/pl/ksef-xml-na-pdf/jak-otworzyc-fakture-xml</loc>'), 'in the sitemap');
+  for (const img of ['/guides/ksef/podglad-faktury-ksef.webp', '/guides/ksef/faktura-ksef-pdf.webp']) {
+    const r = await fetch(`${BASE}${img}`);
+    check(r.status === 200 && (r.headers.get('content-type') ?? '').includes('webp'), `${img} served as WebP`);
+  }
+}
+
 console.log('\n=== the Polish home page lists, finds and counts it ===');
 {
   const browser0 = await chromium.launch();
@@ -202,6 +223,36 @@ console.log('\n=== accessibility with an invoice on screen ===');
     check(v.length === 0, `${theme}: axe clean${v.length ? `\n      ${v.slice(0, 6).join('\n      ')}` : ''}`);
     await close();
   }
+}
+
+console.log('\n=== the guide in a browser ===');
+{
+  const axeSource = readFileSync('node_modules/axe-core/axe.min.js', 'utf8');
+  for (const theme of ['light', 'dark'] as const) {
+    const ctx = await browser.newContext({ locale: 'pl-PL', serviceWorkers: 'block', colorScheme: theme });
+    await ctx.addInitScript(() => { try { localStorage.setItem('cookie-consent', 'declined'); } catch { /* */ } });
+    const page = await ctx.newPage();
+    await page.goto(GUIDE, { waitUntil: 'networkidle' });
+    await page.evaluate((dark) => document.documentElement.classList.toggle('dark', dark), theme === 'dark');
+    await page.waitForTimeout(400);
+    await page.addScriptTag({ content: axeSource });
+    const res = await page.evaluate(async () => (window as unknown as { axe: { run: (c: unknown, o: unknown) => Promise<{ violations: { id: string; nodes: { target: string[] }[] }[] }> } }).axe.run({ include: [['main']] }, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] }));
+    const v = res.violations.flatMap((x) => x.nodes.map((n) => `${x.id} ${n.target.join(' ')}`));
+    check(v.length === 0, `guide ${theme}: axe clean${v.length ? `\n      ${v.slice(0, 6).join('\n      ')}` : ''}`);
+    await ctx.close();
+  }
+  const ctx = await browser.newContext({ viewport: { width: 375, height: 800 }, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+  const page = await ctx.newPage();
+  await page.goto(GUIDE, { waitUntil: 'networkidle' });
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  const outside = await page.evaluate(() => Array.from(document.querySelectorAll('article *')).filter((el) => {
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && (r.right > innerWidth + 1 || r.left < -1) && !el.closest('.ksef-table-wrap');
+  }).length);
+  check(overflow <= 0 && outside === 0, `guide at 375 px: no sideways scroll (${overflow}px), nothing outside the screen but the table (${outside})`);
+  const images = await page.evaluate(() => Array.from(document.querySelectorAll('article img')).map((i) => (i as HTMLImageElement).alt.length));
+  check(images.length === 2 && images.every((n) => n > 40), `two pictures with alt text (${images.join(', ')})`);
+  await ctx.close();
 }
 
 await browser.close();

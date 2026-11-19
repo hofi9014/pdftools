@@ -4,6 +4,7 @@
 import { safeJsonLd } from '@/lib/safe-json-ld';
 import ToolGlyph from '@/components/ToolGlyph';
 import { KSEF_DESCRIPTION, KSEF_FAQ, KSEF_LIMITS, KSEF_SLUG, KSEF_SOURCE_URL, KSEF_STEPS, KSEF_TOOL_NAME } from '@/content/pages/ksef';
+import { KSEF_GUIDE_PATH, KSEF_GUIDE_TITLE } from '@/content/pages/ksef-guide';
 
 const SITE = 'https://optimapdf.com';
 
@@ -65,6 +66,9 @@ export default function KsefGuide() {
             </li>
           ))}
         </ol>
+        <p className="mt-5 text-sm" style={{ color: 'var(--coffee-text-secondary)' }}>
+          Więcej o plikach z KSeF, kodach QR i najczęstszych problemach: <a className="link-accent underline font-semibold" href={KSEF_GUIDE_PATH}>{KSEF_GUIDE_TITLE}</a>.
+        </p>
       </div>
 
       <h2 className="text-xl sm:text-2xl font-bold tool-heading mt-10 mb-4">Czego to narzędzie nie robi</h2>

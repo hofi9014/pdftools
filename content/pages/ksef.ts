@@ -35,7 +35,7 @@ export const KSEF_FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Gdzie jest numer KSeF faktury?',
-    a: 'Numer KSeF nadaje system po przyjęciu faktury, więc nie ma go w treści pliku XML. Jeśli nazwa pliku zawiera numer KSeF (np. 5265877635-20260714-D5FB0C9ED490-9A), pokażemy go w podglądzie — tylko wtedy, gdy zgadza się jego suma kontrolna.',
+    a: 'Numer KSeF nadaje system po przyjęciu faktury, więc nie ma go w treści pliku XML. Jeśli nazwa pliku zawiera numer KSeF (np. 5265877635-20260714-D5FB0C9ED490-89), pokażemy go w podglądzie — tylko wtedy, gdy zgadza się jego suma kontrolna.',
   },
   {
     q: 'Czy mogę zamienić kilka faktur naraz?',

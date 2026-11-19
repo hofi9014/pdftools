@@ -522,6 +522,9 @@ body {
 .ksef-table th, .ksef-table td { border: 1px solid var(--coffee-border); padding: 0.35rem 0.5rem; vertical-align: top; text-align: start; overflow-wrap: break-word; hyphens: manual; }
 .ksef-table th { background-color: var(--coffee-surface-hover); font-weight: 600; }
 .ksef-total { margin: 0.75rem 0; font-size: 1.05rem; text-align: end; }
+.ksef-toc { border-color: var(--coffee-border); background-color: var(--coffee-surface-solid); }
+.ksef-article .ksef-table { min-width: 32rem; font-size: 0.92rem; }
+.ksef-article .ksef-table th[scope="row"] { font-weight: 600; background: none; }
 @media (max-width: 640px) {
   .ksef-rows > div { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .ksef-rows dd { padding-bottom: 0.35rem; }

@@ -20,7 +20,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 const root = process.cwd();
 const { locales, t } = await import('../lib/i18n.ts');
-const { tools, NON_LOCAL_TOOLS, toolProcessing, RELATED_TOOLS, toolPath } = await import('../lib/tools.ts');
+const { tools, NON_LOCAL_TOOLS, toolProcessing, RELATED_TOOLS, toolPath, toolCounts } = await import('../lib/tools.ts');
 const { toolHowToSteps, howToSlugs } = await import('../content/tool-howto.ts');
 const { toolSearchMetadata, pageMetadata } = await import('../lib/metadata.ts');
 const { default: ToolGuide, toolFaq } = await import('../components/ToolGuide.tsx');
@@ -102,7 +102,6 @@ pass('titles and descriptions for every tool and language');
 // in a search result (Google cuts at about 160 characters; ja/zh characters are twice as wide).
 const { all } = await import('../lib/translations/all.ts');
 const { fullTitle, homeDescription } = await import('../lib/metadata.ts');
-const localCount = tools.length - Object.keys(NON_LOCAL_TOOLS).length;
 // How wide a title looks in a result: CJK characters take about two Latin ones.
 const width = (s: string) => [...s].reduce((w, c) => w + (/[ᄀ-ᅟ⺀-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦]/.test(c) ? 2 : 1), 0);
 for (const l of locales) {
@@ -124,7 +123,9 @@ for (const l of locales) {
   const homeTitle = t('meta.title', l);
   check(!homeTitle.startsWith('OptimaPDF') && /PDF/.test(homeTitle) && homeTitle.endsWith('| OptimaPDF') && width(homeTitle) <= 72, `${l}: home title leads with what people search for ("${homeTitle}")`);
   const home = homeDescription(l);
-  check(home.includes(String(localCount)) && home.includes(String(tools.length)), `${l}: home description states ${localCount} of ${tools.length} local tools`);
+  // The counts include tools that exist in this language only (KSeF in Polish).
+  const counts = toolCounts(l);
+  check(home.includes(String(counts.local)) && home.includes(String(counts.total)), `${l}: home description states ${counts.local} of ${counts.total} local tools`);
   check(home.length <= dMax, `${l}: home description ${home.length} <= ${dMax}`);
   const descs = new Map<string, string>([['home', home]]);
   for (const slug of ['privacy', 'rodo', 'security', 'terms', 'faq', 'help', 'guide', 'nasze-zasady', 'wsparcie']) {
