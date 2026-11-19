@@ -161,6 +161,10 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
       cytowane etykiety w 8 starszych poradnikach; test `test:guide-quoted-labels`.
 - [ ] 3.2 Teksty i zrzuty do zgłoszeń: AlternativeTo, SaaSHub, Product Hunt (ja przygotowuję,
       **[WŁAŚCICIEL]** zakłada konta i wysyła).
+      2026-11-18: teksty gotowe w `PROMOCJA-ZGLOSZENIA.md` (AlternativeTo, SaaSHub, Product Hunt, Show HN,
+      kanały KSeF). Zgłoszone przez właściciela: AlternativeTo (2026-11-14, kolejka), SaaSHub (2026-11-18,
+      „Pending approval”). Product Hunt i Show HN — gdy właściciel wybierze dzień. Search Console 90 dni:
+      0 kliknięć, 99 wyświetleń, poz. 57,5, linki zewnętrzne 0; Bing: 0 zindeksowanych.
 - [x] 3.3 **[DECYZJA]** Porównanie „które narzędzia PDF wysyłają plik na serwer”: pomiar metodą
       z `e2e/no-upload.mts` na syntetycznym pliku, wyłącznie fakty możliwe do powtórzenia;
       publikacja dopiero po akceptacji treści.
@@ -177,6 +181,9 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
       test `test:upload-comparison-page`. Przed zmianą wiersza: uruchomić skrypt ponownie i zmienić datę.
 - [ ] 3.4 Kolejne poradniki do narzędzi bez poradnika (po danych z Search Console).
       2026-11-11: dodane kolejność stron, spłaszczanie, PDF do OpenOffice, PDF do SVG (19 poradników).
+      2026-11-19: poradnik KSeF po polsku „Jak otworzyć fakturę XML z KSeF i zapisać ją jako PDF”
+      (`/pl/ksef-xml-na-pdf/jak-otworzyc-fakture-xml`, test `test:ksef-guide`). Zasada właściciela:
+      jakość, nie ilość — kolejne tylko pod zapytania z wyświetleniami bez kliknięć.
 - [x] 3.5 (2026-11-02, właściciel; sprawdzone na produkcji) `www.optimapdf.com` przekierowuje stale (308)
       na `optimapdf.com`; domena główna bez przekierowania, 200.
 - [x] 3.6 (2026-11-16) Adresy poradników w języku strony: `/guides/anleitungen/pdf-komprimieren/wie-man-…`

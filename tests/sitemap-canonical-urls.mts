@@ -68,7 +68,8 @@ console.log('\n=== hreflang alternates are complete and self-consistent ===');
 
 console.log('\n=== hygiene ===');
 check(new Set(urls).size === urls.length, 'no duplicate URLs');
-check(entries.filter((e) => !e.url.includes('/guides/') && e.lastModified).length === 0, 'no fake build-time lastModified on pages without a real modification date');
+// Guides carry their own dates; so does the Polish KSeF guide (content/pages/ksef-guide.ts).
+check(entries.filter((e) => !e.url.includes('/guides/') && !e.url.endsWith('/ksef-xml-na-pdf/jak-otworzyc-fakture-xml') && e.lastModified).length === 0, 'no fake build-time lastModified on pages without a real modification date');
 
 // Guide category pages: listed only when the category has enough articles to be a real list
 // (one-article categories are noindex, follow — 2026-11-10), and no build-time dates on the hubs.

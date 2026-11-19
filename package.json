@@ -234,6 +234,7 @@
     "test:upload-comparison-page": "npx tsx tests/upload-comparison-page.mts",
     "test:e2e-guide-localized-urls": "npx tsx e2e/guide-localized-urls.mts",
     "test:ksef-xml-to-pdf": "npx tsx tests/ksef-xml-to-pdf.mts",
+    "test:ksef-guide": "npx tsx tests/ksef-guide.mts",
     "test:e2e-ksef-xml-to-pdf": "npx tsx e2e/ksef-xml-to-pdf.mts"
   },
   "dependencies": {

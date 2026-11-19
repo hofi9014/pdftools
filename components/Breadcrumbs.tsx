@@ -8,7 +8,7 @@ import { localeGuidesSlug, localeFromSegment } from '@/lib/guides-slugs';
 import { keyBySlug, homePath } from '@/lib/tools';
 import { categoryTool } from '@/lib/guide-category-tools';
 import { resolveCategorySegment } from '@/lib/guide-category-urls';
-import { KSEF_SLUG, KSEF_TOOL_NAME } from '@/lib/ksef/route';
+import { KSEF_SLUG, KSEF_TOOL_NAME, KSEF_GUIDE_SLUG, KSEF_GUIDE_CRUMB } from '@/lib/ksef/route';
 
 const guidesLocaleSegments = new Set(Object.values(localeGuidesSlug));
 
@@ -111,6 +111,8 @@ export default function Breadcrumbs({ locale: forcedLocale }: { locale?: Locale 
             label = t('guides.breadcrumb', locale);
           } else if (seg === KSEF_SLUG) {
             label = KSEF_TOOL_NAME;
+          } else if (seg === KSEF_GUIDE_SLUG && segments[i - 1] === KSEF_SLUG) {
+            label = KSEF_GUIDE_CRUMB;
           } else if (infoPageLabel[seg]) {
             label = t(infoPageLabel[seg], locale);
           } else if (guideTitles[seg]) {
