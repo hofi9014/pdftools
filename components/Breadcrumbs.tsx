@@ -24,6 +24,7 @@ const infoPageLabel: Record<string, string> = {
   'nasze-zasady': 'nav.rules',
   wsparcie: 'nav.support',
   'where-your-file-goes': 'nav.upload_check',
+  about: 'nav.about',
 };
 
 /** usePathname() is percent-encoded (/guides/%D8%AF…), the slugs it is compared with are not. */

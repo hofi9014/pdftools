@@ -4,7 +4,7 @@ import { OPEN_COOKIE_SETTINGS_EVENT } from '@/lib/analytics-consent';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t, type Locale } from '@/lib/i18n';
 import { localeGuidesSlug } from '@/lib/guides-slugs';
-import { toolPath } from '@/lib/tools';
+import { toolPath, toolCounts } from '@/lib/tools';
 
 const toolLinkKeys = ['merge', 'compress', 'word', 'ocr', 'aichat', 'aisummary',
   'edit', 'sign', 'fillform', 'images', 'pdfa', 'compare', 'ppt', 'txt', 'html', 'url', 'flatten'];
@@ -25,6 +25,7 @@ export default function Footer({ locale: forcedLocale }: { locale?: Locale }) {
     { labelKey: 'footer.all_tools', href: locale ? `/${locale}/#tools` : '/#tools' },
     { labelKey: 'faq.link', href: toolPath('faq', locale) },
     { labelKey: 'help.link', href: toolPath('help', locale) },
+    { labelKey: 'nav.about', href: locale ? `/${locale}/about` : '/about' },
     { labelKey: 'nav.rules', href: locale ? `/${locale}/nasze-zasady` : '/nasze-zasady' },
     { labelKey: 'nav.support', href: locale ? `/${locale}/wsparcie` : '/wsparcie' },
     { labelKey: 'nav.privacy', href: toolPath('privacy', locale) },
@@ -40,7 +41,7 @@ export default function Footer({ locale: forcedLocale }: { locale?: Locale }) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 text-start">
           <div>
             <p className="font-bold text-[#F5EDE4] mb-3">OptimaPDF</p>
-            <p className="text-sm leading-relaxed text-[rgba(245,237,228,0.65)]">{t('footer.desc', locale)}</p>
+            <p className="text-sm leading-relaxed text-[rgba(245,237,228,0.65)]">{t('footer.desc', locale, { n: toolCounts(locale).total })}</p>
           </div>
           <div>
             <p className="font-semibold text-[rgba(245,237,228,0.8)] mb-3">{t('footer.tools', locale)}</p>

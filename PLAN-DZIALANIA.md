@@ -99,7 +99,7 @@ narzędzia; potem języki. Rzeczy wymagające decyzji albo kont właściciela s�
       w 9 językach („konwertuj”, „działa z…”, „otwiera”); `test:hardcoded-polish`, `test:e2e-page-language-texts`.
       2026-11-09: także polskie nazwy plików bez polskich liter („_chroniony”, „podpisany-”,
       „edytowany-”, „_znak_wodny”, „_numerowany”, „_odblokowany”, „strony-pdf.svg.zip”).
-- [ ] 1.2 Strona „O projekcie” (16 języków): kto prowadzi (dane jak w polityce prywatności),
+- [x] 1.2 (2026-11-20, `/{locale}/about`, 17 języków, cytat właściciela) Strona „O projekcie” (16 języków): kto prowadzi (dane jak w polityce prywatności),
       co robi strona, jak przetwarzane są pliki i jak to sprawdzić samemu, z czego strona
       żyje (bez reklam, dobrowolne wsparcie), znane ograniczenia, kontakt. Link w stopce,
       mapa strony, metadane, okruszki, dane strukturalne `AboutPage`. Bez wymyślonej historii
@@ -231,7 +231,7 @@ miejsca na wdrożenia (limit Hobby 10 GB).
 - **ZROBIONE 2026-11-08 (właściciel zatwierdził podgląd):** wszystkie pozostałe emoji na stronie zastąpione rysunkami (1.5, krok 2).
 - **[DECYZJA]** „Nasze zasady” zapowiadają płatny plan dla firm i możliwe reklamy AdSense. To Twoje
   plany, więc ich nie zmieniam, ale oba wymagają planu Vercel Pro — czy zostawić te zdania?
-- **[WŁAŚCICIEL]** Link do wsparcia na `/wsparcie` to nadal testowy Stripe (prawdziwa karta nie
+- **ZROBIONE 2026-11-20 (decyzja właściciela: ukryć na jakiś czas):** przycisk wpłat ukryty (`DONATIONS_ENABLED = false`); wcześniej: link do wsparcia na `/wsparcie` to nadal testowy Stripe (prawdziwa karta nie
   zapłaci): podmiana na prawdziwy albo ukrycie przycisku.
 
 ## Czego nie robię (świadomie)
