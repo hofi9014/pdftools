@@ -148,6 +148,9 @@ const nextConfig: NextConfig = {
 
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
           { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
+          // Vercel's CDN otherwise adds "Access-Control-Allow-Origin: *" to every response. No other
+          // site needs to read our pages or files from a browser, so only our own origin is named.
+          { key: 'Access-Control-Allow-Origin', value: 'https://optimapdf.com' },
         ],
       },
       // Later entries win for the same header (Next docs): the sign-in return pages opt out.
