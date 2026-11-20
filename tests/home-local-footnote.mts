@@ -38,7 +38,7 @@ for (const loc of locales) {
   const expectTotal = tools.length + localeOnlyTools(loc).length;
   const nonLocal = counts.total - counts.local;
   check(t('stats.local', loc) === '{local}/{total}' && t('hero.subtitle', loc).split('{n}').length === 2 && !/40/.test(t('hero.subtitle', loc)),
-    `${loc}: stats.local and hero.subtitle take the numbers as placeholders, no "40" written in`);
+    `${loc}: stats.local and hero.subtitle and footer.desc take the numbers as placeholders, no "40" written in`);
   check(counts.total === expectTotal && nonLocal === serverKeys.length,
     `${loc}: ${counts.local}/${counts.total} — ${expectTotal} tools in this language, ${serverKeys.length} not local`);
   const raw = t('home.local_footnote', loc);

@@ -36,6 +36,7 @@ export function llmsText(): string {
   out.push('- Anyone can check that files are not uploaded: open the browser developer tools (F12), Network tab, use a tool, and see that no request carries the file.');
   out.push(`- Comparison measured on ${MEASURED_ON}: the compress tools of ${rows.filter((r) => r.sent).map((r) => r.name).join(', ')} sent the test file to their servers; OptimaPDF did not. Method and public measurement code: ${SITE}/en/where-your-file-goes`);
   out.push(`- Languages: ${locales.map((l) => names.of(l) ?? l).join(', ')}.`);
+  out.push(`- Run by Leszek Hofman (Poland). About the project: ${SITE}/en/about · Source code: https://github.com/hofi9014/pdftools`);
   out.push(`- Privacy policy: ${SITE}/en/privacy · Security: ${SITE}/en/security · Contact: kontakt@optimapdf.com`, '');
 
   out.push('## Tools', '');

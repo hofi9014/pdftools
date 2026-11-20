@@ -18,6 +18,9 @@ const SECTION_GLYPHS: GlyphName[] = ['mail', 'question', 'bug', 'bulb', 'externa
 /*                                                                      */
 const STRIPE_DONATE_URL = 'https://buy.stripe.com/test_aFafZie8kb3OcUecDwgfu00';
 const IS_TEST_MODE = STRIPE_DONATE_URL.includes('test_');              /* ← automatycznie wykrywa tryb testowy   */
+// Hidden while the link above is a test-mode link (owner's decision 2026-11-20): a real card
+// cannot pay there. Set to true together with a live Stripe link.
+const DONATIONS_ENABLED = false;
 /* ------------------------------------------------------------------ */
 
 // The page text arrives as a prop: one language on /{locale}/wsparcie, all of them on /wsparcie.
@@ -44,7 +47,7 @@ export default function SupportView({ locale: forcedLocale, content }: { locale?
 
       <div className={`tool-card rounded-2xl border p-8 space-y-8 text-sm leading-relaxed ${isRtl ? 'wsparcie-rtl' : ''}`} style={{ color: 'var(--coffee-text-secondary)' }}>
         {/* Donation section — prominent, at the top */}
-        <section className="text-center pb-6 border-b" style={{ borderColor: 'var(--coffee-border)' }}>
+        {DONATIONS_ENABLED && <section className="text-center pb-6 border-b" style={{ borderColor: 'var(--coffee-border)' }}>
           <h2 className="text-xl font-bold tool-heading mb-3"><ToolGlyph name="coffee" /> {lang.donateSection.h}</h2>
           <p className="mb-4 max-w-lg mx-auto">{lang.donateSection.p}</p>
           <a
@@ -63,7 +66,7 @@ export default function SupportView({ locale: forcedLocale, content }: { locale?
               <ToolGlyph name="warning" /> TRYB TESTOWY (Stripe Sandbox)
             </div>
           )}
-        </section>
+        </section>}
 
         {/* Other sections */}
         {lang.sections.map((sec, i) => (

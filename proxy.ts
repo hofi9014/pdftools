@@ -15,7 +15,7 @@ const LEGACY_PATHS = new Set([
   'html-to-pdf', 'url-to-pdf', 'pdf-to-html', 'flatten-pdf',
   'pdf-to-svg', 'redact-pdf', 'pdf-to-epub', 'ai-translate', 'fill-form',
   'pdf-to-images', 'to-pdfa', 'faq', 'help', 'guide', 'rodo',
-  'wsparcie', 'nasze-zasady', 'security', 'terms', 'where-your-file-goes',
+  'wsparcie', 'nasze-zasady', 'security', 'terms', 'where-your-file-goes', 'about',
 ]);
 
 const MAX_FILE_SIZE_BYTES = MAX_UPLOAD_BYTES;
