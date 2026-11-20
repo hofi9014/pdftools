@@ -236,6 +236,7 @@ const ar: Record<string, string> = {
   'nav.support': 'تبرع',
   'nav.upload_check': "أين يذهب ملفك",
   'nav.about': "عن المشروع",
+  'nav.business': "للشركات",
   'nav.tools': 'الأدوات',
   'page.addpage.btn': 'إضافة صفحة',
   'page.addpage.custom': 'في موقع محدد',

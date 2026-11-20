@@ -236,6 +236,7 @@ const fa: Record<string, string> = {
   'nav.support': 'اهدا کنید',
   'nav.upload_check': "فایل شما کجا می‌رود",
   'nav.about': "درباره پروژه",
+  'nav.business': "برای کسب‌وکارها",
   'nav.tools': 'ابزارها',
   'page.addpage.btn': 'اضافه کردن صفحه',
   'page.addpage.custom': 'در یک موقعیت خاص',

@@ -206,6 +206,7 @@ const pt: Record<string, string> = {
   'nav.support': 'Doar',
   'nav.upload_check': "Para onde vai o seu ficheiro",
   'nav.about': "Sobre o projeto",
+  'nav.business': "Para empresas",
   'nav.tools': 'Ferramentas',
   'preview.heading.delete': 'Selecione páginas para excluir',
   'preview.heading.extract': 'Selecione páginas para extrair',

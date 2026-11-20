@@ -206,6 +206,7 @@ const is: Record<string, string> = {
   'nav.support': 'Styrkja',
   'nav.upload_check': "Hvert skráin þín fer",
   'nav.about': "Um verkefnið",
+  'nav.business': "Fyrir fyrirtæki",
   'nav.tools': 'Verkfæri',
   'preview.heading.delete': 'Veldu síður til að eyða',
   'preview.heading.extract': 'Veldu síður til að draga út',

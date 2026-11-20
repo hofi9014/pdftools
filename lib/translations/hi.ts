@@ -206,6 +206,7 @@ const hi: Record<string, string> = {
   'nav.support': 'दान करें',
   'nav.upload_check': "आपकी फ़ाइल कहाँ जाती है",
   'nav.about': "प्रोजेक्ट के बारे में",
+  'nav.business': "व्यवसायों के लिए",
   'nav.tools': 'उपकरण',
   'preview.heading.delete': 'हटाने के लिए पृष्ठ चुनें',
   'preview.heading.extract': 'निकालने के लिए पृष्ठ चुनें',

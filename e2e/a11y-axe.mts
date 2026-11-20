@@ -18,7 +18,7 @@ const axeSource = readFileSync('node_modules/axe-core/axe.min.js', 'utf8');
 const PAGES = [
   'pl', 'en', 'ar', 'id', 'id/merge', 'pl/merge', 'pl/compress', 'pl/pdf-to-word', 'pl/edit-pdf', 'pl/sign-pdf', 'pl/ocr-pdf',
   'pl/protect-pdf', 'pl/unlock-pdf', 'pl/split', 'pl/ai-chat', 'pl/watermark-pdf', 'pl/privacy', 'pl/rodo',
-  'pl/security', 'pl/terms', 'pl/faq', 'pl/help', 'pl/nasze-zasady', 'pl/wsparcie', 'pl/guide', 'de/merge', 'ar/privacy', 'pl/where-your-file-goes', 'ar/where-your-file-goes', 'pl/about', 'ar/about',
+  'pl/security', 'pl/terms', 'pl/faq', 'pl/help', 'pl/nasze-zasady', 'pl/wsparcie', 'pl/guide', 'de/merge', 'ar/privacy', 'pl/where-your-file-goes', 'ar/where-your-file-goes', 'pl/about', 'ar/about', 'pl/for-business', 'en/for-business',
   // Guides: the hub, a category and articles (all 19 share one template — step titles were <h4>
   // straight under <h2> until 2026-11-11).
   // Addresses in each language since 2026-11-14 (lib/guide-urls.ts).
@@ -143,6 +143,26 @@ console.log('\n=== header logo ===');
   page.on('response', async (r) => { if (/\/(logo|icons\/logo)[^/]*\.png/.test(r.url())) sizes.push((await r.body()).length); });
   await page.goto(`${BASE}/pl`, { waitUntil: 'networkidle' });
   check(sizes.length > 0 && Math.max(...sizes) < 30_000, `the header logo downloads ${sizes.map((s) => `${Math.round(s / 1024)} kB`).join(', ')} (was 219 kB)`);
+  await ctx.close();
+}
+
+// The floating zoom button was a 56 px orange circle that looked like a chat bubble and covered
+// content; the owner chose a small, quiet one (2026-11-20). Still a 40 px target (WCAG 2.5.8 asks 24).
+console.log('\n=== zoom button is small and quiet ===');
+{
+  const ctx = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 1280, height: 800 } });
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/pl/compress`, { waitUntil: 'networkidle' });
+  const zoom = page.locator('button[aria-label="Powiększ"], button[aria-expanded][title]').last();
+  const box = await zoom.boundingBox();
+  const bg = await zoom.evaluate((el) => getComputedStyle(el).backgroundColor);
+  const accent = await page.evaluate(() => {
+    const d = document.createElement('div'); d.style.color = 'var(--coffee-accent-ink)'; document.body.appendChild(d);
+    const c = getComputedStyle(d).color; d.remove(); return c;
+  });
+  check(!!box && box.width <= 44 && box.width >= 32 && box.height <= 44, `size ${box?.width}x${box?.height} px (was 56)`);
+  check(bg !== accent, `background is not the accent colour (${bg})`);
+  check(!!box && 1280 - (box.x + box.width) <= 24, 'still in the bottom-right corner');
   await ctx.close();
 }
 

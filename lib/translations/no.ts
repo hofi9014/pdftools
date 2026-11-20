@@ -206,6 +206,7 @@ const no: Record<string, string> = {
   'nav.support': 'Doner',
   'nav.upload_check': "Hvor filen din havner",
   'nav.about': "Om prosjektet",
+  'nav.business': "For bedrifter",
   'nav.tools': 'Verktøy',
   'preview.heading.delete': 'Velg sider å slette',
   'preview.heading.extract': 'Velg sider å trekke ut',

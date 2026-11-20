@@ -44,6 +44,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const p of infoPages) addLocalized(p, 'weekly', 0.5);
   // KSeF XML to PDF exists only in Polish: one URL, no language alternates.
   pages.push({ url: base + KSEF_PATH, changeFrequency: 'weekly', priority: 0.8 });
+  // /for-business exists in Polish and English only.
+  for (const l of ['pl', 'en']) {
+    pages.push({ url: `${base}/${l}/for-business`, changeFrequency: 'monthly', priority: 0.6, alternates: { languages: { pl: `${base}/pl/for-business`, en: `${base}/en/for-business`, 'x-default': `${base}/en/for-business` } } });
+  }
   pages.push({ url: base + KSEF_GUIDE_PATH, lastModified: new Date(KSEF_GUIDE_UPDATED), changeFrequency: 'monthly', priority: 0.7 });
 
   // hub pages: /guides/{localeSegment}
