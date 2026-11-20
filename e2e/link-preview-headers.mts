@@ -145,6 +145,14 @@ console.log('\n=== security headers ===');
   check(!scriptSrc.includes("'unsafe-eval'"), `script-src does not allow 'unsafe-eval' (${scriptSrc.trim().split(' ').slice(0, 4).join(' ')} …)`);
   check(scriptSrc.includes("'wasm-unsafe-eval'"), "script-src allows WebAssembly ('wasm-unsafe-eval') for OCR");
   check(res.headers.get('cross-origin-opener-policy') === 'same-origin-allow-popups', `pages send Cross-Origin-Opener-Policy: ${res.headers.get('cross-origin-opener-policy')}`);
+  // Vercel's CDN adds "Access-Control-Allow-Origin: *" to every response (securityheaders.com flags it
+  // as a lax CORS policy, 2026-11-20). Nothing on another site needs to read our pages or files
+  // from the browser, so every response names only our own origin.
+  for (const p of ['/pl/merge', '/manifest.json', '/llms.txt', '/og-image.jpg']) {
+    const r = await fetch(BASE_URL + p);
+    const acao = r.headers.get('access-control-allow-origin');
+    check(acao === 'https://optimapdf.com', `${p}: Access-Control-Allow-Origin ${acao}`);
+  }
   for (const p of ['/dropbox-oauth.html', '/onedrive-oauth.html', '/onedrive-picker-oauth.html', '/sharepoint-oauth.html']) {
     const r = await fetch(BASE_URL + p);
     check(r.status === 200 && r.headers.get('cross-origin-opener-policy') === 'unsafe-none', `${p}: sign-in return page keeps window.opener (COOP ${r.headers.get('cross-origin-opener-policy')})`);
