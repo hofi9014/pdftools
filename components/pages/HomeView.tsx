@@ -9,6 +9,7 @@ import InstallSection from '@/components/InstallSection';
 import PdfBadge from '@/components/PdfBadge';
 import ToolGlyph from '@/components/ToolGlyph';
 import HeroCoffeeCup from '@/components/HeroCoffeeCup';
+import HeroShieldDoc from '@/components/HeroShieldDoc';
 import { tools, toolPath, categories, localeOnlyTools, toolCounts, type LocaleOnlyTool } from '@/lib/tools';
 
 const aiTools = new Set(['aichat', 'aisummary', 'translate']);
@@ -181,10 +182,11 @@ export default function HomeView({ locale: forcedLocale, guides }: { locale?: Lo
           {/* Decorative: the file types the tools handle, and what the tools do with them */}
           <div aria-hidden="true" className="relative hidden md:block h-[440px] select-none">
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[330px] h-[330px] rounded-full overflow-hidden" style={{ backgroundColor: 'var(--coffee-accent-soft)' }}>
-              <HeroCoffeeCup />
+              <HeroShieldDoc className="absolute left-[136px] top-[30px] w-[144px] h-auto rotate-[8deg] drop-shadow-[0_14px_22px_rgba(74,47,22,0.28)]" />
+              <HeroCoffeeCup style={{ transform: 'translate(-22px, 40px) scale(0.78)' }} />
             </div>
-            <span className="absolute left-[6%] top-[24%] text-[88px] -rotate-[14deg]"><PdfBadge type="DOC" /></span>
-            <span className="absolute left-[30%] top-[12%] text-[124px] -rotate-2 z-[2]"><PdfBadge /></span>
+            <span className="absolute left-[10%] top-[42%] text-[88px] -rotate-[14deg]"><PdfBadge type="DOC" /></span>
+            <span className="absolute left-[18%] top-[9%] text-[124px] -rotate-2 z-[2]"><PdfBadge /></span>
             <span className="absolute right-[6%] top-[26%] text-[88px] rotate-12"><PdfBadge type="XLS" /></span>
             <span className="absolute left-[14%] bottom-[10%] text-[66px] rotate-[8deg]"><PdfBadge type="PPT" /></span>
             <span className="absolute right-[16%] bottom-[8%] text-[60px] -rotate-[9deg]"><PdfBadge type="ODT" /></span>
