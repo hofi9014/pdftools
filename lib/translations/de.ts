@@ -206,6 +206,7 @@ const de: Record<string, string> = {
   'nav.support': 'Spenden',
   'nav.upload_check': "Wohin Ihre Datei geht",
   'nav.about': "Über das Projekt",
+  'nav.business': "Für Unternehmen",
   'nav.tools': 'Werkzeuge',
   'preview.heading.delete': 'Wählen Sie Seiten zum Löschen',
   'preview.heading.extract': 'Wählen Sie Seiten zum Extrahieren',

@@ -227,6 +227,7 @@ const id: Record<string, string> = {
   'nav.support': 'Donasi',
   'nav.upload_check': 'Ke mana file Anda pergi',
   'nav.about': 'Tentang proyek',
+  'nav.business': 'Untuk bisnis',
   'nav.tools': 'Alat',
   'preview.heading.delete': 'Pilih halaman yang akan dihapus',
   'preview.heading.extract': 'Pilih halaman yang akan diekstrak',

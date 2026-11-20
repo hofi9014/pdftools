@@ -32,7 +32,8 @@ const slugs = ['', ...readdirSync(localeDir, { withFileTypes: true })
   .filter((d) => d.isDirectory() && existsSync(join(localeDir, d.name, 'page.tsx')))
   .map((d) => d.name)];
 // Pages that exist in one language only (their page returns 404 elsewhere).
-const SINGLE_LOCALE: Record<string, string> = { [KSEF_SLUG]: 'pl' };
+// Pages that exist in some languages only (others are 404).
+const ONLY_IN: Record<string, string[]> = { [KSEF_SLUG]: ['pl'], 'for-business': ['pl', 'en'] };
 
 type Offender = { tag: string; text: string; left: number; right: number };
 
@@ -74,7 +75,7 @@ async function offenders(page: Page): Promise<Offender[]> {
 async function run() {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: WIDTH, height: 812 } });
-  const paths = LOCALES.flatMap((l) => slugs.filter((s) => !SINGLE_LOCALE[s] || SINGLE_LOCALE[s] === l).map((s) => (s ? `/${l}/${s}` : `/${l}`)));
+  const paths = LOCALES.flatMap((l) => slugs.filter((s) => !ONLY_IN[s] || ONLY_IN[s].includes(l)).map((s) => (s ? `/${l}/${s}` : `/${l}`)));
   const failures: string[] = [];
   let checked = 0;
 
@@ -124,7 +125,7 @@ async function run() {
     for (const f of failures.sort()) console.error(`  - ${f}`);
     process.exit(1);
   }
-  console.log(`✓ ${checked} pages (${slugs.length} pages in ${LOCALES.length} languages, ${Object.keys(SINGLE_LOCALE).length} in one language only) fit a ${WIDTH}px screen`);
+  console.log(`✓ ${checked} pages (${slugs.length} pages in ${LOCALES.length} languages, ${Object.keys(ONLY_IN).length} in some languages only) fit a ${WIDTH}px screen`);
   console.log('ALL PASS');
 }
 

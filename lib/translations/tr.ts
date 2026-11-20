@@ -206,6 +206,7 @@ const tr: Record<string, string> = {
   'nav.support': 'Bağış Yap',
   'nav.upload_check': "Dosyanız nereye gidiyor",
   'nav.about': "Proje hakkında",
+  'nav.business': "İşletmeler için",
   'nav.tools': 'Araçlar',
   'preview.heading.delete': 'Silmek için sayfaları seçin',
   'preview.heading.extract': 'Çıkarmak için sayfaları seçin',

@@ -228,6 +228,7 @@ const en: Record<string, string> = {
   'nav.support': 'Donate',
   'nav.upload_check': "Where your file goes",
   'nav.about': "About",
+  'nav.business': "For business",
   'nav.tools': 'Tools',
   'preview.heading.delete': 'Select pages to delete',
   'preview.heading.extract': 'Select pages to extract',

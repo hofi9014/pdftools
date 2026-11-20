@@ -26,6 +26,7 @@ export default function Footer({ locale: forcedLocale }: { locale?: Locale }) {
     { labelKey: 'faq.link', href: toolPath('faq', locale) },
     { labelKey: 'help.link', href: toolPath('help', locale) },
     { labelKey: 'nav.about', href: locale ? `/${locale}/about` : '/about' },
+    ...(locale === 'pl' || locale === 'en' ? [{ labelKey: 'nav.business', href: `/${locale}/for-business` }] : []),
     { labelKey: 'nav.rules', href: locale ? `/${locale}/nasze-zasady` : '/nasze-zasady' },
     { labelKey: 'nav.support', href: locale ? `/${locale}/wsparcie` : '/wsparcie' },
     { labelKey: 'nav.privacy', href: toolPath('privacy', locale) },

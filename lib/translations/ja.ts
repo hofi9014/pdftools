@@ -206,6 +206,7 @@ const ja: Record<string, string> = {
   'nav.support': '寄付',
   'nav.upload_check': "ファイルの行き先",
   'nav.about': "このプロジェクトについて",
+  'nav.business': "法人向け",
   'nav.tools': 'ツール',
   'preview.heading.delete': '削除するページを選択',
   'preview.heading.extract': '抽出するページを選択',

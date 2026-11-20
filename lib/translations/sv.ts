@@ -206,6 +206,7 @@ const sv: Record<string, string> = {
   'nav.support': 'Donera',
   'nav.upload_check': "Vart din fil tar vägen",
   'nav.about': "Om projektet",
+  'nav.business': "För företag",
   'nav.tools': 'Verktyg',
   'preview.heading.delete': 'Välj sidor att ta bort',
   'preview.heading.extract': 'Välj sidor att extrahera',

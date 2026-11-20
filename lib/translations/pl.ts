@@ -226,6 +226,7 @@ const pl: Record<string, string> = {
   'nav.support': 'Wesprzyj',
   'nav.upload_check': "Gdzie trafia Twój plik",
   'nav.about': "O projekcie",
+  'nav.business': "Dla firm",
   'nav.tools': 'Narzędzia',
   'preview.heading.delete': 'Wybierz strony do usunięcia',
   'preview.heading.extract': 'Wybierz strony do wyodrębnienia',

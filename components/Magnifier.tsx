@@ -39,7 +39,7 @@ export default function Magnifier() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-[999] flex flex-col items-end gap-2">
+    <div className="fixed bottom-4 right-4 z-[999] flex flex-col items-end gap-2">
       {open && (
         <div className="bg-[var(--coffee-surface-solid)] border border-[var(--coffee-border)] rounded-xl shadow-2xl p-2 min-w-[140px] backdrop-blur-xl">
           {levels.map(l => (
@@ -68,11 +68,14 @@ export default function Magnifier() {
       )}
       <button
         onClick={() => setOpen(!open)}
-        className="w-14 h-14 rounded-full flex items-center justify-center text-2xl transition cursor-pointer hover:scale-110"
+        // Small and quiet (owner's choice 2026-11-20): the 56 px orange circle looked like a chat
+        // bubble and covered content. 40 px is still a comfortable target (WCAG 2.5.8 asks 24).
+        className="w-10 h-10 rounded-full flex items-center justify-center text-base transition cursor-pointer border hover:border-[var(--coffee-accent)]"
         style={{
-          backgroundColor: 'var(--coffee-accent-ink)',
-          color: 'var(--coffee-on-accent)',
-          boxShadow: '0 10px 24px var(--coffee-accent-glow)',
+          backgroundColor: 'var(--coffee-surface-solid)',
+          borderColor: 'var(--coffee-border-strong)',
+          color: 'var(--coffee-accent-ink)',
+          boxShadow: '0 4px 12px rgba(74, 47, 22, 0.12)',
         }}
         title={t('magnifier.zoom', locale)}
         aria-label={t('magnifier.zoom', locale)}

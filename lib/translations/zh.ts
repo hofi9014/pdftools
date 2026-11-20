@@ -236,6 +236,7 @@ const zh: Record<string, string> = {
   'nav.support': '捐赠',
   'nav.upload_check': "您的文件去向何处",
   'nav.about': "关于本项目",
+  'nav.business': "面向企业",
   'nav.tools': '工具',
   'page.addpage.btn': '添加页面',
   'page.addpage.custom': '在特定位置',
