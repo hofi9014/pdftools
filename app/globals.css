@@ -489,6 +489,37 @@ body {
 .hover\:bg-blue-50:hover {
   background-color: var(--coffee-accent-subtle) !important;
 }
+/* The rest of the blue utilities (selected option cards, progress bars, info panels): until
+   2026-11-20 the selected compression level, for one, stayed light blue. tests/no-stray-blue.mts
+   fails when a page uses a blue utility that has no rule here. */
+.bg-blue-50,
+.hover\:bg-blue-100:hover,
+:where(.dark) .dark\:bg-blue-900\/30,
+:where(.dark) .dark\:hover\:bg-blue-900\/30:hover {
+  background-color: var(--coffee-accent-subtle) !important;
+}
+.bg-blue-500 {
+  background-color: var(--coffee-accent) !important;
+}
+.text-blue-400,
+.text-blue-700,
+.text-blue-800,
+.hover\:text-blue-600:hover,
+.hover\:text-blue-700:hover,
+:where(.dark) .dark\:text-blue-200,
+:where(.dark) .dark\:text-blue-300,
+:where(.dark) .dark\:hover\:text-blue-300:hover,
+:where(.dark) .dark\:hover\:text-blue-400:hover {
+  color: var(--coffee-accent-ink) !important;
+}
+.border-blue-600,
+.hover\:border-blue-300:hover,
+:where(.dark) .dark\:hover\:border-blue-600:hover {
+  border-color: var(--coffee-accent) !important;
+}
+.border-blue-100 {
+  border-color: var(--coffee-border-strong) !important;
+}
 
 /* ── KSeF XML to PDF (components/ksef/KsefTool.tsx, HTML from lib/ksef/html.ts) ───────────── */
 .ksef-notice {
