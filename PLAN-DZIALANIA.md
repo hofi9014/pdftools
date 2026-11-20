@@ -105,7 +105,7 @@ narzędzia; potem języki. Rzeczy wymagające decyzji albo kont właściciela s�
       mapa strony, metadane, okruszki, dane strukturalne `AboutPage`. Bez wymyślonej historii
       osobistej — miejsce na nią zostawię właścicielowi **[WŁAŚCICIEL: opcjonalnie 2–3 zdania
       „dlaczego”]**.
-- [ ] 1.3 Kompresja do docelowego rozmiaru („zmniejsz do 1 / 2 / 5 MB / własny”): zmierzyć, co
+- [x] 1.3 (2026-11-20; allegro 1155 KB → limit 0,5 MB: 474 KB; przy okazji naprawiona jakość JPEG ignorowana przez przeglądarkę) Kompresja do docelowego rozmiaru („zmniejsz do 1 / 2 / 5 MB / własny”): zmierzyć, co
       dziś daje każdy poziom na prawdziwych plikach, potem tryb, który dobiera poziom i jakość
       obrazów do celu; uczciwy komunikat, gdy cel jest nieosiągalny (np. sam tekst).
 - [x] 1.4 (2026-11-12) Lżejsze pierwsze wczytanie stron narzędzi: zmierzyć, które biblioteki ładują się
