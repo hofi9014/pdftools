@@ -169,19 +169,24 @@ export async function collectPageImageStreams(
       continue;
     }
 
-    out.push({
-      name: key.asString().replace(/^\//, ''),
-      filters: parseFilters(stream.dict.get(PDFName.of('Filter'))),
-      width,
-      height,
-      bitsPerComponent: numOr(stream.dict.get(PDFName.of('BitsPerComponent')), 8),
-      colorSpace: colorSpaceOf(pdf, stream.dict.get(PDFName.of('ColorSpace'))),
-      decodeParms: decodeParmsOf(pdf, stream.dict.get(PDFName.of('DecodeParms'))),
-      smask: smaskMetaOf(pdf, stream.dict.get(PDFName.of('SMask'))),
-      rawBytes: new Uint8Array(stream.contents), // offset-0 copy (Buffer.slice() shares the pool buffer)
-    });
+    out.push(imageStreamMeta(pdf, stream, key.asString().replace(/^\//, '')));
   }
   return out;
+}
+
+/** The metadata of one image stream (also used by compression to decode lossless pictures). */
+export function imageStreamMeta(pdf: PDFDocument, stream: PDFRawStream, name: string): PdfImageStreamMeta {
+  return {
+    name,
+    filters: parseFilters(stream.dict.get(PDFName.of('Filter'))),
+    width: numOr(stream.dict.get(PDFName.of('Width')), 0),
+    height: numOr(stream.dict.get(PDFName.of('Height')), 0),
+    bitsPerComponent: numOr(stream.dict.get(PDFName.of('BitsPerComponent')), 8),
+    colorSpace: colorSpaceOf(pdf, stream.dict.get(PDFName.of('ColorSpace'))),
+    decodeParms: decodeParmsOf(pdf, stream.dict.get(PDFName.of('DecodeParms'))),
+    smask: smaskMetaOf(pdf, stream.dict.get(PDFName.of('SMask'))),
+    rawBytes: new Uint8Array(stream.contents), // offset-0 copy (Buffer.slice() shares the pool buffer)
+  };
 }
 
 // === FlateDecode → PNG wrapper (C1b) ===

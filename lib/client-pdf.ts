@@ -4652,8 +4652,63 @@ export function parseFilters(fRaw: unknown): string[] {
   return [String(fRaw)];
 }
 
-export async function compressPDFClient(file: File, level: 'low' | 'recommended' | 'extreme'): Promise<Uint8Array> {
-  const buf = await file.arrayBuffer();
+/** How one compression pass treats the PDF. `scale` resizes images (1 = keep the pixel size),
+ *  `quality` is the JPEG quality 0–1 (null = leave images as they are), `flate` also re-encodes
+ *  lossless (Flate) photos without transparency as JPEG. */
+export interface CompressSettings { scale: number; quality: number | null; flate: boolean }
+
+// canvas.toBlob takes the JPEG quality as 0–1. Until 2026-11-20 this passed 95/90, which the
+// browser ignores (out of range, so its default of about 0.92), so the levels differed only in scale.
+export const COMPRESS_LEVELS: Record<'low' | 'recommended' | 'extreme', CompressSettings> = {
+  low: { scale: 0.9, quality: 0.92, flate: false },
+  recommended: { scale: 0.75, quality: 0.85, flate: false },
+  extreme: { scale: 0.5, quality: 0.72, flate: true },
+};
+
+/** Steps of "compress to a target size", gentlest first. The search picks the gentlest one that
+ *  fits; steps from TARGET_HEAVY_STEP on shrink images enough that small print in scans may suffer. */
+export const TARGET_LADDER: CompressSettings[] = [
+  { scale: 1, quality: 0.9, flate: false },
+  { scale: 0.9, quality: 0.85, flate: true },
+  { scale: 0.8, quality: 0.78, flate: true },
+  { scale: 0.7, quality: 0.72, flate: true },
+  { scale: 0.6, quality: 0.65, flate: true },
+  { scale: 0.5, quality: 0.58, flate: true },
+  { scale: 0.42, quality: 0.5, flate: true },
+  { scale: 0.34, quality: 0.44, flate: true },
+  { scale: 0.27, quality: 0.38, flate: true },
+];
+export const TARGET_HEAVY_STEP = 6;
+
+type BitmapCache = Map<string, ImageBitmap | null>;
+
+/** Decodes an image stream to a bitmap once per search (keyed by object number), or null when
+ *  the image must be left alone (transparency, unusual colours, unsupported filters). */
+async function imageBitmapFor(pdf: PDFDocument, ref: PDFRef, obj: PDFRawStream, filters: string[], allowFlate: boolean, cache: BitmapCache): Promise<ImageBitmap | null> {
+  const key = `${ref.objectNumber} ${ref.generationNumber}`;
+  // A lossless picture skipped in this pass may still be re-encoded in a later, stronger one.
+  if (!allowFlate && !(filters.length === 1 && filters[0] === '/DCTDecode')) return null;
+  if (cache.has(key)) return cache.get(key)!;
+  let bmp: ImageBitmap | null = null;
+  try {
+    if (filters.length === 1 && filters[0] === '/DCTDecode') {
+      bmp = await createImageBitmap(new Blob([obj.contents as BlobPart], { type: 'image/jpeg' }));
+    } else if (allowFlate && filters.length === 1 && filters[0] === '/FlateDecode' && !obj.dict.get(PDFName.of('SMask')) && !obj.dict.get(PDFName.of('Mask'))) {
+      const { imageStreamMeta, decodePdfImage } = await import('./pdf/extractPdfImages');
+      const meta = imageStreamMeta(pdf, obj, key);
+      // Only plain grey or RGB pictures: palettes, CMYK and 16-bit stay lossless.
+      if (meta.bitsPerComponent === 8 && (meta.colorSpace.components === 1 || meta.colorSpace.components === 3) && meta.colorSpace.kind !== 'indexed') {
+        const dec = await decodePdfImage(meta);
+        if (dec) bmp = await createImageBitmap(new Blob([dec.data as BlobPart], { type: dec.mime }));
+      }
+    }
+  } catch { bmp = null; }
+  cache.set(key, bmp);
+  return bmp;
+}
+
+/** One compression pass over a fresh copy of the document. */
+async function compressPass(buf: ArrayBuffer, s: CompressSettings, cache: BitmapCache): Promise<Uint8Array> {
   const pdf = await PDFDocument.load(buf, { ignoreEncryption: true });
   if (pdf.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const ctx = pdf.context;
@@ -4666,9 +4721,6 @@ export async function compressPDFClient(file: File, level: 'low' | 'recommended'
   try { pdf.catalog.delete(PDFName.of('Metadata')); } catch {}
 
   const pako = (await import('pako')).default;
-  const scale = level === 'extreme' ? 0.5 : level === 'low' ? 0.9 : 0.75;
-  const jpegQuality = level === 'low' ? 95 : 90;
-
   for (const [, obj] of ctx.enumerateIndirectObjects()) {
     if (!(obj instanceof PDFRawStream) || !obj.dict) continue;
     const filters = parseFilters(obj.dict.get(PDFName.of('Filter')));
@@ -4687,43 +4739,100 @@ export async function compressPDFClient(file: File, level: 'low' | 'recommended'
     } catch {}
   }
 
-  for (const [, obj] of ctx.enumerateIndirectObjects()) {
-    if (!(obj instanceof PDFRawStream) || !obj.dict) continue;
-    const filters = parseFilters(obj.dict.get(PDFName.of('Filter')));
-    if (!filters.length) continue;
-    const isImg = obj.dict.get(PDFName.of('Subtype')) && String(obj.dict.get(PDFName.of('Subtype'))!) === '/Image';
-    if (!isImg) continue;
-    const w = ((obj.dict.get(PDFName.of('Width')) as PDFNumber)?.asNumber() ?? 0);
-    const h = ((obj.dict.get(PDFName.of('Height')) as PDFNumber)?.asNumber() ?? 0);
-    if (!w || !h || w < 100 || h < 100) continue;
-    const nw = Math.max(1, Math.round(w * scale));
-    const nh = Math.max(1, Math.round(h * scale));
-
-    if (filters.includes('/DCTDecode')) {
+  if (s.quality !== null) {
+    for (const [ref, obj] of ctx.enumerateIndirectObjects()) {
+      if (!(obj instanceof PDFRawStream) || !obj.dict) continue;
+      const isImg = obj.dict.get(PDFName.of('Subtype')) && String(obj.dict.get(PDFName.of('Subtype'))!) === '/Image';
+      if (!isImg) continue;
+      const filters = parseFilters(obj.dict.get(PDFName.of('Filter')));
+      const w = ((obj.dict.get(PDFName.of('Width')) as PDFNumber)?.asNumber() ?? 0);
+      const h = ((obj.dict.get(PDFName.of('Height')) as PDFNumber)?.asNumber() ?? 0);
+      if (!w || !h || w < 100 || h < 100) continue;
+      const bmp = await imageBitmapFor(pdf, ref, obj, filters, s.flate, cache);
+      if (!bmp) continue;
+      const nw = Math.max(1, Math.round(w * s.scale));
+      const nh = Math.max(1, Math.round(h * s.scale));
       try {
-        const src = obj.contents;
-        const img = await createImageBitmap(new Blob([src as BlobPart], { type: 'image/jpeg' }));
         const canvas = document.createElement('canvas');
         canvas.width = nw;
         canvas.height = nh;
         const ctx2 = canvas.getContext('2d')!;
-        ctx2.drawImage(img, 0, 0, nw, nh);
-        const outBlob: Blob | null = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', jpegQuality));
+        ctx2.drawImage(bmp, 0, 0, nw, nh);
+        const outBlob: Blob | null = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', s.quality!));
         if (!outBlob) continue;
         const outBuf = new Uint8Array(await outBlob.arrayBuffer());
-        if (outBuf.length < src.length) {
+        if (outBuf.length < obj.contents.length) {
           (obj as unknown as { contents: Uint8Array }).contents = outBuf;
           obj.dict.set(PDFName.Length, PDFNumber.of(outBuf.length));
           obj.dict.set(PDFName.of('Width'), ctx.obj(nw));
           obj.dict.set(PDFName.of('Height'), ctx.obj(nh));
           obj.dict.set(PDFName.of('ColorSpace'), PDFName.of('DeviceRGB'));
+          obj.dict.set(PDFName.of('Filter'), PDFName.of('DCTDecode'));
+          obj.dict.set(PDFName.of('BitsPerComponent'), ctx.obj(8));
+          obj.dict.delete(PDFName.of('DecodeParms'));
+          obj.dict.delete(PDFName.of('Decode'));
         }
-        img.close();
       } catch {}
     }
   }
 
   return pdf.save({ useObjectStreams: true });
+}
+
+function closeBitmaps(cache: BitmapCache) {
+  for (const b of cache.values()) {
+    try { b?.close(); } catch {}
+  }
+}
+
+export async function compressPDFClient(file: File, level: 'low' | 'recommended' | 'extreme'): Promise<Uint8Array> {
+  const buf = await file.arrayBuffer();
+  const cache: BitmapCache = new Map();
+  try {
+    return await compressPass(buf, COMPRESS_LEVELS[level], cache);
+  } finally {
+    closeBitmaps(cache);
+  }
+}
+
+export interface TargetCompressResult {
+  bytes: Uint8Array;
+  /** The result is at most the target size. */
+  reached: boolean;
+  /** Images had to be shrunk hard (TARGET_HEAVY_STEP or further): small print may suffer. */
+  heavy: boolean;
+  /** The file fitted without touching images. */
+  lossless: boolean;
+}
+
+/** Compresses to at most `targetBytes`, as gently as possible: first without touching images,
+ *  then a binary search over TARGET_LADDER for the gentlest step that fits. When even the
+ *  strongest step is too big, returns the smallest result with reached = false: text and
+ *  vector graphics cannot be shrunk further without removing content. */
+export async function compressPDFToTarget(file: File, targetBytes: number): Promise<TargetCompressResult> {
+  const buf = await file.arrayBuffer();
+  const cache: BitmapCache = new Map();
+  try {
+    const plain = await compressPass(buf, { scale: 1, quality: null, flate: false }, cache);
+    if (plain.length <= targetBytes) return { bytes: plain, reached: true, heavy: false, lossless: true };
+    const last = TARGET_LADDER.length - 1;
+    const strongest = await compressPass(buf, TARGET_LADDER[last]!, cache);
+    if (strongest.length > targetBytes) {
+      const smaller = strongest.length < plain.length;
+      return { bytes: smaller ? strongest : plain, reached: false, heavy: smaller, lossless: !smaller };
+    }
+    let lo = 0;
+    let hi = last;
+    let found = strongest;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      const out = await compressPass(buf, TARGET_LADDER[mid]!, cache);
+      if (out.length <= targetBytes) { hi = mid; found = out; } else lo = mid + 1;
+    }
+    return { bytes: found, reached: true, heavy: hi >= TARGET_HEAVY_STEP, lossless: false };
+  } finally {
+    closeBitmaps(cache);
+  }
 }
 
 export async function pdfToWord(file: File): Promise<Blob> {

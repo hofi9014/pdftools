@@ -115,6 +115,7 @@ const BODIES = {
   level1: bars(1),
   level2: bars(2),
   level3: bars(3),
+  targetSize: `${page}<path d="M12 7.6v6.6M9.2 11.6l2.8 2.8 2.8-2.8" fill="none" stroke="url(#gBlue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.4 17.4h7.2" stroke="#2563EB" stroke-width="2" stroke-linecap="round"/>`,
   turnRight: `${turnPage}${turnArrow}`,
   turnLeft: `${turnPage}${mirror(turnArrow)}`,
   turn180: `${turnPage}<path d="M4.6 13a7.4 7.4 0 0 1 14.8 0" fill="none" stroke="url(#gBlue)" stroke-width="2.2" stroke-linecap="round"/><path d="M16.4 11.4l3 3 3-3" fill="none" stroke="url(#gBlue)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`,

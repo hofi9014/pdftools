@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef } from 'react';
-import { compressPDFClient, preloadPdfEngine } from '@/lib/client-pdf-lazy';
+import { compressPDFClient, compressPDFToTarget, preloadPdfEngine } from '@/lib/client-pdf-lazy';
 import CloudFilePicker from '@/components/CloudFilePicker';
 import CloudFileSaver from '@/components/CloudFileSaver';
 import { useLocale } from '@/lib/locale-context';
@@ -17,11 +17,16 @@ import { useIdlePreload } from '@/hooks/useIdlePreload';
 // Fetched once the page is idle, so the tool is ready (and cached for offline use) when a file is chosen.
 const preloadTool = () => Promise.all([preloadPdfEngine(), import('jszip')]);
 
+// Common attachment and upload limits: e-mail (5 MB is often too big), forms and portals (1-2 MB).
+const TARGET_PRESETS_MB = [1, 2, 5];
+
 export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
   useIdlePreload(preloadTool);
   const [files, setFiles] = useState<File[]>([]);
   const [level, setLevel] = useState('recommended');
+  const [targetMb, setTargetMb] = useState(2);
+  const [notes, setNotes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
@@ -59,7 +64,9 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
 
   const handleCompressAll = async () => {
     if (files.length === 0) { setError(t('page.compress.add_files', locale)); return; }
+    if (level === 'target' && !(targetMb > 0)) { setError(t('page.compress.target_invalid', locale)); return; }
     setLoading(true);
+    setNotes([]);
     setError('');
     setResults([]);
     setProgress(0);
@@ -68,12 +75,24 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
     try {
       // One file that cannot be compressed (e.g. password-protected) no longer aborts the batch:
       // the rest is downloaded and the failures are listed with their reason.
+      const fileNotes: string[] = [];
       const batch = await runBatch(files, async (file) => {
-        const result = await compressPDFClient(file, level as 'low' | 'recommended' | 'extreme');
+        let result: Uint8Array;
+        if (level === 'target') {
+          const targetBytes = Math.round(targetMb * 1024 * 1024);
+          const r = await compressPDFToTarget(file, targetBytes);
+          result = r.bytes;
+          // Told per file: a target that cannot be met, or one met only by shrinking images hard.
+          if (!r.reached) fileNotes.push(t('page.compress.target_missed', locale, { name: file.name, target: formatSize(targetBytes), size: formatSize(r.bytes.length) }));
+          else if (r.heavy) fileNotes.push(t('page.compress.target_heavy', locale, { name: file.name }));
+        } else {
+          result = await compressPDFClient(file, level as 'low' | 'recommended' | 'extreme');
+        }
         const blob = new Blob([result as BlobPart], { type: 'application/pdf' });
         return { fileIdx: files.indexOf(file), name: file.name.replace('.pdf', `${t('file.compressed_suffix', locale)}.pdf`), originalSize: file.size, compressedSize: blob.size, data: blob };
       }, setProgress);
       setFailed(batchFailures(batch));
+      setNotes(fileNotes);
       const batchResults = batch.ok.map((r) => r.result);
       if (batchResults.length === 0) {
         if (files.length === 1) setError(errorText(batch.failed[0]!.message, locale));
@@ -212,16 +231,22 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
         </div>
       )}
       {!loading && <BatchFailures failed={failed} total={files.length} locale={locale} />}
+      {!loading && notes.length > 0 && (
+        <div role="status" className="rounded-2xl border p-4 mb-6 text-sm space-y-1" style={{ borderColor: 'var(--coffee-border-strong)', backgroundColor: 'var(--coffee-accent-subtle)', color: 'var(--coffee-text)' }}>
+          {notes.map((n, i) => <p key={i}><ToolGlyph name="info" /> {n}</p>)}
+        </div>
+      )}
 
       <div className="tool-card rounded-2xl border p-6 mb-6">
         <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-4">{t('page.compress.level_title', locale)}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             { value: 'recommended', label: t('page.compress.level_recommended', locale), desc: t('page.compress.level_recommended_desc', locale), icon: 'level2' as const },
             { value: 'low', label: t('page.compress.level_low', locale), desc: t('page.compress.level_low_desc', locale), icon: 'level1' as const },
             { value: 'extreme', label: t('page.compress.level_extreme', locale), desc: t('page.compress.level_extreme_desc', locale), icon: 'level3' as const },
+            { value: 'target', label: t('page.compress.level_target', locale), desc: t('page.compress.level_target_desc', locale), icon: 'targetSize' as const },
           ].map(opt => (
-            <button key={opt.value} onClick={() => setLevel(opt.value)}
+            <button key={opt.value} onClick={() => setLevel(opt.value)} aria-pressed={level === opt.value}
               className={`p-4 rounded-xl border-2 text-center transition
                 ${level === opt.value ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'}`}>
               <div className="text-xl mb-1"><ToolGlyph name={opt.icon} /></div>
@@ -230,6 +255,23 @@ export default function CompressPDF({ locale: forcedLocale }: { locale?: Locale 
             </button>
           ))}
         </div>
+        {level === 'target' && (
+          <div className="mt-5">
+            <p id="target-size-label" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('page.compress.target_label', locale)}</p>
+            <div role="group" aria-labelledby="target-size-label" className="flex flex-wrap items-center gap-2">
+              {TARGET_PRESETS_MB.map((mb) => (
+                <button key={mb} type="button" onClick={() => setTargetMb(mb)} aria-pressed={targetMb === mb}
+                  className={`px-4 py-2 rounded-xl border-2 text-sm font-medium transition ${targetMb === mb ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'}`}>
+                  {mb} MB
+                </button>
+              ))}
+              <label htmlFor="target-size-custom" className="text-sm text-gray-500 dark:text-gray-400 ms-2">{t('page.compress.target_custom', locale)}</label>
+              <input id="target-size-custom" type="number" min="0.05" step="0.05" inputMode="decimal"
+                value={targetMb} onChange={(e) => setTargetMb(parseFloat(e.target.value))}
+                className="w-24 px-3 py-2 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-transparent text-sm focus:border-blue-500 dark:focus:border-blue-400 outline-none" />
+            </div>
+          </div>
+        )}
       </div>
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6"><ToolGlyph name="warning" /> {error}</div>}

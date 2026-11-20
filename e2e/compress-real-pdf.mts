@@ -63,6 +63,29 @@ check(sizes.low! < source.length, 'even the lowest level is smaller than the sou
 check(sizes.recommended! <= sizes.low! && sizes.extreme! <= sizes.recommended!, `stronger levels are not larger (low ${sizes.low}, recommended ${sizes.recommended}, extreme ${sizes.extreme})`);
 check(sizes.extreme! < 0.7 * source.length, `the extreme level shrinks this image-heavy PDF by more than 30% (${((sizes.extreme! / source.length) * 100).toFixed(0)}% of the source)`);
 
+// "Target size" (plan 1.3, 2026-11-20): a reachable limit is met with every page and all text,
+// and an impossible one still downloads the smallest result and says so on the page.
+for (const [mb, reachable] of [['0.5', true], ['0.05', false]] as const) {
+  const page = await browser.newPage();
+  await page.goto(`${BASE_URL}/pl/compress`, { waitUntil: 'load' });
+  await page.setInputFiles('#fileInput', { name: 'allegro-raport.pdf', mimeType: 'application/pdf', buffer: source });
+  await page.locator('button', { hasText: 'Docelowy rozmiar' }).first().click();
+  await page.fill('#target-size-custom', mb);
+  const [download] = await Promise.all([
+    page.waitForEvent('download', { timeout: 300000 }),
+    page.locator('button', { hasText: /Kompresuj PDF/i }).last().click(),
+  ]);
+  const bytes = new Uint8Array(readFileSync((await download.path())!));
+  const got = await inspect(bytes);
+  const limit = Math.round(parseFloat(mb) * 1024 * 1024);
+  const note = await page.locator('[role="status"]', { hasText: 'allegro-raport.pdf' }).first().textContent({ timeout: 5000 }).catch(() => null);
+  console.log(`  target ${mb} MB: ${(bytes.length / 1024).toFixed(0)}KB${note ? ` — note: ${note.trim()}` : ''}`);
+  check(got.pages === original.pages && got.chars === original.chars, `target ${mb} MB: all pages and the full text survive`);
+  if (reachable) check(bytes.length <= limit && bytes.length < sizes.low!, `target ${mb} MB: the download fits (${bytes.length} <= ${limit}) and is smaller than the gentlest level`);
+  else check(bytes.length > limit && !!note && note.includes('nie da się zejść'), `target ${mb} MB: impossible, the smallest result is downloaded and the page says so`);
+  await page.close();
+}
+
 await browser.close();
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);
 process.exit(fails === 0 ? 0 : 1);

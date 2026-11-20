@@ -58,6 +58,7 @@ export const comparePdfSimilarity = lazy('comparePdfSimilarity');
 export const comparePdfTextClient = lazy('comparePdfTextClient');
 export const comparePdfVisual = lazy('comparePdfVisual');
 export const compressPDFClient = lazy('compressPDFClient');
+export const compressPDFToTarget = lazy('compressPDFToTarget');
 export const convertToPdfA = lazy('convertToPdfA');
 export const cropPages = lazy('cropPages');
 export const deletePages = lazy('deletePages');
