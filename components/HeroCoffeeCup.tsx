@@ -5,11 +5,11 @@
 // gradients only (no noise: at screen resolution it reads as dirty pixels), with a contact shadow under the base and a cast shadow to the
 // right. The steam rises slowly (`.hero-steam` in globals.css) and stands still for people who
 // turned off animations. Everything is scaled to fit inside the circle.
-export default function HeroCoffeeCup() {
+export default function HeroCoffeeCup({ style }: { style?: React.CSSProperties } = {}) {
   const body =
     'M69 148 C 70 198, 86 238, 114 263 C 126 274, 141 279, 165 279 C 189 279, 204 274, 216 263 C 244 238, 260 198, 261 148 Z';
   return (
-    <svg viewBox="0 0 330 330" className="hero-cup absolute inset-0 w-full h-full" focusable="false">
+    <svg viewBox="0 0 330 330" className="hero-cup absolute inset-0 w-full h-full" style={style} focusable="false">
       <defs>
         {/* cup body: sand glaze, lit from the left */}
         <linearGradient id="hcc-body" x1="0" y1="0" x2="1" y2="0">

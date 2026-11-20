@@ -65,11 +65,11 @@ check('the whole cup, saucer and steam fit inside the circle', worst <= 165, `fa
 
 // Home page: inside the aria-hidden illustration, in a circle that clips.
 const home = readFileSync('components/pages/HomeView.tsx', 'utf8');
-const at = home.indexOf('<HeroCoffeeCup />');
+const at = home.indexOf('<HeroCoffeeCup');
 const before = home.slice(0, at);
 check('the home page renders the cup', at > 0);
 check('…inside the aria-hidden illustration', before.lastIndexOf('aria-hidden="true"') > before.lastIndexOf('</div>\n          </div>'));
-check('…in the round circle that clips it', /rounded-full overflow-hidden[^>]*>\s*$/.test(before));
+check('…in the round circle that clips it (behind it only the shield document, 2026-11-20)', /rounded-full overflow-hidden[^>]*>\s*(<HeroShieldDoc [^>]*\/>\s*)?$/.test(before));
 
 // Steam: visible at rest (what reduced motion leaves on screen) in both themes.
 const css = readFileSync('app/globals.css', 'utf8');
