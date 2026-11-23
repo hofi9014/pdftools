@@ -7,7 +7,7 @@ import { detectTextColumns, mergeColumnLines } from './pdf/textColumns';
 import { pagesToSheet } from './pdf/pdfToSheet';
 import type { FontClass } from './pdf/fontFamilies';
 import type { IRSlide, IRSlideElement, IRDeck, IRPtRect, IRTextContent } from './client-pptx';
-import { getFontFamily } from './pdf/fonts';
+import { embedFont, fontHasText } from './pdf/fonts';
 
 let pdfjsInitPromise: Promise<void> | null = null;
 
@@ -5166,14 +5166,106 @@ export type PdfEditElement = {
   points?: { x: number; y: number }[];
 };
 
+/**
+ * A text placed in the editor, drawn as real text (FINDING 2026-11-23). It used to be drawn as a
+ * PNG picture of the text whose size grew with the square of the font size: at 24 px the text in
+ * the file was about twice as wide as on screen and 26 pt higher (measured), and it could not be
+ * selected, searched or copied — bad for anything, worse for filling in a form.
+ * Now: the preview's own font (the same family, weight and style, embedded once per document;
+ * Liberation Sans when the chosen font lacks a letter), the preview's size (el.size canvas px),
+ * the preview's wrapping (the box width, pre-wrap, words broken when longer than a line) and its
+ * line height (1.2). The preview shows the page turned by /Rotate and cut to its crop box, so the
+ * position is mapped from that view back to the page and the glyphs are turned with the page.
+ */
+async function drawEditorText(pdfDoc: PDFDocument, page: PDFPage, el: PdfEditElement, canvasW?: number, canvasH?: number): Promise<void> {
+  const text = el.text ?? '';
+  if (!text.trim()) return;
+  const crop = page.getCropBox();
+  const rot = ((page.getRotation().angle % 360) + 360) % 360;
+  const vis = visualPageSize(crop.width, crop.height, rot);
+  const sx = vis.width / (canvasW || vis.width);
+  const sy = vis.height / (canvasH || vis.height);
+  const size = (el.size || 16) * sy;
+  const boxW = Math.max(1, (el.width || 150) * sx);
+  const family = el.font || 'Arial';
+  const weight = el.bold ? 700 : 400;
+  const italic = !!el.italic;
+  let font: PDFFont;
+  try {
+    font = (await fontHasText(family, weight, italic, text)) ? await embedFont(pdfDoc, family, weight, italic) : await embedLiberationSans(pdfDoc);
+  } catch {
+    font = await embedLiberationSans(pdfDoc);
+  }
+  const lines = wrapEditorText(text, (s) => font.widthOfTextAtSize(s, size), boxW);
+  const lineH = size * 1.2;
+  // The browser places a line's baseline from the font's hhea ascent and descent (the editor's
+  // fonts: OS/2 typo = hhea or USE_TYPO_METRICS off with win = hhea); pdf-lib's heightAtSize uses
+  // other numbers and put the text 0.22 em too high.
+  const ff = (font as unknown as { embedder: { font?: { ascent?: number; descent?: number; unitsPerEm?: number } } }).embedder.font;
+  const em = ff?.unitsPerEm || 1000;
+  const ascent = ff?.ascent != null ? (ff.ascent / em) * size : font.heightAtSize(size, { descender: false });
+  const descent = ff?.descent != null ? (-ff.descent / em) * size : font.heightAtSize(size) - ascent;
+  const firstBaseline = (el.y * sy) + (lineH - (ascent + descent)) / 2 + ascent;
+  const color = rgbFromHex(el.color || '#000000');
+  lines.forEach((line, i) => {
+    if (!line) return;
+    const vx = el.x * sx;
+    const vyDown = firstBaseline + i * lineH;
+    const raw = visualToRawPoint(crop.width, crop.height, rot, vx, vis.height - vyDown);
+    page.drawText(line, { x: crop.x + raw.x, y: crop.y + raw.y, size, font, color, opacity: el.opacity ?? 1, rotate: degrees(rot) });
+  });
+}
+
+/**
+ * Lines of a placed text as the preview shows them (CSS white-space: pre-wrap; overflow-wrap:
+ * break-word): breaks at line breaks, wraps at spaces to the box width, and breaks a word that
+ * does not fit on a line of its own. Trailing spaces of a wrapped line hang (they do not push it
+ * over).
+ */
+export function wrapEditorText(text: string, width: (s: string) => number, maxW: number): string[] {
+  const out: string[] = [];
+  for (const para of text.split('\n')) {
+    const words = para.split(/( +)/).filter((w) => w !== '');
+    let line = '';
+    const push = () => { out.push(line.replace(/ +$/, '')); line = ''; };
+    for (const w of words) {
+      if (/^ +$/.test(w)) { line += w; continue; }
+      if (line && width((line + w).replace(/ +$/, '')) > maxW) push();
+      if (width(w) <= maxW) { line += w; continue; }
+      for (const ch of w) {
+        if (line && width(line + ch) > maxW) push();
+        line += ch;
+      }
+    }
+    out.push(line.replace(/ +$/, ''));
+  }
+  return out;
+}
+
 export async function editPdfClient(file: File, pageIndex: number, elements: PdfEditElement[], pageWidth?: number, pageHeight?: number): Promise<Blob> {
+  return editPdfPages(file, [{ pageIndex, elements, pageWidth, pageHeight }]);
+}
+
+/** One page's elements and the preview canvas size they were placed against. */
+export interface PdfEditPage { pageIndex: number; elements: PdfEditElement[]; pageWidth?: number; pageHeight?: number }
+
+/**
+ * Elements of several pages in one file (FINDING 2026-11-23): the editor kept the elements of
+ * the page on screen only — moving to another page silently threw away everything placed on the
+ * previous one, so a form filled on two pages came back with the first page empty.
+ */
+export async function editPdfPages(file: File, edits: PdfEditPage[]): Promise<Blob> {
   const buf = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(buf);
   const pages = pdfDoc.getPages();
-  if (pageIndex < 0 || pageIndex >= pages.length) throw new Error('Invalid page number');
+  for (const e of edits) {
+    if (e.pageIndex < 0 || e.pageIndex >= pages.length) throw new Error('Invalid page number');
+    await applyEditElements(pdfDoc, pages[e.pageIndex]!, e.elements, e.pageWidth, e.pageHeight);
+  }
+  return new Blob([await pdfDoc.save() as BlobPart], { type: 'application/pdf' });
+}
 
-  // Safe: bounds already checked above (pageIndex < 0 || pageIndex >= pages.length throws).
-  const page = pages[pageIndex]!;
+async function applyEditElements(pdfDoc: PDFDocument, page: PDFPage, elements: PdfEditElement[], pageWidth?: number, pageHeight?: number): Promise<void> {
   // pageWidth/pageHeight are the on-screen preview canvas dimensions the caller placed
   // annotations against; they must be converted into PDF point space per axis
   // independently (scaleX from width, scaleY from height) — a page is virtually never
@@ -5284,47 +5376,9 @@ export async function editPdfClient(file: File, pageIndex: number, elements: Pdf
         opacity,
       });
     } else if (el.type === 'text' && el.text) {
-      // FINDING (2026-09-22) — this used the raw display name (e.g. "Times New Roman", "Noto
-      // Sans", "PT Sans", and even the DEFAULT "Arial") directly as the Canvas2D font family.
-      // loadGoogleFontsCSS() (lib/pdf/fonts.ts, called once on mount by PdfEditor.tsx) registers
-      // @font-face rules under the INTERNAL, lowercase, no-space family keys ('tinos',
-      // 'notosans', 'opensans', 'ptsans', 'arimo' — Arial is aliased to the Arimo files —
-      // etc.), and the on-screen preview correctly resolves through the same getFontFamily()
-      // used here (see EditLayer.tsx). A raw display name with a space ("Times New Roman") or a
-      // different word entirely (Arial→arimo) never matches any registered @font-face family,
-      // so Canvas2D silently fell back to a generic system font — a deterministic WYSIWYG
-      // mismatch between the on-screen preview and the exported PDF for 5 of the 12 selectable
-      // fonts, including the default.
-      const fontName = getFontFamily(el.font || 'Arial');
-      const fontStyle = `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}`;
-      const fontSize = (el.size || 16) * scaleY * 2;
-      const fnt = `${fontStyle}${fontSize}px ${fontName}`;
-      const tCanvas = document.createElement('canvas');
-      const tCtx = tCanvas.getContext('2d')!;
-      tCtx.font = fnt;
-      const tMetrics = tCtx.measureText(el.text);
-      const tW = Math.ceil(tMetrics.width) + 8;
-      const tH = Math.ceil(fontSize * 1.4) + 8;
-      tCanvas.width = tW;
-      tCanvas.height = tH;
-      const tCtx2 = tCanvas.getContext('2d')!;
-      tCtx2.font = fnt;
-      tCtx2.fillStyle = sColor;
-      tCtx2.textBaseline = 'top';
-      tCtx2.fillText(el.text, 4, 4);
-      const tBlob2 = await new Promise<Blob>(resolve => tCanvas.toBlob(b => resolve(b!), 'image/png'));
-      const tBuf2 = new Uint8Array(await tBlob2.arrayBuffer());
-      const tImg = await pdfDoc.embedPng(tBuf2);
-      const tScale = (el.size || 16) / 16;
-      page.drawImage(tImg, {
-        x: sx, y: sy - (tH / 2) * scaleY * tScale,
-        width: tW * scaleX * tScale, height: tH * scaleY * tScale,
-        opacity,
-      });
+      await drawEditorText(pdfDoc, page, el, pageWidth, pageHeight);
     }
   }
-
-  return new Blob([await pdfDoc.save() as BlobPart], { type: 'application/pdf' });
 }
 
 /**

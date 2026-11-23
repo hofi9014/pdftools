@@ -1183,6 +1183,9 @@ const fr: Record<string, string> = {
   'page.makefillable.info_1': 'Dans Adobe Acrobat Reader, Microsoft Edge et Google Chrome : il suffit de cliquer sur un champ et d’écrire. Vous pouvez aussi le remplir avec {tool}.',
   'page.makefillable.info_2': 'Les lettres accentuées, le cyrillique et le grec fonctionnent dans chaque champ : les champs utilisent une police intégrée au fichier (environ 100 ko de plus).',
   'page.makefillable.info_3': 'Le champ de signature sert à apposer une signature numérique avec un certificat dans Adobe Acrobat. Les navigateurs l’affichent comme un cadre vide.',
+  'page.fillform.flat_desc': 'Ce formulaire n\'a pas de champs à remplir (par exemple, il a été numérisé ou enregistré en PDF simple). Vous pouvez quand même écrire n\'importe où sur la page : cliquez à l\'endroit voulu et tapez. Le fichier reste dans votre navigateur.',
+  'page.fillform.flat_write': 'Écrire sur la page',
+  'page.fillform.flat_make_before': 'Vous voulez que d\'autres puissent remplir ce formulaire ? Ajoutez-y des champs avec :',
 };
 
 export default fr;

@@ -221,5 +221,20 @@ console.log('\n=== the back link has one arrow ===');
     `no component adds a second arrow to 'back.to_home'${doubled.length ? ` (${doubled.join(', ')})` : ''}`);
 }
 
+console.log('\n=== a PDF without form fields (plan 2.3, 2026-11-23) ===');
+{
+  // The page now offers typing anywhere and links to "Make PDF fillable"; the Help answer used
+  // to send people to OCR, which recognises text and fills in nothing.
+  const page = readFileSync(join(ROOT, 'app/(unprefixed)/fill-form/page.tsx'), 'utf8');
+  check(/setNoFields\(true\)/.test(page) && /preset="form"/.test(page) && /toolPath\('makefillable', locale\)/.test(page),
+    'fill-form: no fields → the editor in form mode and a link to "Make PDF fillable"');
+  const item = helpData.flatMap((c) => c.items).find((i) => i.key === 'fillform-notinteractive')!;
+  const bad = locales.filter((l) => {
+    const a = (item.a as Record<string, string>)[l] ?? '';
+    return !a.includes(t('tool.makefillable', l)) || /OCR/.test(a) || !/XFA/.test(a);
+  });
+  check(bad.length === 0, `Help "form has no fields": names the real tool, no OCR advice, XFA stated, in every language${bad.length ? ` (${bad.join(', ')})` : ''}`);
+}
+
 console.log(fails ? `\n${fails} FAIL` : '\nALL PASS');
 process.exit(fails ? 1 : 0);

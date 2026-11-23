@@ -1183,6 +1183,9 @@ const it: Record<string, string> = {
   'page.makefillable.info_1': 'In Adobe Acrobat Reader, Microsoft Edge e Google Chrome: basta fare clic su un campo e scrivere. Puoi compilarlo anche con {tool}.',
   'page.makefillable.info_2': 'Le lettere accentate, il cirillico e il greco funzionano in ogni campo: i campi usano un carattere incorporato nel file (circa 100 kB in più).',
   'page.makefillable.info_3': 'Il campo firma serve per una firma digitale con certificato in Adobe Acrobat. I browser lo mostrano come un riquadro vuoto.',
+  'page.fillform.flat_desc': 'Questo modulo non ha campi compilabili (ad esempio è stato scansionato o salvato come PDF semplice). Puoi comunque scrivere in qualsiasi punto della pagina: fai clic dove deve comparire il testo e digita. Il file resta nel tuo browser.',
+  'page.fillform.flat_write': 'Scrivi sulla pagina',
+  'page.fillform.flat_make_before': 'Vuoi che altri possano compilare questo modulo? Aggiungi i campi con:',
 };
 
 export default it;

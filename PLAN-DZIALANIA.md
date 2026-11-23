@@ -138,8 +138,10 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
       wystarczy; Edge jest na komputerze). **2026-11-23:** `/make-pdf-fillable`; sprawdzone w Edge
       (silnik Acrobata) i Chrome; przy okazji naprawiony „Wypełnij formularz” (na produkcji nie
       działał wcale); zob. AGENTS.md.
-- [ ] 2.3 Wypełnianie PDF bez pól formularza (pisanie w dowolnym miejscu) — rozszerzenie
-      „Wypełnij formularz” o tryb z edytora.
+- [x] 2.3 Wypełnianie PDF bez pól formularza (pisanie w dowolnym miejscu) — rozszerzenie
+      „Wypełnij formularz” o tryb z edytora. **2026-11-23:** gotowe; przy okazji edytor zapisuje
+      dodany tekst jako prawdziwy tekst w rozmiarze z podglądu (był obrazkiem ~2× za dużym) i nie
+      gubi wpisów z innych stron; zob. AGENTS.md.
 - [ ] 2.4 Tekst / Markdown na PDF (silnik tagowanego PDF z html-to-pdf).
 - [ ] 2.5 Kod QR do PDF (+ prosty generator na tej samej stronie).
 - [ ] 2.6 PDF w skali szarości.

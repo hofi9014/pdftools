@@ -124,7 +124,8 @@ console.log('\n=== PdfEditor.tsx source: handleExport chains both operations, no
   const fnSrc = src.slice(startIdx, endIdx);
   check(startIdx !== -1, 'handleExport function found in source');
   check(!/\}\s*else if \(elements\.length > 0\)/.test(fnSrc), 'the old "} else if (elements.length > 0)" branching pattern is gone');
-  check(/if \(textEdits\.length > 0\)[\s\S]*?if \(elements\.length > 0\)/.test(fnSrc), 'both an "if (textEdits...)" AND a separate "if (elements...)" now run sequentially, not exclusively');
+  // Since 2026-11-23 the elements of every page are collected into pageEdits (editPdfPages).
+  check(/if \(textEdits\.length > 0\)[\s\S]*?if \(pageEdits\.length > 0\)/.test(fnSrc), 'both an "if (textEdits...)" AND a separate "if (pageEdits...)" (the elements) now run sequentially, not exclusively');
   check(/sourceFile = Object\.assign\(blob, \{ name: file\.name \}\)/.test(fnSrc), 'the intermediate text-edit Blob is wrapped as a File and fed into the elements step (real chaining, not two independent exports)');
 }
 

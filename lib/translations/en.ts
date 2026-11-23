@@ -1182,6 +1182,9 @@ const en: Record<string, string> = {
   'page.makefillable.info_1': 'In Adobe Acrobat Reader, Microsoft Edge and Google Chrome — just click a field and type. You can also fill it in with {tool}.',
   'page.makefillable.info_2': 'Accented letters, Cyrillic and Greek work in every field: the fields use a font embedded in the file (it adds about 100 kB).',
   'page.makefillable.info_3': 'The signature field is a place for a digital signature with a certificate in Adobe Acrobat. Browsers show it as an empty box.',
+  'page.fillform.flat_desc': 'This form has no fillable fields (for example, it was scanned or saved as a plain PDF). You can still type anywhere on the page: click where the text should go and type. The file stays in your browser.',
+  'page.fillform.flat_write': 'Type on the page',
+  'page.fillform.flat_make_before': 'Want others to be able to fill in this form? Add fields to it with:',
 };
 
 export default en;

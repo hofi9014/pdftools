@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
-import { initPdfjs, editPdfClient, type PdfEditElement } from '@/lib/client-pdf-lazy';
+import { initPdfjs, editPdfPages, type PdfEditElement, type PdfEditPage } from '@/lib/client-pdf-lazy';
 import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { extractTextBlocks } from '@/lib/pdf/extractTextBlocks';
 import { exportEditedPdf, type TextEdit } from '@/lib/pdf/exportEditedPdf';
@@ -25,15 +25,23 @@ interface TextBlockData {
 const FONTS = ['Arial', 'Arimo', 'Cousine', 'Georgia', 'Lato', 'Noto Sans', 'Open Sans', 'PT Sans', 'Roboto', 'Times New Roman', 'Tinos', 'Verdana'];
 const COLORS = ['#000000','#ff0000','#0000ff','#00aa00','#ff8800','#8800ff','#ff00ff','#00aaaa'];
 
-export default function PdfEditor({ file, onReset }: { file: File; onReset: () => void }) {
+/**
+ * `form`: opened from "Fill form" for a PDF without form fields (plan 2.3) — starts with the text
+ * tool and black text (16 px in the editor = 10.7 pt on the page), and puts the cursor in the
+ * new text's box so the user can type at once.
+ */
+export type EditorPreset = 'form';
+
+export default function PdfEditor({ file, onReset, preset }: { file: File; onReset: () => void; preset?: EditorPreset }) {
   const locale = useHydrationSafeLocale();
+  const formMode = preset === 'form';
   const [currentPage, setCurrentPage] = useState(1);
   const [pageCount, setPageCount] = useState(0);
   const [canvasWidth, setCanvasWidth] = useState(0);
   const [canvasHeight, setCanvasHeight] = useState(0);
   const [pageCanvas, setPageCanvas] = useState<HTMLCanvasElement | null>(null);
   const [error, setError] = useState('');
-  const [activeTool, setActiveTool] = useState('select');
+  const [activeTool, setActiveTool] = useState(formMode ? 'text' : 'select');
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [textEdits, setTextEdits] = useState<TextEdit[]>([]);
   const [textBlocks, setTextBlocks] = useState<TextBlockData[]>([]);
@@ -45,10 +53,13 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
   const [exportMsg, setExportMsg] = useState('');
 
   // Tool form state
-  const [toolText, setToolText] = useState('Text');
+  // Placed text says "Type text" in the page's language (was the English word "Text" everywhere).
+  const [toolText, setToolText] = useState(() => t('edit.placeholder_text', locale));
   const [toolFont, setToolFont] = useState('Arial');
   const [toolSize, setToolSize] = useState(16);
-  const [toolColor, setToolColor] = useState('#C28F5B');
+  const [toolColor, setToolColor] = useState(formMode ? '#000000' : '#C28F5B');
+  /** Id of a text just placed in form mode: its box gets the cursor, its words selected. */
+  const [focusTextId, setFocusTextId] = useState<number | null>(null);
   const [toolBold, setToolBold] = useState(false);
   const [toolItalic, setToolItalic] = useState(false);
   const [toolOpacity, setToolOpacity] = useState(100);
@@ -121,11 +132,19 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
     setPageCanvas(canvas);
   }, []);
 
+  // Elements of the pages not on screen, with the canvas size they were placed against. Moving to
+  // another page used to reset the list, silently losing everything placed on the previous page.
+  const otherPagesRef = useRef(new Map<number, { elements: EditorElement[]; w: number; h: number }>());
   const handlePageSelect = useCallback((p: number) => {
+    if (p === currentPage) return;
+    const saved = otherPagesRef.current;
+    if (elementsRef.current.length > 0) saved.set(currentPage, { elements: elementsRef.current, w: canvasWidth, h: canvasHeight });
+    else saved.delete(currentPage);
     setCurrentPage(p);
     setSelectedId(null);
-    undoRedo.reset([]);
-  }, [undoRedo]);
+    undoRedo.reset(saved.get(p)?.elements ?? []);
+    saved.delete(p);
+  }, [undoRedo, currentPage, canvasWidth, canvasHeight]);
 
   const handleElementsChange = useCallback((newElements: EditorElement[], phase?: 'begin' | 'update') => {
     // A drag emits one 'begin' then many 'update's: only the first is an undo step.
@@ -133,7 +152,22 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
     else undoRedo.set(newElements);
   }, [undoRedo]);
 
+  // Form mode: the new text's box gets the cursor with its words selected, so typing replaces
+  // them. After the click, not during it: the browser moves focus to the clicked page on mousedown.
+  useEffect(() => {
+    if (focusTextId == null) return;
+    const timer = setTimeout(() => {
+      const box = document.getElementById('editor-selected-text') as HTMLTextAreaElement | null;
+      if (box) { box.focus(); box.select(); }
+      setFocusTextId(null);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [focusTextId]);
+
+  /** Form mode: a text just placed stays selected (the layer deselects after placing) so its box shows. */
+  const keepSelectedRef = useRef(false);
   const handleSelect = useCallback((id: number | null) => {
+    if (id === null && keepSelectedRef.current) { keepSelectedRef.current = false; return; }
     setSelectedId(id);
   }, []);
 
@@ -173,7 +207,8 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
     }
     undoRedo.set([...cur, el]);
     setSelectedId(id);
-  }, [activeTool, undoRedo, toolText, toolFont, toolSize, toolColor, toolBold, toolItalic, toolOpacity, highlightColor, highlightOpacity]);
+    if (formMode && el.type === 'text') { setFocusTextId(id); keepSelectedRef.current = true; }
+  }, [activeTool, undoRedo, toolText, toolFont, toolSize, toolColor, toolBold, toolItalic, toolOpacity, highlightColor, highlightOpacity, formMode]);
 
   // Add freehand point
   const handleFreehandStart = useCallback((x: number, y: number) => {
@@ -331,7 +366,17 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
   const handleExport = useCallback(async () => {
     setExporting(true); setError(''); setSuccess(false);
     try {
-      if (textEdits.length === 0 && elements.length === 0) {
+      const toEditData = (els: EditorElement[]): PdfEditElement[] => els.map(el => ({
+        type: el.type as any, x: el.x, y: el.y,
+        text: el.text, size: el.size, color: el.color, width: el.w, height: el.h, opacity: el.opacity,
+        font: (el.font || 'Arial') as any, bold: el.bold, italic: el.italic,
+        x2: el.x2, y2: el.y2,
+        imageDataUrl: el.imageDataUrl,
+        points: el.points,
+      }));
+      const pageEdits: PdfEditPage[] = [...otherPagesRef.current].map(([pg, v]) => ({ pageIndex: pg - 1, elements: toEditData(v.elements), pageWidth: v.w, pageHeight: v.h }));
+      if (elements.length > 0) pageEdits.push({ pageIndex: currentPage - 1, elements: toEditData(elements), pageWidth: canvasWidth, pageHeight: canvasHeight });
+      if (textEdits.length === 0 && pageEdits.length === 0) {
         setError(t('edit.msg_no_elements', locale));
         return;
       }
@@ -348,24 +393,16 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
         const cm = new Map<number, HTMLCanvasElement>();
         if (pageCanvas) cm.set(currentPage, pageCanvas);
         blob = await exportEditedPdf(sourceFile, textEdits, cm, renderScale);
-        if (elements.length > 0) {
+        if (pageEdits.length > 0) {
           sourceFile = Object.assign(blob, { name: file.name }) as unknown as File;
         }
       }
-      if (elements.length > 0) {
-        const data: PdfEditElement[] = elements.map(el => ({
-          type: el.type as any, x: el.x, y: el.y,
-          text: el.text, size: el.size, color: el.color, width: el.w, height: el.h, opacity: el.opacity,
-          font: (el.font || 'Arial') as any, bold: el.bold, italic: el.italic,
-          x2: el.x2, y2: el.y2,
-          imageDataUrl: el.imageDataUrl,
-          points: el.points,
-        }));
-        blob = await editPdfClient(sourceFile, currentPage - 1, data, canvasWidth, canvasHeight);
+      if (pageEdits.length > 0) {
+        blob = await editPdfPages(sourceFile, pageEdits);
       }
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob!); a.download = `${t('edit.filename_prefix', locale)}${file.name}`; a.click();
       setSuccess(true);
-      setExportMsg(elements.length > 0 ? t('edit.success_elements', locale) : t('edit.success_text', locale));
+      setExportMsg(pageEdits.length > 0 ? t('edit.success_elements', locale) : t('edit.success_text', locale));
     } catch (err: unknown) { setError(errorText(err, locale)); }
     finally { setExporting(false); }
   }, [elements, textEdits, file, currentPage, canvasWidth, canvasHeight, pageCanvas, locale]);
@@ -568,7 +605,7 @@ export default function PdfEditor({ file, onReset }: { file: File; onReset: () =
               {selectedEl.type === 'text' && (
                 <>
                   <div><label className="text-[10px]">{t('edit.label_content', locale)}</label>
-                    <textarea value={selectedEl.text ?? ''} onChange={e => updateSelected({ text: e.target.value })}
+                    <textarea id="editor-selected-text" key={selectedEl.id} value={selectedEl.text ?? ''} onChange={e => updateSelected({ text: e.target.value })}
                       className="w-full px-1.5 py-1 border rounded text-xs bg-white dark:bg-gray-700 resize-none" rows={2} /></div>
                   <div className="grid grid-cols-2 gap-2">
                     <div><label className="text-[10px]">{t('edit.label_size', locale)}</label>

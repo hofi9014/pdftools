@@ -1183,6 +1183,9 @@ const tr: Record<string, string> = {
   'page.makefillable.info_1': 'Adobe Acrobat Reader, Microsoft Edge ve Google Chrome\'da — bir alana tıklayıp yazmanız yeterli. Dosyayı {tool} aracıyla da doldurabilirsiniz.',
   'page.makefillable.info_2': 'Türkçe karakterler, Kiril ve Yunan harfleri her alanda çalışır: alanlar dosyaya gömülü bir yazı tipi kullanır (dosya yaklaşık 100 kB büyür).',
   'page.makefillable.info_3': 'İmza alanı, Adobe Acrobat\'ta sertifikayla atılan dijital imza içindir. Tarayıcılar onu boş bir çerçeve olarak gösterir.',
+  'page.fillform.flat_desc': 'Bu formda doldurulabilir alan yok (örneğin taranmış veya düz PDF olarak kaydedilmiş). Yine de sayfanın herhangi bir yerine yazabilirsiniz: metnin görüneceği yere tıklayın ve yazın. Dosya tarayıcınızdan çıkmaz.',
+  'page.fillform.flat_write': 'Sayfaya yaz',
+  'page.fillform.flat_make_before': 'Bu formu başkalarının da doldurabilmesini mi istiyorsunuz? Alanları şu araçla ekleyin:',
 };
 
 export default tr;

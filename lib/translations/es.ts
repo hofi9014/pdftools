@@ -1183,6 +1183,9 @@ const es: Record<string, string> = {
   'page.makefillable.info_1': 'En Adobe Acrobat Reader, Microsoft Edge y Google Chrome: basta con hacer clic en un campo y escribir. También puede rellenarlo con {tool}.',
   'page.makefillable.info_2': 'Las letras con acento, el cirílico y el griego funcionan en todos los campos: los campos usan una fuente incrustada en el archivo (unos 100 kB más).',
   'page.makefillable.info_3': 'El campo de firma es un espacio para una firma digital con certificado en Adobe Acrobat. Los navegadores lo muestran como un recuadro vacío.',
+  'page.fillform.flat_desc': 'Este formulario no tiene campos rellenables (por ejemplo, está escaneado o guardado como PDF normal). Aun así, puedes escribir en cualquier lugar de la página: haz clic donde debe ir el texto y escribe. El archivo no sale de tu navegador.',
+  'page.fillform.flat_write': 'Escribir en la página',
+  'page.fillform.flat_make_before': '¿Quieres que otros puedan rellenar este formulario? Añádele campos con:',
 };
 
 export default es;

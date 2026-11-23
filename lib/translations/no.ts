@@ -1183,6 +1183,9 @@ const no: Record<string, string> = {
   'page.makefillable.info_1': 'I Adobe Acrobat Reader, Microsoft Edge og Google Chrome — bare klikk i et felt og skriv. Du kan også fylle ut filen med {tool}.',
   'page.makefillable.info_2': 'Æ, ø, å og andre bokstaver med aksent, kyrillisk og gresk fungerer i alle felt: feltene bruker en skrift som er innebygd i filen (omtrent 100 kB ekstra).',
   'page.makefillable.info_3': 'Signaturfeltet er beregnet på en digital signatur med sertifikat i Adobe Acrobat. Nettlesere viser det som en tom ramme.',
+  'page.fillform.flat_desc': 'Dette skjemaet har ingen utfyllbare felt (for eksempel skannet eller lagret som vanlig PDF). Du kan likevel skrive hvor som helst på siden: klikk der teksten skal stå, og skriv. Filen blir i nettleseren din.',
+  'page.fillform.flat_write': 'Skriv på siden',
+  'page.fillform.flat_make_before': 'Vil du at andre skal kunne fylle ut skjemaet? Legg til felt med:',
 };
 
 export default no;

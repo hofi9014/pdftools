@@ -1180,6 +1180,9 @@ const id: Record<string, string> = {
   'page.makefillable.info_1': 'Di Adobe Acrobat Reader, Microsoft Edge, dan Google Chrome — cukup klik kolom lalu ketik. Anda juga bisa mengisinya dengan {tool}.',
   'page.makefillable.info_2': 'Huruf beraksen, Sirilik, dan Yunani berfungsi di setiap kolom: kolom memakai font yang disematkan di file (menambah sekitar 100 kB).',
   'page.makefillable.info_3': 'Kolom tanda tangan adalah tempat tanda tangan digital dengan sertifikat di Adobe Acrobat. Browser menampilkannya sebagai kotak kosong.',
+  'page.fillform.flat_desc': 'Formulir ini tidak memiliki kolom yang dapat diisi (misalnya hasil pindaian atau disimpan sebagai PDF biasa). Anda tetap bisa mengetik di mana saja pada halaman: klik di tempat teks harus muncul, lalu ketik. File tetap berada di browser Anda.',
+  'page.fillform.flat_write': 'Ketik di halaman',
+  'page.fillform.flat_make_before': 'Ingin orang lain dapat mengisi formulir ini? Tambahkan kolom dengan:',
 };
 
 export default id;

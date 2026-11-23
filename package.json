@@ -246,6 +246,7 @@
     "test:make-fillable": "npx tsx tests/make-fillable.mts",
     "test:fill-form-polish": "npx tsx tests/fill-form-polish.mts",
     "test:e2e-make-pdf-fillable": "npx tsx e2e/make-pdf-fillable.mts",
+    "test:e2e-fill-form-flat": "npx tsx e2e/fill-form-flat.mts",
     "test:form-fields-minified": "npx tsx tests/form-fields-minified.mts"
   },
   "dependencies": {

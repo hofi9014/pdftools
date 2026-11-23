@@ -1183,6 +1183,9 @@ const pt: Record<string, string> = {
   'page.makefillable.info_1': 'No Adobe Acrobat Reader, no Microsoft Edge e no Google Chrome — basta clicar num campo e escrever. Também o pode preencher com {tool}.',
   'page.makefillable.info_2': 'As letras acentuadas, o cirílico e o grego funcionam em todos os campos: os campos usam um tipo de letra incorporado no ficheiro (cerca de 100 kB a mais).',
   'page.makefillable.info_3': 'O campo de assinatura é um espaço para uma assinatura digital com certificado no Adobe Acrobat. Os navegadores mostram-no como uma moldura vazia.',
+  'page.fillform.flat_desc': 'Este formulário não tem campos preenchíveis (por exemplo, foi digitalizado ou guardado como PDF simples). Mesmo assim, pode escrever em qualquer ponto da página: clique onde o texto deve ficar e escreva. O ficheiro fica no seu navegador.',
+  'page.fillform.flat_write': 'Escrever na página',
+  'page.fillform.flat_make_before': 'Quer que outras pessoas possam preencher este formulário? Adicione campos com:',
 };
 
 export default pt;

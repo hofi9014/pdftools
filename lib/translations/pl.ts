@@ -1183,6 +1183,9 @@ const pl: Record<string, string> = {
   'page.makefillable.info_1': 'W Adobe Acrobat Reader, Microsoft Edge i Google Chrome — wystarczy kliknąć pole i pisać. Plik wypełnisz też narzędziem {tool}.',
   'page.makefillable.info_2': 'Polskie litery działają w każdym polu: pola używają czcionki z polskimi znakami, osadzonej w pliku (plik rośnie o ok. 100 kB).',
   'page.makefillable.info_3': 'Pole podpisu to miejsce na podpis cyfrowy certyfikatem w programie Adobe Acrobat. W przeglądarkach widać je jako pustą ramkę.',
+  'page.fillform.flat_desc': 'To formularz bez pól do wypełniania (np. zeskanowany albo zapisany z programu jako zwykły PDF). Możesz mimo to wpisać tekst w dowolnym miejscu strony: kliknij tam, gdzie ma się pojawić, i pisz. Plik nie opuszcza przeglądarki.',
+  'page.fillform.flat_write': 'Wpisz tekst na stronie',
+  'page.fillform.flat_make_before': 'Chcesz, żeby inni mogli ten formularz wypełniać? Dodaj do niego pola narzędziem:',
 };
 
 export default pl;

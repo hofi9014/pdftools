@@ -1184,6 +1184,9 @@ const zh: Record<string, string> = {
   'page.makefillable.info_1': '在Adobe Acrobat Reader、Microsoft Edge和Google Chrome中，点击字段即可输入。也可以使用{tool}填写。',
   'page.makefillable.info_2': '字段使用嵌入文件的字体，支持拉丁、西里尔和希腊字母（文件约增加100 kB）。中文在某些阅读器中可能以替代字体显示或无法正确显示。',
   'page.makefillable.info_3': '签名字段用于在Adobe Acrobat中使用证书进行数字签名。浏览器中显示为空框。',
+  'page.fillform.flat_desc': '此表单没有可填写的字段（例如扫描件或另存为普通PDF的文件）。您仍然可以在页面的任意位置输入文字：在需要文字的地方点击，然后输入。文件不会离开您的浏览器。',
+  'page.fillform.flat_write': '在页面上输入',
+  'page.fillform.flat_make_before': '希望其他人也能填写此表单？可以使用以下工具添加字段：',
 };
 
 export default zh;

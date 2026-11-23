@@ -1183,6 +1183,9 @@ const sv: Record<string, string> = {
   'page.makefillable.info_1': 'I Adobe Acrobat Reader, Microsoft Edge och Google Chrome — klicka bara på ett fält och skriv. Du kan också fylla i filen med {tool}.',
   'page.makefillable.info_2': 'Å, ä, ö och andra bokstäver med accent, kyrilliska och grekiska fungerar i alla fält: fälten använder ett typsnitt som är inbäddat i filen (cirka 100 kB extra).',
   'page.makefillable.info_3': 'Underskriftsfältet är avsett för en digital signatur med certifikat i Adobe Acrobat. Webbläsare visar det som en tom ram.',
+  'page.fillform.flat_desc': 'Det här formuläret har inga ifyllbara fält (till exempel skannat eller sparat som vanlig PDF). Du kan ändå skriva var som helst på sidan: klicka där texten ska stå och skriv. Filen stannar i din webbläsare.',
+  'page.fillform.flat_write': 'Skriv på sidan',
+  'page.fillform.flat_make_before': 'Vill du att andra ska kunna fylla i formuläret? Lägg till fält med:',
 };
 
 export default sv;

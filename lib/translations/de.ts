@@ -1183,6 +1183,9 @@ const de: Record<string, string> = {
   'page.makefillable.info_1': 'In Adobe Acrobat Reader, Microsoft Edge und Google Chrome — einfach ins Feld klicken und schreiben. Sie können die Datei auch mit {tool} ausfüllen.',
   'page.makefillable.info_2': 'Umlaute und andere Akzentbuchstaben, Kyrillisch und Griechisch funktionieren in jedem Feld: Die Felder nutzen eine in die Datei eingebettete Schrift (rund 100 kB mehr).',
   'page.makefillable.info_3': 'Das Unterschriftsfeld ist für eine digitale Signatur mit Zertifikat in Adobe Acrobat gedacht. Browser zeigen es als leeren Rahmen.',
+  'page.fillform.flat_desc': 'Dieses Formular hat keine ausfüllbaren Felder (zum Beispiel gescannt oder als normales PDF gespeichert). Sie können trotzdem überall auf der Seite schreiben: Klicken Sie dorthin, wo der Text stehen soll, und tippen Sie. Die Datei bleibt in Ihrem Browser.',
+  'page.fillform.flat_write': 'Auf der Seite schreiben',
+  'page.fillform.flat_make_before': 'Sollen andere dieses Formular ausfüllen können? Fügen Sie Felder hinzu mit:',
 };
 
 export default de;

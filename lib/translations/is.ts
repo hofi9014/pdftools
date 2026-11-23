@@ -1184,6 +1184,9 @@ const is: Record<string, string> = {
   'page.makefillable.info_1': 'Í Adobe Acrobat Reader, Microsoft Edge og Google Chrome — smelltu bara á reit og skrifaðu. Þú getur líka fyllt skrána út með {tool}.',
   'page.makefillable.info_2': 'Íslenskir stafir, kyrillískt letur og gríska virka í öllum reitum: reitirnir nota letur sem er fellt inn í skrána (um 100 kB til viðbótar).',
   'page.makefillable.info_3': 'Undirskriftarreiturinn er fyrir rafræna undirskrift með skilríki í Adobe Acrobat. Vafrar sýna hann sem tóman ramma.',
+  'page.fillform.flat_desc': 'Þetta eyðublað hefur enga útfyllanlega reiti (til dæmis skannað eða vistað sem venjulegt PDF). Þú getur samt skrifað hvar sem er á síðunni: smelltu þar sem textinn á að vera og skrifaðu. Skráin fer ekki úr vafranum þínum.',
+  'page.fillform.flat_write': 'Skrifa á síðuna',
+  'page.fillform.flat_make_before': 'Viltu að aðrir geti fyllt út þetta eyðublað? Bættu reitum við með:',
 };
 
 export default is;

@@ -15,7 +15,7 @@
 
 import type * as ClientPdf from './client-pdf';
 
-export type { PageDiff, FormField, PdfEditElement } from './client-pdf';
+export type { PageDiff, FormField, PdfEditElement, PdfEditPage } from './client-pdf';
 export { UNRELATED_DOCUMENTS_THRESHOLD } from './pdf/compareThreshold';
 
 type Engine = typeof ClientPdf;
@@ -66,6 +66,7 @@ export const downloadPdf = lazy('downloadPdf');
 export const downloadZip = lazy('downloadZip');
 export const editMetadata = lazy('editMetadata');
 export const editPdfClient = lazy('editPdfClient');
+export const editPdfPages = lazy('editPdfPages');
 export const extractFormFields = lazy('extractFormFields');
 export const extractImagesFromPdf = lazy('extractImagesFromPdf');
 export const extractPages = lazy('extractPages');

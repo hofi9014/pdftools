@@ -1183,6 +1183,9 @@ const ja: Record<string, string> = {
   'page.makefillable.info_1': 'Adobe Acrobat Reader、Microsoft Edge、Google Chromeで、欄をクリックして入力するだけです。{tool}でも入力できます。',
   'page.makefillable.info_2': '欄に埋め込まれるフォントはラテン文字・キリル文字・ギリシャ文字に対応しています（約100 kB増えます）。日本語の文字は閲覧アプリによっては代替フォントで表示されたり、正しく表示されなかったりします。',
   'page.makefillable.info_3': '署名欄はAdobe Acrobatで証明書を使ったデジタル署名をするための場所です。ブラウザーでは空の枠として表示されます。',
+  'page.fillform.flat_desc': 'このフォームには入力フィールドがありません（スキャンした書類や通常のPDFとして保存されたものなど）。それでもページ上の好きな場所に入力できます。文字を置きたい場所をクリックして入力してください。ファイルはブラウザの外に送信されません。',
+  'page.fillform.flat_write': 'ページに入力する',
+  'page.fillform.flat_make_before': '他の人もこのフォームに入力できるようにしたい場合は、次のツールでフィールドを追加できます：',
 };
 
 export default ja;

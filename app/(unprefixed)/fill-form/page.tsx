@@ -10,6 +10,12 @@ import ToolGlyph from '@/components/ToolGlyph';
 import PdfBadge from '@/components/PdfBadge';
 import { errorText } from '@/lib/error-text';
 import { useIdlePreload } from '@/hooks/useIdlePreload';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import { toolPath } from '@/lib/tools';
+
+// A PDF without form fields is filled in the editor (plan 2.3), loaded only when needed.
+const PdfEditor = dynamic(() => import('@/components/edit-pdf/PdfEditor'), { ssr: false });
 
 export default function FillForm({ locale: forcedLocale }: { locale?: Locale } = {}) {
   const locale = forcedLocale ?? useLocale().locale;
@@ -22,6 +28,9 @@ export default function FillForm({ locale: forcedLocale }: { locale?: Locale } =
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const processedBlobRef = useRef<Blob | null>(null);
+  /** The file has no form fields: offer typing anywhere on the page instead of an error. */
+  const [noFields, setNoFields] = useState(false);
+  const [writeAnywhere, setWriteAnywhere] = useState(false);
 
   const handleFile = async (f: File | null) => {
     if (!f) return;
@@ -31,6 +40,8 @@ export default function FillForm({ locale: forcedLocale }: { locale?: Locale } =
     setSuccess(false);
     setFields([]);
     setValues({});
+    setNoFields(false);
+    setWriteAnywhere(false);
     try {
       const { fields: extracted } = await extractFormFields(f);
       setFields(extracted);
@@ -40,7 +51,7 @@ export default function FillForm({ locale: forcedLocale }: { locale?: Locale } =
         else initVals[fld.name] = typeof fld.value === 'string' ? fld.value : '';
       });
       setValues(initVals);
-      if (extracted.length === 0) setError(t('page.fillform.no_fields', locale));
+      if (extracted.length === 0) setNoFields(true);
     } catch {
       setError(t('page.fillform.cant_read', locale));
     }
@@ -68,6 +79,14 @@ export default function FillForm({ locale: forcedLocale }: { locale?: Locale } =
       setLoading(false);
     }
   };
+
+  if (file && writeAnywhere) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <PdfEditor file={file} preset="form" onReset={() => { setWriteAnywhere(false); setFile(null); setNoFields(false); }} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
@@ -111,6 +130,20 @@ export default function FillForm({ locale: forcedLocale }: { locale?: Locale } =
       </div>
 
       {error && <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl p-4 mb-6"><ToolGlyph name="warning" /> {error}</div>}
+
+      {file && noFields && (
+        <div className="tool-info-box rounded-2xl p-5 mb-6" data-testid="fillform-no-fields">
+          <h2 className="font-bold tool-heading mb-2"><ToolGlyph name="info" /> {t('page.fillform.no_fields', locale)}</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{t('page.fillform.flat_desc', locale)}</p>
+          <button type="button" onClick={() => setWriteAnywhere(true)} className="btn-accent px-5 py-3 rounded-xl font-bold">
+            {t('page.fillform.flat_write', locale)}
+          </button>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-4">
+            {t('page.fillform.flat_make_before', locale)}{' '}
+            <Link href={toolPath('makefillable', locale)} className="link-accent underline">{t('tool.makefillable', locale)}</Link>
+          </p>
+        </div>
+      )}
 
       {fields.length > 0 && (
         <div className="tool-card rounded-2xl border mb-6">
