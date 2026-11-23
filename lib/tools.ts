@@ -55,6 +55,7 @@ export const tools: ToolDef[] = [
   { key: 'ocr',       slug: 'ocr-pdf',       category: 'more' },
   { key: 'compare',   slug: 'compare-pdf',   category: 'more' },
   { key: 'fillform',  slug: 'fill-form',     category: 'more' },
+  { key: 'makefillable', slug: 'make-pdf-fillable', category: 'more' },
   { key: 'pdfa',      slug: 'to-pdfa',       category: 'more' },
 ];
 
@@ -115,8 +116,8 @@ export const RELATED_TOOLS: Record<string, [string, string, string]> = {
   html: ['url', 'merge', 'compress'], html2pdf: ['html', 'txt', 'word'], url: ['html', 'compress', 'merge'],
   protect: ['unlock', 'sign', 'watermark'], unlock: ['protect', 'compress', 'edit'], sign: ['fillform', 'protect', 'edit'],
   aichat: ['aisummary', 'translate', 'ocr'], aisummary: ['aichat', 'translate', 'txt'], translate: ['aisummary', 'aichat', 'word'],
-  ocr: ['word', 'txt', 'compress'], compare: ['merge', 'edit', 'aisummary'], fillform: ['sign', 'flatten', 'protect'],
-  pdfa: ['metadata', 'protect', 'flatten'], cleanmeta: ['redact', 'metadata', 'protect'],
+  ocr: ['word', 'txt', 'compress'], compare: ['merge', 'edit', 'aisummary'], fillform: ['makefillable', 'sign', 'flatten'],
+  pdfa: ['metadata', 'protect', 'flatten'], cleanmeta: ['redact', 'metadata', 'protect'], makefillable: ['fillform', 'sign', 'flatten'],
 };
 
 export interface CategoryDef {

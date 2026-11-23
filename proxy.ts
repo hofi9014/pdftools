@@ -12,7 +12,7 @@ const LEGACY_PATHS = new Set([
   'crop-pdf', 'add-page', 'edit-pdf', 'metadata', 'openoffice-to-pdf', 'sign-pdf',
   'pdf-to-openoffice', 'pdf-to-excel', 'ai-chat', 'ai-summary', 'privacy',
   'pdf-to-powerpoint', 'compare-pdf', 'excel-to-pdf', 'pdf-to-txt',
-  'html-to-pdf', 'url-to-pdf', 'pdf-to-html', 'flatten-pdf', 'remove-metadata',
+  'html-to-pdf', 'url-to-pdf', 'pdf-to-html', 'flatten-pdf', 'remove-metadata', 'make-pdf-fillable',
   'pdf-to-svg', 'redact-pdf', 'pdf-to-epub', 'ai-translate', 'fill-form',
   'pdf-to-images', 'to-pdfa', 'faq', 'help', 'guide', 'rodo',
   'wsparcie', 'nasze-zasady', 'security', 'terms', 'where-your-file-goes', 'about',

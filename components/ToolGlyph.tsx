@@ -76,6 +76,8 @@ const BODIES = {
   tag: `<path d="M3 4.4V11l9.5 9.6a1.6 1.6 0 0 0 2.3 0l5.8-5.8a1.6 1.6 0 0 0 0-2.3L11 3H4.4A1.4 1.4 0 0 0 3 4.4z" fill="url(#gGold)"/><circle cx="7.6" cy="7.6" r="1.8" fill="#fff"/><path d="M11.5 11.5l4 4" stroke="#92400E" stroke-width="1.3" stroke-linecap="round" opacity=".5"/>`,
   // "Remove metadata": an eraser rubbing out a line.
   eraser: `<g transform="rotate(-38 12 11)"><rect x="3.5" y="7" width="17" height="8" rx="1.8" fill="url(#gRed)"/><rect x="3.5" y="7" width="6.5" height="8" rx="1.8" fill="#E2E8F0"/><path d="M10 7v8" stroke="#94A3B8" stroke-width="1"/></g><path d="M4 20.5h16" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="2.5 2.5"/>`,
+  // "Make PDF fillable": a form field with a text cursor.
+  formField: `<rect x="2.5" y="7" width="19" height="10" rx="2" fill="#fff" stroke="url(#gBlue)" stroke-width="1.8"/><path d="M7 10v4" stroke="#2563EB" stroke-width="1.6" stroke-linecap="round"/><path d="M10 12h8" stroke="#94A3B8" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="1.5 1.8"/>`,
   noEntry: `<circle cx="12" cy="12" r="8.4" fill="none" stroke="url(#gRed)" stroke-width="3"/><path d="M6.3 6.3l11.4 11.4" stroke="url(#gRed)" stroke-width="3" stroke-linecap="round"/>`,
   image: `<rect x="2.5" y="4" width="19" height="16" rx="2.6" fill="#DBEAFE" stroke="url(#gBlue)" stroke-width="1.6"/><circle cx="16" cy="9" r="2" fill="#FACC15"/><path d="M3.3 18l5.3-6 4 4.3 2.8-2.8 5.3 4.6v.4a1.6 1.6 0 0 1-1.6 1.5H4.9a1.6 1.6 0 0 1-1.6-1.6z" fill="url(#gGreen)"/>`,
   text: `${page}${lines([10, 13, 16, 19])}`,

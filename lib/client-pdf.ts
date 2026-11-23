@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFHexString, PDFString, PDFArray, PDFRawStream, PDFStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation, type PDFFont } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFHexString, PDFString, PDFArray, PDFRawStream, PDFStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, PDFTextField, PDFDropdown, PDFOptionList, PDFSignature, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation, type PDFFont } from 'pdf-lib';
 import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePages, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
@@ -571,7 +571,8 @@ export async function flattenPDF(file: File): Promise<FlattenPdfResult> {
 
     const sigRefs = new Set<PDFRef>();
     for (const f of pdfFields) {
-      if (f.constructor.name !== 'PDFSignature') continue;
+      // instanceof, not constructor.name: production builds shorten class names (FINDING 2026-11-23).
+      if (!(f instanceof PDFSignature)) continue;
       for (const w of f.acroField.getWidgets()) {
         const ref = pdf.context.getObjectRef(w.dict);
         if (ref) sigRefs.add(ref);
@@ -583,7 +584,7 @@ export async function flattenPDF(file: File): Promise<FlattenPdfResult> {
     const font = await embedLiberationSans(pdf);
 
     for (const f of pdfFields) {
-      if (f.constructor.name === 'PDFSignature') continue;
+      if (f instanceof PDFSignature) continue;
       flattenedFields++;
       try {
         if (f.needsAppearancesUpdate()) f.defaultUpdateAppearances(font);
@@ -5884,6 +5885,17 @@ export interface FormField {
 // file is literally named PDFOptionList.js; grepped pdf-lib's own public exports — 'PDFListBox'
 // appears nowhere) — this check could never match, so list-box fields were always mistyped as
 // 'unknown' on read and silently ignored (never filled at all, not even destructively) on write.
+/** The pdf-lib class of a form field, by instanceof (class names do not survive minification). */
+export function fieldClassName(f: PDFField): string {
+  if (f instanceof PDFTextField) return 'PDFTextField';
+  if (f instanceof PDFCheckBox) return 'PDFCheckBox';
+  if (f instanceof PDFRadioGroup) return 'PDFRadioGroup';
+  if (f instanceof PDFDropdown) return 'PDFDropdown';
+  if (f instanceof PDFOptionList) return 'PDFOptionList';
+  if (f instanceof PDFSignature) return 'PDFSignature';
+  return 'unknown';
+}
+
 export async function extractFormFields(file: File): Promise<{ fields: FormField[] }> {
   const { PDFDocument } = await import('pdf-lib');
   const buf = await file.arrayBuffer();
@@ -5892,7 +5904,10 @@ export async function extractFormFields(file: File): Promise<{ fields: FormField
   const pdfFields = form.getFields();
   const fields: FormField[] = pdfFields.map((f: any) => {
     const name = f.getName();
-    const type = f.constructor.name;
+    // FINDING (2026-11-23): this compared f.constructor.name with 'PDFTextField' etc., but a
+    // production build shortens class names — every field was 'unknown' on the live site, so
+    // "Fill form" showed no inputs and filled nothing. instanceof survives minification.
+    const type = fieldClassName(f);
     let fieldType: FormField['type'] = 'unknown';
     let options: string[] | undefined;
     let value: string | boolean | undefined;
@@ -5918,7 +5933,7 @@ export async function fillFormFields(file: File, values: Record<string, string |
     const name = f.getName();
     if (!(name in values)) continue;
     const val = values[name];
-    const type = f.constructor.name;
+    const type = fieldClassName(f);
     if (type === 'PDFTextField') f.setText(val as string);
     else if (type === 'PDFCheckBox') val ? f.check() : f.uncheck();
     // select('') always throws (an empty string is never one of the field's real options) —
@@ -5929,6 +5944,24 @@ export async function fillFormFields(file: File, values: Record<string, string |
     else if (type === 'PDFOptionList' && val) f.select(val as string);
   }
 
+  // FINDING (2026-11-23): flatten() draws every changed field with Helvetica (WinAnsi), which
+  // cannot encode Polish letters — any value like "Zażółć" made the whole save throw
+  // 'WinAnsi cannot encode "ż"'. Such values are drawn with Liberation Sans instead.
+  const typed = Object.values(values).filter((v): v is string => typeof v === 'string' && v !== '');
+  // Measured on a throwaway document, so no unused font is written into the result.
+  const helv = await (await PDFDocument.create()).embedFont(StandardFonts.Helvetica);
+  const needsUnicode = typed.some((v) => { try { helv.encodeText(v); return false; } catch { return true; } });
+  if (needsUnicode) form.updateFieldAppearances(await embedLiberationSans(pdfDoc));
+  // flatten() throws "Unexpected N type: undefined" on a widget without an appearance — common
+  // for empty signature fields in official forms. Such widgets get an empty one (nothing drawn).
+  for (const f of pdfFields) {
+    for (const w of f.acroField.getWidgets()) {
+      if (w.getNormalAppearance && (() => { try { return !w.getNormalAppearance(); } catch { return true; } })()) {
+        const r = w.getRectangle();
+        w.setNormalAppearance(pdfDoc.context.register(pdfDoc.context.stream('', { Type: 'XObject', Subtype: 'Form', BBox: [0, 0, r.width, r.height] })));
+      }
+    }
+  }
   form.flatten();
   const bytes = await pdfDoc.save();
   return bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);

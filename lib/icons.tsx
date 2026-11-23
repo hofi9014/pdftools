@@ -95,6 +95,7 @@ const tools: Record<string, React.ReactNode> = {
     </svg>
   {<PdfBadge />}</>),
   fillform:     row(<>{gl('clipboard')}{<PdfBadge />}</>),
+  makefillable: row(<>{<PdfBadge />}{pls()}{gl('formField')}</>),
   pdfa:         row(<>{<PdfBadge />}{ar()}{gl('archive')}</>),
   guide:        gl('book'),
   cloud:        gl('cloud'),

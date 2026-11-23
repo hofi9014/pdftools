@@ -80,7 +80,7 @@ console.log('=== the facts behind the corrected sentences ===');
   check(/opacity: parseInt\(opacity/.test(watermarkPage), 'the watermark slider sets opacity (higher = more visible), not transparency');
   check(!/style_label|numbering_style|roman/i.test(P('page-numbers')), 'page numbers have no numbering style option');
   check(/page\.node\.delete\(PDFName\.Annots\)/.test(engine), 'flatten removes all annotations, links included');
-  check(/export async function fillFormFields[\s\S]{0,1600}form\.flatten\(\);/.test(engine), 'filling a form flattens the result (the FAQ answer saying so is true)');
+  check(/export async function fillFormFields[\s\S]{0,4000}form\.flatten\(\);/.test(engine), 'filling a form flattens the result (the FAQ answer saying so is true)');
   check(jpg.includes('accept=".jpg,.jpeg,.png,.gif,.bmp,.webp"') && !/orientation|landscape/i.test(jpg), 'images to PDF: JPG, PNG, WebP, GIF, BMP; margin only, no orientation');
   check(/export async function pdfToSvgPages[\s\S]{0,1200}<image /.test(engine), 'PDF to SVG embeds an image of each page, not vectors');
   check(!/type="url"|url_label/.test(P('html-to-pdf')), 'HTML to PDF takes pasted code only, no web address');

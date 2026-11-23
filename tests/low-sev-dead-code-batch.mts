@@ -90,7 +90,9 @@ console.log('\n=== MobileMenu "more" category separator derived dynamically, not
   check(menuSrc.includes('i === cat.separatorIndex'), 'the separator condition now compares against the computed separatorIndex');
 
   const moreCount = toolsByCategory('more').length;
-  check(moreCount === 7, `toolsByCategory('more').length is currently 7, exactly matching the old hardcoded literal — the fix is behavior-preserving TODAY (got ${moreCount})`);
+  // Was 7 when the literal was removed; it grows with new tools in 'more' (8 since 'Make PDF
+  // fillable', 2026-11-23) — which is exactly why the separator is computed now.
+  check(moreCount >= 7, `toolsByCategory('more') has at least the 7 tools the old literal assumed (got ${moreCount})`);
 }
 
 console.log('\n=== .gitignore: /screenshots/ ignores future output without affecting already-tracked files ===');
