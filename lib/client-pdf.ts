@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFNumber, PDFHexString, PDFString, PDFArray, PDFRawStream, PDFStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, PDFTextField, PDFDropdown, PDFOptionList, PDFSignature, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation, type PDFFont } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb, degrees, BlendMode, LineCapStyle, LineJoinStyle, setLineJoin, PDFName, PDFNumber, PDFHexString, PDFString, PDFArray, PDFRawStream, PDFStream, PDFRef, PDFDict, PDFCheckBox, PDFRadioGroup, PDFTextField, PDFDropdown, PDFOptionList, PDFSignature, pushGraphicsState, translate, rotateInPlace, drawObject, popGraphicsState, type PDFPage, type PDFField, type PDFWidgetAnnotation, type PDFFont } from 'pdf-lib';
 import { extractTextBlocks, type TextBlock } from './pdf/extractTextBlocks';
 import { rasterizePages, REDACT_RENDER_SCALE, type RedactRegion, type RasterCanvasFactory, type RasterContext, type PdfjsLibLike } from './pdf-raster';
 import type { RedactWorkerRequest, RedactWorkerResponse } from './redact-worker';
@@ -5265,116 +5265,94 @@ export async function editPdfPages(file: File, edits: PdfEditPage[]): Promise<Bl
   return new Blob([await pdfDoc.save() as BlobPart], { type: 'application/pdf' });
 }
 
-async function applyEditElements(pdfDoc: PDFDocument, page: PDFPage, elements: PdfEditElement[], pageWidth?: number, pageHeight?: number): Promise<void> {
-  // pageWidth/pageHeight are the on-screen preview canvas dimensions the caller placed
-  // annotations against; they must be converted into PDF point space per axis
-  // independently (scaleX from width, scaleY from height) — a page is virtually never
-  // square (A4 is 595x842pt), so reusing one axis' scale for the other silently
-  // mispositions every annotation horizontally.
-  const { width: pdfWidth, height: pdfHeight } = page.getSize();
-  const scaleY = pdfHeight / (pageHeight || pdfHeight);
-  const scaleX = pdfWidth / (pageWidth || pdfWidth);
+/**
+ * Where a point of the editor's canvas lands on the page (FINDING 2026-11-23). The editor shows
+ * the page as a viewer does — cut to its crop box and turned by /Rotate — and places everything
+ * in that view's canvas pixels (top-left origin). Every element used to be converted with the
+ * page's raw size and the media box's origin, so on a turned page or one whose crop box does not
+ * start at (0,0) it went to the wrong place. `pt` maps a canvas pixel to page points; `sx`/`sy`
+ * are points per canvas pixel; `rot` turns pictures, boxes and ellipses with the page.
+ */
+function editorView(page: PDFPage, canvasW?: number, canvasH?: number) {
+  const crop = page.getCropBox();
+  const rot = ((page.getRotation().angle % 360) + 360) % 360;
+  const vis = visualPageSize(crop.width, crop.height, rot);
+  const sx = vis.width / (canvasW || vis.width);
+  const sy = vis.height / (canvasH || vis.height);
+  const pt = (cx: number, cy: number) => {
+    const r = visualToRawPoint(crop.width, crop.height, rot, cx * sx, vis.height - cy * sy);
+    return { x: crop.x + r.x, y: crop.y + r.y };
+  };
+  return { pt, sx, sy, rot };
+}
 
+/** An SVG path drawn in page points (drawSvgPath flips y around its anchor; anchored at 0,0). */
+function pagePath(points: { x: number; y: number }[], close = false): string {
+  return points.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(3)},${(-p.y).toFixed(3)}`).join(' ') + (close ? ' Z' : '');
+}
+
+/**
+ * Draws the editor's elements of one page, each where and as the preview shows it (EditLayer):
+ * rectangle and highlighter fill their box (the highlighter in its colour and opacity, multiplied
+ * like the preview's mix-blend-mode), a circle is the ellipse inscribed in its box, a line and an
+ * arrow run between their two points with the preview's stroke width (an arrow ends in the
+ * preview's head: 10 × 7 stroke widths, tip at the end), a freehand line is a vector path of the
+ * same width with round ends and joins, and a picture is fitted into its box (object-contain).
+ */
+async function applyEditElements(pdfDoc: PDFDocument, page: PDFPage, elements: PdfEditElement[], pageWidth?: number, pageHeight?: number): Promise<void> {
+  const v = editorView(page, pageWidth, pageHeight);
+  const rotate = degrees(v.rot);
   for (const el of elements) {
     const opacity = el.opacity ?? 1;
-    const sx = el.x * scaleX;
-    const sy = pdfHeight - (el.y * scaleY);
-    const sColor = el.color || '#000000';
-
-    if (el.type === 'rect') {
+    const color = rgbFromHex(el.color || '#000000');
+    const w = el.width || 100;
+    const h = el.height || 20;
+    if (el.type === 'rect' || el.type === 'highlight') {
+      const hl = el.type === 'highlight';
+      const corner = v.pt(el.x, el.y + h); // bottom-left of the box as seen
       page.drawRectangle({
-        x: sx, y: sy - (el.height || 20) * scaleY,
-        width: (el.width || 100) * scaleX, height: (el.height || 20) * scaleY,
-        color: rgbFromHex(sColor), opacity,
-        borderColor: rgb(0, 0, 0), borderWidth: 0,
-      });
-    } else if (el.type === 'highlight') {
-      page.drawRectangle({
-        x: sx, y: sy - (el.height || 30) * scaleY,
-        width: (el.width || 200) * scaleX, height: (el.height || 30) * scaleY,
-        color: rgb(1, 1, 0), opacity: 0.3,
-        borderColor: rgb(1, 1, 0), borderWidth: 0,
-      });
-    } else if (el.type === 'line' && el.x2 !== undefined && el.y2 !== undefined) {
-      const sx2 = el.x2 * scaleX;
-      const sy2 = pdfHeight - (el.y2 * scaleY);
-      page.drawLine({
-        start: { x: sx, y: sy }, end: { x: sx2, y: sy2 },
-        color: rgbFromHex(sColor), thickness: (el.size || 2) * scaleY, opacity,
-      });
-    } else if (el.type === 'arrow' && el.x2 !== undefined && el.y2 !== undefined) {
-      const sx2 = el.x2 * scaleX;
-      const sy2 = pdfHeight - (el.y2 * scaleY);
-      page.drawLine({
-        start: { x: sx, y: sy }, end: { x: sx2, y: sy2 },
-        color: rgbFromHex(sColor), thickness: (el.size || 2) * scaleY, opacity,
+        x: corner.x, y: corner.y, width: w * v.sx, height: h * v.sy, rotate,
+        color: hl ? rgbFromHex(el.color || '#ffff00') : color,
+        opacity: hl ? (el.opacity ?? 0.3) : opacity,
+        ...(hl ? { blendMode: BlendMode.Multiply } : {}),
       });
     } else if (el.type === 'circle') {
-      page.drawEllipse({
-        x: sx, y: sy,
-        xScale: ((el.width || 50) / 2) * scaleX,
-        yScale: ((el.height || 50) / 2) * scaleY,
-        color: rgbFromHex(sColor), opacity,
+      const c = v.pt(el.x + w / 2, el.y + h / 2);
+      page.drawEllipse({ x: c.x, y: c.y, xScale: (w / 2) * v.sx, yScale: (h / 2) * v.sy, rotate, color, opacity });
+    } else if ((el.type === 'line' || el.type === 'arrow') && el.x2 !== undefined && el.y2 !== undefined) {
+      const sw = el.size || 2;
+      const a = v.pt(el.x, el.y);
+      const b = v.pt(el.x2, el.y2);
+      const thickness = sw * v.sx;
+      let end = b;
+      if (el.type === 'arrow') {
+        const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+        const ux = (b.x - a.x) / len, uy = (b.y - a.y) / len;
+        const headLen = 10 * thickness, half = 3.5 * thickness;
+        const base = { x: b.x - ux * headLen, y: b.y - uy * headLen };
+        page.drawSvgPath(pagePath([b, { x: base.x - uy * half, y: base.y + ux * half }, { x: base.x + uy * half, y: base.y - ux * half }], true),
+          { x: 0, y: 0, color, opacity });
+        end = base; // the shaft stops where the head begins, like an SVG marker hides it
+      }
+      page.drawLine({ start: a, end, thickness, color, opacity });
+    } else if (el.type === 'freehand' && el.points && el.points.length > 1) {
+      page.pushOperators(pushGraphicsState(), setLineJoin(LineJoinStyle.Round));
+      page.drawSvgPath(pagePath(el.points.map((p) => v.pt(p.x, p.y))), {
+        x: 0, y: 0, borderColor: color, borderWidth: (el.size || 3) * v.sx, borderOpacity: opacity, borderLineCap: LineCapStyle.Round,
       });
+      page.pushOperators(popGraphicsState());
     } else if (el.type === 'image' && el.imageDataUrl) {
       try {
-        const imgData = el.imageDataUrl.split(',')[1];
-        if (!imgData) throw new Error('Malformed image data URL');
-        const imgBytes = Uint8Array.from(atob(imgData), c => c.charCodeAt(0));
-        const isPng = el.imageDataUrl.startsWith('data:image/png');
-        const img = isPng ? await pdfDoc.embedPng(imgBytes) : await pdfDoc.embedJpg(imgBytes);
-        const dw = (el.width || 100) * scaleX;
-        const dh = (el.height || 100) * scaleY;
-        page.drawImage(img, { x: sx, y: sy - dh, width: dw, height: dh, opacity });
-      } catch {}
-    } else if (el.type === 'freehand' && el.points && el.points.length > 1) {
-      // FINDING (2026-09-21) — freehand elements always carry el.x=el.y=0 (position is encoded
-      // entirely in el.points, in the same canvas-pixel space as every other tool's x/y — see
-      // EditLayer.tsx's clientToImg). Every OTHER element type (rect/line/circle/text/image)
-      // scales its real el.x/el.y/width/height by scaleX/scaleY to land at the correct PDF
-      // point-space position, but this branch instead rasterized the stroke onto an arbitrary
-      // FIXED 2000x2000 canvas and placed it at a FIXED (sx, sy-500) position with a FIXED
-      // 500x500 (scaled) size — completely ignoring where the user actually drew and how big
-      // the drawing was. Every freehand annotation landed squished into the same fixed spot in
-      // the page's top-left area. Fixed by computing the stroke's own bounding box in pixel
-      // space (same source of truth as its points), sizing the raster canvas to exactly that
-      // box (plus stroke-width padding so the line isn't clipped at the edges), and placing the
-      // result at the box's real, scaled PDF position/size — the same scaleX/scaleY conversion
-      // already used correctly for every other element type in this function.
-      const pts = el.points;
-      const minX = Math.min(...pts.map(p => p.x));
-      const minY = Math.min(...pts.map(p => p.y));
-      const maxX = Math.max(...pts.map(p => p.x));
-      const maxY = Math.max(...pts.map(p => p.y));
-      const lineWidthPx = (el.size || 3) * 2;
-      const pad = lineWidthPx;
-      const boxW = Math.max(1, maxX - minX + pad * 2);
-      const boxH = Math.max(1, maxY - minY + pad * 2);
-
-      const fCanvas = document.createElement('canvas');
-      const fCtx = fCanvas.getContext('2d')!;
-      fCanvas.width = Math.ceil(boxW);
-      fCanvas.height = Math.ceil(boxH);
-      fCtx.strokeStyle = sColor;
-      fCtx.lineWidth = lineWidthPx;
-      fCtx.lineCap = 'round';
-      fCtx.lineJoin = 'round';
-      fCtx.beginPath();
-      // Safe: this branch's guard requires el.points.length > 1.
-      fCtx.moveTo(pts[0]!.x - minX + pad, pts[0]!.y - minY + pad);
-      for (let i = 1; i < pts.length; i++) {
-        fCtx.lineTo(pts[i]!.x - minX + pad, pts[i]!.y - minY + pad);
-      }
-      fCtx.stroke();
-      const fBlob = await new Promise<Blob>(resolve => fCanvas.toBlob(b => resolve(b!), 'image/png'));
-      const fBuf = new Uint8Array(await fBlob.arrayBuffer());
-      const fImg = await pdfDoc.embedPng(fBuf);
-      page.drawImage(fImg, {
-        x: (minX - pad) * scaleX,
-        y: pdfHeight - (maxY + pad) * scaleY,
-        width: boxW * scaleX, height: boxH * scaleY,
-        opacity,
-      });
+        const data = el.imageDataUrl.split(',')[1];
+        if (!data) throw new Error('Malformed image data URL');
+        const bytes = Uint8Array.from(atob(data), (ch) => ch.charCodeAt(0));
+        const img = el.imageDataUrl.startsWith('data:image/png') ? await pdfDoc.embedPng(bytes) : await pdfDoc.embedJpg(bytes);
+        const bw = el.width || 100, bh = el.height || 100;
+        const k = Math.min(bw / img.width, bh / img.height);
+        const dw = img.width * k, dh = img.height * k;
+        const corner = v.pt(el.x + (bw - dw) / 2, el.y + (bh - dh) / 2 + dh);
+        page.drawImage(img, { x: corner.x, y: corner.y, width: dw * v.sx, height: dh * v.sy, rotate, opacity });
+      } catch { /* a picture that cannot be read is left out, as before */ }
     } else if (el.type === 'text' && el.text) {
       await drawEditorText(pdfDoc, page, el, pageWidth, pageHeight);
     }

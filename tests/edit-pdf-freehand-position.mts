@@ -59,40 +59,32 @@ const file = toFile(bytes, 'synthetic.pdf');
 const points = [{ x: 100, y: 150 }, { x: 120, y: 155 }, { x: 140, y: 170 }];
 const freehandEl: PdfEditElement = { type: 'freehand', x: 0, y: 0, points, size: 3, color: '#000000' };
 
-const original = PDFPage.prototype.drawImage;
-const captured: { x: number; y: number; width: number; height: number }[] = [];
-PDFPage.prototype.drawImage = function (img: unknown, opts: { x: number; y: number; width: number; height: number }) {
-  captured.push({ x: opts.x, y: opts.y, width: opts.width, height: opts.height });
-  return original.call(this, img, opts as never);
+// Since 2026-11-23 a freehand stroke is drawn as a vector path (it was a PNG raster, twice as
+// thick as on screen): capture the path pdf-lib is asked to draw.
+const original = PDFPage.prototype.drawSvgPath;
+const captured: { path: string; borderWidth?: number }[] = [];
+PDFPage.prototype.drawSvgPath = function (path: string, opts?: { borderWidth?: number }) {
+  captured.push({ path, borderWidth: opts?.borderWidth });
+  return original.call(this, path, opts as never);
 } as typeof original;
 
 try {
   await editPdfClient(file, 0, [freehandEl], PREVIEW_W, PREVIEW_H);
 } finally {
-  PDFPage.prototype.drawImage = original;
+  PDFPage.prototype.drawSvgPath = original;
 }
 
-check(captured.length === 1, `drawImage called exactly once for the freehand stroke (got ${captured.length})`);
+check(captured.length === 1, `one path drawn for the freehand stroke (got ${captured.length})`);
 if (captured.length === 1) {
   const c = captured[0]!;
-  const scaleX = PDF_W / PREVIEW_W; // 2
-  const scaleY = PDF_H / PREVIEW_H; // 2
-  const lineWidthPx = 3 * 2; // el.size * 2, matching the source
-  const pad = lineWidthPx;
-  const minX = 100, minY = 150, maxX = 140, maxY = 170;
-  const expectedX = (minX - pad) * scaleX;
-  const expectedY = PDF_H - (maxY + pad) * scaleY;
-  const expectedW = (maxX - minX + pad * 2) * scaleX;
-  const expectedH = (maxY - minY + pad * 2) * scaleY;
-
-  check(Math.abs(c.x - expectedX) < 0.01, `x ≈ ${expectedX} (real stroke position, scaled), got ${c.x}`);
-  check(Math.abs(c.y - expectedY) < 0.01, `y ≈ ${expectedY} (real stroke position, scaled), got ${c.y}`);
-  check(Math.abs(c.width - expectedW) < 0.01, `width ≈ ${expectedW} (real stroke extent, scaled) — NOT the old fixed 500*scaleX=${500 * scaleX} — got ${c.width}`);
-  check(Math.abs(c.height - expectedH) < 0.01, `height ≈ ${expectedH} (real stroke extent, scaled) — NOT the old fixed 500*scaleY=${500 * scaleY} — got ${c.height}`);
-  // Sanity: the old buggy behavior always placed freehand near the page's top-left corner
-  // (x≈0, y≈pdfHeight-500) regardless of the actual stroke — confirm we're nowhere near that.
+  // Path points are page points with y negated (drawSvgPath flips y around its 0,0 anchor).
+  const pts = [...c.path.matchAll(/[ML](-?[\d.]+),(-?[\d.]+)/g)].map((m) => ({ x: Number(m[1]), y: -Number(m[2]) }));
+  const expected = points.map((p) => ({ x: p.x * (PDF_W / PREVIEW_W), y: PDF_H - p.y * (PDF_H / PREVIEW_H) }));
+  check(pts.length === 3 && pts.every((p, k) => Math.abs(p.x - expected[k]!.x) < 0.01 && Math.abs(p.y - expected[k]!.y) < 0.01),
+    `every point where it was drawn, scaled (${pts.map((p) => `${p.x},${p.y}`).join(' ')} vs ${expected.map((p) => `${p.x},${p.y}`).join(' ')})`);
+  check(Math.abs((c.borderWidth ?? 0) - 3 * (PDF_W / PREVIEW_W)) < 0.01, `as thick as on screen: 3 px × 2 = 6 pt (got ${c.borderWidth})`);
   const oldBuggyX = 0, oldBuggyY = PDF_H - 500;
-  check(Math.abs(c.x - oldBuggyX) > 50 || Math.abs(c.y - oldBuggyY) > 50, `position is NOT the old fixed top-left spot (${oldBuggyX},${oldBuggyY}) — got (${c.x},${c.y})`);
+  check(Math.abs(pts[0]!.x - oldBuggyX) > 50 || Math.abs(pts[0]!.y - oldBuggyY) > 50, 'not the old fixed top-left spot');
 }
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);

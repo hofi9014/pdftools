@@ -224,7 +224,9 @@ export default function EditLayer({
           left: pct(el.x, canvasWidth), top: pct(el.y, canvasHeight),
           width: el.w ? pct(el.w, canvasWidth) : undefined,
           height: el.h ? pct(el.h, canvasHeight) : undefined,
-          opacity: el.opacity ?? 1,
+          // The highlighter's colour already carries its opacity (hexToRgba below); applying it to
+          // the box as well showed 30 % as 9 % — paler than the saved file (2026-11-23).
+          opacity: el.type === 'highlight' ? 1 : (el.opacity ?? 1),
           zIndex: isSel ? 100 : 10, cursor: 'move', pointerEvents: 'auto',
           minWidth: 8, minHeight: 8,
           transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
@@ -241,13 +243,13 @@ export default function EditLayer({
             }}>{el.text || ''}</span>
         )}
         {el.type === 'rect' && (
-          <div className="pointer-events-none w-full h-full rounded" style={{ backgroundColor: el.color || '#C28F5B' }} />
+          <div className="pointer-events-none w-full h-full" style={{ backgroundColor: el.color || '#C28F5B' }} />
         )}
         {el.type === 'circle' && (
           <div className="pointer-events-none w-full h-full rounded-full" style={{ backgroundColor: el.color || '#C28F5B' }} />
         )}
         {el.type === 'highlight' && (
-          <div className="pointer-events-none w-full h-full rounded-sm" style={{ backgroundColor: hexToRgba(el.color || '#ffff00', el.opacity ?? 0.3), mixBlendMode: 'multiply' }} />
+          <div className="pointer-events-none w-full h-full" style={{ backgroundColor: hexToRgba(el.color || '#ffff00', el.opacity ?? 0.3), mixBlendMode: 'multiply' }} />
         )}
         {el.type === 'image' && el.imageDataUrl && (
           <img src={el.imageDataUrl} alt="" className="pointer-events-none w-full h-full object-contain" draggable={false} />

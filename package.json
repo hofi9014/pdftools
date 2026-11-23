@@ -247,6 +247,8 @@
     "test:fill-form-polish": "npx tsx tests/fill-form-polish.mts",
     "test:e2e-make-pdf-fillable": "npx tsx e2e/make-pdf-fillable.mts",
     "test:e2e-fill-form-flat": "npx tsx e2e/fill-form-flat.mts",
+    "test:e2e-edit-pdf-elements-preview": "npx tsx e2e/edit-pdf-elements-preview.mts",
+    "test:edit-pdf-elements-placement": "npx tsx tests/edit-pdf-elements-placement.mts",
     "test:form-fields-minified": "npx tsx tests/form-fields-minified.mts"
   },
   "dependencies": {
