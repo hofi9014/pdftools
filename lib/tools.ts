@@ -46,6 +46,7 @@ export const tools: ToolDef[] = [
   { key: 'protect',  slug: 'protect-pdf', category: 'secure' },
   { key: 'unlock',   slug: 'unlock-pdf',  category: 'secure' },
   { key: 'sign',     slug: 'sign-pdf',    category: 'secure' },
+  { key: 'cleanmeta', slug: 'remove-metadata', category: 'secure' },
 
   // More
   { key: 'aichat',    slug: 'ai-chat',       category: 'more' },
@@ -106,7 +107,7 @@ export const RELATED_TOOLS: Record<string, [string, string, string]> = {
   rotate: ['crop', 'reorder', 'merge'], crop: ['rotate', 'compress', 'edit'], delete: ['extract', 'reorder', 'merge'],
   extract: ['split', 'delete', 'merge'], reorder: ['merge', 'delete', 'rotate'], addpage: ['merge', 'pagenumbers', 'reorder'],
   edit: ['sign', 'watermark', 'redact'], pagenumbers: ['merge', 'watermark', 'addpage'], watermark: ['protect', 'pagenumbers', 'flatten'],
-  redact: ['protect', 'flatten', 'edit'], flatten: ['fillform', 'pdfa', 'redact'], metadata: ['pdfa', 'protect', 'compress'],
+  redact: ['protect', 'flatten', 'edit'], flatten: ['fillform', 'pdfa', 'redact'], metadata: ['cleanmeta', 'pdfa', 'protect'],
   word: ['ocr', 'compress', 'wordtopdf'], wordtopdf: ['word', 'merge', 'protect'], jpgTopdf: ['compress', 'merge', 'ocr'],
   images: ['jpgTopdf', 'compress', 'svg'], excel: ['excel2pdf', 'word', 'ocr'], excel2pdf: ['excel', 'merge', 'protect'],
   ppt: ['word', 'images', 'compress'], openoffice: ['pdf2openoffice', 'merge', 'compress'], pdf2openoffice: ['openoffice', 'word', 'ocr'],
@@ -115,7 +116,7 @@ export const RELATED_TOOLS: Record<string, [string, string, string]> = {
   protect: ['unlock', 'sign', 'watermark'], unlock: ['protect', 'compress', 'edit'], sign: ['fillform', 'protect', 'edit'],
   aichat: ['aisummary', 'translate', 'ocr'], aisummary: ['aichat', 'translate', 'txt'], translate: ['aisummary', 'aichat', 'word'],
   ocr: ['word', 'txt', 'compress'], compare: ['merge', 'edit', 'aisummary'], fillform: ['sign', 'flatten', 'protect'],
-  pdfa: ['metadata', 'protect', 'flatten'],
+  pdfa: ['metadata', 'protect', 'flatten'], cleanmeta: ['redact', 'metadata', 'protect'],
 };
 
 export interface CategoryDef {

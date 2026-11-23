@@ -74,6 +74,8 @@ const BODIES = {
   check: `<rect x="3" y="3" width="18" height="18" rx="5" fill="url(#gGreen)"/><path d="M7.5 12.4l3 3 6-6.4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`,
   shuffle: `<rect x="2.5" y="2.5" width="19" height="19" rx="5" fill="url(#gViolet)"/><g fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h2.6c3.4 0 3.6 8 7 8H18M15.8 13.8 18 16l-2.2 2.2"/><path d="M6 16h2.6c1.3 0 2-1.1 2.7-2.5M13.4 10.4C14 9 14.6 8 15.8 8H18M15.8 5.8 18 8l-2.2 2.2"/></g>`,
   tag: `<path d="M3 4.4V11l9.5 9.6a1.6 1.6 0 0 0 2.3 0l5.8-5.8a1.6 1.6 0 0 0 0-2.3L11 3H4.4A1.4 1.4 0 0 0 3 4.4z" fill="url(#gGold)"/><circle cx="7.6" cy="7.6" r="1.8" fill="#fff"/><path d="M11.5 11.5l4 4" stroke="#92400E" stroke-width="1.3" stroke-linecap="round" opacity=".5"/>`,
+  // "Remove metadata": an eraser rubbing out a line.
+  eraser: `<g transform="rotate(-38 12 11)"><rect x="3.5" y="7" width="17" height="8" rx="1.8" fill="url(#gRed)"/><rect x="3.5" y="7" width="6.5" height="8" rx="1.8" fill="#E2E8F0"/><path d="M10 7v8" stroke="#94A3B8" stroke-width="1"/></g><path d="M4 20.5h16" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="2.5 2.5"/>`,
   noEntry: `<circle cx="12" cy="12" r="8.4" fill="none" stroke="url(#gRed)" stroke-width="3"/><path d="M6.3 6.3l11.4 11.4" stroke="url(#gRed)" stroke-width="3" stroke-linecap="round"/>`,
   image: `<rect x="2.5" y="4" width="19" height="16" rx="2.6" fill="#DBEAFE" stroke="url(#gBlue)" stroke-width="1.6"/><circle cx="16" cy="9" r="2" fill="#FACC15"/><path d="M3.3 18l5.3-6 4 4.3 2.8-2.8 5.3 4.6v.4a1.6 1.6 0 0 1-1.6 1.5H4.9a1.6 1.6 0 0 1-1.6-1.6z" fill="url(#gGreen)"/>`,
   text: `${page}${lines([10, 13, 16, 19])}`,

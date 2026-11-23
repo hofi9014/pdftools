@@ -82,6 +82,7 @@ const tools: Record<string, React.ReactNode> = {
 
   protect:      row(<>{gl('lock')}{<PdfBadge />}</>),
   unlock:       row(<>{gl('unlock')}{<PdfBadge />}</>),
+  cleanmeta:    row(<>{gl('eraser')}{<PdfBadge />}</>),
 
   aichat:       row(<>{gl('chat')}{gl('sparkle')}{<PdfBadge />}</>),
   aisummary:    row(<>{<PdfBadge />}{ar()}{gl('memo')}<span style={{fontSize:'0.5em'}}><ToolGlyph name="sparkle" /></span></>),

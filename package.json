@@ -240,7 +240,9 @@
     "test:about-page": "npx tsx tests/about-page.mts",
     "test:no-stray-blue": "npx tsx tests/no-stray-blue.mts",
     "test:compress-target-size": "npx tsx tests/compress-target-size.mts",
-    "test:business-page": "npx tsx tests/business-page.mts"
+    "test:business-page": "npx tsx tests/business-page.mts",
+    "test:clean-metadata": "npx tsx tests/clean-metadata.mts",
+    "test:e2e-remove-metadata": "npx tsx e2e/remove-metadata.mts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

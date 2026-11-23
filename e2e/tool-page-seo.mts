@@ -4,7 +4,7 @@
 // page loading a 101 kB script with the steps of all tools in all 16 languages.
 //
 // Run: E2E_BASE_URL=http://localhost:3100 npx tsx e2e/tool-page-seo.mts   (default: localhost:3000)
-import { tools } from '../lib/tools';
+import { tools, toolCounts } from '../lib/tools';
 import { guideArticlePath } from '../lib/guide-urls';
 
 const BASE = process.env.E2E_BASE_URL || 'http://localhost:3000';
@@ -130,7 +130,7 @@ for (const p of ['/pl', '/de', '/ar', '/pl/merge', '/pl/faq', guideArticlePath('
   check(meta(hub.html, 'description').length > 100 && meta(hub.html, 'description').length <= 160, `guides hub: description lists the guides (${meta(hub.html, 'description').length} chars)`);
   const home = await get('/de');
   check(/<title>Kostenlose PDF-Tools/.test(home.html), '/de: home title leads with the search words, not the brand');
-  check(meta(home.html, 'description').length <= 160 && /36 von 40/.test(meta(home.html, 'description')), `/de: home description ${meta(home.html, 'description').length} chars with the local-tool count`);
+  check(meta(home.html, 'description').length <= 160 && new RegExp(`${toolCounts('de').local} von ${toolCounts('de').total}`).test(meta(home.html, 'description')), `/de: home description ${meta(home.html, 'description').length} chars with the local-tool count`);
 }
 
 console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAIL`);

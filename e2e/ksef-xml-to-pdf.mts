@@ -84,7 +84,9 @@ const GUIDE = `${PAGE}/jak-otworzyc-fakture-xml`;
 console.log('\n=== the Polish home page lists, finds and counts it ===');
 {
   const browser0 = await chromium.launch();
-  for (const [loc, expectTile, total, local] of [['pl', true, 41, 37], ['en', false, 40, 36]] as const) {
+  const { toolCounts } = await import('../lib/tools');
+  for (const [loc, expectTile] of [['pl', true], ['en', false]] as const) {
+    const { total, local } = toolCounts(loc);
     const ctx = await browser0.newContext({ serviceWorkers: 'block' });
     await ctx.addInitScript(() => { try { localStorage.setItem('cookie-consent', 'declined'); } catch { /* */ } });
     const page = await ctx.newPage();

@@ -65,7 +65,10 @@ console.log('\n=== tools.length used instead of a hardcoded count ===');
   check(pageSrc.includes('{counts.total}') && pageSrc.includes('toolCounts(locale)'), 'the home page renders the count from toolCounts(locale), not a written number');
   check(!layoutSrc.includes('40 PDF tools'), 'the root document (RootDocument + root-metadata) no longer hardcodes "40 PDF tools" in any metadata description');
   check((layoutSrc.match(/\$\{tools\.length\} PDF tools/g) || []).length === 3, 'all 3 metadata description strings now interpolate ${tools.length}');
-  check(tools.length === 40, `tools.length is 40 after removing the duplicate 'jpg' (PDF do JPG) entry — got ${tools.length}`);
+  // The tool count grows with new tools (41 since 'Remove metadata', 2026-11-23); what this
+  // guards is that the duplicate 'jpg' (PDF do JPG) entry stays gone and no slug repeats.
+  check(!tools.some((x) => x.key === 'jpg') && new Set(tools.map((x) => x.slug)).size === tools.length,
+    `no duplicate 'jpg' entry and no repeated slug (${tools.length} tools)`);
 }
 
 console.log('\n=== dead redirectTo field removed from lib/tools.ts ===');

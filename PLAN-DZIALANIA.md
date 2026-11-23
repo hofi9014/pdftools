@@ -130,8 +130,9 @@ narzędzia; potem języki. Rzeczy wymagające decyzji albo kont właściciela s�
 Każde: strona w 16 językach, kroki i FAQ (`ToolGuide`), powiązane narzędzia, mapa strony,
 test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2e/no-upload.mts`).
 
-- [ ] 2.1 Usuń metadane jednym kliknięciem (Info + XMP + miniatury + załączniki? — najpierw
-      ustalić, co faktycznie zostaje w plikach z Worda/Acrobata).
+- [x] 2.1 Usuń metadane jednym kliknięciem (Info + XMP + miniatury + załączniki? — najpierw
+      ustalić, co faktycznie zostaje w plikach z Worda/Acrobata). **2026-11-23:** `/remove-metadata`,
+      raport przed i po, EXIF ze zdjęć, pozostałości zapisów przyrostowych; zob. AGENTS.md.
 - [ ] 2.2 Uczyń PDF wypełnialnym (dodawanie pól: tekst, pole wyboru, lista, podpis) — wynik
       musi otwierać się i wypełniać w Acrobacie/Edge/Chrome (sprawdzenie pdf.js + Word nie
       wystarczy; Edge jest na komputerze).

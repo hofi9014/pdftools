@@ -88,7 +88,7 @@ async function run() {
       'flatten-pdf', 'html-to-pdf', 'jpg-to-pdf', 'merge', 'metadata', 'ocr-pdf',
       'openoffice-to-pdf', 'page-numbers', 'pdf-to-epub', 'pdf-to-excel', 'pdf-to-html',
       'pdf-to-images', 'pdf-to-jpg', 'pdf-to-openoffice', 'pdf-to-powerpoint', 'pdf-to-svg',
-      'pdf-to-txt', 'pdf-to-word', 'protect-pdf', 'redact-pdf', 'reorder-pages', 'rotate-pdf',
+      'pdf-to-txt', 'pdf-to-word', 'protect-pdf', 'redact-pdf', 'remove-metadata', 'reorder-pages', 'rotate-pdf',
       'sign-pdf', 'split', 'to-pdfa', 'unlock-pdf', 'url-to-pdf', 'watermark-pdf', 'word-to-pdf',
     ];
     // Sanity floor, not an exact match — AGENTS.md's "~40 tool pages" is approximate (the
