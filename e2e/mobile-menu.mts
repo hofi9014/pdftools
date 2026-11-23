@@ -72,7 +72,7 @@ async function run() {
   // a bare "/" redirects a headless browser to /en, where the Polish labels below never appear.
   await page.goto(`${BASE_URL}/pl`, { waitUntil: 'load', timeout: 15000 }).catch(() => {});
 
-  const hamburger = page.locator('header button[class*="md:hidden"]').first();
+  const hamburger = page.locator('header button[aria-expanded]').first();
   await hamburger.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
   check('Hamburger button visible', await hamburger.isVisible().catch(() => false));
 

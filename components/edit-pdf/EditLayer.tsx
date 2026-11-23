@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 import { useHydrationSafeLocale } from '@/lib/locale-context';
 import { t } from '@/lib/i18n';
 import { getFontFamily } from '@/lib/pdf/fonts';
@@ -65,6 +65,20 @@ export default function EditLayer({
 }: Props) {
   const locale = useHydrationSafeLocale();
   const containerRef = useRef<HTMLDivElement>(null);
+  // Screen pixels per canvas pixel. Elements are stored in canvas pixels; when the page is shown
+  // smaller than its canvas (a narrow window: 40 % on a phone) text sizes and line widths must
+  // shrink with it — they were drawn in screen pixels, so on a phone text looked 2.5 times larger
+  // than in the saved file (2026-11-23). Positions and boxes are percentages and already scale.
+  const [k, setK] = useState(1);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || !canvasWidth) return;
+    const update = () => { const w = el.getBoundingClientRect().width; if (w > 0) setK(w / canvasWidth); };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [canvasWidth]);
   const dragRef = useRef<(DragStart & { id: number; sx: number; sy: number; started: boolean }) | null>(null);
   const drawingRef = useRef<{ id: number; type: 'line' | 'arrow' | 'freehand'; pts: { x: number; y: number }[] } | null>(null);
 
@@ -180,9 +194,9 @@ export default function EditLayer({
                 <polygon points="0 0,10 3.5,0 7" fill={el.color || '#000'} />
               </marker>
             )}</defs>
-            <line x1={dx >= 0 ? 0 : -dx} y1={dy >= 0 ? 0 : -dy}
-              x2={dx >= 0 ? Math.abs(dx) : 0} y2={dy >= 0 ? Math.abs(dy) : 0}
-              stroke={el.color || '#000'} strokeWidth={el.size || 2}
+            <line x1={(dx >= 0 ? 0 : -dx) * k} y1={(dy >= 0 ? 0 : -dy) * k}
+              x2={(dx >= 0 ? Math.abs(dx) : 0) * k} y2={(dy >= 0 ? Math.abs(dy) : 0) * k}
+              stroke={el.color || '#000'} strokeWidth={(el.size || 2) * k}
               markerEnd={el.type === 'arrow' ? `url(#a-${el.id})` : undefined}
               opacity={el.opacity ?? 1} />
           </svg>
@@ -234,7 +248,7 @@ export default function EditLayer({
         {el.type === 'text' && (
           <span className="pointer-events-none block whitespace-pre-wrap break-words"
             style={{
-              fontSize: `${el.size ?? 16}px`, color: el.color || '#000',
+              fontSize: `${(el.size ?? 16) * k}px`, color: el.color || '#000',
               fontFamily: `${getFontFamily(el.font || 'Arial')}, sans-serif`,
               fontWeight: el.bold ? '700' : '400',
               fontStyle: el.italic ? 'italic' : 'normal',

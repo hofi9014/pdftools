@@ -59,6 +59,10 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
     },
   ];
 
+  // The info links come after the tools of 'more' (was a fixed 7: one tool more put the
+  // "Info" label between two tools, 2026-11-23).
+  const moreToolCount = toolsByCategory('more').length;
+
   return (
     <header className="border-b border-[var(--coffee-border)] bg-[var(--coffee-surface)] backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -68,7 +72,7 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
           <span className="xs:hidden font-display text-[22px] font-extrabold" style={{ color: 'var(--coffee-text)' }}>O<span style={{ color: 'var(--coffee-accent-ink)' }}>P</span></span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1 text-sm font-medium" style={{ color: 'var(--coffee-text-secondary)' }}>
+        <nav className="hidden xl:flex items-center gap-1 text-sm font-medium" style={{ color: 'var(--coffee-text-secondary)' }}>
           <Link href={homePath(locale)} className="px-3 py-2 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition" style={{ color: 'var(--coffee-text-secondary)' }}>{t('nav.home', locale)}</Link>
           {categories.map(cat => (
             <div key={cat.key} className="relative group">
@@ -82,7 +86,7 @@ export default function Header({ locale: forcedLocale }: { locale?: Locale }) {
                   <div className="grid gap-1">
                     {cat.tools.map((tool, i) => (
                       <div key={tool.href}>
-                        {cat.key === 'more' && i === 7 && (
+                        {cat.key === 'more' && i === moreToolCount && (
                           <>
                             <div className="border-t my-1.5" style={{ borderColor: 'var(--coffee-border)' }} />
                             <span className="block px-3 py-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--coffee-text-tertiary)' }}>

@@ -20,7 +20,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(join(ROOT, 'node_modules/pdf
 let fails = 0;
 const check = (ok: boolean, msg: string) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${msg}`); if (!ok) fails++; };
 
-async function draw(page: Page, rot: number): Promise<{ preview: Buffer; pdf: Uint8Array }> {
+async function draw(page: Page, rot: number, withText = false): Promise<{ preview: Buffer; pdf: Uint8Array }> {
   const d = await PDFDocument.create();
   const p = d.addPage([400, 500]);
   if (rot) p.setRotation(degrees(rot));
@@ -31,7 +31,10 @@ async function draw(page: Page, rot: number): Promise<{ preview: Buffer; pdf: Ui
   await page.waitForSelector('div.absolute.inset-0.select-none', { timeout: 30000 });
   const cb = (await canvas.boundingBox())!;
   const tool = (k: string) => page.locator(`button[title$="(${k})"]`).first().click();
-  const at = (x: number, y: number) => [cb.x + x, cb.y + y] as const;
+  // Coordinates for the page shown at full size (600 px wide, 750 turned); scaled when the window
+  // shows it smaller.
+  const s = cb.width / (rot % 180 ? 750 : 600);
+  const at = (x: number, y: number) => [cb.x + x * s, cb.y + y * s] as const;
   const drag = async (pts: [number, number][]) => {
     await page.mouse.move(...at(...pts[0]!)); await page.mouse.down();
     for (const pt of pts.slice(1)) await page.mouse.move(...at(...pt), { steps: 6 });
@@ -43,6 +46,7 @@ async function draw(page: Page, rot: number): Promise<{ preview: Buffer; pdf: Ui
   await tool('L'); await drag([[350, 60], [480, 140]]);
   await tool('A'); await drag([[330, 230], [560, 230]]);
   await tool('F'); await drag([[90, 300], [150, 360], [210, 310], [270, 380]]);
+  if (withText) { await tool('T'); await page.mouse.click(...at(60, 470)); }
   await tool('V');
   await page.keyboard.press('Escape');
   // Deselect: a click on an empty part of the page with the select tool.
@@ -76,10 +80,12 @@ async function renderPdf(bytes: Uint8Array, w: number): Promise<{ w: number; h: 
 
 const browser = await chromium.launch();
 try {
-  for (const rot of [0, 90]) {
-    console.log(`\n=== ${rot ? `page turned ${rot}°` : 'page as it is'} ===`);
-    const page = await browser.newPage({ viewport: { width: 1400, height: 1200 }, deviceScaleFactor: 1, acceptDownloads: true });
-    const { preview, pdf } = await draw(page, rot);
+  // The last case: a phone-sized window, where the page is shown at ~40 % of its canvas and text
+  // and line widths must shrink with it (they were drawn at full size: 2.5 times too big).
+  for (const [rot, vw, withText] of [[0, 1400, false], [90, 1400, false], [0, 1400, true], [0, 390, true]] as [number, number, boolean][]) {
+    console.log(`\n=== ${rot ? `page turned ${rot}°` : 'page as it is'}, window ${vw} px${withText ? ', with a text' : ''} ===`);
+    const page = await browser.newPage({ viewport: { width: vw, height: 1200 }, deviceScaleFactor: 1, acceptDownloads: true });
+    const { preview, pdf } = await draw(page, rot, withText);
     const a = await rgba(preview);
     const b = await renderPdf(pdf, a.w);
     check(Math.abs(b.h - a.h) <= 1, `the saved page has the preview's shape (${a.w}×${a.h} vs ${b.w}×${b.h})`);
@@ -98,11 +104,11 @@ try {
     const overlap = both / Math.max(1, either);
     if (process.env.E2E_DUMP) {
       const { writeFileSync } = await import('node:fs');
-      writeFileSync(`test-output/_work/fillflat/prev-${rot}.png`, preview);
+      writeFileSync(`test-output/_work/fillflat/prev-${rot}-${vw}-${withText}.png`, preview);
       const c = canvasMod.createCanvas(b.w, b.h); const id = c.getContext('2d').createImageData(b.w, b.h); id.data.set(b.d); c.getContext('2d').putImageData(id, 0, 0);
-      writeFileSync(`test-output/_work/fillflat/pdf-${rot}.png`, c.toBuffer('image/png'));
+      writeFileSync(`test-output/_work/fillflat/pdf-${rot}-${vw}-${withText}.png`, c.toBuffer('image/png'));
     }
-    check(either > 5000, `the preview shows the drawn elements (${either} px of ink)`);
+    check(either > (vw < 600 ? 800 : 5000), `the preview shows the drawn elements (${either} px of ink)`);
     check(overlap > 0.9, `the saved page covers the same pixels as the preview (${(overlap * 100).toFixed(1)} % overlap)`);
     check(colourOk / Math.max(1, both) > 0.9, `in the same colours (${((colourOk / Math.max(1, both)) * 100).toFixed(1)} % of shared pixels)`);
     await page.close();

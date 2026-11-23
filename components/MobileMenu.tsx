@@ -85,8 +85,8 @@ export default function MobileMenu({ locale: forcedLocale }: { locale?: Locale }
 
   return (
     <>
-      <button onClick={() => setOpen(!open)}
-        className="md:hidden p-3 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+      <button onClick={() => setOpen(!open)} aria-expanded={open}
+        className="xl:hidden p-3 rounded-lg hover:bg-[var(--coffee-surface-hover)] transition min-h-[44px] min-w-[44px] flex items-center justify-center"
         title={t('nav.tools', locale)}>
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--coffee-text-secondary)' }}>
           {open ? (
@@ -98,8 +98,8 @@ export default function MobileMenu({ locale: forcedLocale }: { locale?: Locale }
       </button>
       {open && typeof window !== 'undefined' && createPortal(
         <>
-          <div className="fixed inset-0 bg-black/30 z-40 md:hidden" onClick={() => setOpen(false)} />
-          <div className="fixed top-16 left-0 right-0 bottom-0 z-50 md:hidden flex flex-col" style={{ backgroundColor: 'var(--coffee-surface-solid)' }}>
+          <div className="fixed inset-0 bg-black/30 z-40 xl:hidden" onClick={() => setOpen(false)} />
+          <div className="fixed top-16 left-0 right-0 bottom-0 z-50 xl:hidden flex flex-col" style={{ backgroundColor: 'var(--coffee-surface-solid)' }}>
             <div className="flex-1 overflow-y-auto overscroll-contain">
               <div className="px-4 py-3 space-y-1">
                 <Link href={homePath(locale)} className="block px-3 py-2 text-sm rounded-lg hover:bg-[var(--coffee-surface-hover)]" style={{ color: 'var(--coffee-text-secondary)' }} onClick={() => setOpen(false)}>{t('nav.home', locale)}</Link>
