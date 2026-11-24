@@ -76,6 +76,8 @@ const BODIES = {
   tag: `<path d="M3 4.4V11l9.5 9.6a1.6 1.6 0 0 0 2.3 0l5.8-5.8a1.6 1.6 0 0 0 0-2.3L11 3H4.4A1.4 1.4 0 0 0 3 4.4z" fill="url(#gGold)"/><circle cx="7.6" cy="7.6" r="1.8" fill="#fff"/><path d="M11.5 11.5l4 4" stroke="#92400E" stroke-width="1.3" stroke-linecap="round" opacity=".5"/>`,
   // "Remove metadata": an eraser rubbing out a line.
   eraser: `<g transform="rotate(-38 12 11)"><rect x="3.5" y="7" width="17" height="8" rx="1.8" fill="url(#gRed)"/><rect x="3.5" y="7" width="6.5" height="8" rx="1.8" fill="#E2E8F0"/><path d="M10 7v8" stroke="#94A3B8" stroke-width="1"/></g><path d="M4 20.5h16" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="2.5 2.5"/>`,
+  // "Add QR code to PDF": three finder squares and a few modules.
+  qr: `<rect x="2.5" y="2.5" width="19" height="19" rx="2.4" fill="#fff" stroke="#CBD5E1" stroke-width=".9"/><path fill="url(#gSlate)" fill-rule="evenodd" d="M4.5 4.5h6v6h-6zM5.9 5.9v3.2h3.2V5.9zM13.5 4.5h6v6h-6zM14.9 5.9v3.2h3.2V5.9zM4.5 13.5h6v6h-6zM5.9 14.9v3.2h3.2v-3.2z"/><path fill="url(#gSlate)" d="M7 7h1v1H7zM16 7h1v1h-1zM7 16h1v1H7zM12 12h2v2h-2zM15 13h2v2h-2zM12.5 16h2v3.5h-2zM17 17h2.5v2.5H17zM11.5 5h1.5v2h-1.5zM5 11.5h2v1.5H5z"/>`,
   // "Make PDF fillable": a form field with a text cursor.
   formField: `<rect x="2.5" y="7" width="19" height="10" rx="2" fill="#fff" stroke="url(#gBlue)" stroke-width="1.8"/><path d="M7 10v4" stroke="#2563EB" stroke-width="1.6" stroke-linecap="round"/><path d="M10 12h8" stroke="#94A3B8" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="1.5 1.8"/>`,
   noEntry: `<circle cx="12" cy="12" r="8.4" fill="none" stroke="url(#gRed)" stroke-width="3"/><path d="M6.3 6.3l11.4 11.4" stroke="url(#gRed)" stroke-width="3" stroke-linecap="round"/>`,

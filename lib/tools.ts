@@ -21,6 +21,7 @@ export const tools: ToolDef[] = [
   { key: 'edit',        slug: 'edit-pdf',      category: 'edit' },
   { key: 'pagenumbers', slug: 'page-numbers',  category: 'edit' },
   { key: 'watermark',   slug: 'watermark-pdf', category: 'edit' },
+  { key: 'qrcode',      slug: 'add-qr-code-to-pdf', category: 'edit' },
   { key: 'redact',      slug: 'redact-pdf',    category: 'edit' },
   { key: 'flatten',     slug: 'flatten-pdf',   category: 'edit' },
   { key: 'metadata',    slug: 'metadata',      category: 'edit' },
@@ -118,7 +119,7 @@ export const RELATED_TOOLS: Record<string, [string, string, string]> = {
   protect: ['unlock', 'sign', 'watermark'], unlock: ['protect', 'compress', 'edit'], sign: ['fillform', 'protect', 'edit'],
   aichat: ['aisummary', 'translate', 'ocr'], aisummary: ['aichat', 'translate', 'txt'], translate: ['aisummary', 'aichat', 'word'],
   ocr: ['word', 'txt', 'compress'], compare: ['merge', 'edit', 'aisummary'], fillform: ['makefillable', 'sign', 'flatten'],
-  pdfa: ['metadata', 'protect', 'flatten'], cleanmeta: ['redact', 'metadata', 'protect'], makefillable: ['fillform', 'sign', 'flatten'],
+  pdfa: ['metadata', 'protect', 'flatten'], qrcode: ['watermark', 'pagenumbers', 'sign'], cleanmeta: ['redact', 'metadata', 'protect'], makefillable: ['fillform', 'sign', 'flatten'],
 };
 
 export interface CategoryDef {

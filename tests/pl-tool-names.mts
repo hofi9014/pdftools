@@ -26,7 +26,7 @@ const src = i18nSource();
 const keys = [...new Set([...src.matchAll(/'(tool\.[a-z0-9_]+)':/g)].map((m) => m[1]!))];
 // Format/product names stay as they are in Polish (inflected: "Excela", "Worda", "PowerPointa");
 // the few ordinary words are translated.
-const PL_WORD: Record<string, string> = { images: 'obraz' };
+const PL_WORD: Record<string, string> = { images: 'obraz', 'add qr code': 'kod qr' };
 const stem = (w: string) => PL_WORD[w.toLowerCase()] ?? w.toLowerCase().slice(0, 4);
 let conversions = 0;
 for (const key of keys) {
