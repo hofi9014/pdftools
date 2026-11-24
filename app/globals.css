@@ -560,3 +560,23 @@ body {
   .ksef-rows > div { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .ksef-rows dd { padding-bottom: 0.35rem; }
 }
+
+/* Markdown to PDF: the preview is a white "page" (like the PDF), so its colors are fixed, not themed. */
+.doc-preview { line-height: 1.5; overflow-wrap: anywhere; }
+.doc-preview > * + * { margin-top: 0.6rem; }
+.doc-preview h1 { font-size: 1.5rem; font-weight: 700; }
+.doc-preview h2 { font-size: 1.25rem; font-weight: 700; }
+.doc-preview h3, .doc-preview h4, .doc-preview h5, .doc-preview h6 { font-size: 1.05rem; font-weight: 700; }
+.doc-preview ul { list-style: disc; padding-inline-start: 1.5rem; }
+.doc-preview ol { list-style: decimal; padding-inline-start: 1.5rem; }
+.doc-preview li > ul, .doc-preview li > ol { margin-top: 0.2rem; list-style: circle; }
+.doc-preview a { color: #1a4dbf; text-decoration: underline; }
+.doc-preview code { font-family: var(--font-geist-mono), ui-monospace, monospace; font-size: 0.9em; background: #f1f1f1; padding: 0 0.2em; border-radius: 3px; }
+.doc-preview pre { background: #f4f4f4; padding: 0.6rem 0.8rem; border-radius: 6px; overflow-x: auto; }
+.doc-preview pre code { background: none; padding: 0; }
+.doc-preview blockquote { border-inline-start: 3px solid #c8c8c8; padding-inline-start: 0.8rem; color: #404040; }
+.doc-preview table { border-collapse: collapse; }
+.doc-preview th, .doc-preview td { border: 1px solid #c8c8c8; padding: 0.25rem 0.5rem; text-align: start; }
+.doc-preview th { background: #f1f1f1; font-weight: 600; }
+.doc-preview hr { border: 0; border-top: 1px solid #c8c8c8; }
+.doc-preview del { text-decoration: line-through; }

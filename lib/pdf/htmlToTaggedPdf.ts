@@ -41,14 +41,22 @@ interface InlineRun {
   sub: boolean;
   sup: boolean;
   link?: string;
+  /** Inline code (<code>, <kbd>, <samp>, <tt>, a task-list checkbox): drawn in the monospace font. */
+  code?: boolean;
+  /** <del>, <s>, <strike>: drawn with a line through. */
+  strike?: boolean;
 }
+
+/** A list item: its own text and the lists nested inside it (each a real /L inside the /LI). */
+interface ListItem { runs: InlineRun[]; sublists: ListBlock[] }
+interface ListBlock { ordered: boolean; items: ListItem[] }
 
 type Block =
   | { kind: 'heading'; level: 1 | 2 | 3 | 4 | 5 | 6; runs: InlineRun[] }
   | { kind: 'paragraph'; runs: InlineRun[] }
   | { kind: 'preformatted'; text: string }
   | { kind: 'blockquote'; runs: InlineRun[] }
-  | { kind: 'list'; ordered: boolean; items: InlineRun[][] }
+  | ({ kind: 'list' } & ListBlock)
   | { kind: 'table'; rows: TableRow[]; widths?: number[] }
   | { kind: 'image'; dataUrl: string; alt: string }
   | { kind: 'rule' }
@@ -81,26 +89,53 @@ function normalizeWhitespace(s: string): string {
   return s.replace(/[ \t\r\n]+/g, ' ');
 }
 
+interface RunStyle { bold: boolean; italic: boolean; sub: boolean; sup: boolean; link?: string; code: boolean; strike: boolean }
+
 function collectRuns(node: Node, bold = false, italic = false, sub = false, sup = false, link?: string): InlineRun[] {
+  return collectStyledRuns(node, { bold, italic, sub, sup, link, code: false, strike: false });
+}
+
+function collectStyledRuns(node: Node, st: RunStyle): InlineRun[] {
   const runs: InlineRun[] = [];
+  const run = (text: string, s2: RunStyle): InlineRun => ({ text, bold: s2.bold, italic: s2.italic, sub: s2.sub, sup: s2.sup, link: s2.link, ...(s2.code ? { code: true } : {}), ...(s2.strike ? { strike: true } : {}) });
   node.childNodes.forEach((child) => {
     if (child.nodeType === 3) {
       const text = normalizeWhitespace(child.textContent || '');
-      if (text.trim() || (runs.length && text)) runs.push({ text, bold, italic, sub, sup, link });
+      if (text.trim() || (runs.length && text)) runs.push(run(text, st));
     } else if (child.nodeType === 1) {
       const el = child as Element;
       const tag = el.tagName.toLowerCase();
-      if (tag === 'br') { runs.push({ text: '\n', bold, italic, sub, sup, link }); return; }
+      if (tag === 'br') { runs.push(run('\n', st)); return; }
       if (SKIP_TAGS.has(tag)) return;
-      if (tag === 'b' || tag === 'strong') { runs.push(...collectRuns(el, true, italic, sub, sup, link)); return; }
-      if (tag === 'i' || tag === 'em') { runs.push(...collectRuns(el, bold, true, sub, sup, link)); return; }
-      if (tag === 'sub') { runs.push(...collectRuns(el, bold, italic, true, false, link)); return; }
-      if (tag === 'sup') { runs.push(...collectRuns(el, bold, italic, false, true, link)); return; }
-      if (tag === 'a') { runs.push(...collectRuns(el, bold, italic, sub, sup, el.getAttribute('href') || undefined)); return; }
-      runs.push(...collectRuns(el, bold, italic, sub, sup, link));
+      // A task-list checkbox ("- [x] done" in Markdown): neither bundled font has a ballot box.
+      if (tag === 'input') {
+        if ((el.getAttribute('type') || '').toLowerCase() === 'checkbox') runs.push(run(el.hasAttribute('checked') ? '[x] ' : '[ ] ', { ...st, code: true }));
+        return;
+      }
+      if (tag === 'b' || tag === 'strong') { runs.push(...collectStyledRuns(el, { ...st, bold: true })); return; }
+      if (tag === 'i' || tag === 'em') { runs.push(...collectStyledRuns(el, { ...st, italic: true })); return; }
+      if (tag === 'sub') { runs.push(...collectStyledRuns(el, { ...st, sub: true, sup: false })); return; }
+      if (tag === 'sup') { runs.push(...collectStyledRuns(el, { ...st, sub: false, sup: true })); return; }
+      if (tag === 'a') { runs.push(...collectStyledRuns(el, { ...st, link: el.getAttribute('href') || undefined })); return; }
+      if (tag === 'code' || tag === 'kbd' || tag === 'samp' || tag === 'tt') { runs.push(...collectStyledRuns(el, { ...st, code: true })); return; }
+      if (tag === 'del' || tag === 's' || tag === 'strike') { runs.push(...collectStyledRuns(el, { ...st, strike: true })); return; }
+      runs.push(...collectStyledRuns(el, st));
     }
   });
   return runs;
+}
+
+/** A list and the lists nested in its items, keeping each item's own text apart from them. */
+function parseList(el: Element): ListBlock {
+  const items: ListItem[] = [];
+  el.querySelectorAll(':scope > li').forEach((li) => {
+    const own = li.cloneNode(true) as Element;
+    own.querySelectorAll(':scope > ul, :scope > ol').forEach((n) => n.remove());
+    const sublists = Array.from(li.querySelectorAll(':scope > ul, :scope > ol')).map(parseList).filter((l) => l.items.length);
+    const runs = collectRuns(own);
+    if (runs.length || sublists.length) items.push({ runs, sublists });
+  });
+  return { ordered: el.tagName.toLowerCase() === 'ol', items };
 }
 
 function collectPreformattedText(el: Element): string {
@@ -139,12 +174,8 @@ function parseHtmlToBlocks(html: string): { blocks: Block[]; lang?: string; titl
         const runs = collectRuns(el);
         if (runs.length) blocks.push({ kind: 'blockquote', runs });
       } else if (tag === 'ul' || tag === 'ol') {
-        const items: InlineRun[][] = [];
-        el.querySelectorAll(':scope > li').forEach((li) => {
-          const runs = collectRuns(li);
-          if (runs.length) items.push(runs);
-        });
-        if (items.length) blocks.push({ kind: 'list', ordered: tag === 'ol', items });
+        const list = parseList(el);
+        if (list.items.length) blocks.push({ kind: 'list', ...list });
       } else if (tag === 'dl') {
         el.querySelectorAll(':scope > dt, :scope > dd').forEach((node) => {
           const runs = collectRuns(node, node.tagName.toLowerCase() === 'dt');
@@ -187,9 +218,9 @@ function parseHtmlToBlocks(html: string): { blocks: Block[]; lang?: string; titl
 
 // ─── Fonts ─────────────────────────────────────────────────────────────────────────────────
 
-interface FontSet { regular: PDFFont; bold: PDFFont; italic: PDFFont; boldItalic: PDFFont }
+interface FontSet { regular: PDFFont; bold: PDFFont; italic: PDFFont; boldItalic: PDFFont; mono?: PDFFont }
 
-async function embedFontSet(pdf: PDFDocument): Promise<FontSet> {
+async function embedFontSet(pdf: PDFDocument, withMono = false): Promise<FontSet> {
   const fontkit = (await import('@pdf-lib/fontkit')).default;
   pdf.registerFontkit(fontkit);
   const load = async (name: string): Promise<PDFFont> => {
@@ -201,10 +232,31 @@ async function embedFontSet(pdf: PDFDocument): Promise<FontSet> {
     load('LiberationSans-Regular'), load('LiberationSans-Bold'),
     load('LiberationSans-Italic'), load('LiberationSans-BoldItalic'),
   ]);
-  return { regular, bold, italic, boldItalic };
+  // Code (blocks and inline) in Cousine, the editor's monospace font (Latin with Polish letters),
+  // embedded only when the document has code; before, code was set in the proportional font.
+  let mono: PDFFont | undefined;
+  if (withMono) {
+    try {
+      const res = await fetch('/fonts/cousine-regular.ttf');
+      if (res.ok) mono = await pdf.embedFont(new Uint8Array(await res.arrayBuffer()));
+    } catch { /* falls back to the proportional font */ }
+  }
+  return { regular, bold, italic, boldItalic, mono };
 }
 
-function pickFont(fonts: FontSet, bold: boolean, italic: boolean): PDFFont {
+/**
+ * Whether the monospace font has every character of `text`. Cousine has no box-drawing characters
+ * (the "├──" of a directory tree in a README) and the text font does: such text falls back to it.
+ */
+function monoCovers(fonts: FontSet, text: string): boolean {
+  const kit = (fonts.mono as unknown as { embedder?: { font?: { hasGlyphForCodePoint(cp: number): boolean } } } | undefined)?.embedder?.font;
+  if (!kit) return false;
+  for (const ch of text) if (ch !== ' ' && !kit.hasGlyphForCodePoint(ch.codePointAt(0)!)) return false;
+  return true;
+}
+
+function pickFont(fonts: FontSet, bold: boolean, italic: boolean, code = false): PDFFont {
+  if (code && fonts.mono) return fonts.mono;
   if (bold && italic) return fonts.boldItalic;
   if (bold) return fonts.bold;
   if (italic) return fonts.italic;
@@ -213,7 +265,7 @@ function pickFont(fonts: FontSet, bold: boolean, italic: boolean): PDFFont {
 
 // ─── Line wrapping (run-aware: a line is a sequence of same-font segments) ─────────────────
 
-interface RunSegment { text: string; font: PDFFont; size: number; baselineShift: number; color: { r: number; g: number; b: number }; link?: string }
+interface RunSegment { text: string; font: PDFFont; size: number; baselineShift: number; color: { r: number; g: number; b: number }; link?: string; strike?: boolean }
 
 function wrapRuns(runs: InlineRun[], fonts: FontSet, baseSize: number, maxWidth: number): RunSegment[][] {
   const lines: RunSegment[][] = [];
@@ -226,10 +278,10 @@ function wrapRuns(runs: InlineRun[], fonts: FontSet, baseSize: number, maxWidth:
   // tracking this, every new-style segment got an unconditional leading space, producing visibly
   // wrong "word ," spacing on any bold/italic/link text immediately followed by punctuation.
   const pushToken = (word: string, run: InlineRun, glue: boolean) => {
-    const size = run.sub || run.sup ? baseSize * 0.7 : baseSize;
-    const font = pickFont(fonts, run.bold, run.italic);
+    const font = pickFont(fonts, run.bold, run.italic, !!run.code && monoCovers(fonts, word));
+    const size = run.sub || run.sup ? baseSize * 0.7 : font === fonts.mono ? baseSize * 0.92 : baseSize;
     const baselineShift = run.sub ? -baseSize * 0.2 : run.sup ? baseSize * 0.3 : 0;
-    const color = run.link ? { r: 0.1, g: 0.3, b: 0.75 } : { r: 0, g: 0, b: 0 };
+    const color = run.link ? { r: 0.1, g: 0.3, b: 0.75 } : run.code ? { r: 0.2, g: 0.2, b: 0.2 } : { r: 0, g: 0, b: 0 };
     const wordWidth = font.widthOfTextAtSize(word, size);
     // A word wider than the whole line (a long URL, a long word in a narrow table column) is
     // broken between characters, as a browser does with overflow-wrap; drawn whole, it ran past
@@ -259,12 +311,12 @@ function wrapRuns(runs: InlineRun[], fonts: FontSet, baseSize: number, maxWidth:
       spaceWidth = 0;
     }
     const last = currentLine[currentLine.length - 1];
-    const sameStyle = last && last.font === font && last.size === size && last.link === run.link;
+    const sameStyle = last && last.font === font && last.size === size && last.link === run.link && !!last.strike === !!run.strike;
     const prefix = needsSpace ? ' ' : '';
     if (currentLine.length && sameStyle) {
       last.text += prefix + word;
     } else {
-      currentLine.push({ text: prefix + word, font, size, baselineShift, color, link: run.link });
+      currentLine.push({ text: prefix + word, font, size, baselineShift, color, link: run.link, ...(run.strike ? { strike: true } : {}) });
     }
     currentLineWidth += spaceWidth + wordWidth;
   };
@@ -370,6 +422,11 @@ function drawLine(state: RenderState, segments: RunSegment[], x: number, y: numb
   let cx = x;
   for (const seg of segments) {
     state.page.drawText(seg.text, { x: cx, y: y + seg.baselineShift, size: seg.size, font: seg.font, color: rgb(seg.color.r, seg.color.g, seg.color.b) });
+    if (seg.strike) {
+      const w = seg.font.widthOfTextAtSize(seg.text, seg.size);
+      const sy = y + seg.baselineShift + seg.size * 0.3;
+      state.page.drawLine({ start: { x: cx, y: sy }, end: { x: cx + w, y: sy }, thickness: Math.max(0.5, seg.size * 0.06), color: rgb(seg.color.r, seg.color.g, seg.color.b) });
+    }
     if (seg.link) {
       const w = seg.font.widthOfTextAtSize(seg.text, seg.size);
       state.page.drawLine({ start: { x: cx, y: y - 1.5 }, end: { x: cx + w, y: y - 1.5 }, thickness: 0.5, color: rgb(seg.color.r, seg.color.g, seg.color.b) });
@@ -466,42 +523,65 @@ function renderBlockquote(state: RenderState, runs: InlineRun[], parentRef: PDFR
 }
 
 function renderPreformatted(state: RenderState, text: string, parentRef: PDFRef): PDFRef[] {
-  const size = 10;
-  const font = state.fonts.regular;
-  const rawLines = text.split('\n');
+  const size = 9.5;
+  const font = state.fonts.mono ?? state.fonts.regular;
+  const maxWidth = CONTENT_WIDTH - 12;
   const lines: RunSegment[][] = [];
-  for (const raw of rawLines) {
-    // pdf-lib has no monospace font embedded here, so long preformatted lines are hard-wrapped
-    // at a fixed character budget rather than measured — good enough to avoid running off the
-    // page without pulling in a whole extra font family for one block type.
-    let remaining = raw;
-    const maxChars = 100;
+  for (const raw of text.replace(/\n$/, '').split('\n')) {
+    // Spaces kept as written (indentation is the point of a code block); a tab is 4 spaces.
+    // A line wider than the page is broken at the width it measures, not at a guessed count.
+    let remaining = raw.replace(/\t/g, '    ');
     do {
-      const chunk = remaining.slice(0, maxChars);
-      remaining = remaining.slice(maxChars);
-      lines.push([{ text: chunk, font, size, baselineShift: 0, color: { r: 0.15, g: 0.15, b: 0.15 } }]);
+      let chunk = '';
+      for (const ch of Array.from(remaining)) {
+        if (chunk && font.widthOfTextAtSize(chunk + ch, size) > maxWidth) break;
+        chunk += ch;
+      }
+      remaining = remaining.slice(chunk.length);
+      // Characters the monospace font lacks (box drawing) are set in the text font, in place.
+      const segs: RunSegment[] = [];
+      for (const ch of Array.from(chunk)) {
+        const f = font === state.fonts.mono && !monoCovers(state.fonts, ch) ? state.fonts.regular : font;
+        const last = segs[segs.length - 1];
+        if (last && last.font === f) last.text += ch;
+        else segs.push({ text: ch, font: f, size, baselineShift: 0, color: { r: 0.15, g: 0.15, b: 0.15 } });
+      }
+      lines.push(segs.length ? segs : [{ text: '', font, size, baselineShift: 0, color: { r: 0.15, g: 0.15, b: 0.15 } }]);
     } while (remaining.length > 0);
   }
-  return renderWrappedLines(state, 'P', lines, parentRef, MARGIN + 6, size * 1.35, size * 0.9);
+  return renderWrappedLines(state, 'Code', lines, parentRef, MARGIN + 6, size * 1.35, size * 0.9);
 }
 
-function renderList(state: RenderState, ordered: boolean, items: InlineRun[][], parentRef: PDFRef): PDFRef[] {
+function renderList(state: RenderState, list: ListBlock, parentRef: PDFRef, level = 0): PDFRef[] {
   const { ref: listRef, dict: listDict } = registerContainer(state, 'L', parentRef);
   const size = 11;
   const indent = 20;
+  const x = MARGIN + level * indent;
   const itemKids: PDFRef[] = [];
-  items.forEach((runs, i) => {
+  list.items.forEach((item, i) => {
     const { ref: liRef, dict: liDict } = registerContainer(state, 'LI', listRef);
-    const label = ordered ? `${i + 1}.` : '•';
+    // The label sits on the first line of the body: both start on the same page.
+    ensureSpace(state, size * 1.4);
+    const label = list.ordered ? `${i + 1}.` : level % 2 ? '–' : '•';
     const lblLines = wrapRuns([{ text: label, bold: false, italic: false, sub: false, sup: false }], state.fonts, size, indent);
-    const lblRefs = renderWrappedLinesAtSameBaseline(state, 'Lbl', lblLines, liRef, MARGIN);
-    const bodyLines = wrapRuns(runs, state.fonts, size, CONTENT_WIDTH - indent);
-    const bodyRefs = renderWrappedLines(state, 'LBody', bodyLines, liRef, MARGIN + indent, size * 1.4, size * 0.3);
-    setKidsDirect(state, liDict, [...lblRefs, ...bodyRefs]);
+    const lblRefs = renderWrappedLinesAtSameBaseline(state, 'Lbl', lblLines, liRef, x, size * 1.4);
+    const bodyLines = wrapRuns(item.runs.length ? item.runs : [{ text: ' ', bold: false, italic: false, sub: false, sup: false }], state.fonts, size, CONTENT_WIDTH - (x - MARGIN) - indent);
+    if (!item.sublists.length) {
+      const bodyRefs = renderWrappedLines(state, 'LBody', bodyLines, liRef, x + indent, size * 1.4, size * 0.3);
+      setKidsDirect(state, liDict, [...lblRefs, ...bodyRefs]);
+    } else {
+      // An item with a nested list: the list belongs in the item's body, next to its text
+      // (an /LI holds only /Lbl and /LBody — ISO 32000-1, 14.8.4.3.3).
+      const { ref: bodyRef, dict: bodyDict } = registerContainer(state, 'LBody', liRef);
+      const textRefs = renderWrappedLines(state, 'P', bodyLines, bodyRef, x + indent, size * 1.4, size * 0.3);
+      const nested = item.sublists.flatMap((sub) => renderList(state, sub, bodyRef, level + 1));
+      setKidsDirect(state, bodyDict, [...textRefs, ...nested]);
+      setKidsDirect(state, liDict, [...lblRefs, bodyRef]);
+    }
     itemKids.push(liRef);
   });
   setKidsDirect(state, listDict, itemKids);
-  state.y -= 6;
+  if (level === 0) state.y -= 6;
   return [listRef];
 }
 
@@ -509,11 +589,13 @@ function renderList(state: RenderState, ordered: boolean, items: InlineRun[][], 
 // can't use the generic renderWrappedLines page-advance logic (which would consume a line of
 // vertical space for a label that's meant to sit beside the body text, not above it). Labels
 // are always short enough to never wrap in practice, so this only ever emits one MCID.
-function renderWrappedLinesAtSameBaseline(state: RenderState, tag: string, lines: RunSegment[][], parentRef: PDFRef, x: number): PDFRef[] {
+// `lineHeight` is the body's: the label sits on the body's first baseline (it was drawn 0.8 of the
+// font size down instead of 0.8 of the line height, 3.5 pt above the text beside it).
+function renderWrappedLinesAtSameBaseline(state: RenderState, tag: string, lines: RunSegment[][], parentRef: PDFRef, x: number, lineHeight: number): PDFRef[] {
   if (!lines.length || !lines[0]!.length) return [];
   const { ref, dict: _dict } = beginMarkedContent(state, tag, parentRef);
   void _dict;
-  drawLine(state, lines[0]!, x, state.y - 11 * 0.8);
+  drawLine(state, lines[0]!, x, state.y - lineHeight * 0.8);
   endMarkedContent(state);
   return [ref];
 }
@@ -672,10 +754,20 @@ function buildXmp(title: string, lang: string | undefined): string {
 
 // ─── Top-level orchestration ────────────────────────────────────────────────────────────────
 
+/** Whether any code is in the document (the monospace font is embedded only then). */
+function needsMono(blocks: Block[]): boolean {
+  const inRuns = (runs: InlineRun[]) => runs.some((r) => r.code);
+  const inList = (l: ListBlock): boolean => l.items.some((it) => inRuns(it.runs) || it.sublists.some(inList));
+  return blocks.some((b) => b.kind === 'preformatted'
+    || ((b.kind === 'paragraph' || b.kind === 'heading' || b.kind === 'blockquote') && inRuns(b.runs))
+    || (b.kind === 'list' && inList(b))
+    || (b.kind === 'table' && b.rows.some((r) => r.cells.some(inRuns))));
+}
+
 export async function htmlToTaggedPdf(html: string): Promise<Blob> {
   const { blocks, lang, title } = parseHtmlToBlocks(html);
   const pdf = await PDFDocument.create();
-  const fonts = await embedFontSet(pdf);
+  const fonts = await embedFontSet(pdf, needsMono(blocks));
 
   const structTreeRootDict = pdf.context.obj({ Type: 'StructTreeRoot', K: [] });
   const structTreeRootRef = pdf.context.register(structTreeRootDict);
@@ -700,7 +792,7 @@ export async function htmlToTaggedPdf(html: string): Promise<Blob> {
     else if (block.kind === 'paragraph') refs = renderParagraph(state, block.runs, structTreeRootRef);
     else if (block.kind === 'blockquote') refs = renderBlockquote(state, block.runs, structTreeRootRef);
     else if (block.kind === 'preformatted') refs = renderPreformatted(state, block.text, structTreeRootRef);
-    else if (block.kind === 'list') refs = renderList(state, block.ordered, block.items, structTreeRootRef);
+    else if (block.kind === 'list') refs = renderList(state, block, structTreeRootRef);
     else if (block.kind === 'table') refs = renderTable(state, block.rows, structTreeRootRef, block.widths);
     else if (block.kind === 'image') refs = await renderImage(state, block.dataUrl, block.alt, structTreeRootRef);
     else if (block.kind === 'rule') renderRule(state);

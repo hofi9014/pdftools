@@ -39,6 +39,7 @@ export const tools: ToolDef[] = [
   { key: 'svg',          slug: 'pdf-to-svg',         category: 'convert' },
   { key: 'epub',         slug: 'pdf-to-epub',        category: 'convert' },
   { key: 'html',         slug: 'html-to-pdf',        category: 'convert' },
+  { key: 'markdown',     slug: 'markdown-to-pdf',    category: 'convert' },
   { key: 'html2pdf',     slug: 'pdf-to-html',        category: 'convert' },
   { key: 'url',          slug: 'url-to-pdf',         category: 'convert' },
 
@@ -113,7 +114,7 @@ export const RELATED_TOOLS: Record<string, [string, string, string]> = {
   images: ['jpgTopdf', 'compress', 'svg'], excel: ['excel2pdf', 'word', 'ocr'], excel2pdf: ['excel', 'merge', 'protect'],
   ppt: ['word', 'images', 'compress'], openoffice: ['pdf2openoffice', 'merge', 'compress'], pdf2openoffice: ['openoffice', 'word', 'ocr'],
   txt: ['ocr', 'word', 'aisummary'], svg: ['images', 'html2pdf', 'compress'], epub: ['txt', 'word', 'compress'],
-  html: ['url', 'merge', 'compress'], html2pdf: ['html', 'txt', 'word'], url: ['html', 'compress', 'merge'],
+  html: ['url', 'markdown', 'merge'], markdown: ['html', 'merge', 'protect'], html2pdf: ['html', 'txt', 'word'], url: ['html', 'compress', 'merge'],
   protect: ['unlock', 'sign', 'watermark'], unlock: ['protect', 'compress', 'edit'], sign: ['fillform', 'protect', 'edit'],
   aichat: ['aisummary', 'translate', 'ocr'], aisummary: ['aichat', 'translate', 'txt'], translate: ['aisummary', 'aichat', 'word'],
   ocr: ['word', 'txt', 'compress'], compare: ['merge', 'edit', 'aisummary'], fillform: ['makefillable', 'sign', 'flatten'],

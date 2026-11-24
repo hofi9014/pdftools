@@ -16,6 +16,7 @@ import { helpData } from '../content/pages/help';
 import { content as rules } from '../content/pages/nasze-zasady';
 import { DAILY_LIMIT } from '../lib/ai-limit';
 import { locales, t } from '../lib/i18n';
+import { tools, toolProcessing } from '../lib/tools';
 import { legalFor } from '../lib/legal';
 import { FONT_OPTIONS } from '../lib/pdf/fonts';
 import { all } from '../lib/translations/all';
@@ -195,7 +196,7 @@ console.log('\n=== no English left in other languages ===');
   const SAME_IN: Record<string, Set<string>> = { id: new Set(['tool.edit']) };
   // The HTML sample becomes PDF text in Liberation Sans, which has no Arabic, Persian, Devanagari
   // or CJK letters: those languages keep the English sample rather than a PDF of empty boxes.
-  const LATIN_PDF_TEXT = new Set(['page.html.sample_title', 'page.html.sample_text']);
+  const LATIN_PDF_TEXT = new Set(['page.html.sample_title', 'page.html.sample_text', 'page.md.sample']);
   const NON_LATIN = new Set(['ar', 'fa', 'hi', 'ja', 'zh']);
   const en = all.en as Record<string, string>;
   for (const l of locales) {
@@ -208,6 +209,19 @@ console.log('\n=== no English left in other languages ===');
     const copied = Object.keys(en).filter((k) => !SAME_EVERYWHERE.has(k) && !SAME_IN[l]?.has(k) && !(NON_LATIN.has(l) && LATIN_PDF_TEXT.has(k)) && dict[k] === en[k] && words(en[k]!) >= 2);
     check(missing.length === 0, `${l}: every key translated${missing.length ? ` (missing: ${missing.join(', ')})` : ''}`);
     check(copied.length === 0, `${l}: no English sentence copied as the translation${copied.length ? ` (${copied.join(', ')})` : ''}`);
+  }
+}
+
+console.log('\n=== feature cards: no AI or cloud claim on a tool that uses neither ===');
+{
+  // HTML to PDF showed "Quick AI generation", and Excel to PDF, JPG to PDF, Protect and Unlock
+  // "Fast cloud-based AI processing" (2026-11-24): all of them run in the browser, without AI.
+  const en = all.en as Record<string, string>;
+  for (const tool of tools) {
+    const src = readFileSync(join(ROOT, 'app/(unprefixed)', tool.slug, 'page.tsx'), 'utf8');
+    const claims = [...src.matchAll(/t\('(feature\.[a-z_]+)'/g)].map((m) => m[1]!).filter((k) => /\bAI\b|cloud/i.test(en[k] ?? ''));
+    const ai = toolProcessing(tool.key) === 'ai';
+    check(ai || claims.length === 0, `${tool.slug}: ${claims.length ? `claims ${claims.join(', ')}` : 'no AI/cloud feature claim'}`);
   }
 }
 

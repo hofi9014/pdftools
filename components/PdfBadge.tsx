@@ -2,7 +2,7 @@
 
 import React, { useId } from 'react';
 
-type BadgeType = 'PDF' | 'DOC' | 'XLS' | 'PPT' | 'ODT' | 'TXT' | 'XML';
+type BadgeType = 'PDF' | 'DOC' | 'XLS' | 'PPT' | 'ODT' | 'TXT' | 'XML' | 'MD';
 
 interface BadgeConfig {
   docGrad: [string, string];
@@ -20,6 +20,7 @@ const cfg: Record<BadgeType, BadgeConfig> = {
   ODT: { docGrad: ['#4DB6AC', '#14B8A6'], fold: '#B2DFDB', ribbon: '#00796B', ribbonDark: '#004D40', textSize: 6.5 },
   TXT: { docGrad: ['#94A3B8', '#64748B'], fold: '#E2E8F0', ribbon: '#475569', ribbonDark: '#1E293B', textSize: 6.5 },
   XML: { docGrad: ['#A78BFA', '#7C3AED'], fold: '#DDD6FE', ribbon: '#6D28D9', ribbonDark: '#4C1D95', textSize: 6.5 },
+  MD: { docGrad: ['#52525B', '#27272A'], fold: '#E4E4E7', ribbon: '#3F3F46', ribbonDark: '#18181B', textSize: 7 },
 };
 
 function PdfBadge({ type = 'PDF' }: { type?: BadgeType }) {

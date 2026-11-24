@@ -156,7 +156,7 @@ export default function UnlockPDF({ locale: forcedLocale }: { locale?: Locale } 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-center">
           {[
             { icon: 'shield' as const, text: t('feature.files_deleted', locale) },
-            { icon: 'bolt' as const, text: t('feature.fast_cloud', locale) },
+            { icon: 'bolt' as const, text: t('feature.fast_processing', locale) },
             { icon: 'gift' as const, text: t('feature.free_simple', locale) },
           ].map((item, i) => (
             <div key={i} className="tool-feature-card rounded-xl p-4 border">
