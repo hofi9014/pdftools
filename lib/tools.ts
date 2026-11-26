@@ -12,6 +12,7 @@ export const tools: ToolDef[] = [
   { key: 'merge',       slug: 'merge',         category: 'edit' },
   { key: 'split',       slug: 'split',         category: 'edit' },
   { key: 'compress',    slug: 'compress',      category: 'edit' },
+  { key: 'grayscale',   slug: 'grayscale-pdf', category: 'edit' },
   { key: 'rotate',      slug: 'rotate-pdf',    category: 'edit' },
   { key: 'crop',        slug: 'crop-pdf',      category: 'edit' },
   { key: 'delete',      slug: 'delete-pages',  category: 'edit' },
@@ -119,7 +120,7 @@ export const RELATED_TOOLS: Record<string, [string, string, string]> = {
   protect: ['unlock', 'sign', 'watermark'], unlock: ['protect', 'compress', 'edit'], sign: ['fillform', 'protect', 'edit'],
   aichat: ['aisummary', 'translate', 'ocr'], aisummary: ['aichat', 'translate', 'txt'], translate: ['aisummary', 'aichat', 'word'],
   ocr: ['word', 'txt', 'compress'], compare: ['merge', 'edit', 'aisummary'], fillform: ['makefillable', 'sign', 'flatten'],
-  pdfa: ['metadata', 'protect', 'flatten'], qrcode: ['watermark', 'pagenumbers', 'sign'], cleanmeta: ['redact', 'metadata', 'protect'], makefillable: ['fillform', 'sign', 'flatten'],
+  pdfa: ['metadata', 'protect', 'flatten'], qrcode: ['watermark', 'pagenumbers', 'sign'], grayscale: ['compress', 'merge', 'pagenumbers'], cleanmeta: ['redact', 'metadata', 'protect'], makefillable: ['fillform', 'sign', 'flatten'],
 };
 
 export interface CategoryDef {

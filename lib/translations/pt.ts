@@ -1235,6 +1235,20 @@ const pt: Record<string, string> = {
   'page.qr.info_vector': 'O código é desenhado em formato vetorial com uma margem branca, por isso fica nítido em qualquer zoom e na impressão. Fica a 10 mm da margem da página. Quanto mais longo o texto, mais denso o código — para texto longo escolha um tamanho maior.',
   'page.qr.info_link': 'Um endereço web torna-se também uma ligação clicável no PDF. A posição é medida na página tal como a vê — também em páginas rodadas.',
   'page.qr.info_local': 'O código é criado e desenhado no seu navegador — nem o texto nem o PDF são enviados para lado nenhum.',
+  'tool.grayscale': 'PDF em tons de cinzento',
+  'desc.grayscale': 'Converta um PDF a cores para preto e branco — o texto continua a ser texto',
+  'seo.tool_title.grayscale': 'PDF em tons de cinzento – PDF a cores para preto e branco',
+  'file.grayscale_suffix': '-cinzento',
+  'page.grayscale.desc': 'Substitua cada cor de um PDF pelo cinzento com a mesma luminosidade — o texto, os gráficos e os desenhos continuam vetoriais e as fotografias ficam cinzentas',
+  'page.grayscale.btn': 'Converter para tons de cinzento',
+  'page.grayscale.loading': 'A converter as cores...',
+  'page.grayscale.success': 'Concluído — o PDF em tons de cinzento foi transferido.',
+  'page.grayscale.summary': 'Páginas: {pages}. Convertidos: {colours} cores, {images} imagens, {gradients} gradientes.',
+  'page.grayscale.overlay_note': 'Páginas {pages}: alguns elementos não puderam ser convertidos diretamente (por exemplo, imagens JPEG 2000 ou gradientes complexos). Cobrimo-los com uma camada que os mostra em cinzento — as suas cores originais continuam guardadas no ficheiro.',
+  'page.grayscale.how_title': 'O que acontece ao ficheiro',
+  'page.grayscale.how_1': 'Substituímos as cores em vez de transformar as páginas em imagens: o texto continua a poder ser selecionado e pesquisado, e os gráficos e desenhos ficam nítidos ao ampliar',
+  'page.grayscale.how_2': 'Cada cor passa a ser o cinzento com a mesma luminosidade — também as cores spot, os gradientes, as imagens e as cores dos comentários. As fotografias JPEG são guardadas de novo, por isso o tamanho do ficheiro pode mudar um pouco',
+  'page.grayscale.how_3': 'O ficheiro não é enviado para lado nenhum — a conversão é feita no seu navegador',
 };
 
 export default pt;

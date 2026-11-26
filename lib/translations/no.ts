@@ -1235,6 +1235,20 @@ const no: Record<string, string> = {
   'page.qr.info_vector': 'Koden tegnes som vektorgrafikk med hvit marg, så den holder seg skarp ved all forstørrelse og på utskrift. Den står 10 mm fra kanten av siden. Jo lengre tekst, desto tettere kode — velg en større størrelse for lang tekst.',
   'page.qr.info_link': 'En nettadresse blir også en klikkbar lenke i PDF-filen. Plasseringen måles på siden slik du ser den — også på roterte sider.',
   'page.qr.info_local': 'Koden lages og tegnes i nettleseren din — verken teksten eller PDF-filen sendes noe sted.',
+  'tool.grayscale': 'PDF i gråtoner',
+  'desc.grayscale': 'Gjør en farge-PDF svart-hvit — teksten forblir tekst',
+  'seo.tool_title.grayscale': 'PDF i gråtoner – gjør en farge-PDF svart-hvit',
+  'file.grayscale_suffix': '-gra',
+  'page.grayscale.desc': 'Bytt ut hver farge i en PDF med grått med samme lyshet — tekst, diagrammer og tegninger forblir vektorer, bilder blir grå',
+  'page.grayscale.btn': 'Konverter til gråtoner',
+  'page.grayscale.loading': 'Konverterer fargene...',
+  'page.grayscale.success': 'Ferdig — PDF-filen i gråtoner er lastet ned.',
+  'page.grayscale.summary': 'Sider: {pages}. Konvertert: {colours} farger, {images} bilder, {gradients} fargeoverganger.',
+  'page.grayscale.overlay_note': 'Sider {pages}: noen elementer kunne ikke konverteres direkte (for eksempel JPEG 2000-bilder eller komplekse fargeoverganger). Vi har dekket dem med et lag som viser dem i grått — de opprinnelige fargene er fortsatt lagret i filen.',
+  'page.grayscale.how_title': 'Hva som skjer med filen',
+  'page.grayscale.how_1': 'Vi bytter fargene i stedet for å gjøre sidene om til bilder: teksten kan fortsatt merkes og søkes i, og diagrammer og tegninger forblir skarpe når du zoomer',
+  'page.grayscale.how_2': 'Hver farge blir grått med samme lyshet — også spotfarger, fargeoverganger, bilder og kommentarfarger. JPEG-bilder lagres på nytt, så filstørrelsen kan endre seg litt',
+  'page.grayscale.how_3': 'Filen sendes ikke noe sted — konverteringen skjer i nettleseren din',
 };
 
 export default no;

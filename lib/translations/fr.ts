@@ -1235,6 +1235,20 @@ const fr: Record<string, string> = {
   'page.qr.info_vector': 'Le code est dessiné en vectoriel avec une marge blanche : il reste net à tout zoom et à l\'impression. Il est placé à 10 mm du bord de la page. Plus le texte est long, plus le code est dense — choisissez une taille plus grande pour un texte long.',
   'page.qr.info_link': 'Une adresse web devient aussi un lien cliquable dans le PDF. La position est mesurée sur la page telle que vous la voyez — y compris sur les pages pivotées.',
   'page.qr.info_local': 'Le code est créé et dessiné dans votre navigateur — ni le texte ni le PDF ne sont envoyés nulle part.',
+  'tool.grayscale': 'PDF en niveaux de gris',
+  'desc.grayscale': 'Passez un PDF couleur en noir et blanc — le texte reste du texte',
+  'seo.tool_title.grayscale': 'PDF en niveaux de gris – convertir un PDF couleur en N&B',
+  'file.grayscale_suffix': '-gris',
+  'page.grayscale.desc': 'Remplacez chaque couleur d’un PDF par le gris de même luminosité — le texte, les graphiques et les dessins restent vectoriels, les photos passent en gris',
+  'page.grayscale.btn': 'Convertir en niveaux de gris',
+  'page.grayscale.loading': 'Conversion des couleurs...',
+  'page.grayscale.success': 'Terminé — le PDF en niveaux de gris a été téléchargé.',
+  'page.grayscale.summary': 'Pages : {pages}. Convertis : {colours} couleurs, {images} images, {gradients} dégradés.',
+  'page.grayscale.overlay_note': 'Pages {pages} : certains éléments n’ont pas pu être convertis directement (par exemple des images JPEG 2000 ou des dégradés complexes). Nous les avons recouverts d’un calque qui les affiche en gris — leurs couleurs d’origine restent enregistrées dans le fichier.',
+  'page.grayscale.how_title': 'Ce qui arrive au fichier',
+  'page.grayscale.how_1': 'Nous remplaçons les couleurs au lieu de transformer les pages en images : le texte reste sélectionnable et consultable, les graphiques et dessins restent nets au zoom',
+  'page.grayscale.how_2': 'Chaque couleur devient le gris de même luminosité — y compris les tons directs, les dégradés, les images et les couleurs des commentaires. Les photos JPEG sont réenregistrées, la taille du fichier peut donc changer un peu',
+  'page.grayscale.how_3': 'Le fichier n’est envoyé nulle part — la conversion se fait dans votre navigateur',
 };
 
 export default fr;

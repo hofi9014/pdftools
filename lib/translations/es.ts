@@ -1235,6 +1235,20 @@ const es: Record<string, string> = {
   'page.qr.info_vector': 'El código se dibuja como vectores con un margen blanco, así que se ve nítido con cualquier zoom y al imprimir. Se coloca a 10 mm del borde de la página. Cuanto más largo es el texto, más denso es el código: para textos largos elija un tamaño mayor.',
   'page.qr.info_link': 'Una dirección web también se convierte en un enlace en el que se puede hacer clic en el PDF. La posición se mide en la página tal como la ve, también en páginas giradas.',
   'page.qr.info_local': 'El código se crea y se dibuja en su navegador: ni el texto ni el PDF se envían a ningún sitio.',
+  'tool.grayscale': 'PDF en escala de grises',
+  'desc.grayscale': 'Convierta un PDF en color a blanco y negro — el texto sigue siendo texto',
+  'seo.tool_title.grayscale': 'PDF en escala de grises – PDF en color a blanco y negro',
+  'file.grayscale_suffix': '-grises',
+  'page.grayscale.desc': 'Sustituya cada color de un PDF por el gris de la misma luminosidad: el texto, los gráficos y los dibujos siguen siendo vectoriales y las fotos pasan a gris',
+  'page.grayscale.btn': 'Convertir a escala de grises',
+  'page.grayscale.loading': 'Convirtiendo los colores...',
+  'page.grayscale.success': 'Listo: se ha descargado el PDF en escala de grises.',
+  'page.grayscale.summary': 'Páginas: {pages}. Convertidos: {colours} colores, {images} imágenes, {gradients} degradados.',
+  'page.grayscale.overlay_note': 'Páginas {pages}: algunos elementos no se pudieron convertir directamente (por ejemplo, imágenes JPEG 2000 o degradados complejos). Los hemos cubierto con una capa que los muestra en gris; sus colores originales siguen guardados en el archivo.',
+  'page.grayscale.how_title': 'Qué ocurre con el archivo',
+  'page.grayscale.how_1': 'Sustituimos los colores en lugar de convertir las páginas en imágenes: el texto se puede seguir seleccionando y buscando, y los gráficos y dibujos siguen nítidos al ampliarlos',
+  'page.grayscale.how_2': 'Cada color pasa a ser el gris de la misma luminosidad, también los colores directos, los degradados, las imágenes y los colores de los comentarios. Las fotos JPEG se vuelven a guardar, por lo que el tamaño del archivo puede cambiar un poco',
+  'page.grayscale.how_3': 'El archivo no se envía a ningún sitio: la conversión se hace en su navegador',
 };
 
 export default es;

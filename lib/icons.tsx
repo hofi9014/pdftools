@@ -98,6 +98,7 @@ const tools: Record<string, React.ReactNode> = {
   fillform:     row(<>{gl('clipboard')}{<PdfBadge />}</>),
   makefillable: row(<>{<PdfBadge />}{pls()}{gl('formField')}</>),
   qrcode:       row(<>{<PdfBadge />}{pls()}{gl('qr')}</>),
+  grayscale:    row(<>{<PdfBadge />}{ar()}{gl('grayscale')}</>),
   pdfa:         row(<>{<PdfBadge />}{ar()}{gl('archive')}</>),
   guide:        gl('book'),
   cloud:        gl('cloud'),

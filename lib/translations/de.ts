@@ -1235,6 +1235,20 @@ const de: Record<string, string> = {
   'page.qr.info_vector': 'Der Code wird als Vektorgrafik mit weißem Rand gezeichnet und bleibt daher bei jeder Vergrößerung und im Druck scharf. Er steht 10 mm vom Seitenrand entfernt. Je länger der Text, desto dichter der Code – wählen Sie für langen Text eine größere Größe.',
   'page.qr.info_link': 'Eine Webadresse wird im PDF auch zu einem anklickbaren Link. Die Position wird auf der Seite so gemessen, wie Sie sie sehen – auch bei gedrehten Seiten.',
   'page.qr.info_local': 'Der Code wird in Ihrem Browser erstellt und gezeichnet – weder der Text noch das PDF werden irgendwohin gesendet.',
+  'tool.grayscale': 'PDF in Graustufen',
+  'desc.grayscale': 'Ein farbiges PDF in Schwarzweiß umwandeln — Text bleibt Text',
+  'seo.tool_title.grayscale': 'PDF in Graustufen – farbiges PDF in Schwarzweiß umwandeln',
+  'file.grayscale_suffix': '-graustufen',
+  'page.grayscale.desc': 'Ersetzen Sie jede Farbe in einem PDF durch das Grau gleicher Helligkeit — Text, Diagramme und Zeichnungen bleiben Vektoren, Fotos werden grau',
+  'page.grayscale.btn': 'In Graustufen umwandeln',
+  'page.grayscale.loading': 'Farben werden umgewandelt...',
+  'page.grayscale.success': 'Fertig — das PDF in Graustufen wurde heruntergeladen.',
+  'page.grayscale.summary': 'Seiten: {pages}. Umgewandelt: {colours} Farben, {images} Bilder, {gradients} Verläufe.',
+  'page.grayscale.overlay_note': 'Seiten {pages}: Einige Elemente ließen sich nicht direkt umwandeln (z. B. JPEG-2000-Bilder oder komplexe Verläufe). Wir haben sie mit einer Ebene überdeckt, die sie grau zeigt — ihre ursprünglichen Farben sind weiterhin in der Datei gespeichert.',
+  'page.grayscale.how_title': 'Was mit der Datei passiert',
+  'page.grayscale.how_1': 'Wir ersetzen die Farben, statt die Seiten in Bilder zu verwandeln: Text bleibt markier- und durchsuchbar, Diagramme und Zeichnungen bleiben beim Vergrößern scharf',
+  'page.grayscale.how_2': 'Jede Farbe wird zum Grau gleicher Helligkeit — auch Sonderfarben, Verläufe, Bilder und Kommentarfarben. JPEG-Fotos werden neu gespeichert, daher kann sich die Dateigröße etwas ändern',
+  'page.grayscale.how_3': 'Die Datei wird nirgendwohin gesendet — die Umwandlung läuft in Ihrem Browser',
 };
 
 export default de;

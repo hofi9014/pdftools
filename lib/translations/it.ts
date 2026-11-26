@@ -1235,6 +1235,20 @@ const it: Record<string, string> = {
   'page.qr.info_vector': 'Il codice è disegnato in forma vettoriale con un margine bianco, quindi resta nitido a qualsiasi ingrandimento e in stampa. Si trova a 10 mm dal bordo della pagina. Più lungo è il testo, più fitto è il codice: per testi lunghi scegli una dimensione maggiore.',
   'page.qr.info_link': 'Un indirizzo web diventa anche un link cliccabile nel PDF. La posizione è misurata sulla pagina come la vedi, anche sulle pagine ruotate.',
   'page.qr.info_local': 'Il codice viene creato e disegnato nel tuo browser: né il testo né il PDF vengono inviati altrove.',
+  'tool.grayscale': 'PDF in scala di grigi',
+  'desc.grayscale': 'Trasforma un PDF a colori in bianco e nero — il testo resta testo',
+  'seo.tool_title.grayscale': 'PDF in scala di grigi – da PDF a colori a bianco e nero',
+  'file.grayscale_suffix': '-grigi',
+  'page.grayscale.desc': 'Sostituisci ogni colore di un PDF con il grigio della stessa luminosità: testo, grafici e disegni restano vettoriali, le foto diventano grigie',
+  'page.grayscale.btn': 'Converti in scala di grigi',
+  'page.grayscale.loading': 'Conversione dei colori...',
+  'page.grayscale.success': 'Fatto: il PDF in scala di grigi è stato scaricato.',
+  'page.grayscale.summary': 'Pagine: {pages}. Convertiti: {colours} colori, {images} immagini, {gradients} sfumature.',
+  'page.grayscale.overlay_note': 'Pagine {pages}: alcuni elementi non è stato possibile convertirli direttamente (ad esempio immagini JPEG 2000 o sfumature complesse). Li abbiamo coperti con un livello che li mostra in grigio: i loro colori originali restano salvati nel file.',
+  'page.grayscale.how_title': 'Cosa succede al file',
+  'page.grayscale.how_1': 'Sostituiamo i colori invece di trasformare le pagine in immagini: il testo si può ancora selezionare e cercare, e grafici e disegni restano nitidi quando si ingrandisce',
+  'page.grayscale.how_2': 'Ogni colore diventa il grigio della stessa luminosità, compresi i colori spot, le sfumature, le immagini e i colori dei commenti. Le foto JPEG vengono salvate di nuovo, quindi la dimensione del file può cambiare un po’',
+  'page.grayscale.how_3': 'Il file non viene inviato da nessuna parte: la conversione avviene nel tuo browser',
 };
 
 export default it;

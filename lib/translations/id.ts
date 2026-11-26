@@ -1232,6 +1232,20 @@ const id: Record<string, string> = {
   'page.qr.info_vector': 'Kode digambar sebagai bentuk vektor dengan margin putih, jadi tetap tajam di setiap zoom dan saat dicetak. Letaknya 10 mm dari tepi halaman. Makin panjang teks, makin rapat kodenya — pilih ukuran lebih besar untuk teks panjang.',
   'page.qr.info_link': 'Alamat web juga menjadi tautan yang bisa diklik di PDF. Posisinya diukur pada halaman seperti yang Anda lihat — juga pada halaman yang diputar.',
   'page.qr.info_local': 'Kode dibuat dan digambar di browser Anda — teks maupun PDF tidak dikirim ke mana pun.',
+  'tool.grayscale': 'PDF Skala Abu-abu',
+  'desc.grayscale': 'Ubah PDF berwarna menjadi hitam putih — teks tetap teks',
+  'seo.tool_title.grayscale': 'PDF Skala Abu-abu – Ubah PDF Berwarna Jadi Hitam Putih',
+  'file.grayscale_suffix': '-abu-abu',
+  'page.grayscale.desc': 'Ganti setiap warna dalam PDF dengan abu-abu yang sama terangnya — teks, grafik, dan gambar tetap vektor, foto menjadi abu-abu',
+  'page.grayscale.btn': 'Ubah ke skala abu-abu',
+  'page.grayscale.loading': 'Mengubah warna...',
+  'page.grayscale.success': 'Selesai — PDF skala abu-abu telah diunduh.',
+  'page.grayscale.summary': 'Halaman: {pages}. Diubah: {colours} warna, {images} gambar, {gradients} gradasi.',
+  'page.grayscale.overlay_note': 'Halaman {pages}: beberapa elemen tidak dapat diubah langsung (misalnya gambar JPEG 2000 atau gradasi yang rumit). Kami menutupinya dengan lapisan yang menampilkannya dalam abu-abu — warna aslinya masih tersimpan di dalam file.',
+  'page.grayscale.how_title': 'Apa yang terjadi pada file',
+  'page.grayscale.how_1': 'Kami mengganti warna, bukan mengubah halaman menjadi gambar: teks tetap bisa dipilih dan dicari, serta grafik dan gambar tetap tajam saat diperbesar',
+  'page.grayscale.how_2': 'Setiap warna menjadi abu-abu yang sama terangnya — termasuk warna spot, gradasi, gambar, dan warna komentar. Foto JPEG disimpan ulang, jadi ukuran file bisa sedikit berubah',
+  'page.grayscale.how_3': 'File tidak dikirim ke mana pun — konversi dilakukan di browser Anda',
 };
 
 export default id;

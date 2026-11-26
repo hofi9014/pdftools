@@ -1236,6 +1236,20 @@ const is: Record<string, string> = {
   'page.qr.info_vector': 'Kóðinn er teiknaður sem vigurmynd með hvítri spássíu, svo hann helst skarpur við alla stækkun og í prentun. Hann er 10 mm frá brún síðunnar. Því lengri sem textinn er, því þéttari verður kóðinn — veldu stærri stærð fyrir langan texta.',
   'page.qr.info_link': 'Veffang verður líka smellanlegur tengill í PDF-skjalinu. Staðsetningin miðast við síðuna eins og þú sérð hana — líka á snúnum síðum.',
   'page.qr.info_local': 'Kóðinn er búinn til og teiknaður í vafranum þínum — hvorki textinn né PDF-skjalið er sent neitt.',
+  'tool.grayscale': 'PDF í grátónum',
+  'desc.grayscale': 'Breyttu PDF í lit í svarthvítt — texti helst texti',
+  'seo.tool_title.grayscale': 'PDF í grátónum – breyttu lit-PDF í svarthvítt',
+  'file.grayscale_suffix': '-grar',
+  'page.grayscale.desc': 'Skiptu hverjum lit í PDF-skjali út fyrir gráan lit með sama birtustigi — texti, gröf og teikningar haldast vigurgögn og myndir verða gráar',
+  'page.grayscale.btn': 'Breyta í grátóna',
+  'page.grayscale.loading': 'Breyti litum...',
+  'page.grayscale.success': 'Tilbúið — PDF-skjalið í grátónum hefur verið sótt.',
+  'page.grayscale.summary': 'Síður: {pages}. Breytt: {colours} litir, {images} myndir, {gradients} litastigar.',
+  'page.grayscale.overlay_note': 'Síður {pages}: ekki var hægt að breyta sumum hlutum beint (t.d. JPEG 2000-myndum eða flóknum litastigum). Við settum yfir þá lag sem sýnir þá í gráu — upprunalegu litirnir eru enn vistaðir í skjalinu.',
+  'page.grayscale.how_title': 'Hvað gerist við skjalið',
+  'page.grayscale.how_1': 'Við skiptum út litum í stað þess að breyta síðum í myndir: enn er hægt að velja og leita í texta og gröf og teikningar haldast skörp þegar stækkað er',
+  'page.grayscale.how_2': 'Hver litur verður grár með sama birtustigi — líka sérlitir, litastigar, myndir og litir athugasemda. JPEG-myndir eru vistaðar aftur, svo stærð skjalsins getur breyst aðeins',
+  'page.grayscale.how_3': 'Skjalið er hvergi sent — breytingin fer fram í vafranum þínum',
 };
 
 export default is;

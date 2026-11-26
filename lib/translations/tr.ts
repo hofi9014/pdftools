@@ -1235,6 +1235,20 @@ const tr: Record<string, string> = {
   'page.qr.info_vector': 'Kod beyaz kenar boşluğuyla vektör olarak çizilir; bu yüzden her yakınlaştırmada ve baskıda net kalır. Sayfa kenarından 10 mm uzakta durur. Metin uzadıkça kod sıklaşır — uzun metin için daha büyük bir boyut seçin.',
   'page.qr.info_link': 'Bir web adresi PDF\'te ayrıca tıklanabilir bir bağlantı olur. Konum, sayfayı gördüğünüz haliyle ölçülür — döndürülmüş sayfalarda da.',
   'page.qr.info_local': 'Kod tarayıcınızda oluşturulur ve çizilir — ne metin ne de PDF hiçbir yere gönderilir.',
+  'tool.grayscale': 'Gri Tonlamalı PDF',
+  'desc.grayscale': 'Renkli bir PDF\'yi siyah beyaza çevirin — metin metin olarak kalır',
+  'seo.tool_title.grayscale': 'PDF\'yi Gri Tonlamaya Çevir – Renkli PDF\'yi Siyah Beyaz Yap',
+  'file.grayscale_suffix': '-gri',
+  'page.grayscale.desc': 'Bir PDF\'deki her rengi aynı parlaklıktaki griyle değiştirin — metin, grafikler ve çizimler vektör olarak kalır, fotoğraflar griye döner',
+  'page.grayscale.btn': 'Gri tonlamaya çevir',
+  'page.grayscale.loading': 'Renkler dönüştürülüyor...',
+  'page.grayscale.success': 'Tamam — gri tonlamalı PDF indirildi.',
+  'page.grayscale.summary': 'Sayfa: {pages}. Dönüştürülen: {colours} renk, {images} görsel, {gradients} geçiş.',
+  'page.grayscale.overlay_note': 'Sayfa {pages}: bazı öğeler doğrudan dönüştürülemedi (örneğin JPEG 2000 görselleri veya karmaşık geçişler). Bunları gri gösteren bir katmanla örttük — özgün renkleri dosyada kayıtlı kalır.',
+  'page.grayscale.how_title': 'Dosyaya ne olur',
+  'page.grayscale.how_1': 'Sayfaları resme çevirmek yerine renkleri değiştiririz: metin seçilebilir ve aranabilir kalır, grafikler ve çizimler yakınlaştırıldığında net kalır',
+  'page.grayscale.how_2': 'Her renk aynı parlaklıktaki griye dönüşür — spot renkler, geçişler, görseller ve yorum renkleri de. JPEG fotoğraflar yeniden kaydedildiği için dosya boyutu biraz değişebilir',
+  'page.grayscale.how_3': 'Dosya hiçbir yere gönderilmez — dönüştürme tarayıcınızda yapılır',
 };
 
 export default tr;

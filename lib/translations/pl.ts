@@ -1235,6 +1235,20 @@ const pl: Record<string, string> = {
   'page.qr.info_vector': 'Kod jest rysowany wektorowo z białym marginesem, więc jest ostry przy każdym powiększeniu i w druku. Stoi 10 mm od krawędzi strony. Im dłuższy tekst, tym gęstszy kod — dla długiego tekstu wybierz większy rozmiar.',
   'page.qr.info_link': 'Adres internetowy staje się w PDF także klikalnym linkiem. Położenie liczymy na stronie tak, jak ją widzisz — także na stronach obróconych.',
   'page.qr.info_local': 'Kod powstaje i jest rysowany w Twojej przeglądarce — ani tekst, ani plik PDF nie są nigdzie wysyłane.',
+  'tool.grayscale': 'PDF w odcieniach szarości',
+  'desc.grayscale': 'Zamień kolorowy PDF na czarno-biały — tekst zostaje tekstem',
+  'seo.tool_title.grayscale': 'PDF czarno-biały – zamień kolory na odcienie szarości',
+  'file.grayscale_suffix': '-szary',
+  'page.grayscale.desc': 'Zamień wszystkie kolory w pliku PDF na odcienie szarości o tej samej jasności — tekst, wykresy i rysunki zostają wektorowe, a zdjęcia stają się szare',
+  'page.grayscale.btn': 'Zamień na odcienie szarości',
+  'page.grayscale.loading': 'Zamieniam kolory...',
+  'page.grayscale.success': 'Gotowe — plik w odcieniach szarości został pobrany.',
+  'page.grayscale.summary': 'Stron: {pages}. Zamienione: kolory {colours}, obrazy {images}, gradienty {gradients}.',
+  'page.grayscale.overlay_note': 'Strony {pages}: części elementów nie dało się zamienić bezpośrednio (np. obrazów JPEG 2000 albo złożonych gradientów). Przykryliśmy je warstwą, która pokazuje je w odcieniach szarości — ich oryginalne kolory nadal są zapisane w pliku.',
+  'page.grayscale.how_title': 'Co się dzieje z plikiem',
+  'page.grayscale.how_1': 'Zamieniamy kolory, a nie robimy zdjęć stron: tekst można dalej zaznaczać i wyszukiwać, a wykresy i rysunki pozostają ostre przy powiększeniu',
+  'page.grayscale.how_2': 'Każdy kolor staje się szarością o tej samej jasności — także kolory dodatkowe (spot), gradienty, obrazy i kolory komentarzy. Zdjęcia JPEG są zapisywane ponownie, więc rozmiar pliku może się trochę zmienić',
+  'page.grayscale.how_3': 'Plik nie jest nigdzie wysyłany — zamiana odbywa się w Twojej przeglądarce',
 };
 
 export default pl;

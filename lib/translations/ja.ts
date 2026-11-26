@@ -1235,6 +1235,20 @@ const ja: Record<string, string> = {
   'page.qr.info_vector': 'コードは白い余白付きのベクター図形として描かれるため、どの倍率でも印刷でも鮮明です。ページの端から10 mmの位置に置かれます。テキストが長いほどコードは細かくなるので、長いテキストには大きいサイズを選んでください。',
   'page.qr.info_link': 'WebアドレスはPDF内でクリックできるリンクにもなります。位置は見えているページを基準にするので、回転したページでも正しく配置されます。',
   'page.qr.info_local': 'コードはブラウザー内で作成・描画されます。テキストもPDFもどこにも送信されません。',
+  'tool.grayscale': 'PDFをグレースケールに',
+  'desc.grayscale': 'カラーPDFを白黒に変換 — テキストはテキストのまま',
+  'seo.tool_title.grayscale': 'PDFをグレースケールに変換 – カラーPDFを白黒に',
+  'file.grayscale_suffix': '-gray',
+  'page.grayscale.desc': 'PDFのすべての色を同じ明るさのグレーに置き換えます。テキスト・グラフ・図形はベクターのまま、写真はグレーになります',
+  'page.grayscale.btn': 'グレースケールに変換',
+  'page.grayscale.loading': '色を変換しています...',
+  'page.grayscale.success': '完了 — グレースケールのPDFをダウンロードしました。',
+  'page.grayscale.summary': 'ページ数: {pages}。変換: 色 {colours}、画像 {images}、グラデーション {gradients}。',
+  'page.grayscale.overlay_note': 'ページ {pages}: 一部の要素は直接変換できませんでした（JPEG 2000画像や複雑なグラデーションなど）。グレーで表示されるレイヤーで覆いました。元の色はファイル内に残っています。',
+  'page.grayscale.how_title': 'ファイルに行われること',
+  'page.grayscale.how_1': 'ページを画像にするのではなく色を置き換えます。テキストは選択・検索でき、グラフや図形は拡大しても鮮明です',
+  'page.grayscale.how_2': 'すべての色が同じ明るさのグレーになります。特色、グラデーション、画像、コメントの色も同様です。JPEG写真は保存し直すため、ファイルサイズが少し変わることがあります',
+  'page.grayscale.how_3': 'ファイルはどこにも送信されません。変換はお使いのブラウザ内で行われます',
 };
 
 export default ja;

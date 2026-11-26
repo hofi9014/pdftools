@@ -1234,6 +1234,20 @@ const en: Record<string, string> = {
   'page.qr.info_vector': 'The code is drawn as vector shapes with a white margin, so it stays sharp at any zoom and in print. It sits 10 mm from the edge of the page. The longer the text, the denser the code — choose a larger size for long text.',
   'page.qr.info_link': 'A web address also becomes a clickable link in the PDF. The position is measured on the page as you see it — on turned pages too.',
   'page.qr.info_local': 'The code is made and drawn in your browser — neither the text nor the PDF is sent anywhere.',
+  'tool.grayscale': 'Grayscale PDF',
+  'desc.grayscale': 'Turn a colour PDF into black and white — text stays text',
+  'seo.tool_title.grayscale': 'Grayscale PDF – Convert a Colour PDF to Black and White',
+  'file.grayscale_suffix': '-grayscale',
+  'page.grayscale.desc': 'Replace every colour in a PDF with the gray of the same lightness — text, charts and drawings stay vector, photos turn gray',
+  'page.grayscale.btn': 'Convert to grayscale',
+  'page.grayscale.loading': 'Converting the colours...',
+  'page.grayscale.success': 'Done — the grayscale PDF has been downloaded.',
+  'page.grayscale.summary': 'Pages: {pages}. Converted: {colours} colours, {images} images, {gradients} gradients.',
+  'page.grayscale.overlay_note': 'Pages {pages}: some elements could not be converted directly (for example JPEG 2000 images or complex gradients). We covered them with a layer that shows them in gray — their original colours are still stored in the file.',
+  'page.grayscale.how_title': 'What happens to the file',
+  'page.grayscale.how_1': 'We replace the colours instead of turning pages into pictures: text can still be selected and searched, and charts and drawings stay sharp when zoomed in',
+  'page.grayscale.how_2': 'Every colour becomes the gray of the same lightness — spot colours, gradients, images and comment colours too. JPEG photos are saved again, so the file size can change a little',
+  'page.grayscale.how_3': 'The file is not sent anywhere — the conversion runs in your browser',
 };
 
 export default en;

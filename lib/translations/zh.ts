@@ -1236,6 +1236,20 @@ const zh: Record<string, string> = {
   'page.qr.info_vector': '二维码以带白边的矢量图形绘制，任何缩放和打印下都清晰。它位于距页面边缘10毫米处。文本越长，二维码越密，长文本请选择更大的尺寸。',
   'page.qr.info_link': '网址在PDF中也会成为可点击的链接。位置按您看到的页面计算，旋转过的页面也一样。',
   'page.qr.info_local': '二维码在您的浏览器中生成和绘制，文本和PDF都不会被发送到任何地方。',
+  'tool.grayscale': 'PDF转灰度',
+  'desc.grayscale': '将彩色PDF转为黑白——文字仍是文字',
+  'seo.tool_title.grayscale': 'PDF转灰度 – 将彩色PDF转为黑白',
+  'file.grayscale_suffix': '-gray',
+  'page.grayscale.desc': '将PDF中的每种颜色替换为亮度相同的灰色——文字、图表和绘图仍为矢量，照片变为灰色',
+  'page.grayscale.btn': '转换为灰度',
+  'page.grayscale.loading': '正在转换颜色...',
+  'page.grayscale.success': '完成——灰度PDF已下载。',
+  'page.grayscale.summary': '页数：{pages}。已转换：颜色 {colours} 个，图像 {images} 张，渐变 {gradients} 个。',
+  'page.grayscale.overlay_note': '第 {pages} 页：部分元素无法直接转换（例如 JPEG 2000 图像或复杂渐变）。我们用一个图层覆盖了它们，使其显示为灰色——其原始颜色仍保存在文件中。',
+  'page.grayscale.how_title': '文件会发生什么',
+  'page.grayscale.how_1': '我们替换颜色，而不是把页面变成图片：文字仍可选择和搜索，图表和绘图放大后依然清晰',
+  'page.grayscale.how_2': '每种颜色都会变成亮度相同的灰色——专色、渐变、图像和批注颜色也一样。JPEG 照片会重新保存，因此文件大小可能略有变化',
+  'page.grayscale.how_3': '文件不会被发送到任何地方——转换在您的浏览器中完成',
 };
 
 export default zh;

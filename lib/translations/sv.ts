@@ -1235,6 +1235,20 @@ const sv: Record<string, string> = {
   'page.qr.info_vector': 'Koden ritas som vektorgrafik med vit marginal, så den förblir skarp vid all förstoring och i tryck. Den placeras 10 mm från sidans kant. Ju längre text, desto tätare kod — välj en större storlek för lång text.',
   'page.qr.info_link': 'En webbadress blir också en klickbar länk i PDF-filen. Placeringen mäts på sidan så som du ser den — även på roterade sidor.',
   'page.qr.info_local': 'Koden skapas och ritas i din webbläsare — varken texten eller PDF-filen skickas någonstans.',
+  'tool.grayscale': 'PDF i gråskala',
+  'desc.grayscale': 'Gör en färg-PDF svartvit — texten förblir text',
+  'seo.tool_title.grayscale': 'PDF i gråskala – gör en färg-PDF svartvit',
+  'file.grayscale_suffix': '-gra',
+  'page.grayscale.desc': 'Ersätt varje färg i en PDF med grått av samma ljushet — text, diagram och teckningar förblir vektorer, foton blir grå',
+  'page.grayscale.btn': 'Konvertera till gråskala',
+  'page.grayscale.loading': 'Konverterar färgerna...',
+  'page.grayscale.success': 'Klart — PDF-filen i gråskala har laddats ner.',
+  'page.grayscale.summary': 'Sidor: {pages}. Konverterat: {colours} färger, {images} bilder, {gradients} övertoningar.',
+  'page.grayscale.overlay_note': 'Sidor {pages}: vissa element kunde inte konverteras direkt (till exempel JPEG 2000-bilder eller komplexa övertoningar). Vi har täckt dem med ett lager som visar dem i grått — deras ursprungliga färger finns kvar i filen.',
+  'page.grayscale.how_title': 'Vad som händer med filen',
+  'page.grayscale.how_1': 'Vi byter färgerna i stället för att göra om sidorna till bilder: texten går fortfarande att markera och söka i, och diagram och teckningar förblir skarpa när du zoomar',
+  'page.grayscale.how_2': 'Varje färg blir grått av samma ljushet — även dekorfärger, övertoningar, bilder och kommentarsfärger. JPEG-foton sparas om, så filstorleken kan ändras något',
+  'page.grayscale.how_3': 'Filen skickas inte någonstans — konverteringen sker i din webbläsare',
 };
 
 export default sv;

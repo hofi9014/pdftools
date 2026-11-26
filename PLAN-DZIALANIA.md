@@ -151,7 +151,10 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
 - [x] 2.5 Kod QR do PDF (+ prosty generator na tej samej stronie). **2026-11-24:** gotowe —
       `/add-qr-code-to-pdf`: PNG/SVG albo wektorowo na stronach PDF (także obróconych), link nad
       kodem dla adresów; każdy kod sprawdzany niezależnym dekoderem; zob. AGENTS.md.
-- [ ] 2.6 PDF w skali szarości.
+- [x] 2.6 PDF w skali szarości. **2026-11-26:** gotowe — `/grayscale-pdf`: kolory zamieniane w treści
+      (tekst zostaje tekstem, grafika wektorowa wektorową), zdjęcia przez przeglądarkę, kolory dodatkowe,
+      gradienty i komentarze; czego nie da się zamienić — warstwa w trybie „Saturation” i uczciwa
+      informacja na stronie; zob. AGENTS.md.
 - [ ] 2.7 Kilka stron na arkuszu / broszura do druku.
 - [ ] 2.8 Szukaj w wielu plikach PDF naraz.
 - [ ] 2.9 Weryfikacja podpisów PDF (node-forge 1.4.1 — luka weryfikacji naprawiona).
