@@ -155,7 +155,9 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
       (tekst zostaje tekstem, grafika wektorowa wektorową), zdjęcia przez przeglądarkę, kolory dodatkowe,
       gradienty i komentarze; czego nie da się zamienić — warstwa w trybie „Saturation” i uczciwa
       informacja na stronie; zob. AGENTS.md.
-- [ ] 2.7 Kilka stron na arkuszu / broszura do druku.
+- [x] 2.7 Kilka stron na arkuszu / broszura do druku. **2026-11-26:** gotowe — `/pages-per-sheet`
+      (2/4/6/9/16) i `/pdf-booklet` (kolejność do złożenia, puste strony do wielokrotności 4); strony
+      wektorowo, także obrócone i przycięte; komentarze i wypełnione pola zostają widoczne; zob. AGENTS.md.
 - [ ] 2.8 Szukaj w wielu plikach PDF naraz.
 - [ ] 2.9 Weryfikacja podpisów PDF (node-forge 1.4.1 — luka weryfikacji naprawiona).
 

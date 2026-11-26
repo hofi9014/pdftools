@@ -59,6 +59,8 @@ export const tools: ToolDef[] = [
   { key: 'compare',   slug: 'compare-pdf',   category: 'more' },
   { key: 'fillform',  slug: 'fill-form',     category: 'more' },
   { key: 'makefillable', slug: 'make-pdf-fillable', category: 'more' },
+  { key: 'nup',          slug: 'pages-per-sheet',   category: 'more' },
+  { key: 'booklet',      slug: 'pdf-booklet',       category: 'more' },
   { key: 'pdfa',      slug: 'to-pdfa',       category: 'more' },
 ];
 
@@ -120,7 +122,7 @@ export const RELATED_TOOLS: Record<string, [string, string, string]> = {
   protect: ['unlock', 'sign', 'watermark'], unlock: ['protect', 'compress', 'edit'], sign: ['fillform', 'protect', 'edit'],
   aichat: ['aisummary', 'translate', 'ocr'], aisummary: ['aichat', 'translate', 'txt'], translate: ['aisummary', 'aichat', 'word'],
   ocr: ['word', 'txt', 'compress'], compare: ['merge', 'edit', 'aisummary'], fillform: ['makefillable', 'sign', 'flatten'],
-  pdfa: ['metadata', 'protect', 'flatten'], qrcode: ['watermark', 'pagenumbers', 'sign'], grayscale: ['compress', 'merge', 'pagenumbers'], cleanmeta: ['redact', 'metadata', 'protect'], makefillable: ['fillform', 'sign', 'flatten'],
+  pdfa: ['metadata', 'protect', 'flatten'], qrcode: ['watermark', 'pagenumbers', 'sign'], grayscale: ['compress', 'merge', 'pagenumbers'], nup: ['booklet', 'grayscale', 'merge'], booklet: ['nup', 'pagenumbers', 'merge'], cleanmeta: ['redact', 'metadata', 'protect'], makefillable: ['fillform', 'sign', 'flatten'],
 };
 
 export interface CategoryDef {
