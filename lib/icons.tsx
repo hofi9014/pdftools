@@ -101,6 +101,7 @@ const tools: Record<string, React.ReactNode> = {
   grayscale:    row(<>{<PdfBadge />}{ar()}{gl('grayscale')}</>),
   nup:          row(<>{<PdfBadge />}{ar()}{gl('nup')}</>),
   booklet:      row(<>{<PdfBadge />}{ar()}{gl('booklet')}</>),
+  search:       row(<>{gl('findInFiles')}{<PdfBadge />}</>),
   pdfa:         row(<>{<PdfBadge />}{ar()}{gl('archive')}</>),
   guide:        gl('book'),
   cloud:        gl('cloud'),

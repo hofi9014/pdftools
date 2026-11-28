@@ -158,7 +158,9 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
 - [x] 2.7 Kilka stron na arkuszu / broszura do druku. **2026-11-26:** gotowe — `/pages-per-sheet`
       (2/4/6/9/16) i `/pdf-booklet` (kolejność do złożenia, puste strony do wielokrotności 4); strony
       wektorowo, także obrócone i przycięte; komentarze i wypełnione pola zostają widoczne; zob. AGENTS.md.
-- [ ] 2.8 Szukaj w wielu plikach PDF naraz.
+- [x] 2.8 Szukaj w wielu plikach PDF naraz. **2026-11-28:** gotowe — `/search-pdf`: kilka plików naraz,
+      wyniki w trakcie pisania z numerem strony i fragmentem, opcje (wielkość liter, znaki diakrytyczne,
+      całe słowa), wyniki do CSV; skan bez tekstu odsyła do OCR; nic nie jest wysyłane; zob. AGENTS.md.
 - [ ] 2.9 Weryfikacja podpisów PDF (node-forge 1.4.1 — luka weryfikacji naprawiona).
 
 ## Etap 3 — widoczność
