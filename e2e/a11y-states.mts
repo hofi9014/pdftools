@@ -82,6 +82,9 @@ async function upload(page: Page, slug: string, mode: Mode): Promise<boolean> {
   if (slug === 'compare-pdf') {
     await inputs.nth(0).setInputFiles(one);
     await inputs.nth(1).setInputFiles(mode === 'error' ? broken('pdf') : valid.pdf2);
+  } else if (slug === 'verify-pdf-signature' && mode === 'result') {
+    // An unsigned PDF only gives a plain message; a signed one shows the status boxes to measure.
+    await inputs.first().setInputFiles({ name: 'signed.pdf', mimeType: 'application/pdf', buffer: readFileSync(new URL('../test-fixtures/signatures/rsa-chain-timestamp.pdf', import.meta.url)) });
   } else if (slug === 'merge') {
     await inputs.first().setInputFiles(mode === 'error' ? [one, broken('pdf')] : [valid.pdf, valid.pdf2]);
   } else {

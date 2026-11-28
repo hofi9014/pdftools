@@ -8,7 +8,8 @@
 // Service Provider on a Qualified Signature Creation Device — this tool cannot issue one, it can
 // only apply whatever certificate the user already has).
 import {
-  PDFDocument, PDFName, PDFString, PDFHexString, PDFDict, PDFArray,
+  PDFDocument, PDFName, PDFString, PDFHexString, PDFDict, PDFArray, PDFRef, PDFNumber,
+  type PDFContext, type PDFObject,
 } from 'pdf-lib';
 import forge from 'node-forge';
 
@@ -158,10 +159,136 @@ function uniqueSignatureFieldName(catalog: PDFDict, baseName: string): string {
   return `${prefix}${n}`;
 }
 
+interface FileTail {
+  /** Offset of the last cross-reference section (the value after the last "startxref"). */
+  prev: number;
+  /** The last section is a cross-reference stream (PDF 1.5+), not a classic table. */
+  stream: boolean;
+  /** /Size of the last trailer (one more than the highest object number ever used). */
+  size: number;
+}
+
+function readTail(text: string): FileTail {
+  const at = text.lastIndexOf('startxref');
+  const m = at >= 0 ? /^startxref\s+(\d+)/.exec(text.slice(at, at + 40)) : null;
+  if (!m) throw new Error('Nie udało się odczytać struktury pliku PDF (brak startxref).');
+  const prev = Number(m[1]);
+  const stream = !/^\s*xref/.test(text.slice(prev, prev + 20));
+  const end = stream ? text.indexOf('stream', prev) : text.indexOf('trailer', prev);
+  const dict = end < 0 ? '' : stream ? text.slice(prev, end) : text.slice(end, end + 4096);
+  const size = Number(/\/Size\s+(\d+)/.exec(dict)?.[1] ?? 0);
+  return { prev, stream, size };
+}
+
+function objectBytes(o: PDFObject): Uint8Array {
+  const b = new Uint8Array(o.sizeInBytes());
+  o.copyBytesInto(b, 0);
+  return b;
+}
+
+const latin1 = (s: string) => Uint8Array.from(s, (c) => c.charCodeAt(0) & 0xff);
+
+function consecutiveRuns(nums: number[]): number[][] {
+  const out: number[][] = [];
+  for (const n of nums) {
+    const cur = out[out.length - 1];
+    if (cur && cur[cur.length - 1] === n - 1) cur.push(n); else out.push([n]);
+  }
+  return out;
+}
+
+/**
+ * Appends the changed objects to the original file as an incremental update (ISO 32000-1
+ * §7.5.6) and returns the whole new file. Nothing before `original.length` changes, so the
+ * signatures already in the file keep covering exactly the bytes they signed.
+ */
+function appendIncrementalUpdate(original: Uint8Array, context: PDFContext, changed: PDFRef[], tail: FileTail): Uint8Array {
+  const chunks: Uint8Array[] = [original];
+  let pos = original.length;
+  const push = (b: Uint8Array) => { chunks.push(b); pos += b.length; };
+  const last = original[original.length - 1];
+  if (last !== 0x0a && last !== 0x0d) push(latin1('\n'));
+
+  const offsets = new Map<number, { offset: number; gen: number }>();
+  for (const ref of [...changed].sort((x, y) => x.objectNumber - y.objectNumber)) {
+    offsets.set(ref.objectNumber, { offset: pos, gen: ref.generationNumber });
+    push(latin1(`${ref.objectNumber} ${ref.generationNumber} obj\n`));
+    push(objectBytes(context.lookup(ref)!));
+    push(latin1('\nendobj\n'));
+  }
+
+  const trailer = context.obj({}) as PDFDict;
+  const info = context.trailerInfo;
+  if (info.Root) trailer.set(PDFName.of('Root'), info.Root);
+  if (info.Info) trailer.set(PDFName.of('Info'), info.Info);
+  if (info.ID) trailer.set(PDFName.of('ID'), info.ID);
+  trailer.set(PDFName.of('Prev'), PDFNumber.of(tail.prev));
+
+  const xrefOffset = pos;
+  if (!tail.stream) {
+    let xref = 'xref\n';
+    for (const run of consecutiveRuns([...offsets.keys()])) {
+      xref += `${run[0]} ${run.length}\n`;
+      for (const n of run) {
+        const e = offsets.get(n)!;
+        xref += `${String(e.offset).padStart(10, '0')} ${String(e.gen).padStart(5, '0')} n \n`;
+      }
+    }
+    trailer.set(PDFName.of('Size'), PDFNumber.of(Math.max(tail.size, context.largestObjectNumber + 1)));
+    push(latin1(`${xref}trailer\n`));
+    push(objectBytes(trailer));
+    push(latin1(`\nstartxref\n${xrefOffset}\n%%EOF\n`));
+  } else {
+    // The file uses a cross-reference stream, so the update does too (an uncompressed one).
+    const xrefNum = Math.max(tail.size, context.largestObjectNumber + 1);
+    offsets.set(xrefNum, { offset: xrefOffset, gen: 0 });
+    const nums = [...offsets.keys()].sort((x, y) => x - y);
+    const data = new Uint8Array(nums.length * 7);
+    nums.forEach((n, i) => {
+      const { offset, gen } = offsets.get(n)!;
+      data.set([1, (offset >>> 24) & 0xff, (offset >>> 16) & 0xff, (offset >>> 8) & 0xff, offset & 0xff, (gen >> 8) & 0xff, gen & 0xff], i * 7);
+    });
+    trailer.set(PDFName.of('Type'), PDFName.of('XRef'));
+    trailer.set(PDFName.of('Size'), PDFNumber.of(xrefNum + 1));
+    trailer.set(PDFName.of('Index'), context.obj(consecutiveRuns(nums).flatMap((run) => [run[0]!, run.length])));
+    trailer.set(PDFName.of('W'), context.obj([1, 4, 2]));
+    trailer.set(PDFName.of('Length'), PDFNumber.of(data.length));
+    push(latin1(`${xrefNum} 0 obj\n`));
+    push(objectBytes(trailer));
+    push(latin1('\nstream\n'));
+    push(data);
+    push(latin1(`\nendstream\nendobj\nstartxref\n${xrefOffset}\n%%EOF\n`));
+  }
+  const out = new Uint8Array(pos);
+  let o = 0;
+  for (const c of chunks) { out.set(c, o); o += c.length; }
+  return out;
+}
+
 async function buildPlaceholderPdf(pdfBytes: Uint8Array, opts: PadesSignOptions, signingDate: Date): Promise<PreparedPdf> {
   const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true, updateMetadata: false });
   if (pdfDoc.isEncrypted) throw new Error('PDF jest zabezpieczony hasłem. Najpierw odblokuj dokument.');
   const context = pdfDoc.context;
+  const catalogRef = context.trailerInfo.Root;
+  if (!(catalogRef instanceof PDFRef)) throw new Error('Nie udało się odczytać struktury pliku PDF (brak katalogu).');
+
+  // A certifying signature that allows no changes (DocMDP P=1): any further signature would
+  // invalidate it, so the file is refused instead (ISO 32000-1 §12.8.2.2).
+  const perms = pdfDoc.catalog.lookup(PDFName.of('Perms'));
+  const docMdp = perms instanceof PDFDict ? perms.lookup(PDFName.of('DocMDP')) : undefined;
+  const mdpRefs = docMdp instanceof PDFDict ? docMdp.lookup(PDFName.of('Reference')) : undefined;
+  for (let i = 0; mdpRefs instanceof PDFArray && i < mdpRefs.size(); i++) {
+    const r = mdpRefs.lookup(i);
+    const params = r instanceof PDFDict ? r.lookup(PDFName.of('TransformParams')) : undefined;
+    const p = params instanceof PDFDict ? params.lookup(PDFName.of('P')) : undefined;
+    if (p instanceof PDFNumber && p.asNumber() === 1) {
+      throw new Error('Dokument jest certyfikowany bez zgody na zmiany — kolejny podpis unieważniłby certyfikację.');
+    }
+  }
+
+  // New objects get numbers above every number the file has ever used.
+  const tail = readTail(uint8ArrayToBinaryString(pdfBytes));
+  context.largestObjectNumber = Math.max(context.largestObjectNumber, tail.size - 1);
 
   const byteRangePlaceholder = context.obj([
     0,
@@ -206,41 +333,54 @@ async function buildPlaceholderPdf(pdfBytes: Uint8Array, opts: PadesSignOptions,
   });
   const widgetRef = context.register(widgetDict);
 
-  const existingAnnots = firstPage.node.Annots();
-  if (existingAnnots) {
-    existingAnnots.push(widgetRef);
+  // FINDING (2026-11-28) — the file used to be saved anew by pdf-lib, which renumbers and moves
+  // every object: signing a PDF that already had a signature (a second signer, or this tool run
+  // twice) silently broke the FIRST signature (pyhanko: intact=False), because the bytes it
+  // covered were gone. The new objects, and only the existing objects that change, are now
+  // appended as an incremental update, as every PDF signing program does. Which existing objects
+  // change depends on whether /Annots, /AcroForm and /Fields are direct or indirect objects.
+  const catalog = pdfDoc.catalog;
+  const changed = new Set<PDFRef>([sigRef, widgetRef]);
+  const annots = firstPage.node.get(PDFName.of('Annots'));
+  const annotsArray = annots instanceof PDFRef ? context.lookup(annots) : annots;
+  if (annotsArray instanceof PDFArray) {
+    annotsArray.push(widgetRef);
+    changed.add(annots instanceof PDFRef ? annots : firstPage.ref);
   } else {
     firstPage.node.set(PDFName.of('Annots'), context.obj([widgetRef]));
+    changed.add(firstPage.ref);
   }
-
-  const catalog = pdfDoc.catalog;
-  const existingAcroForm = catalog.lookupMaybe(PDFName.of('AcroForm'), PDFDict);
-  if (existingAcroForm) {
-    const fields = existingAcroForm.lookupMaybe(PDFName.of('Fields'), PDFArray);
-    if (fields) fields.push(widgetRef);
-    else existingAcroForm.set(PDFName.of('Fields'), context.obj([widgetRef]));
-    existingAcroForm.set(PDFName.of('SigFlags'), context.obj(3));
+  const acroEntry = catalog.get(PDFName.of('AcroForm'));
+  const acro = acroEntry instanceof PDFRef ? context.lookup(acroEntry) : acroEntry;
+  if (acro instanceof PDFDict) {
+    const fieldsEntry = acro.get(PDFName.of('Fields'));
+    const fields = fieldsEntry instanceof PDFRef ? context.lookup(fieldsEntry) : fieldsEntry;
+    if (fields instanceof PDFArray) {
+      fields.push(widgetRef);
+      if (fieldsEntry instanceof PDFRef) changed.add(fieldsEntry);
+    } else {
+      acro.set(PDFName.of('Fields'), context.obj([widgetRef]));
+    }
+    acro.set(PDFName.of('SigFlags'), context.obj(3));
+    changed.add(acroEntry instanceof PDFRef ? acroEntry : catalogRef);
   } else {
-    catalog.set(PDFName.of('AcroForm'), context.obj({
-      Fields: [widgetRef],
-      SigFlags: 3,
-    }));
+    catalog.set(PDFName.of('AcroForm'), context.obj({ Fields: [widgetRef], SigFlags: 3 }));
+    changed.add(catalogRef);
   }
 
-  const saved = await pdfDoc.save({ useObjectStreams: false });
-  const bytes = saved instanceof Uint8Array ? saved : new Uint8Array(saved);
+  const bytes = appendIncrementalUpdate(pdfBytes, context, [...changed], tail);
 
-  // Locate the placeholders we just wrote by their distinctive, fixed-width text. useObjectStreams:
-  // false keeps every object as a plain, searchable indirect object (no compressed object streams).
+  // Locate the placeholders we just wrote by their distinctive, fixed-width text — only in the
+  // appended update, never in the original file.
   const text = uint8ArrayToBinaryString(bytes);
   // pdf-lib's array writer pads a space just inside each bracket: "[ 0 N N N ]", not "[0 N N N]".
   const byteRangeMarker = `[ 0 ${BYTE_RANGE_PLACEHOLDER_NUM} ${BYTE_RANGE_PLACEHOLDER_NUM} ${BYTE_RANGE_PLACEHOLDER_NUM} ]`;
-  const byteRangeMarkerPos = text.indexOf(byteRangeMarker);
+  const byteRangeMarkerPos = text.indexOf(byteRangeMarker, pdfBytes.length);
   if (byteRangeMarkerPos === -1) throw new Error('Nie udało się zlokalizować pola ByteRange w zapisanym dokumencie.');
   const byteRangeNumbersOffset = byteRangeMarkerPos + 4; // skip "[ 0 "
 
   const contentsHexRun = '0'.repeat(CONTENTS_RESERVED_BYTES * 2);
-  const contentsHexStart = text.indexOf(contentsHexRun);
+  const contentsHexStart = text.indexOf(contentsHexRun, pdfBytes.length);
   if (contentsHexStart === -1) throw new Error('Nie udało się zlokalizować pola Contents w zapisanym dokumencie.');
   const contentsHexEnd = contentsHexStart + contentsHexRun.length;
   // Sanity check: the run of zeros found must actually be delimited by '<' and '>' immediately
@@ -313,8 +453,32 @@ function buildDetachedCms(bundle: PadesCertBundle, digestSpans: Uint8Array, sign
     authenticatedAttributes: attributes as unknown as Array<{ type: string; value?: string }>,
   });
   p7.sign({ detached: true });
-  const der = forge.asn1.toDer(p7.toAsn1()).getBytes();
+  const asn1 = p7.toAsn1();
+  setOriginalIssuer(asn1, bundle.leafCertificate);
+  const der = forge.asn1.toDer(asn1).getBytes();
   return binaryStringToUint8Array(der);
+}
+
+// FINDING (2026-11-28) — forge writes the signer's identifier (SignerInfo issuerAndSerialNumber)
+// by re-encoding the issuer name from its parsed fields, and it UTF-8-encodes text that is
+// already UTF-8: an issuer like "Urząd Testowy" came out as "Urzc384c285d…" bytes, so the
+// identifier matched no certificate and every validator (pyhanko: "signer certificate not
+// included in signature"; this site's verifier: 'no-cert') rejected the signature. Any
+// certificate whose issuer name has a non-ASCII character was affected. The issuer is now copied
+// from the certificate's own "to be signed" bytes, which forge keeps unchanged.
+function setOriginalIssuer(contentInfo: forge.asn1.Asn1, cert: forge.pki.Certificate): void {
+  const tbs = (cert as unknown as { tbsCertificate?: forge.asn1.Asn1 }).tbsCertificate;
+  const fields = tbs && Array.isArray(tbs.value) ? (tbs.value as forge.asn1.Asn1[]) : null;
+  if (!fields) return;
+  const hasVersion = fields[0]?.tagClass === forge.asn1.Class.CONTEXT_SPECIFIC;
+  const issuer = fields[hasVersion ? 3 : 2];
+  const signedData = ((contentInfo.value as forge.asn1.Asn1[])[1]?.value as forge.asn1.Asn1[] | undefined)?.[0];
+  const parts = signedData?.value as forge.asn1.Asn1[] | undefined;
+  const signerInfos = parts?.[parts.length - 1]?.value as forge.asn1.Asn1[] | undefined;
+  for (const si of signerInfos ?? []) {
+    const sid = (si.value as forge.asn1.Asn1[])[1];
+    if (issuer && sid && Array.isArray(sid.value)) (sid.value as forge.asn1.Asn1[])[0] = issuer;
+  }
 }
 
 /**

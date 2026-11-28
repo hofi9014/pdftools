@@ -102,6 +102,7 @@ const tools: Record<string, React.ReactNode> = {
   nup:          row(<>{<PdfBadge />}{ar()}{gl('nup')}</>),
   booklet:      row(<>{<PdfBadge />}{ar()}{gl('booklet')}</>),
   search:       row(<>{gl('findInFiles')}{<PdfBadge />}</>),
+  verifysig:    row(<>{<PdfBadge />}{gl('sealCheck')}</>),
   pdfa:         row(<>{<PdfBadge />}{ar()}{gl('archive')}</>),
   guide:        gl('book'),
   cloud:        gl('cloud'),

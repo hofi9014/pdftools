@@ -50,6 +50,7 @@ export const tools: ToolDef[] = [
   { key: 'unlock',   slug: 'unlock-pdf',  category: 'secure' },
   { key: 'sign',     slug: 'sign-pdf',    category: 'secure' },
   { key: 'cleanmeta', slug: 'remove-metadata', category: 'secure' },
+  { key: 'verifysig', slug: 'verify-pdf-signature', category: 'secure' },
 
   // More
   { key: 'aichat',    slug: 'ai-chat',       category: 'more' },
@@ -120,7 +121,7 @@ export const RELATED_TOOLS: Record<string, [string, string, string]> = {
   ppt: ['word', 'images', 'compress'], openoffice: ['pdf2openoffice', 'merge', 'compress'], pdf2openoffice: ['openoffice', 'word', 'ocr'],
   txt: ['ocr', 'word', 'aisummary'], svg: ['images', 'html2pdf', 'compress'], epub: ['txt', 'word', 'compress'],
   html: ['url', 'markdown', 'merge'], markdown: ['html', 'merge', 'protect'], html2pdf: ['html', 'txt', 'word'], url: ['html', 'compress', 'merge'],
-  protect: ['unlock', 'sign', 'watermark'], unlock: ['protect', 'compress', 'edit'], sign: ['fillform', 'protect', 'edit'],
+  protect: ['unlock', 'sign', 'watermark'], unlock: ['protect', 'compress', 'edit'], sign: ['verifysig', 'protect', 'fillform'], verifysig: ['sign', 'cleanmeta', 'protect'],
   aichat: ['aisummary', 'translate', 'ocr'], aisummary: ['aichat', 'translate', 'txt'], translate: ['aisummary', 'aichat', 'word'],
   ocr: ['word', 'txt', 'compress'], compare: ['merge', 'edit', 'aisummary'], fillform: ['makefillable', 'sign', 'flatten'],
   pdfa: ['metadata', 'protect', 'flatten'], qrcode: ['watermark', 'pagenumbers', 'sign'], grayscale: ['compress', 'merge', 'pagenumbers'], nup: ['booklet', 'grayscale', 'merge'], booklet: ['nup', 'pagenumbers', 'merge'], search: ['ocr', 'compare', 'merge'], cleanmeta: ['redact', 'metadata', 'protect'], makefillable: ['fillform', 'sign', 'flatten'],

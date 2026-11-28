@@ -23,6 +23,8 @@ export const ENGINE_MESSAGES: { re: RegExp; key: string; params?: (m: RegExpMatc
   { re: /^Nie udało się zlokalizować pola (ByteRange|Contents)|^Nieoczekiwana zawartość wokół pola Contents/, key: 'engine.err.sign_internal' },
   { re: /^Podpis \(\d+ B\) jest większy niż zarezerwowane miejsce/, key: 'engine.err.sign_too_large' },
   { re: /^Canvas nie udostępnia/, key: 'engine.err.browser_unsupported' },
+  { re: /^Dokument jest certyfikowany bez zgody na zmiany/, key: 'engine.err.certified_no_changes' },
+  { re: /^Nie udało się odczytać struktury pliku PDF/, key: 'engine.err.pdf_structure' },
 ];
 
 /** The text of an engine message in the page's language, or null when the message is not known. */

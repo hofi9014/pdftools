@@ -161,7 +161,10 @@ test logiki + test e2e przez prawdziwą stronę + test „bez wysyłania” (`e2
 - [x] 2.8 Szukaj w wielu plikach PDF naraz. **2026-11-28:** gotowe — `/search-pdf`: kilka plików naraz,
       wyniki w trakcie pisania z numerem strony i fragmentem, opcje (wielkość liter, znaki diakrytyczne,
       całe słowa), wyniki do CSV; skan bez tekstu odsyła do OCR; nic nie jest wysyłane; zob. AGENTS.md.
-- [ ] 2.9 Weryfikacja podpisów PDF (node-forge 1.4.1 — luka weryfikacji naprawiona).
+- [x] 2.9 Weryfikacja podpisów PDF. **2026-11-28:** gotowe — `/verify-pdf-signature`: czy podpis jest
+      nienaruszony, kto i kiedy podpisał, łańcuch z pliku, znacznik czasu, certyfikacja, pobranie podpisanej
+      wersji; strona mówi wprost, że nie sprawdza list zaufania ani unieważnienia. Przy okazji naprawione
+      „Podpisz PDF”: drugi podpis certyfikatem unieważniał pierwszy; zob. AGENTS.md.
 
 ## Etap 3 — widoczność
 
@@ -248,8 +251,10 @@ miejsca na wdrożenia (limit Hobby 10 GB).
   stronie głównej, za ikonami, w całości w kole (`components/HeroCoffeeCup.tsx`, `test:hero-coffee-cup`).
 - **ZROBIONE 2026-11-07 (właściciel zatwierdził podgląd):** ikony narzędzi i kategorii rysowane zamiast emoji (1.5).
 - **ZROBIONE 2026-11-08 (właściciel zatwierdził podgląd):** wszystkie pozostałe emoji na stronie zastąpione rysunkami (1.5, krok 2).
-- **[DECYZJA]** „Nasze zasady” zapowiadają płatny plan dla firm i możliwe reklamy AdSense. To Twoje
-  plany, więc ich nie zmieniam, ale oba wymagają planu Vercel Pro — czy zostawić te zdania?
+- **ZATWIERDZONE 2026-11-28 (właściciel, zrzuty w obu motywach):** ikony „Sprawdź podpis PDF” (rozeta z haczykiem),
+  „Kilka stron na arkuszu” i „Broszura z PDF”.
+- **ROZSTRZYGNIĘTE 2026-11-28 (decyzja właściciela: zostawić — zostaną dodane w przyszłości):** „Nasze zasady”
+  zapowiadają płatny plan dla firm i możliwe reklamy AdSense; oba wymagają planu Vercel Pro.
 - **ZROBIONE 2026-11-20 (decyzja właściciela: ukryć na jakiś czas):** przycisk wpłat ukryty (`DONATIONS_ENABLED = false`); wcześniej: link do wsparcia na `/wsparcie` to nadal testowy Stripe (prawdziwa karta nie
   zapłaci): podmiana na prawdziwy albo ukrycie przycisku.
 

@@ -1,0 +1,4 @@
+# Signed test PDFs break if a single byte changes; never convert line endings in binary documents.
+*.pdf binary
+*.cer binary
+*.p12 binary
